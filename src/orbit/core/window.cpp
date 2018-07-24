@@ -22,49 +22,41 @@
 namespace orb
 {
 
-window::window()
-{
-	new (&impl<window_impl>()) window_impl();
-}
-
 window::window(uint32_t width, uint32_t height)
+	: opaque_memory(width, height)
 {
-	new (&impl<window_impl>()) window_impl(width, height);
 }
 
-window::~window()
-{
-	impl<window_impl>().~window_impl();
-}
+window::~window() = default;
 
 void window::poll_events()
 {
-	impl<window_impl>().poll_events();
+	impl().poll_events();
 }
 
 void window::set_title(const std::string& title)
 {
-	impl<window_impl>().set_title(title);
+	impl().set_title(title);
 }
 
 void window::set_pos(uint32_t x, uint32_t y)
 {
-	impl<window_impl>().set_pos(x, y);
+	impl().set_pos(x, y);
 }
 
 void window::show()
 {
-	impl<window_impl>().set_visible(true);
+	impl().set_visible(true);
 }
 
 void window::hide()
 {
-	impl<window_impl>().set_visible(false);
+	impl().set_visible(false);
 }
 
 window::operator bool() const
 {
-	return impl<window_impl>().is_open();
+	return impl().is_open();
 }
 
 }

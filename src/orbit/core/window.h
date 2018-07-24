@@ -23,10 +23,10 @@
 namespace orb
 {
 
-class ORB_API_CORE window : public opaque_memory<16>
+class ORB_API_CORE window : public opaque_memory<16, class window_impl>
 {
 public:
-	window();
+	window() = default;
 	window(uint32_t width, uint32_t height);
 	~window();
 
