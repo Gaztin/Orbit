@@ -1,8 +1,17 @@
 #include <orbit/core/log.h>
+#include <orbit/core/window.h>
 
 int main(int /*argc*/, char* /*argv*/[])
 {
 	orb::log_info("Started!\n");
+
+	orb::window w(800, 600);
+	w.show();
+	while (w)
+	{
+		w.poll_events();
+	}
+
 	orb::log_info("Exited!\n");
 	return 0;
 }

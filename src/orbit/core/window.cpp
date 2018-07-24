@@ -1,12 +1,12 @@
 /*
 * Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
-* 
+*
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose, including commercial
 * applications, and to alter it and redistribute it freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not claim that you wrote the
 *    original software. If you use this software in a product, an acknowledgment in the product
 *    documentation would be appreciated but is not required.
@@ -15,28 +15,56 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
+#include "window.h"
 
-/* Per-compiler macros. */
-#if defined(_MSC_VER)
-#define ORB_CC_MSVC
-#define ORB_DLL_EXPORT __declspec(dllexport)
-#define ORB_DLL_IMPORT __declspec(dllimport)
-#define ORB_DLL_LOCAL
-#elif defined(__GNUC__)
-#define ORB_CC_GCC
-#define ORB_DLL_EXPORT __attribute__((visibility("default")))
-#define ORB_DLL_IMPORT __attribute__((visibility("default")))
-#define ORB_DLL_LOCAL  __attribute__((visibility("hidden")))
-#endif
+#include "orbit/core/internal/window_impl.h"
 
-/* Per-system macros. */
-#if defined(_WIN32)
-#define ORB_OS_WINDOWS
-#elif defined(__ANDROID__)
-#define ORB_OS_ANDROID
-#elif defined(__linux__)
-#define ORB_OS_LINUX
-#elif defined(__APPLE__)
-#define ORB_OS_MACOSX
-#endif
+namespace orb
+{
+
+window::window()
+{
+	new (&impl<window_impl>()) window_impl();
+}
+
+window::window(uint32_t width, uint32_t height)
+{
+	new (&impl<window_impl>()) window_impl(width, height);
+}
+
+window::~window()
+{
+	impl<window_impl>().~window_impl();
+}
+
+void window::poll_events()
+{
+	impl<window_impl>().poll_events();
+}
+
+void window::set_title(const std::string& title)
+{
+	impl<window_impl>().set_title(title);
+}
+
+void window::set_pos(uint32_t x, uint32_t y)
+{
+	impl<window_impl>().set_pos(x, y);
+}
+
+void window::show()
+{
+	impl<window_impl>().set_visible(true);
+}
+
+void window::hide()
+{
+	impl<window_impl>().set_visible(false);
+}
+
+window::operator bool() const
+{
+	return impl<window_impl>().is_open();
+}
+
+}

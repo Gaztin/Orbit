@@ -52,6 +52,41 @@ local function base_config()
 	filter{}
 end
 
+local function foreach_system(functor)
+	local field = premake.field.get("system")
+	for i = 1, #field.allowed do
+		functor(field.allowed[i])
+	end
+	functor("android")
+end
+
+local function foreach_system_keywords(os, functor)
+	local keywords = {
+		["windows"] = {"windows", "win32"},
+		["android"] = {"android"},
+		["linux"]   = {"linux", "x11"},
+		["macosx"]  = {"macosx", "cocoa"},
+	}
+	if keywords[os] == nil then
+		return
+	end
+	for i = 1, #keywords[os] do
+		functor(keywords[os][i])
+	end
+end
+
+local function remove_system_files()
+	foreach_system(function(os)
+		filter{"system:not " .. os}
+		foreach_system_keywords(os, function(keyword)
+			removefiles {
+				"src/**/" .. keyword .. "/**",
+				"src/**/*_" .. keyword .. ".cpp"
+			}
+		end)
+	end)
+end
+
 local modules = {}
 local function decl_module(name)
 	local lo = name:lower()
@@ -62,10 +97,12 @@ local function decl_module(name)
 	defines {"ORB_BUILD_" .. up}
 	base_config()
 	files {
+		"src/orbit.h",
 		"src/orbit/" .. lo .. ".h",
 		"src/orbit/" .. lo .. "/**.cpp",
 		"src/orbit/" .. lo .. "/**.h",
 	}
+	remove_system_files()
 	group()
 	table.insert(modules, name)
 end
@@ -82,6 +119,7 @@ local function decl_sample(name)
 		"src/samples/" .. id .. "/**.cpp",
 		"src/samples/" .. id .. "/**.h",
 	}
+	remove_system_files()
 	group()
 	sample_index = sample_index + 1
 end
