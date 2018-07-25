@@ -80,8 +80,8 @@ local function remove_system_files()
 		filter{"system:not " .. os}
 		foreach_system_keywords(os, function(keyword)
 			removefiles {
-				"src/**/" .. keyword .. "/**",
-				"src/**/*_" .. keyword .. ".cpp"
+				"src/**" .. keyword .. "_**",
+				"src/**_" .. keyword .. "**",
 			}
 		end)
 	end)

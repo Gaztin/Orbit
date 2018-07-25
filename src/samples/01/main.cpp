@@ -17,9 +17,10 @@ int main(int /*argc*/, char* /*argv*/[])
 }
 
 #if defined(ORB_OS_ANDROID)
-#include <android_native_app_glue.h>
-void android_main(android_app* state)
+#include <orbit/core/android_app.h>
+void android_main(android_app* app)
 {
+	orb::android_only::app = app;
 	main(0, {});
 }
 

@@ -5,10 +5,12 @@ rwildcard   = $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(su
 include $(CLEAR_VARS)
 
 LOCAL_MODULE     := orbit_core
-LOCAL_SRC_FILES  := $(call rwildcard, $(LOCAL_PATH)/../../../../src/engine/orbit/core/, *.cpp)
+LOCAL_SRC_FILES  := $(wildcard $(LOCAL_PATH)/../../../../src/orbit/core/*.cpp)
+LOCAL_SRC_FILES  += $(wildcard $(LOCAL_PATH)/../../../../src/orbit/core/internal/*android.cpp)
 LOCAL_CPPFLAGS   := -std=c++14
 LOCAL_LDLIBS     := -llog -landroid
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../src/engine/
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../src/
+LOCAL_C_INCLUDES += $(NDK_ROOT)/sources/android/native_app_glue/
 
 include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
@@ -16,9 +18,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE           := orb01
 LOCAL_SRC_FILES        := $(call rwildcard, $(LOCAL_PATH)/../../../../src/samples/01/, *.cpp)
 LOCAL_CPPFLAGS         := -std=c++14
-LOCAL_C_INCLUDES       := $(LOCAL_PATH)/../../../../src/engine/
-LOCAL_STATIC_LIBRARIES := android_native_app_glue
+LOCAL_C_INCLUDES       := $(LOCAL_PATH)/../../../../src/
 LOCAL_SHARED_LIBRARIES := orbit_core
+LOCAL_STATIC_LIBRARIES := android_native_app_glue
 
 include $(BUILD_SHARED_LIBRARY)
 
