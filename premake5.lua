@@ -133,3 +133,4 @@ decl_module("Core")
 
 -- Samples
 decl_sample("Base")
+filter{"system:linux"} links{"X11"}

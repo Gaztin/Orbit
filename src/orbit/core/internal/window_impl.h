@@ -24,6 +24,8 @@
 #include <windows.h>
 #elif defined(ORB_OS_ANDROID)
 #include <android_native_app_glue.h>
+#elif defined(ORB_OS_LINUX)
+#include <X11/Xlib.h>
 #endif
 
 namespace orb
@@ -59,6 +61,14 @@ private:
 	static void app_cmd(android_app* state, int cmd);
 	static int input_event(android_app* state, AInputEvent* e);
 
+#elif defined(ORB_OS_LINUX)
+	Window create_xwindow(int width, int height) const;
+	void set_delete_protocol() const;
+	void process_xevent(const XEvent& e);
+
+	Display* m_display;
+	Window   m_window;
+	
 #endif
 
 	bool m_open;

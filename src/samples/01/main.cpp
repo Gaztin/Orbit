@@ -6,6 +6,7 @@ int main(int /*argc*/, char* /*argv*/[])
 	orb::log_info("Started!\n");
 
 	orb::window w(800, 600);
+	w.set_title("Orbit sample #01");
 	w.show();
 	while (w)
 	{

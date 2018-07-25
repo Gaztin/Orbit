@@ -21,6 +21,7 @@
 #include <utility>
 
 #include <stdint.h>
+#include <stdlib.h>
 
 namespace orb
 {
