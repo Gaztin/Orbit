@@ -69,6 +69,13 @@ private:
 	Display* m_display;
 	Window   m_window;
 	
+#elif defined(ORB_OS_MACOS)
+	void* create_nswindow(int width, int height) const;
+	void* create_delegate();
+	void process_nsevent(void* e);
+	
+	void* m_window;
+	void* m_delegate;
 #endif
 
 	bool m_open;

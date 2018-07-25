@@ -102,6 +102,7 @@ local function decl_module(name)
 		"src/orbit/" .. lo .. "/**.cpp",
 		"src/orbit/" .. lo .. "/**.h",
 	}
+	filter{"system:macosx"} files{"src/orbit/" .. lo .. "/**.mm"} filter{}
 	remove_system_files()
 	group()
 	table.insert(modules, name)
@@ -130,6 +131,7 @@ configurations {"Debug", "Release"}
 
 -- Engine modules
 decl_module("Core")
+filter{"system:macosx"} links{"Cocoa.framework"}
 
 -- Samples
 decl_sample("Base")
