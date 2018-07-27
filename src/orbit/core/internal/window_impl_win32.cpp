@@ -29,6 +29,7 @@ ATOM window_impl::s_class = window_impl::create_window_class();
 window_impl::window_impl()
 	: m_open(false)
 	, m_hwnd(create_window(CW_USEDEFAULT, CW_USEDEFAULT))
+	, m_hdc(format_device_context())
 {
 	m_open = (m_hwnd != nullptr);
 }
@@ -36,12 +37,14 @@ window_impl::window_impl()
 window_impl::window_impl(uint32_t width, uint32_t height)
 	: m_open(false)
 	, m_hwnd(create_window(width, height))
+	, m_hdc(format_device_context())
 {
 	m_open = (m_hwnd != nullptr);
 }
 
 window_impl::~window_impl()
 {
+	ReleaseDC(m_hwnd, m_hdc);
 	DestroyWindow(m_hwnd);
 }
 
@@ -126,6 +129,23 @@ HWND window_impl::create_window(int width, int height)
 	SetWindowLongPtrA(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
 	return hwnd;
+}
+
+HDC window_impl::format_device_context()
+{
+	HDC hdc = GetDC(m_hwnd);
+
+	PIXELFORMATDESCRIPTOR pixelFormat { };
+	pixelFormat.nSize      = sizeof(PIXELFORMATDESCRIPTOR);
+	pixelFormat.nVersion   = 1;
+	pixelFormat.dwFlags    = PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	pixelFormat.iPixelType = PFD_TYPE_RGBA;
+	pixelFormat.cColorBits = 24;
+	pixelFormat.cDepthBits = 24;
+	pixelFormat.iLayerType = PFD_MAIN_PLANE;
+	SetPixelFormat(hdc, ChoosePixelFormat(hdc, &pixelFormat), &pixelFormat);
+
+	return hdc;
 }
 
 }

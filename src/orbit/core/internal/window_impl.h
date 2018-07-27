@@ -46,16 +46,22 @@ public:
 	inline void close() { m_open = false; }
 	inline bool is_open() const { return m_open; }
 
+#if defined(ORB_OS_WINDOWS)
+	HDC hdc() const { return m_hdc; }
+#endif
+
 private:
 #if defined(ORB_OS_WINDOWS)
 	static ATOM create_window_class();
 	static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	HWND create_window(int width, int height);
+	HDC format_device_context();
 
 	static ATOM s_class;
 
 	HWND m_hwnd;
+	HDC  m_hdc;
 
 #elif defined(ORB_OS_ANDROID)
 	static void app_cmd(android_app* state, int cmd);
