@@ -29,6 +29,7 @@ namespace orb
 template<size_t width, typename T>
 class ORB_DLL_LOCAL opaque_memory
 {
+#if defined(ORB_BUILD)
 public:
 	opaque_memory(const opaque_memory&) = default;
 	opaque_memory(opaque_memory&&) = default;
@@ -36,7 +37,6 @@ public:
 	opaque_memory(Args&&... args) { new (m_memory) T(std::forward<Args>(args)...); }
 	~opaque_memory() { impl().~T(); }
 
-protected:
 	T& impl()
 	{
 		static_assert(sizeof(T) <= width, "Specified layout too large");
@@ -48,6 +48,8 @@ protected:
 		static_assert(sizeof(T) <= width, "Specified layout too large");
 		return reinterpret_cast<const T&>(*m_memory);
 	}
+
+#endif
 
 private:
 	uint8_t m_memory[width];

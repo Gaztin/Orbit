@@ -47,6 +47,7 @@ local function base_config()
 	optimize       ("Off")
 	symbols        ("On")
 	filter{"configurations:Release"}
+	defines        {"NDEBUG"}
 	optimize       ("Full")
 	symbols        ("Off")
 	filter{}
@@ -94,7 +95,7 @@ local function decl_module(name)
 	group("Engine")
 	project (name)
 	kind    ("SharedLib")
-	defines {"ORB_BUILD_" .. up}
+	defines {"ORB_BUILD", "ORB_BUILD_" .. up}
 	base_config()
 	files {
 		"src/orbit.h",
