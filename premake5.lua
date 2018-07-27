@@ -63,10 +63,10 @@ end
 
 local function foreach_system_keywords(os, functor)
 	local keywords = {
-		["windows"] = {"windows", "win32"},
-		["android"] = {"android"},
-		["linux"]   = {"linux", "x11"},
-		["macosx"]  = {"macosx", "cocoa"},
+		["windows"] = {"windows", "win32", "wgl"},
+		["android"] = {"android", "egl"},
+		["linux"]   = {"linux", "x11", "glx"},
+		["macosx"]  = {"macos", "cocoa"},
 	}
 	if keywords[os] == nil then
 		return
@@ -96,6 +96,7 @@ local function decl_module(name)
 	project (name)
 	kind    ("SharedLib")
 	defines {"ORB_BUILD", "ORB_BUILD_" .. up}
+	links   (modules)
 	base_config()
 	files {
 		"src/orbit.h",
@@ -132,8 +133,10 @@ configurations {"Debug", "Release"}
 
 -- Engine modules
 decl_module("Core")
-filter{"system:macosx"} links{"Cocoa.framework"}
+  filter{"system:macosx"} links{"Cocoa.framework"}
 decl_module("Graphics")
+  filter{"system:windows"} links{"opengl32"}
+  filter{"system:macosx"} links{"OpenGL.framework"}
 
 -- Samples
 decl_sample("Base")
