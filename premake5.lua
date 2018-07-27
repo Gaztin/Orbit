@@ -133,6 +133,7 @@ configurations {"Debug", "Release"}
 -- Engine modules
 decl_module("Core")
 filter{"system:macosx"} links{"Cocoa.framework"}
+decl_module("Graphics")
 
 -- Samples
 decl_sample("Base")
