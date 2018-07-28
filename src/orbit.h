@@ -38,5 +38,5 @@
 #elif defined(__linux__)
 #define ORB_OS_LINUX
 #elif defined(__APPLE__)
-#define ORB_OS_MACOSX
+#define ORB_OS_MACOS
 #endif

@@ -47,6 +47,7 @@ local function base_config()
 	optimize       ("Off")
 	symbols        ("On")
 	filter{"configurations:Release"}
+	defines        {"NDEBUG"}
 	optimize       ("Full")
 	symbols        ("Off")
 	filter{}
@@ -94,7 +95,7 @@ local function decl_module(name)
 	group("Engine")
 	project (name)
 	kind    ("SharedLib")
-	defines {"ORB_BUILD_" .. up}
+	defines {"ORB_BUILD", "ORB_BUILD_" .. up}
 	base_config()
 	files {
 		"src/orbit.h",
@@ -102,6 +103,7 @@ local function decl_module(name)
 		"src/orbit/" .. lo .. "/**.cpp",
 		"src/orbit/" .. lo .. "/**.h",
 	}
+	filter{"system:macosx"} files{"src/orbit/" .. lo .. "/**.mm"} filter{}
 	remove_system_files()
 	group()
 	table.insert(modules, name)
@@ -130,6 +132,7 @@ configurations {"Debug", "Release"}
 
 -- Engine modules
 decl_module("Core")
+filter{"system:macosx"} links{"Cocoa.framework"}
 
 -- Samples
 decl_sample("Base")
