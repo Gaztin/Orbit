@@ -29,7 +29,7 @@ void log_info(const std::string& msg)
 #if defined(ORB_OS_ANDROID)
 	__android_log_write(ANDROID_LOG_INFO, "Orbit", msg.c_str());
 #else
-	printf("%s", msg.c_str());
+	printf("%s\n", msg.c_str());
 #endif
 }
 
@@ -47,7 +47,7 @@ void log_warning(const std::string& msg)
 	__android_log_write(ANDROID_LOG_WARNING, "Orbit", msg.c_str());
 
 #else
-	printf("\x1B[33m%s\x1B[0m", msg.c_str());
+	printf("\x1B[33m%s\x1B[0m\n", msg.c_str());
 #endif
 }
 
@@ -65,7 +65,7 @@ void log_error(const std::string& msg)
 	__android_log_write(ANDROID_LOG_ERROR, "Orbit", msg.c_str());
 
 #else
-	printf("\x1B[31m%s\x1B[0m", msg.c_str());
+	printf("\x1B[31m%s\x1B[0m\n", msg.c_str());
 #endif
 }
 
