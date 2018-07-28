@@ -25,6 +25,8 @@
 #include <EGL/egl.h>
 #elif defined(ORB_OS_LINUX)
 #include <GL/glx.h>
+#elif defined(ORB_OS_MACOS)
+#include <OpenGL/gl.h>
 #endif
 
 namespace orb

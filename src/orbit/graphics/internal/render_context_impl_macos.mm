@@ -17,7 +17,60 @@
 
 #include "render_context_impl.h"
 
+#include <Cocoa/Cocoa.h>
+#include <OpenGL/OpenGL.h>
+
+#include "orbit/core/internal/window_impl.h"
+
 namespace orb
 {
+
+render_context_impl::render_context_impl(const window_impl& parentWindowImpl)
+{
+	/* Choose pixel format. */
+	const NSOpenGLPixelFormatAttribute attribs[] =
+	{
+		NSOpenGLPFADoubleBuffer,
+		NSOpenGLPFAColorSize, 24,
+		NSOpenGLPFADepthSize, 24,
+		0
+	};
+	NSOpenGLPixelFormat* pixelFormat = [NSOpenGLPixelFormat alloc];
+	[pixelFormat initWithAttributes:attribs];
+	
+	/* Create OpenGL view. */
+	NSView* view = [(NSWindow*)parentWindowImpl.window() contentView];
+	NSOpenGLView* glView = [NSOpenGLView alloc];
+	[glView initWithFrame:[view frame] pixelFormat:pixelFormat];
+	[glView prepareOpenGL];
+	[view addSubview:glView];
+	m_glView = glView;
+}
+
+render_context_impl::~render_context_impl()
+{
+	[(NSOpenGLView*)m_glView removeFromSuperview];
+	[(NSOpenGLView*)m_glView dealloc];
+}
+
+void render_context_impl::make_current(const window_impl&)
+{
+	[[(NSOpenGLView*)m_glView openGLContext] makeCurrentContext];
+}
+
+void render_context_impl::swap_buffers(const window_impl&)
+{
+	[[(NSOpenGLView*)m_glView openGLContext] flushBuffer];
+}
+
+void render_context_impl::reset_current()
+{
+	[NSOpenGLContext clearCurrentContext];
+}
+
+bool render_context_impl::is_current() const
+{
+	return ([NSOpenGLContext currentContext] == [(NSOpenGLView*)m_glView openGLContext]);
+}
 
 }

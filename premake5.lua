@@ -136,7 +136,7 @@ decl_module("Core")
   filter{"system:macosx"} links{"Cocoa.framework"}
 decl_module("Graphics")
   filter{"system:windows"} links{"opengl32"}
-  filter{"system:macosx"} links{"OpenGL.framework"}
+  filter{"system:macosx"} links{"Cocoa.framework", "OpenGL.framework"}
 
 -- Samples
 decl_sample("Base")

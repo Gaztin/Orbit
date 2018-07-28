@@ -52,6 +52,9 @@ public:
 #elif defined(ORB_OS_LINUX)
 	Display* display() const { return m_display; }
 	Window window() const { return m_window; }
+	
+#elif defined(ORB_OS_MACOS)
+	void* window() const { return m_window; }
 #endif
 
 private:
