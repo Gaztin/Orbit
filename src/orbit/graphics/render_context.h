@@ -45,10 +45,9 @@ public:
 	void swap_buffers(const window& parentWindow);
 	void clear(uint32_t mask);
 	void set_clear_color(float r, float g, float b);
+	void reset_current();
 
 	bool is_current() const;
-
-	static void reset_current();
 };
 
 }

@@ -40,10 +40,9 @@ public:
 
 	void make_current(const window_impl& parentWindowImpl);
 	void swap_buffers(const window_impl& parentWindowImpl);
+	void reset_current();
 
 	bool is_current() const;
-
-	static void reset_current();
 
 private:
 #if defined(ORB_OS_WINDOWS)
@@ -55,8 +54,9 @@ private:
 	EGLContext m_context;
 
 #elif defined(ORB_OS_LINUX)
+	GLXContext create_glx_context(Display* display);
+	
 	Display*   m_display;
-	Window     m_window;
 	GC         m_gc;
 	GLXContext m_context;
 

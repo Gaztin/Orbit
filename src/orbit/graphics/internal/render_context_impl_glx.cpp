@@ -17,7 +17,62 @@
 
 #include "render_context_impl.h"
 
+#include <assert.h>
+
+#include "orbit/core/internal/window_impl.h"
+
 namespace orb
 {
 
+render_context_impl::render_context_impl(const window_impl& parentWindowImpl)
+	: m_display(parentWindowImpl.display())
+	, m_gc(XCreateGC(parentWindowImpl.display(), parentWindowImpl.window(), 0, nullptr))
+	, m_context(create_glx_context(parentWindowImpl.display()))
+{
 }
+
+render_context_impl::~render_context_impl()
+{
+	glXDestroyContext(m_display, m_context);
+	XFreeGC(m_display, m_gc);
+}
+
+void render_context_impl::make_current(const window_impl& parentWindowImpl)
+{
+	assert(m_display == parentWindowImpl.display());
+	glXMakeCurrent(m_display, parentWindowImpl.window(), m_context);
+}
+
+void render_context_impl::swap_buffers(const window_impl& parentWindowImpl)
+{
+	assert(m_display == parentWindowImpl.display());
+	glXSwapBuffers(m_display, parentWindowImpl.window());
+}
+
+void render_context_impl::reset_current()
+{
+	glXMakeCurrent(m_display, None, nullptr);
+}
+
+bool render_context_impl::is_current() const
+{
+	return (glXGetCurrentContext() == m_context);
+}
+
+GLXContext render_context_impl::create_glx_context(Display* display)
+{
+	int screen = DefaultScreen(display);
+	int attribs[] =
+	{
+		GLX_DOUBLEBUFFER,
+		GLX_RGBA,
+		GLX_DEPTH_SIZE, 24,
+		None
+	};
+	XVisualInfo* visualInfo = glXChooseVisual(display, screen, attribs);
+	GLXContext context = glXCreateContext(display, visualInfo, nullptr, true);
+	return context;
+}
+
+}
+

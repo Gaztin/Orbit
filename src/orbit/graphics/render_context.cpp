@@ -76,7 +76,7 @@ bool render_context::is_current() const
 
 void render_context::reset_current()
 {
-	render_context_impl::reset_current();
+	impl().reset_current();
 }
 
 }

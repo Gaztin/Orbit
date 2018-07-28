@@ -42,14 +42,14 @@ void render_context_impl::swap_buffers(const window_impl& parentWindowImpl)
 	SwapBuffers(parentWindowImpl.hdc());
 }
 
-bool render_context_impl::is_current() const
-{
-	return (wglGetCurrentContext() == m_hglrc);
-}
-
 void render_context_impl::reset_current()
 {
 	wglMakeCurrent(nullptr, nullptr);
+}
+
+bool render_context_impl::is_current() const
+{
+	return (wglGetCurrentContext() == m_hglrc);
 }
 
 }
