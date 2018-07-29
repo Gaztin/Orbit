@@ -4,7 +4,7 @@
 
 int main(int /*argc*/, char* /*argv*/[])
 {
-	orb::log_info("Started!\n");
+	orb::log_info("Started!");
 
 	orb::window w(800, 600);
 	orb::render_context rc(w, orb::graphics_api::DeviceDefault);

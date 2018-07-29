@@ -17,7 +17,9 @@
 
 #include "log.h"
 
-#if defined(ORB_OS_ANDROID)
+#if defined(ORB_OS_WINDOWS)
+#include <windows.h>
+#elif defined(ORB_OS_ANDROID)
 #include <android/log.h>
 #endif
 
@@ -29,7 +31,43 @@ void log_info(const std::string& msg)
 #if defined(ORB_OS_ANDROID)
 	__android_log_write(ANDROID_LOG_INFO, "Orbit", msg.c_str());
 #else
-	printf("%s", msg.c_str());
+	printf("%s\n", msg.c_str());
+#endif
+}
+
+void log_warning(const std::string& msg)
+{
+#if defined(ORB_OS_WINDOWS)
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO oldBufferInfo;
+	GetConsoleScreenBufferInfo(h, &oldBufferInfo);
+	SetConsoleTextAttribute(h, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN);
+	printf("%s\n", msg.c_str());
+	SetConsoleTextAttribute(h, oldBufferInfo.wAttributes);
+
+#elif defined(ORB_OS_ANDROID)
+	__android_log_write(ANDROID_LOG_WARNING, "Orbit", msg.c_str());
+
+#else
+	printf("\x1B[33m%s\x1B[0m\n", msg.c_str());
+#endif
+}
+
+void log_error(const std::string& msg)
+{
+#if defined(ORB_OS_WINDOWS)
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO oldBufferInfo;
+	GetConsoleScreenBufferInfo(h, &oldBufferInfo);
+	SetConsoleTextAttribute(h, FOREGROUND_INTENSITY | FOREGROUND_RED);
+	printf("%s\n", msg.c_str());
+	SetConsoleTextAttribute(h, oldBufferInfo.wAttributes);
+
+#elif defined(ORB_OS_ANDROID)
+	__android_log_write(ANDROID_LOG_ERROR, "Orbit", msg.c_str());
+
+#else
+	printf("\x1B[31m%s\x1B[0m\n", msg.c_str());
 #endif
 }
 
