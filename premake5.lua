@@ -41,7 +41,7 @@ local function base_config()
 	targetdir      ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
 	includedirs    {"src/"}
 	sysincludedirs {"src/"}
-	cppdialect     ("C++14")
+	cppdialect     ("C++17")
 	warnings       ("Extra")
 	filter{"configurations:Debug"}
 	optimize       ("Off")
