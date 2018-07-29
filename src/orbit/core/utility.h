@@ -21,6 +21,9 @@
 namespace orb
 {
 
+template<typename T>
+struct false_type : std::false_type { };
+
 template<typename T, size_t c>
 constexpr size_t count_of(T(&)[c])
 {
@@ -32,13 +35,13 @@ Dst cast(Src src)
 {
 	if constexpr (std::is_convertible<Src, Dst>::value)
 		return static_cast<Dst>(src);
-	else if constexpr (std::is_convertible<std::remove_const<Src>::type, std::remove_const<Dst>::type>::value)
+	else if constexpr (std::is_convertible<typename std::remove_const<Src>::type, typename std::remove_const<Dst>::type>::value)
 		return const_cast<Dst>(src);
 	else if constexpr (std::is_pointer<Src>::value && std::is_pointer<Dst>::value)
 		return reinterpret_cast<Dst>(src);
 	else if constexpr (std::is_reference<Src>::value && std::is_reference<Dst>::value)
 		return reinterpret_cast<Dst>(src);
-	else static_assert(false, "Invalid cast");
+	else static_assert(false_type<Src>::value, "Invalid cast");
 }
 
 }

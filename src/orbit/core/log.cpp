@@ -46,7 +46,7 @@ void log_warning(const std::string& msg)
 	SetConsoleTextAttribute(h, oldBufferInfo.wAttributes);
 
 #elif defined(ORB_OS_ANDROID)
-	__android_log_write(ANDROID_LOG_WARNING, "Orbit", msg.c_str());
+	__android_log_write(ANDROID_LOG_WARN, "Orbit", msg.c_str());
 
 #else
 	printf("\x1B[33m%s\x1B[0m\n", msg.c_str());
