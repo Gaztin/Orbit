@@ -23,6 +23,7 @@
 #include <gl/GL.h>
 #elif defined(ORB_OS_ANDROID)
 #include <EGL/egl.h>
+#include <GLES/gl.h>
 #elif defined(ORB_OS_LINUX)
 #include <GL/glx.h>
 #elif defined(ORB_OS_MACOS)
@@ -51,6 +52,10 @@ private:
 	HGLRC m_hglrc;
 
 #elif defined(ORB_OS_ANDROID)
+	EGLDisplay create_display() const;
+	EGLSurface create_surface() const;
+	EGLContext create_context() const;
+
 	EGLDisplay m_display;
 	EGLSurface m_surface;
 	EGLContext m_context;
