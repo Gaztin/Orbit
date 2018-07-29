@@ -76,14 +76,24 @@ local function foreach_system_keywords(os, functor)
 	end
 end
 
-local function remove_system_files()
+local function filter_system_files()
 	foreach_system(function(os)
+		-- Exclude files containing keywords from other systems
 		filter{"system:not " .. os}
 		foreach_system_keywords(os, function(keyword)
-			removefiles {
-				"src/**" .. keyword .. "_**",
-				"src/**_" .. keyword .. "**",
-			}
+			-- Keywords may appear in multiple systems
+			local target_has_keyword = false
+			foreach_system_keywords(_TARGET_OS, function(keyword2)
+				if (keyword2 == keyword) then
+					target_has_keyword = true
+				end
+			end)
+			if not target_has_keyword then
+				removefiles {
+					"src/**" .. keyword .. "_**",
+					"src/**_" .. keyword .. "**",
+				}
+			end
 		end)
 	end)
 end
@@ -105,7 +115,7 @@ local function decl_module(name)
 		"src/orbit/" .. lo .. "/**.h",
 	}
 	filter{"system:macosx"} files{"src/orbit/" .. lo .. "/**.mm"} filter{}
-	remove_system_files()
+	filter_system_files()
 	group()
 	table.insert(modules, name)
 end
@@ -122,7 +132,7 @@ local function decl_sample(name)
 		"src/samples/" .. id .. "/**.cpp",
 		"src/samples/" .. id .. "/**.h",
 	}
-	remove_system_files()
+	filter_system_files()
 	group()
 	sample_index = sample_index + 1
 end
