@@ -150,4 +150,6 @@ decl_module("Graphics")
 
 -- Samples
 decl_sample("Base")
-filter{"system:linux"} links{"X11", "GL"}
+  filter{"system:linux"} links{"X11", "GL"}
+decl_sample("Benchmarking")
+  filter{"system:linux"} links{"X11", "GL"}
