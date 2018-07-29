@@ -15,7 +15,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "render_context_impl.h"
+#include "render_context_opengl_impl.h"
 
 #include <Cocoa/Cocoa.h>
 #include <OpenGL/OpenGL.h>
@@ -25,7 +25,7 @@
 namespace orb
 {
 
-render_context_impl::render_context_impl(const window_impl& parentWindowImpl)
+render_context_opengl_impl::render_context_opengl_impl(const window_impl& parentWindowImpl)
 {
 	/* Choose pixel format. */
 	const NSOpenGLPixelFormatAttribute attribs[] =
@@ -47,28 +47,28 @@ render_context_impl::render_context_impl(const window_impl& parentWindowImpl)
 	m_glView = glView;
 }
 
-render_context_impl::~render_context_impl()
+render_context_opengl_impl::~render_context_opengl_impl()
 {
 	[(NSOpenGLView*)m_glView removeFromSuperview];
 	[(NSOpenGLView*)m_glView dealloc];
 }
 
-void render_context_impl::make_current(const window_impl&)
+void render_context_opengl_impl::make_current(const window_impl&)
 {
 	[[(NSOpenGLView*)m_glView openGLContext] makeCurrentContext];
 }
 
-void render_context_impl::swap_buffers(const window_impl&)
+void render_context_opengl_impl::swap_buffers(const window_impl&)
 {
 	[[(NSOpenGLView*)m_glView openGLContext] flushBuffer];
 }
 
-void render_context_impl::reset_current()
+void render_context_opengl_impl::reset_current()
 {
 	[NSOpenGLContext clearCurrentContext];
 }
 
-bool render_context_impl::is_current() const
+bool render_context_opengl_impl::is_current() const
 {
 	return ([NSOpenGLContext currentContext] == [(NSOpenGLView*)m_glView openGLContext]);
 }

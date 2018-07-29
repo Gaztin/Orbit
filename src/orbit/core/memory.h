@@ -16,55 +16,24 @@
 */
 
 #pragma once
+#include <memory>
+
 #include "orbit.h"
 
 #if defined(ORB_OS_WINDOWS)
 #include <windows.h>
-#include <gl/GL.h>
-#elif defined(ORB_OS_ANDROID)
-#include <EGL/egl.h>
-#elif defined(ORB_OS_LINUX)
-#include <GL/glx.h>
-#elif defined(ORB_OS_MACOS)
-#include <OpenGL/gl.h>
-#endif
 
 namespace orb
 {
 
-class window_impl;
-
-class ORB_DLL_LOCAL render_context_impl
+struct com_deleter
 {
-public:
-	render_context_impl(const window_impl& parentWindowImpl);
-	~render_context_impl();
-
-	void make_current(const window_impl& parentWindowImpl);
-	void swap_buffers(const window_impl& parentWindowImpl);
-	void reset_current();
-
-	bool is_current() const;
-
-private:
-#if defined(ORB_OS_WINDOWS)
-	HGLRC m_hglrc;
-
-#elif defined(ORB_OS_ANDROID)
-	EGLDisplay m_display;
-	EGLSurface m_surface;
-	EGLContext m_context;
-
-#elif defined(ORB_OS_LINUX)
-	GLXContext create_glx_context(Display* display);
-	
-	Display*   m_display;
-	GC         m_gc;
-	GLXContext m_context;
-
-#elif defined(ORB_OS_MACOS)
-	void* m_glView;
-#endif
+	void operator()(IUnknown* ptr) const { if (ptr) ptr->Release(); }
 };
 
+template<typename T>
+using com_ptr = std::unique_ptr<T, com_deleter>;
+
 }
+
+#endif

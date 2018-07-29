@@ -63,7 +63,7 @@ end
 
 local function foreach_system_keywords(os, functor)
 	local keywords = {
-		["windows"] = {"windows", "win32", "wgl"},
+		["windows"] = {"windows", "win32", "wgl", "d3d11"},
 		["android"] = {"android", "egl"},
 		["linux"]   = {"linux", "x11", "glx"},
 		["macosx"]  = {"macos", "cocoa"},
@@ -145,7 +145,7 @@ configurations {"Debug", "Release"}
 decl_module("Core")
   filter{"system:macosx"} links{"Cocoa.framework"}
 decl_module("Graphics")
-  filter{"system:windows"} links{"opengl32"}
+  filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
   filter{"system:macosx"} links{"Cocoa.framework", "OpenGL.framework"}
 
 -- Samples

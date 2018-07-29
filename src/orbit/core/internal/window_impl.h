@@ -47,6 +47,7 @@ public:
 	inline bool is_open() const { return m_open; }
 
 #if defined(ORB_OS_WINDOWS)
+	HWND hwnd() const { return m_hwnd; }
 	HDC hdc() const { return m_hdc; }
 	
 #elif defined(ORB_OS_LINUX)

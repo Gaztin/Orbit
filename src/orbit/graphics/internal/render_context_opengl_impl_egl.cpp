@@ -15,41 +15,9 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "render_context_impl.h"
-
-#include "orbit/core/internal/window_impl.h"
+#include "render_context_opengl_impl.h"
 
 namespace orb
 {
-
-render_context_impl::render_context_impl(const window_impl& parentWindowImpl)
-	: m_hglrc(wglCreateContext(parentWindowImpl.hdc()))
-{
-}
-
-render_context_impl::~render_context_impl()
-{
-	wglDeleteContext(m_hglrc);
-}
-
-void render_context_impl::make_current(const window_impl& parentWindowImpl)
-{
-	wglMakeCurrent(parentWindowImpl.hdc(), m_hglrc);
-}
-
-void render_context_impl::swap_buffers(const window_impl& parentWindowImpl)
-{
-	SwapBuffers(parentWindowImpl.hdc());
-}
-
-void render_context_impl::reset_current()
-{
-	wglMakeCurrent(nullptr, nullptr);
-}
-
-bool render_context_impl::is_current() const
-{
-	return (wglGetCurrentContext() == m_hglrc);
-}
 
 }

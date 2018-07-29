@@ -15,7 +15,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "render_context_impl.h"
+#include "render_context_opengl_impl.h"
 
 #include <assert.h>
 
@@ -24,42 +24,42 @@
 namespace orb
 {
 
-render_context_impl::render_context_impl(const window_impl& parentWindowImpl)
+render_context_opengl_impl::render_context_opengl_impl(const window_impl& parentWindowImpl)
 	: m_display(parentWindowImpl.display())
 	, m_gc(XCreateGC(parentWindowImpl.display(), parentWindowImpl.window(), 0, nullptr))
 	, m_context(create_glx_context(parentWindowImpl.display()))
 {
 }
 
-render_context_impl::~render_context_impl()
+render_context_opengl_impl::~render_context_opengl_impl()
 {
 	glXDestroyContext(m_display, m_context);
 	XFreeGC(m_display, m_gc);
 }
 
-void render_context_impl::make_current(const window_impl& parentWindowImpl)
+void render_context_opengl_impl::make_current(const window_impl& parentWindowImpl)
 {
 	assert(m_display == parentWindowImpl.display());
 	glXMakeCurrent(m_display, parentWindowImpl.window(), m_context);
 }
 
-void render_context_impl::swap_buffers(const window_impl& parentWindowImpl)
+void render_context_opengl_impl::swap_buffers(const window_impl& parentWindowImpl)
 {
 	assert(m_display == parentWindowImpl.display());
 	glXSwapBuffers(m_display, parentWindowImpl.window());
 }
 
-void render_context_impl::reset_current()
+void render_context_opengl_impl::reset_current()
 {
 	glXMakeCurrent(m_display, None, nullptr);
 }
 
-bool render_context_impl::is_current() const
+bool render_context_opengl_impl::is_current() const
 {
 	return (glXGetCurrentContext() == m_context);
 }
 
-GLXContext render_context_impl::create_glx_context(Display* display)
+GLXContext render_context_opengl_impl::create_glx_context(Display* display)
 {
 	int screen = DefaultScreen(display);
 	int attribs[] =

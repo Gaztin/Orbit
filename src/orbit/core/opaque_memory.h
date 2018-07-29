@@ -16,33 +16,43 @@
 */
 
 #pragma once
-#include "orbit/core.h"
-
+#include <type_traits>
 #include <utility>
 
 #include <stdint.h>
-#include <stdlib.h>
+
+#include "orbit/core.h"
 
 namespace orb
 {
 
-template<size_t width, typename T>
-class ORB_DLL_LOCAL opaque_memory
+template<size_t width>
+class ORB_DLL_LOCAL opaque
 {
 #if defined(ORB_BUILD)
 public:
-	opaque_memory(const opaque_memory&) = default;
-	opaque_memory(opaque_memory&&) = default;
-	template<typename... Args>
-	opaque_memory(Args&&... args) { new (m_memory) T(std::forward<Args>(args)...); }
-	~opaque_memory() { impl().~T(); }
+	template<typename T, typename... Args>
+	void construct(Args&&... args)
+	{
+		static_assert(sizeof(T) <= width, "Specified layout too large");
+		new (m_memory) T(std::forward<Args>(args)...);
+	}
 
+	template<typename T>
+	void destruct()
+	{
+		static_assert(sizeof(T) <= width, "Specified layout too large");
+		impl<T>().~T();
+	}
+
+	template<typename T>
 	T& impl()
 	{
 		static_assert(sizeof(T) <= width, "Specified layout too large");
 		return reinterpret_cast<T&>(*m_memory);
 	}
 
+	template<typename T>
 	const T& impl() const
 	{
 		static_assert(sizeof(T) <= width, "Specified layout too large");

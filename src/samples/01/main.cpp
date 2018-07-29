@@ -7,7 +7,7 @@ int main(int /*argc*/, char* /*argv*/[])
 	orb::log_info("Started!\n");
 
 	orb::window w(800, 600);
-	orb::render_context rc(w);
+	orb::render_context rc(w, orb::graphics_api::DeviceDefault);
 	w.set_title("Orbit sample #01");
 	w.show();
 	rc.make_current(w);
