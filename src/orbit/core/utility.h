@@ -18,11 +18,19 @@
 #pragma once
 #include <type_traits>
 
+#include "orbit/core.h"
+
 namespace orb
 {
 
 template<typename T>
 struct false_type : std::false_type { };
+
+template<typename T>
+struct in_place_type_t { };
+
+template<typename T>
+constexpr in_place_type_t<T> in_place_type { };
 
 template<typename T, size_t c>
 constexpr size_t count_of(T(&)[c])
