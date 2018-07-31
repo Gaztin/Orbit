@@ -41,14 +41,27 @@ constexpr size_t count_of(T(&)[c])
 template<typename Dst, typename Src>
 Dst cast(Src src)
 {
+	/* Can implicitly convert. */
 	if constexpr (std::is_convertible<Src, Dst>::value)
 		return static_cast<Dst>(src);
+
+	/* Can implicitly convert if const qualifier is removed from both. */
 	else if constexpr (std::is_convertible<typename std::remove_const<Src>::type, typename std::remove_const<Dst>::type>::value)
 		return const_cast<Dst>(src);
+
+	/* Both are pointers. */
 	else if constexpr (std::is_pointer<Src>::value && std::is_pointer<Dst>::value)
 		return reinterpret_cast<Dst>(src);
+
+	/* Both are references. */
 	else if constexpr (std::is_reference<Src>::value && std::is_reference<Dst>::value)
 		return reinterpret_cast<Dst>(src);
+
+	/* Sizes match. */
+	else if constexpr (sizeof(Src) == sizeof(Dst))
+		return reinterpret_cast<Dst>(src);
+
+	/* Invalid cast. */
 	else static_assert(false_type<Src>::value, "Invalid cast");
 }
 
