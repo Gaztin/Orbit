@@ -32,7 +32,7 @@ class window_impl;
 class ORB_DLL_LOCAL render_context_d3d11_impl
 {
 public:
-	render_context_d3d11_impl(const window_impl& parentWindowImpl);
+	explicit render_context_d3d11_impl(const window_impl& parentWindowImpl);
 
 	void swap_buffers();
 	void set_clear_color(float r, float g, float b, float a);

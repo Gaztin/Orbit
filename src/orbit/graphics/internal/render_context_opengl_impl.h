@@ -38,7 +38,7 @@ class window_impl;
 class ORB_DLL_LOCAL render_context_opengl_impl
 {
 public:
-	render_context_opengl_impl(const window_impl& parentWindowImpl);
+	explicit render_context_opengl_impl(const window_impl& parentWindowImpl);
 	~render_context_opengl_impl();
 
 	void make_current(const window_impl& parentWindowImpl);
