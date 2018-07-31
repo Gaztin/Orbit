@@ -23,16 +23,16 @@ namespace orb
 window_impl::window_impl()
 	: m_display(XOpenDisplay(nullptr))
 	, m_window(create_xwindow(0, 0))
+	, m_open(m_window != 0)
 {
-	m_open = (m_window != 0);
 	set_delete_protocol();
 }
 
 window_impl::window_impl(uint32_t width, uint32_t height)
 	: m_display(XOpenDisplay(nullptr))
 	, m_window(create_xwindow(width, height))
+	, m_open(m_window != 0)
 {
-	m_open = (m_window != 0);
 	set_delete_protocol();
 }
 

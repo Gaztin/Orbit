@@ -21,6 +21,7 @@
 
 #include "orbit/core/android_app.h"
 #include "orbit/core/log.h"
+#include "orbit/core/utility.h"
 
 namespace orb
 {
@@ -28,6 +29,7 @@ namespace orb
 static int numWindows = 0;
 
 window_impl::window_impl()
+	: m_open(false)
 {
 	/* Android only allows for the single window. */
 	assert(++numWindows == 1);
@@ -73,8 +75,7 @@ void window_impl::set_visible(bool visible)
 
 void window_impl::app_cmd(android_app* state, int cmd)
 {
-	window_impl& w = *(window_impl*)state->userData;
-
+	window_impl& w = *cast<window_impl*>(state->userData);
 	switch (cmd)
 	{
 		case APP_CMD_INIT_WINDOW:

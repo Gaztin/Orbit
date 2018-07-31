@@ -17,7 +17,10 @@
 
 #include "window_impl.h"
 
+#include <assert.h>
 #include <windows.h>
+
+#include "orbit/core/utility.h"
 
 namespace orb
 {
@@ -27,19 +30,17 @@ constexpr LPCSTR className = "Orbit";
 ATOM window_impl::s_class = window_impl::create_window_class();
 
 window_impl::window_impl()
-	: m_open(false)
-	, m_hwnd(create_window(CW_USEDEFAULT, CW_USEDEFAULT))
+	: m_hwnd(create_window(CW_USEDEFAULT, CW_USEDEFAULT))
 	, m_hdc(format_device_context())
+	, m_open(m_hwnd != nullptr)
 {
-	m_open = (m_hwnd != nullptr);
 }
 
 window_impl::window_impl(uint32_t width, uint32_t height)
-	: m_open(false)
-	, m_hwnd(create_window(width, height))
+	: m_hwnd(create_window(width, height))
 	, m_hdc(format_device_context())
+	, m_open(m_hwnd != nullptr)
 {
-	m_open = (m_hwnd != nullptr);
 }
 
 window_impl::~window_impl()
@@ -82,7 +83,7 @@ ATOM window_impl::create_window_class()
 	classDesc.style         = CS_VREDRAW | CS_HREDRAW;
 	classDesc.lpfnWndProc   = &window_impl::wnd_proc;
 	classDesc.hInstance     = GetModuleHandleA(nullptr);
-	classDesc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW);
+	classDesc.hbrBackground = cast<HBRUSH>(cast<LONG_PTR>(COLOR_WINDOW));
 	classDesc.lpszClassName = className;
 
 	/* Extract and copy icon from application. */
@@ -95,11 +96,12 @@ ATOM window_impl::create_window_class()
 
 LRESULT window_impl::wnd_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	window_impl& impl = *reinterpret_cast<window_impl*>(GetWindowLongPtrA(hwnd, GWLP_USERDATA));
+	LONG_PTR userData = GetWindowLongPtrA(hwnd, GWLP_USERDATA);
 	switch (msg)
 	{
 		case WM_CLOSE:
-			impl.close();
+			assert(userData);
+			cast<window_impl*>(userData)->close();
 			break;
 
 		default:
@@ -126,7 +128,7 @@ HWND window_impl::create_window(int width, int height)
 		nullptr);
 
 	/* Set window user data. */
-	SetWindowLongPtrA(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+	SetWindowLongPtrA(hwnd, GWLP_USERDATA, cast<LONG_PTR>(this));
 
 	return hwnd;
 }

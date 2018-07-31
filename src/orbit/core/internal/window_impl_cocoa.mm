@@ -37,15 +37,15 @@ namespace orb
 window_impl::window_impl()
 	: m_window(create_nswindow(0, 0))
 	, m_delegate(create_delegate())
+	, m_open(m_window != nullptr)
 {
-	m_open = (m_window != nullptr);
 }
 
 window_impl::window_impl(uint32_t width, uint32_t height)
 	: m_window(create_nswindow(width, height))
 	, m_delegate(create_delegate())
+	, m_open(m_window != nullptr)
 {
-	m_open = (m_window != nullptr);
 }
 
 window_impl::~window_impl()
