@@ -28,9 +28,6 @@
 namespace orb
 {
 
-using opengl = render_context_opengl_impl;
-using d3d11 = render_context_d3d11_impl;
-
 static GLbitfield buffer_bits(uint32_t mask)
 {
 	GLbitfield bitfield = 0;
@@ -46,31 +43,12 @@ render_context::render_context(const window& parentWindow, graphics_api api)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			construct<opengl>(parentWindow.impl<window_impl>());
+			construct<render_context_opengl_impl>(parentWindow.ref<window_impl>());
 			break;
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			construct<d3d11>(parentWindow.impl<window_impl>());
-			break;
-#endif
-		default:
-			assert(false);
-	}
-}
-
-render_context::~render_context()
-{
-	switch (m_api)
-	{
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			destruct<opengl>();
-			break;
-#endif
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			destruct<d3d11>();
+			construct<render_context_d3d11_impl>(parentWindow.ref<window_impl>());
 			break;
 #endif
 		default:
@@ -84,7 +62,7 @@ void render_context::make_current(const window& parentWindow)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			impl<opengl>().make_current(parentWindow.impl<window_impl>());
+			ref<render_context_opengl_impl>().make_current(parentWindow.ref<window_impl>());
 			break;
 #endif
 		default:
@@ -98,12 +76,12 @@ void render_context::swap_buffers(const window& parentWindow)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			impl<opengl>().swap_buffers(parentWindow.impl<window_impl>());
+			ref<render_context_opengl_impl>().swap_buffers(parentWindow.ref<window_impl>());
 			break;
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			impl<d3d11>().swap_buffers();
+			ref<render_context_d3d11_impl>().swap_buffers();
 			break;
 #endif
 		default:
@@ -117,13 +95,13 @@ void render_context::clear(uint32_t mask)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			assert(impl<opengl>().is_current());
+			assert(ref<render_context_opengl_impl>().is_current());
 			glClear(buffer_bits(mask));
 			break;
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			impl<d3d11>().clear(mask);
+			ref<render_context_d3d11_impl>().clear(mask);
 			break;
 #endif
 		default:
@@ -137,13 +115,13 @@ void render_context::set_clear_color(float r, float g, float b)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			assert(impl<opengl>().is_current());
+			assert(ref<render_context_opengl_impl>().is_current());
 			glClearColor(r, g, b, 1.0f);
 			break;
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			impl<d3d11>().set_clear_color(r, g, b, 1.0f);
+			ref<render_context_d3d11_impl>().set_clear_color(r, g, b, 1.0f);
 			break;
 #endif
 		default:

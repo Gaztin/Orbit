@@ -16,7 +16,7 @@
 */
 
 #pragma once
-#include "orbit/core/opaque_memory.h"
+#include "orbit/core/variant.h"
 #include "orbit/graphics.h"
 
 namespace orb
@@ -46,11 +46,10 @@ enum
 };
 }
 
-class ORB_API_GRAPHICS render_context : public opaque<80>
+class ORB_API_GRAPHICS render_context : public variant<80>
 {
 public:
 	render_context(const window& parentWindow, graphics_api api);
-	~render_context();
 
 	void make_current(const window& parentWindow);
 	void swap_buffers(const window& parentWindow);

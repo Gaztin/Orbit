@@ -16,19 +16,18 @@
 */
 
 #pragma once
-#include "orbit/core/opaque_memory.h"
-
 #include <string>
+
+#include "orbit/core/variant.h"
 
 namespace orb
 {
 
-class ORB_API_CORE window : public opaque<32>
+class ORB_API_CORE window : public variant<64>
 {
 public:
 	window() = default;
 	window(uint32_t width, uint32_t height);
-	~window();
 
 	void poll_events();
 	void set_title(const std::string& title);

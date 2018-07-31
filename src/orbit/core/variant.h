@@ -16,53 +16,63 @@
 */
 
 #pragma once
-#include <type_traits>
-#include <utility>
-
+#include <assert.h>
 #include <stdint.h>
 
-#include "orbit/core.h"
+#include "orbit/core/utility.h"
 
 namespace orb
 {
 
-template<size_t width>
-class ORB_DLL_LOCAL opaque
+template<size_t size>
+class variant
 {
-#if defined(ORB_BUILD)
 public:
+	variant()
+		: m_deleter(nullptr)
+		, m_storage{}
+	{ }
+
+	template<typename T, typename... Args> variant(in_place_type_t<T>, Args&&... args)
+	{
+		construct<T, Args...>(std::forward<Args>(args)...);
+	}
+
+	~variant()
+	{
+		m_deleter(m_storage);
+	}
+
 	template<typename T, typename... Args>
-	void construct(Args&&... args)
+	T& construct(Args&&... args)
 	{
-		static_assert(sizeof(T) <= width, "Specified layout too large");
-		new (m_memory) T(std::forward<Args>(args)...);
+		assert(sizeof(T) <= size);
+		m_deleter = &delete_impl<T>;
+		return *(new (m_storage) T(std::forward<Args>(args)...));
 	}
 
 	template<typename T>
-	void destruct()
+	T& ref()
 	{
-		static_assert(sizeof(T) <= width, "Specified layout too large");
-		impl<T>().~T();
+		return *reinterpret_cast<T*>(m_storage);
 	}
 
 	template<typename T>
-	T& impl()
+	const T& ref() const
 	{
-		static_assert(sizeof(T) <= width, "Specified layout too large");
-		return reinterpret_cast<T&>(*m_memory);
+		return *reinterpret_cast<const T*>(m_storage);
 	}
-
-	template<typename T>
-	const T& impl() const
-	{
-		static_assert(sizeof(T) <= width, "Specified layout too large");
-		return reinterpret_cast<const T&>(*m_memory);
-	}
-
-#endif
 
 private:
-	uint8_t m_memory[width];
+	template<typename T>
+	static void delete_impl(uint8_t* ptr)
+	{
+		reinterpret_cast<T*>(ptr)->~T();
+	}
+
+	uint8_t m_storage[size];
+
+	void(*m_deleter)(uint8_t*);
 };
 
 }

@@ -23,43 +23,38 @@ namespace orb
 {
 
 window::window(uint32_t width, uint32_t height)
+	: variant(in_place_type<window_impl>, width, height)
 {
-	construct<window_impl>(width, height);
-}
-
-window::~window()
-{
-	destruct<window_impl>();
 }
 
 void window::poll_events()
 {
-	impl<window_impl>().poll_events();
+	ref<window_impl>().poll_events();
 }
 
 void window::set_title(const std::string& title)
 {
-	impl<window_impl>().set_title(title);
+	ref<window_impl>().set_title(title);
 }
 
 void window::set_pos(uint32_t x, uint32_t y)
 {
-	impl<window_impl>().set_pos(x, y);
+	ref<window_impl>().set_pos(x, y);
 }
 
 void window::show()
 {
-	impl<window_impl>().set_visible(true);
+	ref<window_impl>().set_visible(true);
 }
 
 void window::hide()
 {
-	impl<window_impl>().set_visible(false);
+	ref<window_impl>().set_visible(false);
 }
 
 window::operator bool() const
 {
-	return impl<window_impl>().is_open();
+	return ref<window_impl>().is_open();
 }
 
 }
