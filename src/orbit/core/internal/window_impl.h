@@ -41,6 +41,7 @@ public:
 	void poll_events();
 	void set_title(const std::string& title);
 	void set_pos(uint32_t x, uint32_t y);
+	void set_size(uint32_t width, uint32_t height);
 	void set_visible(bool visible);
 
 	inline void close() { m_open = false; }

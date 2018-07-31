@@ -79,6 +79,14 @@ void window_impl::set_pos(uint32_t x, uint32_t y)
 	[(NSWindow*)m_window setFrame:frame display:YES];
 }
 
+void window_impl::set_size(uint32_t width, uint32_t height)
+{
+	NSRect frame = [(NSWindow*)m_window frame];
+	frame.size.width = width;
+	frame.size.height = height;
+	[(NSWindow*)m_window setFrame:frame display:YES];
+}
+
 void window_impl::set_visible(bool visible)
 {
 	[(NSWindow*)m_window setIsVisible:visible];

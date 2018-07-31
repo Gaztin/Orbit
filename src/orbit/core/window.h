@@ -26,12 +26,13 @@ namespace orb
 class ORB_API_CORE window : public variant<64>
 {
 public:
-	window() = default;
+	window();
 	window(uint32_t width, uint32_t height);
 
 	void poll_events();
 	void set_title(const std::string& title);
 	void set_pos(uint32_t x, uint32_t y);
+	void set_size(uint32_t width, uint32_t height);
 	void show();
 	void hide();
 

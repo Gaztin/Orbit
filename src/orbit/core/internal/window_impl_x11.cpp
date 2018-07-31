@@ -62,6 +62,11 @@ void window_impl::set_pos(uint32_t x, uint32_t y)
 	XMoveWindow(m_display, m_window, x, y);
 }
 
+void window_impl::set_size(uint32_t width, uint32_t height)
+{
+	XResizeWindow(m_display, m_window, width, height);
+}
+
 void window_impl::set_visible(bool visible)
 {
 	if (visible)

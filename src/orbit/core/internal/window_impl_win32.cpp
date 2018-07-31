@@ -71,6 +71,13 @@ void window_impl::set_pos(uint32_t x, uint32_t y)
 	MoveWindow(m_hwnd, x, y, (rect.right - rect.left), (rect.top - rect.bottom), true);
 }
 
+void window_impl::set_size(uint32_t width, uint32_t height)
+{
+	RECT rect;
+	GetWindowRect(m_hwnd, &rect);
+	MoveWindow(m_hwnd, rect.left, rect.top, width, height, true);
+}
+
 void window_impl::set_visible(bool visible)
 {
 	ShowWindow(m_hwnd, visible ? SW_SHOW : SW_HIDE);

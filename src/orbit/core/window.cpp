@@ -22,6 +22,11 @@
 namespace orb
 {
 
+window::window()
+	: variant(in_place_type<window_impl>)
+{
+}
+
 window::window(uint32_t width, uint32_t height)
 	: variant(in_place_type<window_impl>, width, height)
 {
@@ -40,6 +45,11 @@ void window::set_title(const std::string& title)
 void window::set_pos(uint32_t x, uint32_t y)
 {
 	ref<window_impl>().set_pos(x, y);
+}
+
+void window::set_size(uint32_t width, uint32_t height)
+{
+	ref<window_impl>().set_size(width, height);
 }
 
 void window::show()

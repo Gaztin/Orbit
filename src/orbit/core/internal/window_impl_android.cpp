@@ -69,6 +69,10 @@ void window_impl::set_pos(uint32_t x, uint32_t y)
 {
 }
 
+void window_impl::set_size(uint32_t width, uint32_t height)
+{
+}
+
 void window_impl::set_visible(bool visible)
 {
 }
