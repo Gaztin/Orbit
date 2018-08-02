@@ -7,7 +7,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE     := orbit_core
 LOCAL_SRC_FILES  := $(wildcard $(LOCAL_PATH)/../../../../src/orbit/core/*.cpp) \
                     $(wildcard $(LOCAL_PATH)/../../../../src/orbit/core/internal/*_android.cpp)
-LOCAL_CPPFLAGS   := -std=c++1z -DORB_BUILD
+LOCAL_CPPFLAGS   := -std=c++1z -Wall -DORB_BUILD
 LOCAL_LDLIBS     := -llog -landroid
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../src/ \
                     $(NDK_ROOT)/sources/android/native_app_glue/
@@ -18,7 +18,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE           := orbit_graphics
 LOCAL_SRC_FILES        := $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/*.cpp) \
                           $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/internal/*_egl.cpp)
-LOCAL_CPPFLAGS         := -std=c++1z -DORB_BUILD
+LOCAL_CPPFLAGS         := -std=c++1z -Wall -DORB_BUILD
 LOCAL_LDLIBS           := -landroid -lEGL -lGLESv1_CM
 LOCAL_C_INCLUDES       := $(LOCAL_PATH)/../../../../src/ \
                           $(NDK_ROOT)/sources/android/native_app_glue/
@@ -29,7 +29,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE           := orb01
 LOCAL_SRC_FILES        := $(call rwildcard, $(LOCAL_PATH)/../../../../src/samples/01/, *.cpp)
-LOCAL_CPPFLAGS         := -std=c++1z -DORB_BUILD
+LOCAL_CPPFLAGS         := -std=c++1z -Wall -DORB_BUILD
 LOCAL_C_INCLUDES       := $(LOCAL_PATH)/../../../../src/
 LOCAL_SHARED_LIBRARIES := orbit_core orbit_graphics
 LOCAL_STATIC_LIBRARIES := android_native_app_glue
