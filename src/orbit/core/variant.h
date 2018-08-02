@@ -29,8 +29,8 @@ class variant
 {
 public:
 	variant()
-		: m_deleter(nullptr)
-		, m_storage{}
+		: m_storage{}
+		, m_deleter(nullptr)
 	{ }
 
 	template<typename T, typename... Args> variant(in_place_type_t<T>, Args&&... args)
