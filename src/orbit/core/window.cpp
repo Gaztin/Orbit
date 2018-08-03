@@ -25,11 +25,13 @@ namespace orb
 window::window()
 	: variant(in_place_type<window_impl>)
 {
+	ref<window_impl>().set_event_dispatcher(cast<window_impl::event_dispatcher_t*>(this));
 }
 
 window::window(uint32_t width, uint32_t height)
 	: variant(in_place_type<window_impl>, width, height)
 {
+	ref<window_impl>().set_event_dispatcher(cast<window_impl::event_dispatcher_t*>(this));
 }
 
 void window::poll_events()

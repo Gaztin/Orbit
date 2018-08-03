@@ -57,7 +57,6 @@ public:
 		}
 	}
 
-protected:
 	void send_event(const EventType& e)
 	{
 		for (subscriber_t& subscriber : m_subscribers)

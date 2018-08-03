@@ -18,12 +18,15 @@
 #pragma once
 #include <string>
 
+#include "orbit/core/event_dispatcher.h"
 #include "orbit/core/variant.h"
 
 namespace orb
 {
 
-class ORB_API_CORE window : public variant<64>
+struct window_event_t;
+
+class ORB_API_CORE window : public variant<64>, public event_dispatcher<window_event_t>
 {
 public:
 	window();
@@ -37,6 +40,24 @@ public:
 	void hide();
 
 	operator bool() const;
+};
+
+struct window_event_t
+{
+	enum class type_t
+	{
+		None = 0,
+		Move,
+		Resize,
+	};
+	union data_t
+	{
+		struct move_t { float x, y; } move;
+		struct resize_t { float w, h; } resize;
+	};
+
+	type_t type;
+	data_t data;
 };
 
 }
