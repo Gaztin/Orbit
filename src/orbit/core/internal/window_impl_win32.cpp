@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <windows.h>
 
+#include "orbit/core/events/window_event.h"
 #include "orbit/core/utility.h"
 
 namespace orb
@@ -113,7 +114,7 @@ LRESULT window_impl::wnd_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_MOVE:
 		{
 			window_event e;
-			e.type = window_event::type_t::Move;
+			e.type = window_event::Move;
 			e.data.move.x = cast<float>(LOWORD(lParam));
 			e.data.move.y = cast<float>(HIWORD(lParam));
 			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
@@ -123,7 +124,7 @@ LRESULT window_impl::wnd_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_SIZE:
 		{
 			window_event e;
-			e.type = window_event::type_t::Resize;
+			e.type = window_event::Resize;
 			e.data.resize.w = cast<float>(LOWORD(lParam));
 			e.data.resize.h = cast<float>(HIWORD(lParam));
 			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);

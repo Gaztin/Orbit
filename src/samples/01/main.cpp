@@ -1,3 +1,4 @@
+#include <orbit/core/events/window_event.h>
 #include <orbit/core/log.h>
 #include <orbit/core/stringf.h>
 #include <orbit/core/window.h>
@@ -10,14 +11,13 @@ int main(int /*argc*/, char* /*argv*/[])
 	orb::window w(800, 600);
 	w.subscribe([](const orb::window_event& e)
 	{
-
 		switch (e.type)
 		{
-			case orb::window_event::type_t::Resize:
+			case orb::window_event::Resize:
 				orb::log_info(orb::stringf("Resized: (%.1f, %.1f)", e.data.resize.w, e.data.resize.h));
 				break;
 
-			case orb::window_event::type_t::Move:
+			case orb::window_event::Move:
 				orb::log_info(orb::stringf("Moved: (%.1f, %.1f)", e.data.move.x, e.data.move.y));
 				break;
 

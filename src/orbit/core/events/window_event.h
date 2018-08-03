@@ -16,30 +16,29 @@
 */
 
 #pragma once
-#include <string>
-
-#include "orbit/core/event_dispatcher.h"
-#include "orbit/core/variant.h"
 
 namespace orb
 {
 
-struct window_event;
-
-class ORB_API_CORE window : public variant<64>, public event_dispatcher<window_event>
+struct window_event
 {
-public:
-	window();
-	window(uint32_t width, uint32_t height);
+	enum
+	{
+		None = 0,
+		Move,
+		Resize,
+		Defocus,
+		Focus,
+		Suspend,
+		Restore,
+		Close,
+	} type;
 
-	void poll_events();
-	void set_title(const std::string& title);
-	void set_pos(uint32_t x, uint32_t y);
-	void set_size(uint32_t width, uint32_t height);
-	void show();
-	void hide();
-
-	operator bool() const;
+	union
+	{
+		struct move_t { float x, y; } move;
+		struct resize_t { float w, h; } resize;
+	} data;
 };
 
 }

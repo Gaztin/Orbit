@@ -20,6 +20,7 @@
 #include <cassert>
 
 #include "orbit/core/android_app.h"
+#include "orbit/core/events/window_event.h"
 #include "orbit/core/log.h"
 #include "orbit/core/utility.h"
 
@@ -104,7 +105,7 @@ void window_impl::app_cmd(android_app* state, int cmd)
 		case APP_CMD_WINDOW_RESIZED:
 		{
 			window_event e;
-			e.type = window_event::type_t ::Resize;
+			e.type = window_event::Resize;
 			e.data.resize.w = cast<float>(ANativeWindow_getWidth(android_only::app->window));
 			e.data.resize.h = cast<float>(ANativeWindow_getHeight(android_only::app->window));
 			w.m_eventDispatcher->send_event(e);
