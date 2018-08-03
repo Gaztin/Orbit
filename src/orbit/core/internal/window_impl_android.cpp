@@ -28,8 +28,11 @@ namespace orb
 
 static int numWindows = 0;
 
+static event_dispatcher<window_event> defaultEventDispatcher;
+
 window_impl::window_impl()
 	: m_open(false)
+	, m_eventDispatcher(&defaultEventDispatcher)
 {
 	/* Android only allows for the single window. */
 	assert(++numWindows == 1);

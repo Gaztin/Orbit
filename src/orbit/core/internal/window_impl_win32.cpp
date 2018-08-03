@@ -29,11 +29,13 @@ constexpr LPCSTR className = "Orbit";
 
 ATOM window_impl::s_class = window_impl::create_window_class();
 
+static event_dispatcher<window_event> defaultEventDispatcher;
+
 window_impl::window_impl()
 	: m_hwnd(create_window(CW_USEDEFAULT, CW_USEDEFAULT))
 	, m_hdc(format_device_context())
 	, m_open(m_hwnd != nullptr)
-	, m_eventDispatcher(nullptr)
+	, m_eventDispatcher(&defaultEventDispatcher)
 {
 }
 
@@ -41,7 +43,7 @@ window_impl::window_impl(uint32_t width, uint32_t height)
 	: m_hwnd(create_window(width, height))
 	, m_hdc(format_device_context())
 	, m_open(m_hwnd != nullptr)
-	, m_eventDispatcher(nullptr)
+	, m_eventDispatcher(&defaultEventDispatcher)
 {
 }
 
