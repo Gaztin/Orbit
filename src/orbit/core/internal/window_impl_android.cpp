@@ -99,8 +99,21 @@ void window_impl::app_cmd(android_app* state, int cmd)
 	switch (cmd)
 	{
 		case APP_CMD_INIT_WINDOW:
+		{
 			w.m_open = true;
+			window_event e;
+			e.type = window_event::Restore;
+			w.m_eventDispatcher->send_event(e);
 			break;
+		}
+
+		case APP_CMD_TERM_WINDOW:
+		{
+			window_event e;
+			e.type = window_event::Suspend;
+			w.m_eventDispatcher->send_event(e);
+			break;
+		}
 
 		case APP_CMD_WINDOW_RESIZED:
 		{
@@ -113,13 +126,23 @@ void window_impl::app_cmd(android_app* state, int cmd)
 		}
 
 		case APP_CMD_GAINED_FOCUS:
+		{
 			ASensorEventQueue_enableSensor(w.m_sensorEventQueue, w.m_accelerometerSensor);
 			ASensorEventQueue_setEventRate(w.m_sensorEventQueue, w.m_accelerometerSensor, (1000 * 1000 / 60));
+			window_event e;
+			e.type = window_event::Focus;
+			w.m_eventDispatcher->send_event(e);
 			break;
+		}
 
 		case APP_CMD_LOST_FOCUS:
+		{
 			ASensorEventQueue_disableSensor(w.m_sensorEventQueue, w.m_accelerometerSensor);
+			window_event e;
+			e.type = window_event::Defocus;
+			w.m_eventDispatcher->send_event(e);
 			break;
+		}
 
 		case APP_CMD_DESTROY:
 			w.m_open = false;

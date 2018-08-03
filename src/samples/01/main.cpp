@@ -21,6 +21,26 @@ int main(int /*argc*/, char* /*argv*/[])
 				orb::log_info(orb::stringf("Moved: (%.1f, %.1f)", e.data.move.x, e.data.move.y));
 				break;
 
+			case orb::window_event::Defocus:
+				orb::log_info("Defocus");
+				break;
+
+			case orb::window_event::Focus:
+				orb::log_info("Focus");
+				break;
+
+			case orb::window_event::Suspend:
+				orb::log_info("Suspend");
+				break;
+
+			case orb::window_event::Restore:
+				orb::log_info("Restore");
+				break;
+
+			case orb::window_event::Close:
+				orb::log_info("Close");
+				break;
+
 			default:
 				break;
 		}

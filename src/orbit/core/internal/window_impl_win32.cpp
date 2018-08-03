@@ -131,10 +131,40 @@ LRESULT window_impl::wnd_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
+		case WM_ACTIVATE:
+			if (HIWORD(wParam) != 0)
+			{
+				window_event e;
+				e.type = (LOWORD(wParam) == WA_INACTIVE) ? window_event::Suspend : window_event::Restore;
+				cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			}
+			break;
+
+		case WM_SETFOCUS:
+		{
+			window_event e;
+			e.type = window_event::Focus;
+			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			break;
+		}
+
+		case WM_KILLFOCUS:
+		{
+			window_event e;
+			e.type = window_event::Defocus;
+			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			break;
+		}
+
 		case WM_CLOSE:
+		{
 			assert(userData);
 			cast<window_impl*>(userData)->close();
+			window_event e;
+			e.type = window_event::Close;
+			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
 			break;
+		}
 
 		default:
 			break;
