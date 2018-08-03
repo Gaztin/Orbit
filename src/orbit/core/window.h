@@ -24,9 +24,9 @@
 namespace orb
 {
 
-struct window_event_t;
+struct window_event;
 
-class ORB_API_CORE window : public variant<64>, public event_dispatcher<window_event_t>
+class ORB_API_CORE window : public variant<64>, public event_dispatcher<window_event>
 {
 public:
 	window();
@@ -42,7 +42,7 @@ public:
 	operator bool() const;
 };
 
-struct window_event_t
+struct window_event
 {
 	enum class type_t
 	{

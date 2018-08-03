@@ -33,6 +33,7 @@ window_impl::window_impl()
 	: m_hwnd(create_window(CW_USEDEFAULT, CW_USEDEFAULT))
 	, m_hdc(format_device_context())
 	, m_open(m_hwnd != nullptr)
+	, m_eventDispatcher(nullptr)
 {
 }
 
@@ -40,6 +41,7 @@ window_impl::window_impl(uint32_t width, uint32_t height)
 	: m_hwnd(create_window(width, height))
 	, m_hdc(format_device_context())
 	, m_open(m_hwnd != nullptr)
+	, m_eventDispatcher(nullptr)
 {
 }
 
@@ -106,6 +108,26 @@ LRESULT window_impl::wnd_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	LONG_PTR userData = GetWindowLongPtrA(hwnd, GWLP_USERDATA);
 	switch (msg)
 	{
+		case WM_MOVE:
+		{
+			window_event e;
+			e.type = window_event::type_t::Move;
+			e.data.move.x = cast<float>(LOWORD(lParam));
+			e.data.move.y = cast<float>(HIWORD(lParam));
+			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			break;
+		}
+
+		case WM_SIZE:
+		{
+			window_event e;
+			e.type = window_event::type_t::Resize;
+			e.data.resize.w = cast<float>(LOWORD(lParam));
+			e.data.resize.h = cast<float>(HIWORD(lParam));
+			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			break;
+		}
+
 		case WM_CLOSE:
 			assert(userData);
 			cast<window_impl*>(userData)->close();

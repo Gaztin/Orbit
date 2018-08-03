@@ -38,6 +38,10 @@ window_impl::window_impl()
 	android_only::app->onInputEvent = &window_impl::input_event;
 	android_only::app->userData     = this;
 
+	m_sensorManager = ASensorManager_getInstance();
+	m_accelerometerSensor = ASensorManager_getDefaultSensor(m_sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+	m_sensorEventQueue = ASensorManager_createEventQueue(m_sensorManager, android_only::app->looper, LOOPER_ID_USER, nullptr, nullptr);
+
 	/* Update until native window is initialized. */
 	while (!m_open)
 		poll_events();
@@ -47,6 +51,9 @@ window_impl::window_impl(uint32_t width, uint32_t height) : window_impl() { }
 
 window_impl::~window_impl()
 {
+	ASensorEventQueue_disableSensor(m_sensorEventQueue, m_accelerometerSensor);
+	ASensorManager_destroyEventQueue(m_sensorManager, m_sensorEventQueue);
+
 	--numWindows;
 }
 
@@ -58,6 +65,11 @@ void window_impl::poll_events()
 	{
 		if (source)
 			source->process(android_only::app, source);
+
+		ASensorEvent sensorEvent;
+		while (ASensorEventQueue_getEvents(m_sensorEventQueue, &sensorEvent, 1) > 0)
+		{
+		}
 	}
 }
 
@@ -84,6 +96,25 @@ void window_impl::app_cmd(android_app* state, int cmd)
 	{
 		case APP_CMD_INIT_WINDOW:
 			w.m_open = true;
+			break;
+
+		case APP_CMD_WINDOW_RESIZED:
+		{
+			window_event e;
+			e.type = window_event::type_t ::Resize;
+			e.data.resize.w = cast<float>(ANativeWindow_getWidth(android_only::app->window));
+			e.data.resize.h = cast<float>(ANativeWindow_getHeight(android_only::app->window));
+			w.m_eventDispatcher->send_event(e);
+			break;
+		}
+
+		case APP_CMD_GAINED_FOCUS:
+			ASensorEventQueue_enableSensor(w.m_sensorEventQueue, w.m_accelerometerSensor);
+			ASensorEventQueue_setEventRate(w.m_sensorEventQueue, w.m_accelerometerSensor, (1000 * 1000 / 60));
+			break;
+
+		case APP_CMD_LOST_FOCUS:
+			ASensorEventQueue_disableSensor(w.m_sensorEventQueue, w.m_accelerometerSensor);
 			break;
 
 		case APP_CMD_DESTROY:

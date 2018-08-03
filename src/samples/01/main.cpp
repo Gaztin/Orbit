@@ -8,16 +8,20 @@ int main(int /*argc*/, char* /*argv*/[])
 	orb::log_info("Started!");
 
 	orb::window w(800, 600);
-	w.subscribe([](const orb::window_event_t& e)
+	w.subscribe([](const orb::window_event& e)
 	{
+
 		switch (e.type)
 		{
-			case orb::window_event_t::type_t::Resize:
+			case orb::window_event::type_t::Resize:
 				orb::log_info(orb::stringf("Resized: (%.1f, %.1f)", e.data.resize.w, e.data.resize.h));
 				break;
 
-			case orb::window_event_t::type_t::Move:
+			case orb::window_event::type_t::Move:
 				orb::log_info(orb::stringf("Moved: (%.1f, %.1f)", e.data.move.x, e.data.move.y));
+				break;
+
+			default:
 				break;
 		}
 	});

@@ -26,6 +26,7 @@
 #include <windows.h>
 #elif defined(ORB_OS_ANDROID)
 #include <android_native_app_glue.h>
+#include <android/sensor.h>
 #elif defined(ORB_OS_LINUX)
 #include <X11/Xlib.h>
 #endif
@@ -49,7 +50,7 @@ public:
 	inline void close() { m_open = false; }
 	inline bool is_open() const { return m_open; }
 
-	using event_dispatcher_t = event_dispatcher<window_event_t>;
+	using event_dispatcher_t = event_dispatcher<window_event>;
 	inline void set_event_dispatcher(event_dispatcher_t* dispatcher) { m_eventDispatcher = dispatcher; }
 
 #if defined(ORB_OS_WINDOWS)
@@ -80,6 +81,10 @@ private:
 #elif defined(ORB_OS_ANDROID)
 	static void app_cmd(android_app* state, int cmd);
 	static int input_event(android_app* state, AInputEvent* e);
+
+	ASensorManager* m_sensorManager;
+	const ASensor* m_accelerometerSensor;
+	ASensorEventQueue* m_sensorEventQueue;
 
 #elif defined(ORB_OS_LINUX)
 	Window create_xwindow(int width, int height) const;
