@@ -19,12 +19,11 @@
 #include <string>
 
 #include "orbit/core/event_dispatcher.h"
+#include "orbit/core/events/window_event.h"
 #include "orbit/core/variant.h"
 
 namespace orb
 {
-
-struct window_event;
 
 class ORB_API_CORE window : public variant<64>, public event_dispatcher<window_event>
 {

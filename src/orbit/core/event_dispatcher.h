@@ -17,6 +17,7 @@
 
 #pragma once
 #include <functional>
+#include <mutex>
 #include <utility>
 #include <vector>
 
@@ -65,16 +66,30 @@ public:
 		}
 	}
 
-	void send_event(const EventType& e)
+	void queue_event(const EventType& e)
 	{
-		for (subscriber_t& subscriber : m_subscribers)
+		m_mutex.lock();
+		m_eventQueue.push_back(e);
+		m_mutex.unlock();
+	}
+
+protected:
+	void send_events()
+	{
+		for (const EventType& e : m_eventQueue)
 		{
-			subscriber.functor(e);
+			for (subscriber_t& subscriber : m_subscribers)
+			{
+				subscriber.functor(e);
+			}
 		}
+		m_eventQueue.clear();
 	}
 
 private:
 	std::vector<subscriber_t> m_subscribers;
+	std::vector<EventType> m_eventQueue;
+	std::mutex m_mutex;
 };
 
 }

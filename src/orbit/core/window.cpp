@@ -37,6 +37,7 @@ window::window(uint32_t width, uint32_t height)
 void window::poll_events()
 {
 	ref<window_impl>().poll_events();
+	send_events();
 }
 
 void window::set_title(const std::string& title)
