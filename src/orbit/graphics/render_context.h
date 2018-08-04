@@ -17,6 +17,7 @@
 
 #pragma once
 #include "orbit/core/variant.h"
+#include "orbit/core/window.h"
 #include "orbit/graphics.h"
 
 namespace orb
@@ -49,7 +50,8 @@ enum
 class ORB_API_GRAPHICS render_context : public variant<80>
 {
 public:
-	render_context(const window& parentWindow, graphics_api api);
+	render_context(window& parentWindow, graphics_api api);
+	~render_context();
 
 	void make_current(const window& parentWindow);
 	void swap_buffers(const window& parentWindow);
@@ -58,6 +60,7 @@ public:
 
 private:
 	graphics_api m_api;
+	window::subscription_t m_windowResizeSubscription;
 };
 
 }

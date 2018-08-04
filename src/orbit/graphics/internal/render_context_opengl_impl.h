@@ -16,6 +16,8 @@
 */
 
 #pragma once
+#include <stdint.h>
+
 #include "orbit.h"
 
 #if defined(ORB_OS_WINDOWS)
@@ -44,6 +46,7 @@ public:
 	void make_current(const window_impl& parentWindowImpl);
 	void swap_buffers(const window_impl& parentWindowImpl);
 	void reset_current();
+	void recreate_surface(const window_impl& parentWindowImpl);
 
 	bool is_current() const;
 
@@ -53,10 +56,12 @@ private:
 
 #elif defined(ORB_OS_ANDROID)
 	EGLDisplay create_display() const;
+	EGLConfig create_config() const;
 	EGLSurface create_surface() const;
 	EGLContext create_context() const;
 
 	EGLDisplay m_display;
+	EGLConfig m_config;
 	EGLSurface m_surface;
 	EGLContext m_context;
 

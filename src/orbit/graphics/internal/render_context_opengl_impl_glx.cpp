@@ -54,6 +54,10 @@ void render_context_opengl_impl::reset_current()
 	glXMakeCurrent(m_display, None, nullptr);
 }
 
+void render_context_opengl_impl::recreate_surface(const window_impl& parentWindowImpl)
+{
+}
+
 bool render_context_opengl_impl::is_current() const
 {
 	return (glXGetCurrentContext() == m_context);

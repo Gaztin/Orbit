@@ -76,6 +76,10 @@ void render_context_d3d11_impl::clear(uint32_t mask)
 		m_deviceContext->ClearDepthStencilView(m_depthStencilView.get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
+void render_context_d3d11_impl::recreate_swap_chain()
+{
+}
+
 DXGI_RATIONAL render_context_d3d11_impl::find_monitor_refresh_rate(HWND hwnd) const
 {
 	com_ptr<IDXGIFactory> factory;

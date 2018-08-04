@@ -21,6 +21,7 @@
 
 #include "orbit/graphics/internal/render_context_d3d11_impl.h"
 #include "orbit/graphics/internal/render_context_opengl_impl.h"
+#include "orbit/core/events/window_event.h"
 #include "orbit/core/internal/window_impl.h"
 #include "orbit/core/window.h"
 #include "orbit/core/utility.h"
@@ -36,8 +37,29 @@ static GLbitfield buffer_bits(uint32_t mask)
 	return bitfield;
 }
 
-render_context::render_context(const window& parentWindow, graphics_api api)
+static void recreate_surface(window& parentWindow, render_context& rc, graphics_api api)
+{
+	switch (api)
+	{
+#if defined(ORB_HAS_OPENGL)
+		case graphics_api::OpenGL:
+			rc.ref<render_context_opengl_impl>().recreate_surface(parentWindow.ref<window_impl>());
+			break;
+#endif
+#if defined(ORB_HAS_D3D11)
+		case graphics_api::D3D11:
+			rc.ref<render_context_d3d11_impl>().recreate_swap_chain();
+			break;
+#endif
+
+		default:
+			assert(false);
+	}
+}
+
+render_context::render_context(window& parentWindow, graphics_api api)
 	: m_api(api)
+	, m_windowResizeSubscription{}
 {
 	switch (m_api)
 	{
@@ -54,6 +76,26 @@ render_context::render_context(const window& parentWindow, graphics_api api)
 		default:
 			assert(false);
 	}
+
+	m_windowResizeSubscription = parentWindow.subscribe(
+		[this, &parentWindow](const window_event& e)
+	{
+		switch (e.type)
+		{
+			case window_event::Restore:
+			case window_event::Resize:
+				recreate_surface(parentWindow, *this, m_api);
+				break;
+
+			default:
+				break;
+		}
+	});
+}
+
+render_context::~render_context()
+{
+	window::unsubscribe(m_windowResizeSubscription);
 }
 
 void render_context::make_current(const window& parentWindow)

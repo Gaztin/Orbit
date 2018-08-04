@@ -68,6 +68,10 @@ void render_context_opengl_impl::reset_current()
 	[NSOpenGLContext clearCurrentContext];
 }
 
+void render_context_opengl_impl::recreate_surface(const window_impl& parentWindowImpl)
+{
+}
+
 bool render_context_opengl_impl::is_current() const
 {
 	return ([NSOpenGLContext currentContext] == [(NSOpenGLView*)m_glView openGLContext]);

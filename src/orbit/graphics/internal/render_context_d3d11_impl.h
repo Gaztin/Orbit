@@ -37,6 +37,7 @@ public:
 	void swap_buffers();
 	void set_clear_color(float r, float g, float b, float a);
 	void clear(uint32_t mask);
+	void recreate_swap_chain();
 
 private:
 #if defined(ORB_OS_WINDOWS)

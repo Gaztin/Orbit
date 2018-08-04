@@ -81,6 +81,7 @@ private:
 #elif defined(ORB_OS_ANDROID)
 	static void app_cmd(android_app* state, int cmd);
 	static int input_event(android_app* state, AInputEvent* e);
+	static void on_content_rect_changed(ANativeActivity* activity, const ARect* rect);
 
 	ASensorManager* m_sensorManager;
 	const ASensor* m_accelerometerSensor;

@@ -27,6 +27,7 @@ namespace orb
 
 render_context_opengl_impl::render_context_opengl_impl(const window_impl& parentWindowImpl)
 	: m_display(create_display())
+	, m_config(create_config())
 	, m_surface(create_surface())
 	, m_context(create_context())
 {
@@ -54,6 +55,18 @@ void render_context_opengl_impl::reset_current()
 	eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
+void render_context_opengl_impl::recreate_surface(const window_impl& parentWindowImpl)
+{
+	reset_current();
+
+	if (m_surface != EGL_NO_SURFACE)
+		eglDestroySurface(m_display, m_surface);
+
+	m_surface = create_surface();
+
+	make_current(parentWindowImpl);
+}
+
 bool render_context_opengl_impl::is_current() const
 {
 	return (eglGetCurrentContext() == m_context);
@@ -66,7 +79,7 @@ EGLDisplay render_context_opengl_impl::create_display() const
 	return display;
 }
 
-EGLSurface render_context_opengl_impl::create_surface() const
+EGLConfig render_context_opengl_impl::create_config() const
 {
 	constexpr EGLint configAttribs[] =
 	{
@@ -86,7 +99,12 @@ EGLSurface render_context_opengl_impl::create_surface() const
 	EGLint visualId;
 	eglGetConfigAttrib(m_display, config, EGL_NATIVE_VISUAL_ID, &visualId);
 	ANativeWindow_setBuffersGeometry(android_only::app->window, 0, 0, visualId);
-	return eglCreateWindowSurface(m_display, config, android_only::app->window, nullptr);
+	return config;
+}
+
+EGLSurface render_context_opengl_impl::create_surface() const
+{
+	return eglCreateWindowSurface(m_display, m_config, android_only::app->window, nullptr);
 }
 
 EGLContext render_context_opengl_impl::create_context() const

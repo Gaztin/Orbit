@@ -18,6 +18,7 @@
 #include "window_impl.h"
 
 #include <cassert>
+#include <orbit/core/events/window_event.h>
 
 #include "orbit/core/android_app.h"
 #include "orbit/core/events/window_event.h"
@@ -38,9 +39,10 @@ window_impl::window_impl()
 	/* Android only allows for the single window. */
 	assert(++numWindows == 1);
 
-	android_only::app->onAppCmd     = &window_impl::app_cmd;
+	android_only::app->onAppCmd = &window_impl::app_cmd;
 	android_only::app->onInputEvent = &window_impl::input_event;
-	android_only::app->userData     = this;
+	android_only::app->activity->callbacks->onContentRectChanged = &window_impl::on_content_rect_changed;
+	android_only::app->userData = this;
 
 	m_sensorManager = ASensorManager_getInstance();
 	m_accelerometerSensor = ASensorManager_getDefaultSensor(m_sensorManager, ASENSOR_TYPE_ACCELEROMETER);
@@ -99,50 +101,24 @@ void window_impl::app_cmd(android_app* state, int cmd)
 	switch (cmd)
 	{
 		case APP_CMD_INIT_WINDOW:
-		{
 			w.m_open = true;
-			window_event e;
-			e.type = window_event::Restore;
-			w.m_eventDispatcher->send_event(e);
+			w.m_eventDispatcher->queue_event({window_event::Restore});
 			break;
-		}
 
 		case APP_CMD_TERM_WINDOW:
-		{
-			window_event e;
-			e.type = window_event::Suspend;
-			w.m_eventDispatcher->send_event(e);
+			w.m_eventDispatcher->queue_event({window_event::Suspend});
 			break;
-		}
-
-		case APP_CMD_WINDOW_RESIZED:
-		{
-			window_event e;
-			e.type = window_event::Resize;
-			e.data.resize.w = cast<uint32_t>(ANativeWindow_getWidth(android_only::app->window));
-			e.data.resize.h = cast<uint32_t>(ANativeWindow_getHeight(android_only::app->window));
-			w.m_eventDispatcher->send_event(e);
-			break;
-		}
 
 		case APP_CMD_GAINED_FOCUS:
-		{
 			ASensorEventQueue_enableSensor(w.m_sensorEventQueue, w.m_accelerometerSensor);
 			ASensorEventQueue_setEventRate(w.m_sensorEventQueue, w.m_accelerometerSensor, (1000 * 1000 / 60));
-			window_event e;
-			e.type = window_event::Focus;
-			w.m_eventDispatcher->send_event(e);
+			w.m_eventDispatcher->queue_event({window_event::Focus});
 			break;
-		}
 
 		case APP_CMD_LOST_FOCUS:
-		{
 			ASensorEventQueue_disableSensor(w.m_sensorEventQueue, w.m_accelerometerSensor);
-			window_event e;
-			e.type = window_event::Defocus;
-			w.m_eventDispatcher->send_event(e);
+			w.m_eventDispatcher->queue_event({window_event::Defocus});
 			break;
-		}
 
 		case APP_CMD_DESTROY:
 			w.m_open = false;
@@ -153,7 +129,7 @@ void window_impl::app_cmd(android_app* state, int cmd)
 	}
 }
 
-int window_impl::input_event(android_app* state, AInputEvent *e)
+int window_impl::input_event(android_app* state, AInputEvent* e)
 {
 	switch (AInputEvent_getType(e))
 	{
@@ -162,6 +138,15 @@ int window_impl::input_event(android_app* state, AInputEvent *e)
 	}
 
 	return 0;
+}
+
+void window_impl::on_content_rect_changed(ANativeActivity* activity, const ARect* rect)
+{
+	window_event e;
+	e.type = window_event::Resize;
+	e.data.resize.w = cast<uint32_t>(rect->right - rect->left);
+	e.data.resize.h = cast<uint32_t>(rect->bottom - rect->top);
+	cast<window_impl*>(android_only::app->userData)->m_eventDispatcher->queue_event(e);
 }
 
 }

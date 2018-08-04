@@ -108,63 +108,38 @@ ATOM window_impl::create_window_class()
 
 LRESULT window_impl::wnd_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	LONG_PTR userData = GetWindowLongPtrA(hwnd, GWLP_USERDATA);
+	LONG_PTR userData;
+	if ((userData = GetWindowLongPtrA(hwnd, GWLP_USERDATA)) == 0)
+		return DefWindowProcA(hwnd, msg, wParam, lParam);
+
+	window_impl& impl = *cast<window_impl*>(userData);
 	switch (msg)
 	{
 		case WM_MOVE:
-		{
-			window_event e;
-			e.type = window_event::Move;
-			e.data.move.x = cast<uint32_t>(LOWORD(lParam));
-			e.data.move.y = cast<uint32_t>(HIWORD(lParam));
-			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			impl.m_eventDispatcher->queue_event({window_event::Move, {LOWORD(lParam), HIWORD(lParam)}});
 			break;
-		}
 
 		case WM_SIZE:
-		{
-			window_event e;
-			e.type = window_event::Resize;
-			e.data.resize.w = cast<uint32_t>(LOWORD(lParam));
-			e.data.resize.h = cast<uint32_t>(HIWORD(lParam));
-			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			impl.m_eventDispatcher->queue_event({window_event::Resize, {LOWORD(lParam), HIWORD(lParam)}});
 			break;
-		}
 
 		case WM_ACTIVATE:
 			if (HIWORD(wParam) != 0)
-			{
-				window_event e;
-				e.type = (LOWORD(wParam) == WA_INACTIVE) ? window_event::Suspend : window_event::Restore;
-				cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
-			}
+				impl.m_eventDispatcher->queue_event({(LOWORD(wParam) == WA_INACTIVE) ? window_event::Suspend : window_event::Restore});
 			break;
 
 		case WM_SETFOCUS:
-		{
-			window_event e;
-			e.type = window_event::Focus;
-			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			impl.m_eventDispatcher->queue_event({window_event::Focus});
 			break;
-		}
 
 		case WM_KILLFOCUS:
-		{
-			window_event e;
-			e.type = window_event::Defocus;
-			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			impl.m_eventDispatcher->queue_event({window_event::Defocus});
 			break;
-		}
 
 		case WM_CLOSE:
-		{
-			assert(userData);
-			cast<window_impl*>(userData)->close();
-			window_event e;
-			e.type = window_event::Close;
-			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
+			impl.close();
+			impl.m_eventDispatcher->queue_event({window_event::Close});
 			break;
-		}
 
 		default:
 			break;
