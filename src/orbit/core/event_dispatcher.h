@@ -29,29 +29,37 @@ template<typename EventType>
 class event_dispatcher
 {
 public:
-	struct subscriber_t
+	struct subscription_t
 	{
 		uint64_t id;
+		event_dispatcher<EventType>* source;
+	};
+
+	struct subscriber_t
+	{
+		subscription_t subscription;
 		std::function<void(const EventType&)> functor;
 	};
 
 	event_dispatcher() = default;
 
 	template<typename Functor>
-	uint64_t subscribe(Functor&& functor)
+	subscription_t subscribe(Functor&& functor)
 	{
 		static uint64_t uniqueId = 0;
-		m_subscribers.push_back({++uniqueId, std::forward<Functor>(functor)});
-		return uniqueId;
+		m_subscribers.push_back({{++uniqueId, this}, std::forward<Functor>(functor)});
+		return m_subscribers.back().subscription;
 	}
 
-	void unsubscribe(uint64_t id)
+	static void unsubscribe(subscription_t& subscription)
 	{
-		for (auto it = m_subscribers.begin(); it != m_subscribers.end(); ++it)
+		for (auto it = subscription.source->m_subscribers.begin(); it != subscription.source->m_subscribers.end(); ++it)
 		{
-			if (it->id == id)
+			if (it->subscription.id == subscription.id)
 			{
-				m_subscribers.erase(it);
+				subscription.source->m_subscribers.erase(it);
+				subscription.id = 0;
+				subscription.source = nullptr;
 				return;
 			}
 		}
