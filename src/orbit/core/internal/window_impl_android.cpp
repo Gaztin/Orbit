@@ -119,8 +119,8 @@ void window_impl::app_cmd(android_app* state, int cmd)
 		{
 			window_event e;
 			e.type = window_event::Resize;
-			e.data.resize.w = cast<float>(ANativeWindow_getWidth(android_only::app->window));
-			e.data.resize.h = cast<float>(ANativeWindow_getHeight(android_only::app->window));
+			e.data.resize.w = cast<uint32_t>(ANativeWindow_getWidth(android_only::app->window));
+			e.data.resize.h = cast<uint32_t>(ANativeWindow_getHeight(android_only::app->window));
 			w.m_eventDispatcher->send_event(e);
 			break;
 		}

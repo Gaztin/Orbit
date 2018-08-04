@@ -115,8 +115,8 @@ LRESULT window_impl::wnd_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			window_event e;
 			e.type = window_event::Move;
-			e.data.move.x = cast<float>(LOWORD(lParam));
-			e.data.move.y = cast<float>(HIWORD(lParam));
+			e.data.move.x = cast<uint32_t>(LOWORD(lParam));
+			e.data.move.y = cast<uint32_t>(HIWORD(lParam));
 			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
 			break;
 		}
@@ -125,8 +125,8 @@ LRESULT window_impl::wnd_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			window_event e;
 			e.type = window_event::Resize;
-			e.data.resize.w = cast<float>(LOWORD(lParam));
-			e.data.resize.h = cast<float>(HIWORD(lParam));
+			e.data.resize.w = cast<uint32_t>(LOWORD(lParam));
+			e.data.resize.h = cast<uint32_t>(HIWORD(lParam));
 			cast<window_impl*>(userData)->m_eventDispatcher->send_event(e);
 			break;
 		}

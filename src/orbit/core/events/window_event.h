@@ -16,6 +16,7 @@
 */
 
 #pragma once
+#include <stdint.h>
 
 namespace orb
 {
@@ -36,8 +37,8 @@ struct window_event
 
 	union
 	{
-		struct move_t { float x, y; } move;
-		struct resize_t { float w, h; } resize;
+		struct move_t { int x, y; } move;
+		struct resize_t { uint32_t w, h; } resize;
 	} data;
 };
 

@@ -14,11 +14,11 @@ int main(int /*argc*/, char* /*argv*/[])
 		switch (e.type)
 		{
 			case orb::window_event::Resize:
-				orb::log_info(orb::stringf("Resized: (%.1f, %.1f)", e.data.resize.w, e.data.resize.h));
+				orb::log_info(orb::stringf("Resized: (%d, %d)", e.data.resize.w, e.data.resize.h));
 				break;
 
 			case orb::window_event::Move:
-				orb::log_info(orb::stringf("Moved: (%.1f, %.1f)", e.data.move.x, e.data.move.y));
+				orb::log_info(orb::stringf("Moved: (%d, %d)", e.data.move.x, e.data.move.y));
 				break;
 
 			case orb::window_event::Defocus:
