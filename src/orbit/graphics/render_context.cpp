@@ -29,32 +29,15 @@
 namespace orb
 {
 
+using opengl_impl = render_context_opengl_impl;
+using d3d11_impl  = render_context_d3d11_impl;
+
 static GLbitfield buffer_bits(uint32_t mask)
 {
 	GLbitfield bitfield = 0;
 	bitfield |= (mask & buffer_mask::Color) ? GL_COLOR_BUFFER_BIT : 0;
 	bitfield |= (mask & buffer_mask::Depth) ? GL_DEPTH_BUFFER_BIT : 0;
 	return bitfield;
-}
-
-static void recreate_surface(window& parentWindow, render_context& rc, graphics_api api)
-{
-	switch (api)
-	{
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			rc.ref<render_context_opengl_impl>().recreate_surface(parentWindow.ref<window_impl>());
-			break;
-#endif
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			rc.ref<render_context_d3d11_impl>().recreate_swap_chain(parentWindow.ref<window_impl>());
-			break;
-#endif
-
-		default:
-			assert(false);
-	}
 }
 
 render_context::render_context(window& parentWindow, graphics_api api)
@@ -64,17 +47,12 @@ render_context::render_context(window& parentWindow, graphics_api api)
 	switch (m_api)
 	{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			construct<render_context_opengl_impl>(parentWindow.ref<window_impl>());
-			break;
+		case graphics_api::OpenGL: construct<opengl_impl>(parentWindow.ref<window_impl>()); break;
 #endif
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			construct<render_context_d3d11_impl>(parentWindow.ref<window_impl>());
-			break;
+		case graphics_api::D3D11: construct<d3d11_impl>(parentWindow.ref<window_impl>()); break;
 #endif
-		default:
-			assert(false);
+		default: assert(false);
 	}
 
 	m_windowResizeSubscription = parentWindow.subscribe(
@@ -84,7 +62,16 @@ render_context::render_context(window& parentWindow, graphics_api api)
 		{
 			case window_event::Restore:
 			case window_event::Resize:
-				recreate_surface(parentWindow, *this, m_api);
+				switch (m_api)
+				{
+#if defined(ORB_HAS_OPENGL)
+					case graphics_api::OpenGL: this->ref<opengl_impl>().recreate_surface(parentWindow.ref<window_impl>()); break;
+#endif
+#if defined(ORB_HAS_D3D11)
+					case graphics_api::D3D11: this->ref<d3d11_impl>().recreate_swap_chain(parentWindow.ref<window_impl>()); break;
+#endif
+					default: assert(false);
+				}
 				break;
 
 			default:
@@ -104,7 +91,7 @@ void render_context::make_current(const window& parentWindow)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			ref<render_context_opengl_impl>().make_current(parentWindow.ref<window_impl>());
+			ref<opengl_impl>().make_current(parentWindow.ref<window_impl>());
 			break;
 #endif
 		default:
@@ -117,14 +104,10 @@ void render_context::swap_buffers(const window& parentWindow)
 	switch (m_api)
 	{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			ref<render_context_opengl_impl>().swap_buffers(parentWindow.ref<window_impl>());
-			break;
+		case graphics_api::OpenGL: ref<opengl_impl>().swap_buffers(parentWindow.ref<window_impl>()); break;
 #endif
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			ref<render_context_d3d11_impl>().swap_buffers();
-			break;
+		case graphics_api::D3D11: ref<d3d11_impl>().swap_buffers(); break;
 #endif
 		default:
 			assert(false);
@@ -137,13 +120,13 @@ void render_context::clear(uint32_t mask)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			assert(ref<render_context_opengl_impl>().is_current());
+			assert(ref<opengl_impl>().is_current());
 			glClear(buffer_bits(mask));
 			break;
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			ref<render_context_d3d11_impl>().clear(mask);
+			ref<d3d11_impl>().clear(mask);
 			break;
 #endif
 		default:
@@ -157,13 +140,13 @@ void render_context::set_clear_color(float r, float g, float b)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			assert(ref<render_context_opengl_impl>().is_current());
+			assert(ref<opengl_impl>().is_current());
 			glClearColor(r, g, b, 1.0f);
 			break;
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			ref<render_context_d3d11_impl>().set_clear_color(r, g, b, 1.0f);
+			ref<d3d11_impl>().set_clear_color(r, g, b, 1.0f);
 			break;
 #endif
 		default:
