@@ -76,8 +76,28 @@ void render_context_d3d11_impl::clear(uint32_t mask)
 		m_deviceContext->ClearDepthStencilView(m_depthStencilView.get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-void render_context_d3d11_impl::recreate_swap_chain()
+void render_context_d3d11_impl::recreate_swap_chain(const window_impl& parentWindowImpl)
 {
+	m_deviceContext->OMSetRenderTargets(0, 0, 0);
+	m_deviceContext->ClearState();
+	m_deviceContext->Flush();
+
+	RECT rect;
+	GetWindowRect(parentWindowImpl.hwnd(), &rect);
+
+	DXGI_SWAP_CHAIN_DESC desc;
+	m_swapChain->GetDesc(&desc);
+	desc.BufferDesc.Width  = (rect.right - rect.left);
+	desc.BufferDesc.Height = (rect.bottom - rect.top);
+	m_swapChain->ResizeBuffers(1, desc.BufferDesc.Width, desc.BufferDesc.Height, desc.BufferDesc.Format, desc.Flags);
+	m_renderTargetView.reset(create_render_target_view());
+	m_depthStencilBuffer.reset(create_depth_stencil_buffer(parentWindowImpl.hwnd()));
+	m_depthStencilView.reset(create_depth_stencil_view());
+
+	ID3D11RenderTargetView* renderTargetViews[1] = { m_renderTargetView.get() };
+	m_deviceContext->OMSetRenderTargets(1, renderTargetViews, m_depthStencilView.get());
+	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.get(), 0);
+	m_deviceContext->RSSetState(m_rasterizerState.get());
 }
 
 DXGI_RATIONAL render_context_d3d11_impl::find_monitor_refresh_rate(HWND hwnd) const

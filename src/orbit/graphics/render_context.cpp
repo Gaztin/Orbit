@@ -48,7 +48,7 @@ static void recreate_surface(window& parentWindow, render_context& rc, graphics_
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			rc.ref<render_context_d3d11_impl>().recreate_swap_chain();
+			rc.ref<render_context_d3d11_impl>().recreate_swap_chain(parentWindow.ref<window_impl>());
 			break;
 #endif
 
