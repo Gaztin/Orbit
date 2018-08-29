@@ -53,9 +53,9 @@ int main(int /*argc*/, char* /*argv*/[])
 	rc.set_clear_color(1.0f, 0.0f, 1.0f);
 	while (w)
 	{
+		using namespace orb::buffer_mask;
 		w.poll_events();
-		rc.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
-
+		rc.clear(Color | Depth);
 		rc.swap_buffers(w);
 	}
 
