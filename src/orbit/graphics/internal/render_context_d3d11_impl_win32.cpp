@@ -68,11 +68,11 @@ void render_context_d3d11_impl::set_clear_color(float r, float g, float b, float
 	m_clearColor[3] = a;
 }
 
-void render_context_d3d11_impl::clear(uint32_t mask)
+void render_context_d3d11_impl::clear(buffer_mask bm)
 {
-	if (mask & buffer_mask::Color)
+	if (!!(bm & buffer_mask::Color))
 		m_deviceContext->ClearRenderTargetView(m_renderTargetView.get(), m_clearColor);
-	if (mask & buffer_mask::Depth)
+	if (!!(bm & buffer_mask::Depth))
 		m_deviceContext->ClearDepthStencilView(m_depthStencilView.get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 

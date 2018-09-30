@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "orbit/core/memory.h"
+#include "orbit/graphics/render_context.h"
 
 #if defined(ORB_OS_WINDOWS)
 #include <d3d11.h>
@@ -36,7 +37,7 @@ public:
 
 	void swap_buffers();
 	void set_clear_color(float r, float g, float b, float a);
-	void clear(uint32_t mask);
+	void clear(buffer_mask bm);
 	void recreate_swap_chain(const window_impl& parentWindowImpl);
 
 private:

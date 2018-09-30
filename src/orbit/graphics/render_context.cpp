@@ -32,11 +32,11 @@ namespace orb
 using opengl_impl = render_context_opengl_impl;
 using d3d11_impl  = render_context_d3d11_impl;
 
-static GLbitfield buffer_bits(uint32_t mask)
+static GLbitfield buffer_bits(buffer_mask bm)
 {
 	GLbitfield bitfield = 0;
-	bitfield |= (mask & buffer_mask::Color) ? GL_COLOR_BUFFER_BIT : 0;
-	bitfield |= (mask & buffer_mask::Depth) ? GL_DEPTH_BUFFER_BIT : 0;
+	bitfield |= (!!(bm & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0;
+	bitfield |= (!!(bm & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0;
 	return bitfield;
 }
 
@@ -114,19 +114,19 @@ void render_context::swap_buffers(const window& parentWindow)
 	}
 }
 
-void render_context::clear(uint32_t mask)
+void render_context::clear(buffer_mask bm)
 {
 	switch (m_api)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
 			assert(ref<opengl_impl>().is_current());
-			glClear(buffer_bits(mask));
+			glClear(buffer_bits(bm));
 			break;
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			ref<d3d11_impl>().clear(mask);
+			ref<d3d11_impl>().clear(bm);
 			break;
 #endif
 		default:

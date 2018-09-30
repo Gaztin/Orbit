@@ -16,6 +16,7 @@
 */
 
 #pragma once
+#include "orbit/core/bitmask.h"
 #include "orbit/core/variant.h"
 #include "orbit/core/window.h"
 #include "orbit/graphics.h"
@@ -38,14 +39,12 @@ enum class graphics_api
 #endif
 };
 
-namespace buffer_mask
-{
-enum
+enum class buffer_mask
 {
 	Color = 0x1,
 	Depth = 0x2,
 };
-}
+ORB_ENABLE_BITMASKING(buffer_mask);
 
 class ORB_API_GRAPHICS render_context : public variant<80>
 {
@@ -55,7 +54,7 @@ public:
 
 	void make_current(const window& parentWindow);
 	void swap_buffers(const window& parentWindow);
-	void clear(uint32_t mask);
+	void clear(buffer_mask bm);
 	void set_clear_color(float r, float g, float b);
 
 private:
