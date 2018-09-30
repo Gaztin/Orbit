@@ -42,7 +42,6 @@ static GLbitfield buffer_bits(buffer_mask bm)
 
 render_context::render_context(window& parentWindow, graphics_api api)
 	: m_api(api)
-	, m_windowResizeSubscription{}
 {
 	switch (m_api)
 	{
@@ -55,7 +54,7 @@ render_context::render_context(window& parentWindow, graphics_api api)
 		default: assert(false);
 	}
 
-	m_windowResizeSubscription = parentWindow.subscribe(
+	m_windowSubscription = parentWindow.subscribe(
 		[this, &parentWindow](const window_event& e)
 	{
 		switch (e.type)
@@ -78,11 +77,6 @@ render_context::render_context(window& parentWindow, graphics_api api)
 				break;
 		}
 	});
-}
-
-render_context::~render_context()
-{
-	window::unsubscribe(m_windowResizeSubscription);
 }
 
 void render_context::make_current(const window& parentWindow)

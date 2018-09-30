@@ -9,7 +9,7 @@ int main(int /*argc*/, char* /*argv*/[])
 	orb::log_info("Started!");
 
 	orb::window w(800, 600);
-	w.subscribe([](const orb::window_event& e)
+	auto windowSubscription = w.subscribe([](const orb::window_event& e)
 	{
 		switch (e.type)
 		{

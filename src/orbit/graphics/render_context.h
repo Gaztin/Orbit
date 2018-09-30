@@ -50,7 +50,6 @@ class ORB_API_GRAPHICS render_context : public variant<80>
 {
 public:
 	render_context(window& parentWindow, graphics_api api);
-	~render_context();
 
 	void make_current(const window& parentWindow);
 	void swap_buffers(const window& parentWindow);
@@ -59,7 +58,7 @@ public:
 
 private:
 	graphics_api m_api;
-	window::subscription_t m_windowResizeSubscription;
+	std::shared_ptr<window::subscription> m_windowSubscription;
 };
 
 }

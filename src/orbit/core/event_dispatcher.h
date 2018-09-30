@@ -16,6 +16,7 @@
 */
 
 #pragma once
+#include <algorithm>
 #include <functional>
 #include <mutex>
 #include <utility>
@@ -30,64 +31,63 @@ template<typename EventType>
 class event_dispatcher
 {
 public:
-	struct subscription_t
+	struct subscription
 	{
-		uint64_t id;
-		event_dispatcher<EventType>* source;
-	};
+	public:
+		~subscription() { unsubscriber(id); }
 
-	struct subscriber_t
-	{
-		subscription_t subscription;
-		std::function<void(const EventType&)> functor;
+		uint64_t id;
+		std::function<void(uint64_t)> unsubscriber;
 	};
 
 	event_dispatcher() = default;
+	virtual ~event_dispatcher() = default;
 
 	template<typename Functor>
-	subscription_t subscribe(Functor&& functor)
+	[[nodiscard]] std::shared_ptr<subscription> subscribe(Functor&& functor)
 	{
 		static uint64_t uniqueId = 0;
-		m_subscribers.push_back({{++uniqueId, this}, std::forward<Functor>(functor)});
-		return m_subscribers.back().subscription;
+		std::shared_ptr<subscription> sub = std::make_shared<subscription>();
+		sub->id = ++uniqueId;
+		sub->unsubscriber = [this](uint64_t id) { unsubscribe(id); };
+		m_subscribers.push_back(subscriber{sub->id, std::forward<Functor>(functor)});
+		return sub;
 	}
 
-	static void unsubscribe(subscription_t& subscription)
+	void unsubscribe(uint64_t subscriptionId)
 	{
-		for (auto it = subscription.source->m_subscribers.begin(); it != subscription.source->m_subscribers.end(); ++it)
-		{
-			if (it->subscription.id == subscription.id)
-			{
-				subscription.source->m_subscribers.erase(it);
-				subscription.id = 0;
-				subscription.source = nullptr;
-				return;
-			}
-		}
+		auto it = std::find_if(m_subscribers.begin(), m_subscribers.end(),
+			[subscriptionId](const subscriber& sub) { return sub.subscriptionId == subscriptionId; });
+		if (it == m_subscribers.end())
+			return;
+
+		m_subscribers.erase(it);
 	}
 
-	void queue_event(const EventType& e)
+	void queue_event(const EventType& evt)
 	{
 		m_mutex.lock();
-		m_eventQueue.push_back(e);
+		m_eventQueue.push_back(evt);
 		m_mutex.unlock();
 	}
 
-protected:
 	void send_events()
 	{
-		for (const EventType& e : m_eventQueue)
-		{
-			for (subscriber_t& subscriber : m_subscribers)
-			{
-				subscriber.functor(e);
-			}
-		}
+		for (const EventType& evt : m_eventQueue)
+			for (subscriber& sub : m_subscribers)
+				sub.functor(evt);
+
 		m_eventQueue.clear();
 	}
 
 private:
-	std::vector<subscriber_t> m_subscribers;
+	struct subscriber
+	{
+		uint64_t subscriptionId;
+		std::function<void(const EventType&)> functor;
+	};
+
+	std::vector<subscriber> m_subscribers;
 	std::vector<EventType> m_eventQueue;
 	std::mutex m_mutex;
 };
