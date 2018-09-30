@@ -40,7 +40,8 @@ public:
 
 	~variant()
 	{
-		m_deleter(m_storage);
+		if (m_deleter)
+			m_deleter(m_storage);
 	}
 
 	template<typename T, typename... Args>

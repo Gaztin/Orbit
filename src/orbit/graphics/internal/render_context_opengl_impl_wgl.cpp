@@ -47,7 +47,7 @@ void render_context_opengl_impl::reset_current()
 	wglMakeCurrent(nullptr, nullptr);
 }
 
-void render_context_opengl_impl::recreate_surface(const window_impl& parentWindowImpl)
+void render_context_opengl_impl::recreate_surface(const window_impl& /*parentWindowImpl*/)
 {
 }
 
