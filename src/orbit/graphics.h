@@ -18,6 +18,8 @@
 #pragma once
 #include "orbit.h"
 
+#include "core/bitmask.h"
+
 /* API macro. */
 #if defined(ORB_STATIC)
 #define ORB_API_GRAPHICS
@@ -38,3 +40,30 @@
 #elif defined(ORB_OS_MACOS)
 #define ORB_HAS_OPENGL
 #endif
+
+/* Enumerators */
+
+namespace orb
+{
+
+enum class graphics_api
+{
+	None,
+	OpenGL,
+	D3D11,
+
+#if defined(ORB_OS_WINDOWS)
+	DeviceDefault = D3D11,
+#else
+	DeviceDefault = OpenGL,
+#endif
+};
+
+enum class buffer_mask
+{
+	Color = 0x1,
+	Depth = 0x2,
+};
+ORB_ENABLE_BITMASKING(buffer_mask);
+
+}

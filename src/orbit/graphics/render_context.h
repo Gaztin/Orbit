@@ -26,26 +26,6 @@ namespace orb
 
 class window;
 
-enum class graphics_api
-{
-	None,
-	OpenGL,
-	D3D11,
-
-#if defined(ORB_OS_WINDOWS)
-	DeviceDefault = D3D11,
-#else
-	DeviceDefault = OpenGL,
-#endif
-};
-
-enum class buffer_mask
-{
-	Color = 0x1,
-	Depth = 0x2,
-};
-ORB_ENABLE_BITMASKING(buffer_mask);
-
 class ORB_API_GRAPHICS render_context : public variant<80>
 {
 public:
