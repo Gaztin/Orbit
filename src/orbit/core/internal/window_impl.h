@@ -50,8 +50,7 @@ public:
 	inline void close() { m_open = false; }
 	inline bool is_open() const { return m_open; }
 
-	using event_dispatcher_t = event_dispatcher<window_event>;
-	inline void set_event_dispatcher(event_dispatcher_t* dispatcher) { m_eventDispatcher = dispatcher; }
+	inline void set_event_dispatcher(event_dispatcher<window::event_t>* dispatcher) { m_eventDispatcher = dispatcher; }
 
 #if defined(ORB_OS_WINDOWS)
 	HWND hwnd() const { return m_hwnd; }
@@ -105,7 +104,7 @@ private:
 #endif
 
 	bool m_open;
-	event_dispatcher_t* m_eventDispatcher;
+	event_dispatcher<window::event_t>* m_eventDispatcher;
 };
 
 }

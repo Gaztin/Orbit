@@ -31,6 +31,8 @@ template<typename EventType>
 class event_dispatcher
 {
 public:
+	using event_t = EventType;
+
 	struct subscription
 	{
 	public:
