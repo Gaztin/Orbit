@@ -23,51 +23,51 @@ namespace orb
 {
 
 window::window()
-	: variant(in_place_type<window_impl>)
+	: m_impl(in_place_type<window_impl>)
 {
-	ref<window_impl>().set_event_dispatcher(cast<window_impl::event_dispatcher_t*>(this));
+	m_impl.get<window_impl>().set_event_dispatcher(this);
 }
 
 window::window(uint32_t width, uint32_t height)
-	: variant(in_place_type<window_impl>, width, height)
+	: m_impl(in_place_type<window_impl>, width, height)
 {
-	ref<window_impl>().set_event_dispatcher(cast<window_impl::event_dispatcher_t*>(this));
+	m_impl.get<window_impl>().set_event_dispatcher(this);
 }
 
 void window::poll_events()
 {
-	ref<window_impl>().poll_events();
+	m_impl.get<window_impl>().poll_events();
 	send_events();
 }
 
 void window::set_title(const std::string& title)
 {
-	ref<window_impl>().set_title(title);
+	m_impl.get<window_impl>().set_title(title);
 }
 
 void window::set_pos(uint32_t x, uint32_t y)
 {
-	ref<window_impl>().set_pos(x, y);
+	m_impl.get<window_impl>().set_pos(x, y);
 }
 
 void window::set_size(uint32_t width, uint32_t height)
 {
-	ref<window_impl>().set_size(width, height);
+	m_impl.get<window_impl>().set_size(width, height);
 }
 
 void window::show()
 {
-	ref<window_impl>().set_visible(true);
+	m_impl.get<window_impl>().set_visible(true);
 }
 
 void window::hide()
 {
-	ref<window_impl>().set_visible(false);
+	m_impl.get<window_impl>().set_visible(false);
 }
 
 window::operator bool() const
 {
-	return ref<window_impl>().is_open();
+	return m_impl.get<window_impl>().is_open();
 }
 
 }

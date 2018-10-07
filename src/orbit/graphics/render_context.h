@@ -26,7 +26,7 @@ namespace orb
 
 class window;
 
-class ORB_API_GRAPHICS render_context : public variant<80>
+class ORB_API_GRAPHICS render_context
 {
 public:
 	render_context(window& parentWindow, graphics_api api);
@@ -37,6 +37,8 @@ public:
 	void set_clear_color(float r, float g, float b);
 
 private:
+	variant m_impl;
+
 	graphics_api m_api;
 	std::shared_ptr<window::subscription> m_windowSubscription;
 };

@@ -25,7 +25,7 @@
 namespace orb
 {
 
-class ORB_API_CORE window : public variant<64>, public event_dispatcher<window_event>
+class ORB_API_CORE window : public event_dispatcher<window_event>
 {
 public:
 	window();
@@ -39,6 +39,11 @@ public:
 	void hide();
 
 	operator bool() const;
+
+	variant _impl() const { return m_impl; }
+
+private:
+	variant m_impl;
 };
 
 }
