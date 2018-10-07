@@ -18,10 +18,8 @@
 #pragma once
 #include <stdint.h>
 
-#ifdef None
 #pragma push_macro("None")
 #undef None
-#endif
 
 namespace orb
 {
