@@ -20,13 +20,9 @@
 /* Per-compiler macros. */
 #if defined(_MSC_VER)
 #define ORB_CC_MSVC
-#define ORB_DLL_EXPORT __declspec(dllexport)
-#define ORB_DLL_IMPORT __declspec(dllimport)
 #define ORB_DLL_LOCAL
 #elif defined(__GNUC__)
 #define ORB_CC_GCC
-#define ORB_DLL_EXPORT __attribute__((visibility("default")))
-#define ORB_DLL_IMPORT __attribute__((visibility("default")))
 #define ORB_DLL_LOCAL  __attribute__((visibility("hidden")))
 #endif
 

@@ -17,12 +17,3 @@
 
 #pragma once
 #include "orbit.h"
-
-/* API macro. */
-#if defined(ORB_STATIC)
-#define ORB_API_CORE
-#elif defined(ORB_BUILD_CORE)
-#define ORB_API_CORE ORB_DLL_EXPORT
-#else
-#define ORB_API_CORE ORB_DLL_IMPORT
-#endif

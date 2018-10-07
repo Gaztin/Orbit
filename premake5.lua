@@ -104,7 +104,7 @@ local function decl_module(name)
 	local up = name:upper()
 	group("Engine")
 	project (name)
-	kind    ("SharedLib")
+	kind    ("StaticLib")
 	defines {"ORB_BUILD", "ORB_BUILD_" .. up}
 	links   (modules)
 	base_config()
@@ -145,11 +145,12 @@ configurations {"Debug", "Release"}
 decl_module("Core")
   filter{"system:macosx"} links{"Cocoa.framework"}
 decl_module("Graphics")
-  filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
   filter{"system:macosx"} links{"Cocoa.framework", "OpenGL.framework"}
 
 -- Samples
 decl_sample("Base")
-  filter{"system:linux"} links{"X11", "GL"}
+  filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
+  filter{"system:linux"  } links{"X11", "GL"}
 decl_sample("Benchmarking")
-  filter{"system:linux"} links{"X11", "GL"}
+  filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
+  filter{"system:linux"  } links{"X11", "GL"}

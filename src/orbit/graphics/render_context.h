@@ -26,7 +26,7 @@ namespace orb
 
 class window;
 
-class ORB_API_GRAPHICS render_context
+class render_context
 {
 public:
 	render_context(window& parentWindow, graphics_api api);

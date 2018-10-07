@@ -20,15 +20,6 @@
 
 #include "core/bitmask.h"
 
-/* API macro. */
-#if defined(ORB_STATIC)
-#define ORB_API_GRAPHICS
-#elif defined(ORB_BUILD_GRAPHICS)
-#define ORB_API_GRAPHICS ORB_DLL_EXPORT
-#else
-#define ORB_API_GRAPHICS ORB_DLL_IMPORT
-#endif
-
 /* Graphics API macros. */
 #if defined(ORB_OS_WINDOWS)
 #define ORB_HAS_OPENGL

@@ -25,7 +25,7 @@
 namespace orb
 {
 
-class ORB_API_CORE window : public event_dispatcher<window_event>
+class window : public event_dispatcher<window_event>
 {
 public:
 	window();
