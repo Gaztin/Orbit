@@ -46,10 +46,14 @@ render_context::render_context(window& parentWindow, graphics_api api)
 	switch (m_api)
 	{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL: m_impl.construct<opengl_impl>(parentWindow._impl().get<window_impl>()); break;
+		case graphics_api::OpenGL:
+			m_impl.construct<opengl_impl>(parentWindow._impl().get<window_impl>());
+			break;
 #endif
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11: m_impl.construct<d3d11_impl>(parentWindow._impl().get<window_impl>()); break;
+		case graphics_api::D3D11:
+			m_impl.construct<d3d11_impl>(parentWindow._impl().get<window_impl>());
+			break;
 #endif
 		default: assert(false);
 	}
@@ -64,10 +68,15 @@ render_context::render_context(window& parentWindow, graphics_api api)
 				switch (m_api)
 				{
 #if defined(ORB_HAS_OPENGL)
-					case graphics_api::OpenGL: m_impl.get<opengl_impl>().recreate_surface(parentWindow._impl().get<window_impl>()); break;
+					case graphics_api::OpenGL:
+						assert(m_impl.get<opengl_impl>().is_current());
+						m_impl.get<opengl_impl>().recreate_surface(parentWindow._impl().get<window_impl>());
+						break;
 #endif
 #if defined(ORB_HAS_D3D11)
-					case graphics_api::D3D11: m_impl.get<d3d11_impl>().recreate_swap_chain(parentWindow._impl().get<window_impl>()); break;
+					case graphics_api::D3D11:
+						m_impl.get<d3d11_impl>().recreate_swap_chain(parentWindow._impl().get<window_impl>());
+						break;
 #endif
 					default: assert(false);
 				}
@@ -85,6 +94,7 @@ void render_context::make_current(const window& parentWindow)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
+			assert(m_impl.get<opengl_impl>().is_current());
 			m_impl.get<opengl_impl>().make_current(parentWindow._impl().get<window_impl>());
 			break;
 #endif
@@ -98,10 +108,15 @@ void render_context::swap_buffers(const window& parentWindow)
 	switch (m_api)
 	{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL: m_impl.get<opengl_impl>().swap_buffers(parentWindow._impl().get<window_impl>()); break;
+		case graphics_api::OpenGL:
+			assert(m_impl.get<opengl_impl>().is_current());
+			m_impl.get<opengl_impl>().swap_buffers(parentWindow._impl().get<window_impl>());
+			break;
 #endif
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11: m_impl.get<d3d11_impl>().swap_buffers(); break;
+		case graphics_api::D3D11:
+			m_impl.get<d3d11_impl>().swap_buffers();
+			break;
 #endif
 		default:
 			assert(false);
@@ -140,6 +155,7 @@ void render_context::set_clear_color(float r, float g, float b)
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
+			assert(m_impl.get<opengl_impl>().is_current());
 			m_impl.get<d3d11_impl>().set_clear_color(r, g, b, 1.0f);
 			break;
 #endif
