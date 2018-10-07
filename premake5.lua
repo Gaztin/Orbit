@@ -50,6 +50,10 @@ local function base_config()
 	defines        {"NDEBUG"}
 	optimize       ("Full")
 	symbols        ("Off")
+	filter{"system:windows"}
+	toolset        ("msc")
+	filter{"system:not windows"}
+	toolset        ("clang")
 	filter{}
 end
 
