@@ -16,7 +16,8 @@
 */
 
 #pragma once
-#include <assert.h>
+#include <memory>
+
 #include <stdint.h>
 
 #include "orbit/core/utility.h"
@@ -24,56 +25,39 @@
 namespace orb
 {
 
-template<size_t size>
 class variant
 {
 public:
 	variant()
-		: m_storage{}
-		, m_deleter(nullptr)
+		: m_ptr(nullptr)
 	{ }
 
-	template<typename T, typename... Args> variant(in_place_type_t<T>, Args&&... args)
+	template<typename T, typename... Args>
+	variant(in_place_type_t<T>, Args&&... args)
 	{
 		construct<T, Args...>(std::forward<Args>(args)...);
 	}
 
-	~variant()
-	{
-		if (m_deleter)
-			m_deleter(m_storage);
-	}
-
 	template<typename T, typename... Args>
-	T& construct(Args&&... args)
+	void construct(Args&&... args)
 	{
-		assert(sizeof(T) <= size);
-		m_deleter = &delete_impl<T>;
-		return *(new (m_storage) T(std::forward<Args>(args)...));
+		m_ptr = std::static_pointer_cast<void, T>(std::make_shared<T>(std::forward<Args>(args)...));
 	}
 
 	template<typename T>
-	T& ref()
+	T& get()
 	{
-		return *reinterpret_cast<T*>(m_storage);
+		return *std::reinterpret_pointer_cast<T, void>(m_ptr);
 	}
 
 	template<typename T>
-	const T& ref() const
+	const T& get() const
 	{
-		return *reinterpret_cast<const T*>(m_storage);
+		return *std::reinterpret_pointer_cast<T, void>(m_ptr);
 	}
 
 private:
-	template<typename T>
-	static void delete_impl(uint8_t* ptr)
-	{
-		reinterpret_cast<T*>(ptr)->~T();
-	}
-
-	uint8_t m_storage[size];
-
-	void(*m_deleter)(uint8_t*);
+	std::shared_ptr<void> m_ptr;
 };
 
 }
