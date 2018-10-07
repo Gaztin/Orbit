@@ -56,6 +56,7 @@ void render_context_opengl_impl::reset_current()
 
 void render_context_opengl_impl::recreate_surface(const window_impl& parentWindowImpl)
 {
+	(void)parentWindowImpl;
 }
 
 bool render_context_opengl_impl::is_current() const

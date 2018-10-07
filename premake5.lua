@@ -53,7 +53,7 @@ local function base_config()
 	filter{"system:windows"}
 	toolset        ("msc")
 	filter{"system:not windows"}
-	toolset        ("clang")
+	toolset        ("gcc")
 	filter{}
 end
 

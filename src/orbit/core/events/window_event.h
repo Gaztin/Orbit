@@ -18,6 +18,11 @@
 #pragma once
 #include <stdint.h>
 
+#ifdef None
+#pragma push_macro("None")
+#undef None
+#endif
+
 namespace orb
 {
 
@@ -43,3 +48,5 @@ struct window_event
 };
 
 }
+
+#pragma pop_macro("None")
