@@ -34,7 +34,7 @@ private:
 	timespec m_startTimeSpec;
 };
 
-const std::map<orb::graphics_api, std::string> api_names =
+const std::map<orb::graphics_api, std::string> apiNames =
 {
 	{ orb::graphics_api::OpenGL, "OpenGL" },
 	{ orb::graphics_api::D3D11, "Direct3D 11" },
@@ -61,7 +61,7 @@ void bench_window_create(size_t count)
 void bench_context_create(orb::graphics_api api, size_t count)
 {
 	orb::window w(1024, 1024);
-	scoped_benchmark bench(orb::stringf("create %d %s contexts", count, api_names.at(api).c_str()));
+	scoped_benchmark bench(orb::stringf("create %d %s contexts", count, apiNames.at(api).c_str()));
 	for (size_t i = 0; i < count; ++i)
 	{
 		orb::render_context(w, api);
@@ -74,7 +74,7 @@ void bench_context_clear(orb::graphics_api api, size_t count)
 	orb::render_context rc(w, api);
 	rc.make_current(w);
 	rc.set_clear_color(1.0f, 0.0f, 1.0f);
-	scoped_benchmark bench(orb::stringf("clear %s context %d times", api_names.at(api).c_str(), count));
+	scoped_benchmark bench(orb::stringf("clear %s context %d times", apiNames.at(api).c_str(), count));
 	for (size_t i = 0; i < count; ++i)
 	{
 		rc.clear(orb::buffer_mask::Color);
