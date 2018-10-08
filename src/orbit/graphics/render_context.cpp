@@ -94,7 +94,6 @@ void render_context::make_current(const window& parentWindow)
 	{
 #if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			assert(m_impl.get<opengl_impl>().is_current());
 			m_impl.get<opengl_impl>().make_current(parentWindow._impl().get<window_impl>());
 			break;
 #endif
