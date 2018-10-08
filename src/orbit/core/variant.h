@@ -47,13 +47,13 @@ public:
 	template<typename T>
 	T& get()
 	{
-		return *std::reinterpret_pointer_cast<T, void>(m_ptr);
+		return *reinterpret_cast<T*>(m_ptr.get());
 	}
 
 	template<typename T>
 	const T& get() const
 	{
-		return *std::reinterpret_pointer_cast<T, void>(m_ptr);
+		return *reinterpret_cast<const T*>(m_ptr.get());
 	}
 
 private:
