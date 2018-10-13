@@ -56,6 +56,12 @@ public:
 		return *reinterpret_cast<const T*>(m_ptr.get());
 	}
 
+	template<typename T>
+	std::shared_ptr<T> get_ptr() const
+	{
+		return std::static_pointer_cast<T, void>(m_ptr);
+	}
+
 private:
 	std::shared_ptr<void> m_ptr;
 };
