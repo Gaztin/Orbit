@@ -154,7 +154,6 @@ void render_context::set_clear_color(float r, float g, float b)
 #endif
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			assert(m_impl.get<opengl_impl>().is_current());
 			m_impl.get<d3d11_impl>().set_clear_color(r, g, b, 1.0f);
 			break;
 #endif
