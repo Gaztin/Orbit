@@ -6,6 +6,9 @@ android {
         applicationId "com.gaztin.orbit"
         minSdkVersion 21
         targetSdkVersion 26
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
     }
     buildTypes {
         debug {
