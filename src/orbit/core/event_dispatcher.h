@@ -32,25 +32,27 @@ template<typename EventType>
 class event_dispatcher
 {
 public:
-	using event_t = EventType;
-
 	struct subscription
 	{
-	public:
+		// TODO: Remove in favor of deleters
 		~subscription() { unsubscriber(id); }
 
 		uint64_t id;
 		std::function<void(uint64_t)> unsubscriber;
 	};
 
+	using event_t = EventType;
+	using subscription_ptr = std::shared_ptr<subscription>;
+
 	event_dispatcher() = default;
 	virtual ~event_dispatcher() = default;
 
 	template<typename Functor>
-	[[nodiscard]] std::shared_ptr<subscription> subscribe(Functor&& functor)
+	[[nodiscard]] subscription_ptr subscribe(Functor&& functor)
 	{
+		// TODO: Construct with deleter
 		static uint64_t uniqueId = 0;
-		std::shared_ptr<subscription> sub = std::make_shared<subscription>();
+		subscription_ptr sub = std::make_shared<subscription>();
 		sub->id = ++uniqueId;
 		sub->unsubscriber = [this](uint64_t id) { unsubscribe(id); };
 		m_subscribers.push_back(subscriber{sub->id, std::forward<Functor>(functor)});

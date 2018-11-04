@@ -15,45 +15,28 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "render_context_opengl_impl.h"
+#pragma once
+#include "orbit/graphics.h"
 
-#include "orbit/core/internal/window_impl.h"
+#include <cstdint>
 
 namespace orb
 {
+class window;
 
-render_context_opengl_impl::render_context_opengl_impl(const window_impl& parentWindowImpl)
-	: m_hglrc(wglCreateContext(parentWindowImpl.hdc()))
+namespace platform
 {
-}
 
-render_context_opengl_impl::~render_context_opengl_impl()
+class context_base
 {
-	wglDeleteContext(m_hglrc);
-}
+public:
+	virtual ~context_base() {};
 
-void render_context_opengl_impl::make_current(const window_impl& parentWindowImpl)
-{
-	wglMakeCurrent(parentWindowImpl.hdc(), m_hglrc);
-}
+	virtual void resize(uint32_t width, uint32_t height) = 0;
+	virtual void swap_buffers() = 0;
+	virtual void clear(buffer_mask mask) = 0;
+	virtual void set_clear_color(float r, float g, float b) = 0;
+};
 
-void render_context_opengl_impl::swap_buffers(const window_impl& parentWindowImpl)
-{
-	SwapBuffers(parentWindowImpl.hdc());
 }
-
-void render_context_opengl_impl::reset_current()
-{
-	wglMakeCurrent(nullptr, nullptr);
-}
-
-void render_context_opengl_impl::recreate_surface(const window_impl& /*parentWindowImpl*/)
-{
-}
-
-bool render_context_opengl_impl::is_current() const
-{
-	return (wglGetCurrentContext() == m_hglrc);
-}
-
 }

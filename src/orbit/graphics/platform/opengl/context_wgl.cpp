@@ -15,57 +15,56 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "window.h"
+#include "context_gl.h"
+
+#include <gl/GL.h>
 
 namespace orb
 {
-
-window::window()
-	: m_handle(platform::create_window_handle())
-	, m_open(true)
+namespace platform
 {
+
+static GLbitfield convert_buffer_mask(buffer_mask mask)
+{
+	GLbitfield bits = 0;
+	bits |= (!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0;
+	bits |= (!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0;
+	return bits;
 }
 
-window::window(uint32_t width, uint32_t height)
-	: m_handle(platform::create_window_handle(width, height))
-	, m_open(true)
+context_gl::context_gl(const window_handle& wh)
+	: m_parentWindowHandle(wh)
+	, m_hdc(GetDC(wh.hwnd))
+	, m_hglrc(wglCreateContext(m_hdc))
 {
+	// TODO: Figure out an object-oriented approach to manage "current" contexts
+	wglMakeCurrent(m_hdc, m_hglrc);
 }
 
-void window::poll_events()
+context_gl::~context_gl()
 {
-	std::optional<platform::message> msg;
-	while ((msg = platform::peek_message(m_handle)))
-	{
-		platform::process_message(*this, *msg);
-	}
-
-	send_events();
+	ReleaseDC(m_parentWindowHandle.hwnd, m_hdc);
 }
 
-void window::set_title(const std::string& title)
+void context_gl::resize(uint32_t width, uint32_t height)
 {
-	platform::set_window_title(m_handle, title);
+	glViewport(0, 0, width, height);
 }
 
-void window::set_pos(uint32_t x, uint32_t y)
+void context_gl::swap_buffers()
 {
-	platform::set_window_position(m_handle, x, y);
+	SwapBuffers(m_hdc);
 }
 
-void window::set_size(uint32_t width, uint32_t height)
+void context_gl::clear(buffer_mask mask)
 {
-	platform::set_window_size(m_handle, width, height);
+	glClear(convert_buffer_mask(mask));
 }
 
-void window::show()
+void context_gl::set_clear_color(float r, float g, float b)
 {
-	platform::set_window_visibility(m_handle, true);
+	glClearColor(r, g, b, 1.0f);
 }
 
-void window::hide()
-{
-	platform::set_window_visibility(m_handle, false);
 }
-
 }

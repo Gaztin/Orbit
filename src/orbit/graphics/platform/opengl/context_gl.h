@@ -1,12 +1,12 @@
 /*
 * Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
-* 
+*
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose, including commercial
 * applications, and to alter it and redistribute it freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not claim that you wrote the
 *    original software. If you use this software in a product, an acknowledgment in the product
 *    documentation would be appreciated but is not required.
@@ -16,45 +16,33 @@
 */
 
 #pragma once
-#include "orbit.h"
-
-#include "core/bitmask.h"
-
-/* Graphics API macros. */
-#if defined(ORB_OS_WINDOWS)
-#define ORB_HAS_D3D11
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_ANDROID)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_LINUX)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_MACOS)
-#define ORB_HAS_OPENGL
-#endif
-
-/* Enumerators */
+#include "orbit/core/platform/window_handle.h"
+#include "orbit/graphics/platform/context_base.h"
 
 namespace orb
 {
-
-enum class graphics_api
+namespace platform
 {
-	None,
-	OpenGL,
-	D3D11,
+
+class context_gl : public context_base
+{
+public:
+	explicit context_gl(const window_handle& wh);
+	~context_gl();
+
+	void resize(uint32_t width, uint32_t height) final override;
+	void swap_buffers() final override;
+	void clear(buffer_mask mask) final override;
+	void set_clear_color(float r, float g, float b) final override;
+
+private:
+	window_handle m_parentWindowHandle;
 
 #if defined(ORB_OS_WINDOWS)
-	DeviceDefault = D3D11,
-#else
-	DeviceDefault = OpenGL,
+	HDC m_hdc;
+	HGLRC m_hglrc;
 #endif
 };
 
-enum class buffer_mask
-{
-	Color = 0x1,
-	Depth = 0x2,
-};
-ORB_ENABLE_BITMASKING(buffer_mask);
-
+}
 }

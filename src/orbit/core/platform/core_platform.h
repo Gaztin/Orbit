@@ -1,12 +1,12 @@
 /*
 * Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
-* 
+*
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose, including commercial
 * applications, and to alter it and redistribute it freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not claim that you wrote the
 *    original software. If you use this software in a product, an acknowledgment in the product
 *    documentation would be appreciated but is not required.
@@ -18,43 +18,29 @@
 #pragma once
 #include "orbit.h"
 
-#include "core/bitmask.h"
+#include <cstdint>
+#include <optional>
+#include <string>
 
-/* Graphics API macros. */
-#if defined(ORB_OS_WINDOWS)
-#define ORB_HAS_D3D11
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_ANDROID)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_LINUX)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_MACOS)
-#define ORB_HAS_OPENGL
-#endif
-
-/* Enumerators */
+#include "orbit/core/platform/message.h"
+#include "orbit/core/platform/window_handle.h"
+#include "orbit/core/platform/window_property.h"
 
 namespace orb
 {
+class window;
 
-enum class graphics_api
+namespace platform
 {
-	None,
-	OpenGL,
-	D3D11,
 
-#if defined(ORB_OS_WINDOWS)
-	DeviceDefault = D3D11,
-#else
-	DeviceDefault = OpenGL,
-#endif
-};
+extern window_handle create_window_handle(uint32_t width = 0, uint32_t height = 0);
+extern void set_window_user_data(window_handle& wh, window& wnd);
+extern std::optional<message> peek_message(const window_handle& wh);
+extern void process_message(window& wnd, const message& msg);
+extern void set_window_title(const window_handle& wh, const std::string& title);
+extern void set_window_position(const window_handle& wh, int x, int y);
+extern void set_window_size(const window_handle& wh, uint32_t width, uint32_t height);
+extern void set_window_visibility(const window_handle& wh, bool visible);
 
-enum class buffer_mask
-{
-	Color = 0x1,
-	Depth = 0x2,
-};
-ORB_ENABLE_BITMASKING(buffer_mask);
-
+}
 }

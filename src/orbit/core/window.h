@@ -20,7 +20,7 @@
 
 #include "orbit/core/event_dispatcher.h"
 #include "orbit/core/events/window_event.h"
-#include "orbit/core/variant.h"
+#include "orbit/core/platform/core_platform.h"
 
 namespace orb
 {
@@ -38,12 +38,15 @@ public:
 	void show();
 	void hide();
 
-	operator bool() const;
+	inline void close() { m_open = false; }
 
-	variant _impl() const { return m_impl; }
+	inline operator bool() const { return m_open; }
+
+	inline const platform::window_handle& get_handle() const { return m_handle; }
 
 private:
-	variant m_impl;
+	platform::window_handle m_handle;
+	bool m_open;
 };
 
 }

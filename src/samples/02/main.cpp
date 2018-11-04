@@ -72,7 +72,7 @@ void bench_context_clear(orb::graphics_api api, size_t count)
 {
 	orb::window w(1024, 1024);
 	orb::render_context rc(w, api);
-	rc.make_current(w);
+	//rc.make_current(w);
 	rc.set_clear_color(1.0f, 0.0f, 1.0f);
 	scoped_benchmark bench(orb::stringf("clear %s context %d times", apiNames.at(api).c_str(), count));
 	for (size_t i = 0; i < count; ++i)

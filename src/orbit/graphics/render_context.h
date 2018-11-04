@@ -16,31 +16,29 @@
 */
 
 #pragma once
-#include "orbit/core/bitmask.h"
 #include "orbit/core/variant.h"
 #include "orbit/core/window.h"
-#include "orbit/graphics.h"
+#include "orbit/graphics/platform/context_base.h"
 
 namespace orb
 {
 
 class window;
-
+ 
 class render_context
 {
 public:
 	render_context(window& parentWindow, graphics_api api);
 
-	void make_current(const window& parentWindow);
-	void swap_buffers(const window& parentWindow);
+	//void make_current(const window& parentWindow);
+	void resize(uint32_t width, uint32_t height);
+	void swap_buffers();
 	void clear(buffer_mask bm);
 	void set_clear_color(float r, float g, float b);
 
 private:
-	variant m_impl;
-
 	graphics_api m_api;
-	std::shared_ptr<window::subscription> m_windowSubscription;
+	std::unique_ptr<platform::context_base> m_context;
 };
 
 }

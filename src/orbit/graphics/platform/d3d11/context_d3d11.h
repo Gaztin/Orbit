@@ -16,41 +16,29 @@
 */
 
 #pragma once
-#include <stdint.h>
-
+#include "orbit/core/platform/window_handle.h"
 #include "orbit/core/memory.h"
-#include "orbit/graphics/render_context.h"
+#include "orbit/graphics/platform/context_base.h"
 
-#if defined(ORB_OS_WINDOWS)
 #include <d3d11.h>
-#endif
 
 namespace orb
 {
+namespace platform
+{
 
-class window_impl;
-
-class ORB_DLL_LOCAL render_context_d3d11_impl
+class context_d3d11 : public context_base
 {
 public:
-	explicit render_context_d3d11_impl(const window_impl& parentWindowImpl);
+	explicit context_d3d11(const window_handle& wh);
 
-	void swap_buffers();
-	void set_clear_color(float r, float g, float b, float a);
-	void clear(buffer_mask bm);
-	void recreate_swap_chain(const window_impl& parentWindowImpl);
+	void resize(uint32_t width, uint32_t height) final override;
+	void swap_buffers() final override;
+	void clear(buffer_mask mask) final override;
+	void set_clear_color(float r, float g, float b) final override;
 
 private:
-#if defined(ORB_OS_WINDOWS)
-	DXGI_RATIONAL find_monitor_refresh_rate(HWND hwnd) const;
-	IDXGISwapChain* create_swap_chain(HWND hwnd) const;
-	ID3D11Device* get_device() const;
-	ID3D11DeviceContext* get_device_context() const;
-	ID3D11RenderTargetView* create_render_target_view() const;
-	ID3D11Texture2D* create_depth_stencil_buffer(HWND hwnd) const;
-	ID3D11DepthStencilState* create_depth_stencil_state() const;
-	ID3D11DepthStencilView* create_depth_stencil_view() const;
-	ID3D11RasterizerState* create_rasterization_state() const;
+	window_handle m_parentWindowHandle;
 
 	com_ptr<IDXGISwapChain> m_swapChain;
 	com_ptr<ID3D11Device> m_device;
@@ -60,8 +48,9 @@ private:
 	com_ptr<ID3D11DepthStencilState> m_depthStencilState;
 	com_ptr<ID3D11DepthStencilView> m_depthStencilView;
 	com_ptr<ID3D11RasterizerState> m_rasterizerState;
+
 	float m_clearColor[4];
-#endif
 };
 
+}
 }

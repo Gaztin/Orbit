@@ -16,65 +16,37 @@
 */
 
 #pragma once
-#include <stdint.h>
-
 #include "orbit.h"
 
 #if defined(ORB_OS_WINDOWS)
-#include <windows.h>
-#include <gl/GL.h>
-#elif defined(ORB_OS_ANDROID)
-#include <EGL/egl.h>
-#include <GLES/gl.h>
+#include <wtypes.h>
 #elif defined(ORB_OS_LINUX)
-#include <GL/glx.h>
-#elif defined(ORB_OS_MACOS)
-#include <OpenGL/gl.h>
+#include <X11/Xlib.h>
+#elif defined(ORB_OS_ANDROID)
+#include <android/sensor.h>
 #endif
 
 namespace orb
 {
-
-class window_impl;
-
-class ORB_DLL_LOCAL render_context_opengl_impl
+namespace platform
 {
-public:
-	explicit render_context_opengl_impl(const window_impl& parentWindowImpl);
-	~render_context_opengl_impl();
 
-	void make_current(const window_impl& parentWindowImpl);
-	void swap_buffers(const window_impl& parentWindowImpl);
-	void reset_current();
-	void recreate_surface(const window_impl& parentWindowImpl);
-
-	bool is_current() const;
-
-private:
+struct window_handle
+{
 #if defined(ORB_OS_WINDOWS)
-	HGLRC m_hglrc;
-
-#elif defined(ORB_OS_ANDROID)
-	EGLDisplay create_display() const;
-	EGLConfig create_config() const;
-	EGLSurface create_surface() const;
-	EGLContext create_context() const;
-
-	EGLDisplay m_display;
-	EGLConfig m_config;
-	EGLSurface m_surface;
-	EGLContext m_context;
-
+	HWND hwnd;
 #elif defined(ORB_OS_LINUX)
-	GLXContext create_glx_context(Display* display);
-	
-	Display*   m_display;
-	GC         m_gc;
-	GLXContext m_context;
-
+	Display* display;
+	Window window;
 #elif defined(ORB_OS_MACOS)
-	void* m_glView;
+	void* nsWindow; // <NSWindow*>
+	void* delegate; // <window_delegate*>
+#elif defined(ORB_OS_ANDROID)
+	ASensorManager* sensorManager;
+	const ASensor* accelerometerSensor;
+	ASensorEventQueue* sensorEventQueue;
 #endif
 };
 
+}
 }

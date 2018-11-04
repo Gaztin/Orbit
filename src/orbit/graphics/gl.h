@@ -25,13 +25,16 @@
 #if defined(ORB_OS_WINDOWS)
 #include <windows.h>
 #include <gl/GL.h>
-#include <gl/GLext.h>
+//#include <gl/GLext.h>
 #endif
 
 namespace orb
 {
 namespace gl
 {
+
+using GLintptr = ptrdiff_t;
+using GLsizeiptr = size_t;
 
 enum class buffer_target : GLenum
 {
