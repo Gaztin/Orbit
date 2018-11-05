@@ -20,16 +20,11 @@
 namespace orb
 {
 
-window::window()
-	: m_handle(platform::create_window_handle())
-	, m_open(true)
-{
-}
-
 window::window(uint32_t width, uint32_t height)
 	: m_handle(platform::create_window_handle(width, height))
 	, m_open(true)
 {
+	platform::set_window_user_data(m_handle, *this);
 }
 
 void window::poll_events()

@@ -2,7 +2,7 @@
 #include <orbit/core/log.h>
 #include <orbit/core/stringf.h>
 #include <orbit/core/window.h>
-//#include <orbit/graphics/render_context.h>
+#include <orbit/graphics/render_context.h>
 
 void on_window_event(const orb::window_event& e)
 {
@@ -50,14 +50,14 @@ int main(int /*argc*/, char* /*argv*/[])
 	w.set_title("Orbit sample #01");
 	w.show();
 
-	/*orb::render_context rc(w, orb::graphics_api::DeviceDefault);
-	rc.make_current(w);
-	rc.set_clear_color(1.0f, 0.0f, 1.0f);*/
+	orb::render_context rc(w, orb::graphics_api::DeviceDefault);
+	//rc.make_current(w);
+	rc.set_clear_color(1.0f, 0.0f, 1.0f);
 	while (w)
 	{
 		w.poll_events();
-		/*rc.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
-		rc.swap_buffers(w);*/
+		rc.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
+		rc.swap_buffers();
 	}
 
 	orb::log_info("Exited!\n");

@@ -16,29 +16,30 @@
 */
 
 #pragma once
-#include "orbit/core/platform/window_handle.h"
-#include "orbit/graphics/platform/context_base.h"
-#include "orbit/graphics/platform/context_handle.h"
+#include "orbit/graphics.h"
 
 namespace orb
 {
 namespace platform
 {
 
-class context_gl : public context_base
+struct context_handle
 {
-public:
-	explicit context_gl(const window_handle& wh);
-	~context_gl();
-
-	void resize(uint32_t width, uint32_t height) final override;
-	void swap_buffers() final override;
-	void clear(buffer_mask mask) final override;
-	void set_clear_color(float r, float g, float b) final override;
-
-private:
-	window_handle m_parentWindowHandle;
-	context_handle m_handle;
+#if defined(ORB_OS_WINDOWS)
+	HDC hdc;
+	HGLRC hglrc;
+#elif defined(ORB_OS_LINUX)
+	Display* display;
+	GC gc;
+	GLXContext glxContext;
+#elif defined(ORB_OS_MACOS)
+	void* glView; // <GLView*>
+#elif defined(ORB_OS_ANDROID)
+	EGLDisplay eglDisplay;
+	EGLConfig eglConfig;
+	EGLSurface eglSurface;
+	EGLContext eglContext;
+#endif
 };
 
 }

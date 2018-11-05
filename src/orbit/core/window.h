@@ -28,7 +28,6 @@ namespace orb
 class window : public event_dispatcher<window_event>
 {
 public:
-	window();
 	window(uint32_t width, uint32_t height);
 
 	void poll_events();

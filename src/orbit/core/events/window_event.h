@@ -18,8 +18,11 @@
 #pragma once
 #include <stdint.h>
 
+#if defined(ORB_OS_LINUX)
+// Need to temporarily undefine "None" since Xlib helped themselves to define it as a pre-processor.
 #pragma push_macro("None")
 #undef None
+#endif
 
 namespace orb
 {
@@ -40,11 +43,13 @@ struct window_event
 
 	union
 	{
-		struct move_t { int x, y; } move;
-		struct resize_t { uint32_t w, h; } resize;
+		struct { int x, y; } move;
+		struct { uint32_t w, h; } resize;
 	} data;
 };
 
 }
 
+#if defined(ORB_OS_LINUX)
 #pragma pop_macro("None")
+#endif
