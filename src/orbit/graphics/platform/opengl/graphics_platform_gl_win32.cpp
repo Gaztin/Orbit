@@ -15,53 +15,36 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "render_context.h"
+#include "graphics_platform_gl.h"
 
-#include "orbit/graphics/api/d3d11/context_d3d11.h"
-#include "orbit/graphics/api/opengl/context_gl.h"
-#include "orbit/core/window.h"
+#include "orbit/core/platform/window_handle.h"
 
 namespace orb
 {
-
-render_context::render_context(window& parentWindow, graphics_api api)
-	: m_api(api)
+namespace platform
 {
-	switch (m_api)
-	{
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			m_context = std::make_unique<d3d11::context>(parentWindow.get_handle());
-			break;
-#endif
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			m_context = std::make_unique<gl::context>(parentWindow.get_handle());
-			break;
-#endif
-		default:
-			throw;
-	}
+namespace gl
+{
+
+context_handle create_context_handle(const window_handle& wh)
+{
+	context_handle ch{};
+	ch.hdc = GetDC(wh.hwnd);
+	ch.hglrc = wglCreateContext(ch.hdc);
+	return ch;
 }
 
-void render_context::resize(uint32_t width, uint32_t height)
+void destroy_context_handle(const window_handle& wh, const context_handle& ch)
 {
-	m_context->resize(width, height);
+	wglDeleteContext(ch.hglrc);
+	ReleaseDC(wh.hwnd, ch.hdc);
 }
 
-void render_context::swap_buffers()
+bool make_current(const context_handle& ch)
 {
-	m_context->swap_buffers();
+	return wglMakeCurrent(ch.hdc, ch.hglrc);
 }
 
-void render_context::clear(buffer_mask bm)
-{
-	m_context->clear(bm);
 }
-
-void render_context::set_clear_color(float r, float g, float b)
-{
-	m_context->set_clear_color(r, g, b);
 }
-
 }

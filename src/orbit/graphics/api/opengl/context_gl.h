@@ -16,26 +16,29 @@
 */
 
 #pragma once
-#include "orbit/graphics.h"
-
-#include <cstdint>
+#include "orbit/core/platform/window_handle.h"
+#include "orbit/graphics/api/context_base.h"
+#include "orbit/graphics/platform/opengl/context_handle_gl.h"
 
 namespace orb
 {
-class window;
-
-namespace platform
+namespace gl
 {
 
-class context_base
+class context : public context_base
 {
 public:
-	virtual ~context_base() {};
+	explicit context(const platform::window_handle& wh);
+	~context();
 
-	virtual void resize(uint32_t width, uint32_t height) = 0;
-	virtual void swap_buffers() = 0;
-	virtual void clear(buffer_mask mask) = 0;
-	virtual void set_clear_color(float r, float g, float b) = 0;
+	void resize(uint32_t width, uint32_t height) final override;
+	void swap_buffers() final override;
+	void clear(buffer_mask mask) final override;
+	void set_clear_color(float r, float g, float b) final override;
+
+private:
+	platform::window_handle m_parentWindowHandle;
+	platform::gl::context_handle m_handle;
 };
 
 }

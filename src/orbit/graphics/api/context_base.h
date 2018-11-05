@@ -16,41 +16,23 @@
 */
 
 #pragma once
-#include "orbit/core/platform/window_handle.h"
-#include "orbit/core/memory.h"
-#include "orbit/graphics/platform/context_base.h"
+#include "orbit/graphics.h"
 
-#include <d3d11.h>
+#include <cstdint>
 
 namespace orb
 {
-namespace platform
-{
+class window;
 
-class context_d3d11 : public context_base
+class context_base
 {
 public:
-	explicit context_d3d11(const window_handle& wh);
+	virtual ~context_base() {};
 
-	void resize(uint32_t width, uint32_t height) final override;
-	void swap_buffers() final override;
-	void clear(buffer_mask mask) final override;
-	void set_clear_color(float r, float g, float b) final override;
-
-private:
-	window_handle m_parentWindowHandle;
-
-	com_ptr<IDXGISwapChain> m_swapChain;
-	com_ptr<ID3D11Device> m_device;
-	com_ptr<ID3D11DeviceContext> m_deviceContext;
-	com_ptr<ID3D11RenderTargetView> m_renderTargetView;
-	com_ptr<ID3D11Texture2D> m_depthStencilBuffer;
-	com_ptr<ID3D11DepthStencilState> m_depthStencilState;
-	com_ptr<ID3D11DepthStencilView> m_depthStencilView;
-	com_ptr<ID3D11RasterizerState> m_rasterizerState;
-
-	float m_clearColor[4];
+	virtual void resize(uint32_t width, uint32_t height) = 0;
+	virtual void swap_buffers() = 0;
+	virtual void clear(buffer_mask mask) = 0;
+	virtual void set_clear_color(float r, float g, float b) = 0;
 };
 
-}
 }

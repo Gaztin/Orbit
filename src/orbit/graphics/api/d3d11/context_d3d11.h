@@ -16,29 +16,42 @@
 */
 
 #pragma once
-#include "orbit/core/variant.h"
-#include "orbit/core/window.h"
+#include "orbit/core/platform/window_handle.h"
+#include "orbit/core/memory.h"
 #include "orbit/graphics/api/context_base.h"
+#include "orbit/graphics/platform/d3d11/context_handle_d3d11.h"
+
+#include <d3d11.h>
 
 namespace orb
 {
+namespace d3d11
+{
 
-class window;
- 
-class render_context
+class context : public context_base
 {
 public:
-	render_context(window& parentWindow, graphics_api api);
+	explicit context(const platform::window_handle& wh);
 
-	//void make_current(const window& parentWindow);
-	void resize(uint32_t width, uint32_t height);
-	void swap_buffers();
-	void clear(buffer_mask bm);
-	void set_clear_color(float r, float g, float b);
+	void resize(uint32_t width, uint32_t height) final override;
+	void swap_buffers() final override;
+	void clear(buffer_mask mask) final override;
+	void set_clear_color(float r, float g, float b) final override;
 
 private:
-	graphics_api m_api;
-	std::unique_ptr<context_base> m_context;
+	platform::window_handle m_parentWindowHandle;
+
+	std::shared_ptr<IDXGISwapChain> m_swapChain;
+	ID3D11Device& m_device;
+	ID3D11DeviceContext& m_deviceContext;
+	std::shared_ptr<ID3D11RenderTargetView> m_renderTargetView;
+	std::shared_ptr<ID3D11Texture2D> m_depthStencilBuffer;
+	std::shared_ptr<ID3D11DepthStencilState> m_depthStencilState;
+	std::shared_ptr<ID3D11DepthStencilView> m_depthStencilView;
+	std::shared_ptr<ID3D11RasterizerState> m_rasterizerState;
+
+	float m_clearColor[4];
 };
 
+}
 }
