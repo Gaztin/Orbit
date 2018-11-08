@@ -42,6 +42,14 @@ render_context::render_context(window& parentWindow, graphics_api api)
 		default:
 			throw;
 	}
+
+	// Resize context when window is updated
+	m_resizeSubscription = parentWindow.subscribe(
+		[this](const window_event& e)
+	{
+		if (e.type == window_event::Resize)
+			this->resize(e.data.resize.w, e.data.resize.h);
+	});
 }
 
 void render_context::resize(uint32_t width, uint32_t height)

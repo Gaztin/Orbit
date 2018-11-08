@@ -39,6 +39,7 @@ public:
 private:
 	graphics_api m_api;
 	std::unique_ptr<context_base> m_context;
+	window::subscription_ptr m_resizeSubscription;
 };
 
 }
