@@ -22,6 +22,9 @@
 #include <dxgi.h>
 
 #include "orbit/core/platform/window_handle.h"
+#include "orbit/core/color.h"
+#include "orbit/graphics/platform/d3d11/context_handle_d3d11.h"
+#include "orbit/graphics/platform/d3d11/swap_chain_handle_d3d11.h"
 #include "orbit/graphics.h"
 
 namespace orb
@@ -31,14 +34,14 @@ namespace platform
 namespace d3d11
 {
 
-extern std::shared_ptr<IDXGISwapChain> create_swap_chain(const platform::window_handle& wh);
-extern ID3D11Device& get_device(IDXGISwapChain& swapChain);
-extern ID3D11DeviceContext& get_device_context(ID3D11Device& device);
-extern std::shared_ptr<ID3D11RenderTargetView> create_render_target_view(IDXGISwapChain& swapChain, ID3D11Device& device);
-extern std::shared_ptr<ID3D11Texture2D> create_depth_stencil_buffer(const platform::window_handle& wh, ID3D11Device& device);
-extern std::shared_ptr<ID3D11DepthStencilState> create_depth_stencil_state(ID3D11Device& device, ID3D11DeviceContext& deviceContext);
-extern std::shared_ptr<ID3D11DepthStencilView> create_depth_stencil_view(ID3D11Device& device, ID3D11DeviceContext& deviceContext, ID3D11Texture2D& depthStencilBuffer, ID3D11RenderTargetView& renderTargetView);
-extern std::shared_ptr<ID3D11RasterizerState> create_rasterization_state(ID3D11Device& device, ID3D11DeviceContext& deviceContext);
+extern swap_chain_handle create_swap_chain_handle(const window_handle& wh);
+extern context_handle create_context_handle(const window_handle& wh, const swap_chain_handle& sch);
+extern void flush_device_context(const swap_chain_handle& sch);
+extern void resize_swap_chain(const swap_chain_handle& sch, uint32_t width, uint32_t height);
+extern void recreate_buffers(context_handle& ch, const window_handle& wh, const swap_chain_handle& sch);
+extern void present(const swap_chain_handle& sch);
+extern void clear_render_target(const swap_chain_handle& sch, const context_handle& ch, const color& clr);
+extern void clear_depth_stencil(const swap_chain_handle& sch, const context_handle& ch);
 
 }
 }

@@ -17,11 +17,11 @@
 
 #pragma once
 #include "orbit/core/platform/window_handle.h"
+#include "orbit/core/color.h"
 #include "orbit/core/memory.h"
 #include "orbit/graphics/api/context_base.h"
 #include "orbit/graphics/platform/d3d11/context_handle_d3d11.h"
-
-#include <d3d11.h>
+#include "orbit/graphics/platform/d3d11/swap_chain_handle_d3d11.h"
 
 namespace orb
 {
@@ -40,17 +40,9 @@ public:
 
 private:
 	platform::window_handle m_parentWindowHandle;
-
-	std::shared_ptr<IDXGISwapChain> m_swapChain;
-	ID3D11Device& m_device;
-	ID3D11DeviceContext& m_deviceContext;
-	std::shared_ptr<ID3D11RenderTargetView> m_renderTargetView;
-	std::shared_ptr<ID3D11Texture2D> m_depthStencilBuffer;
-	std::shared_ptr<ID3D11DepthStencilState> m_depthStencilState;
-	std::shared_ptr<ID3D11DepthStencilView> m_depthStencilView;
-	std::shared_ptr<ID3D11RasterizerState> m_rasterizerState;
-
-	float m_clearColor[4];
+	platform::d3d11::swap_chain_handle m_swapChainHandle;
+	platform::d3d11::context_handle m_contextHandle;
+	color m_clearColor;
 };
 
 }

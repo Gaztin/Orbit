@@ -16,11 +16,12 @@
 */
 
 #pragma once
-#include "orbit/graphics.h"
-
 #include <memory>
 
+#include <dxgi.h>
 #include <d3d11.h>
+
+#include "orbit/graphics.h"
 
 namespace orb
 {
@@ -29,14 +30,12 @@ namespace platform
 namespace d3d11
 {
 
-struct context_handle
+struct swap_chain_handle
 {
 #if defined(ORB_OS_WINDOWS)
-	std::shared_ptr<ID3D11RenderTargetView> renderTargetView;
-	std::shared_ptr<ID3D11Texture2D> depthStencilBuffer;
-	std::shared_ptr<ID3D11DepthStencilState> depthStencilState;
-	std::shared_ptr<ID3D11DepthStencilView> depthStencilView;
-	std::shared_ptr<ID3D11RasterizerState> rasterizerState;
+	std::shared_ptr<IDXGISwapChain> swapChain;
+	ID3D11Device* device;
+	ID3D11DeviceContext* deviceContext;
 #endif
 };
 
