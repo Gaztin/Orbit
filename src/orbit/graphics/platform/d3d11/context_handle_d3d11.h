@@ -18,9 +18,10 @@
 #pragma once
 #include "orbit/graphics.h"
 
+#if defined(ORB_OS_WINDOWS)
 #include <memory>
-
 #include <d3d11.h>
+#endif
 
 namespace orb
 {

@@ -25,7 +25,8 @@
 #if defined(ORB_OS_WINDOWS)
 #include <windows.h>
 #include <gl/GL.h>
-//#include <gl/GLext.h>
+#elif defined(ORB_OS_ANDROID)
+#include <GLES/gl.h>
 #endif
 
 namespace orb
@@ -35,6 +36,7 @@ namespace gl
 
 using GLintptr = ptrdiff_t;
 using GLsizeiptr = size_t;
+using GLdouble = double;
 
 enum class buffer_target : GLenum
 {

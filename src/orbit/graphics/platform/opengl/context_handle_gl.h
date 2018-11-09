@@ -18,6 +18,10 @@
 #pragma once
 #include "orbit/graphics.h"
 
+#if defined(ORB_OS_ANDROID)
+#include <EGL/egl.h>
+#endif
+
 namespace orb
 {
 namespace platform

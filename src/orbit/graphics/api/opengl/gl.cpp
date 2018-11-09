@@ -19,6 +19,12 @@
 
 #include <vector>
 
+#include "orbit/core/utility.h"
+
+#if defined(ORB_OS_ANDROID)
+#include <EGL/egl.h>
+#endif
+
 namespace orb
 {
 namespace gl
@@ -72,14 +78,14 @@ namespace this_platform
 void* get_proc_address(std::string_view name)
 {
 #if defined(ORB_OS_WINDOWS)
-	return static_cast<void*>(wglGetProcAddress(name.data()));
+	return cast<void*>(wglGetProcAddress(name.data()));
 #elif defined(ORB_OS_LINUX)
-	return static_cast<void*>(glXGetProcAddress(reinterpret_cast<const GLubyte*>(name.data())));
+	return cast<void*>(glXGetProcAddress(reinterpret_cast<const GLubyte*>(name.data())));
 #elif defined(ORB_OS_MACOS)
 	static void* lib = dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_LAZY);
 	return dlsym(lib, name.data());
 #elif defined(ORB_OS_ANDROID)
-	return static_cast<void*>(eglGetProcAddress(name.data()));
+	return cast<void*>(eglGetProcAddress(name.data()));
 #endif
 }
 

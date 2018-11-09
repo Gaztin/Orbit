@@ -16,10 +16,12 @@
 */
 
 #pragma once
-#include <memory>
 
+#if defined(ORB_OS_WINDOWS)
+#include <memory>
 #include <dxgi.h>
 #include <d3d11.h>
+#endif
 
 #include "orbit/graphics.h"
 
