@@ -18,13 +18,16 @@
 #include "core_platform.h"
 
 #include <android_native_app_glue.h>
+#include <orbit/core/events/window_event.h>
 
-#include "core/android_app.h"
-#include "core/utility.h"
+#include "orbit/core/platform/message.h"
+#include "orbit/core/android_app.h"
+#include "orbit/core/utility.h"
+#include "orbit/core/window.h"
 
 namespace orb
 {
-namespace this_platform
+namespace platform
 {
 
 static void app_cmd(android_app* state, int cmd)
@@ -32,22 +35,29 @@ static void app_cmd(android_app* state, int cmd)
 	window& wnd = *cast<window*>(state->userData);
 	switch (cmd)
 	{
-		/*case APP_CMD_INIT_WINDOW:
+		case APP_CMD_INIT_WINDOW:
+		{
+			window_event resizeEvent{window_event::Resize};
+			resizeEvent.data.resize.w = cast<uint32_t>(ANativeWindow_getWidth(state->window));
+			resizeEvent.data.resize.h = cast<uint32_t>(ANativeWindow_getHeight(state->window));
+
+			wnd.queue_event(resizeEvent);
 			wnd.queue_event({window_event::Restore});
-			break;*/
+			break;
+		}
 
 		case APP_CMD_TERM_WINDOW:
 			wnd.queue_event({window_event::Suspend});
 			break;
 
 		case APP_CMD_GAINED_FOCUS:
-			ASensorEventQueue_enableSensor(wnd.m_sensorEventQueue, wnd.m_accelerometerSensor);
-			ASensorEventQueue_setEventRate(wnd.m_sensorEventQueue, wnd.m_accelerometerSensor, (1000 * 1000 / 60));
+			ASensorEventQueue_enableSensor(wnd.get_handle().sensorEventQueue, wnd.get_handle().accelerometerSensor);
+			ASensorEventQueue_setEventRate(wnd.get_handle().sensorEventQueue, wnd.get_handle().accelerometerSensor, (1000 * 1000 / 60));
 			wnd.queue_event({window_event::Focus});
 			break;
 
 		case APP_CMD_LOST_FOCUS:
-			ASensorEventQueue_disableSensor(wnd.m_sensorEventQueue, wnd.m_accelerometerSensor);
+			ASensorEventQueue_disableSensor(wnd.get_handle().sensorEventQueue, wnd.get_handle().accelerometerSensor);
 			wnd.queue_event({window_event::Defocus});
 			break;
 
@@ -71,24 +81,14 @@ static int input_event(android_app* state, AInputEvent* e)
 	return 0;
 }
 
-static void on_content_rect_changed(ANativeActivity* activity, const ARect* rect)
-{
-	window_event e;
-	e.type = window_event::Resize;
-	e.data.resize.w = cast<uint32_t>(rect->right - rect->left);
-	e.data.resize.h = cast<uint32_t>(rect->bottom - rect->top);
-	cast<window*>(android_only::app->userData)->queue_event(e);
-}
-
 window_handle create_window_handle(uint32_t width, uint32_t height)
 {
 	android_only::app->onInputEvent = &input_event;
-	android_only::app->activity->callbacks->onContentRectChanged = &on_content_rect_changed;
 
 	window_handle handle;
 	handle.sensorManager = ASensorManager_getInstance();
-	handle.accelerometerSensor = ASensorManager_getDefaultSensor(m_sensorManager, ASENSOR_TYPE_ACCELEROMETER);
-	handle.sensorEventQueue = ASensorManager_createEventQueue(m_sensorManager, android_only::app->looper, LOOPER_ID_USER, nullptr, nullptr);
+	handle.accelerometerSensor = ASensorManager_getDefaultSensor(handle.sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+	handle.sensorEventQueue = ASensorManager_createEventQueue(handle.sensorManager, android_only::app->looper, LOOPER_ID_USER, nullptr, nullptr);
 
 	/* Update until native window is initialized. */
 	bool initialized = false;
@@ -100,7 +100,7 @@ window_handle create_window_handle(uint32_t width, uint32_t height)
 	};
 	while (!initialized)
 	{
-		message_t msg;
+		message msg;
 		if (ALooper_pollAll(0, nullptr, &msg.events, (void**)&msg.source) >= 0)
 		{
 			if (msg.source)
@@ -119,17 +119,21 @@ void set_window_user_data(window_handle& /*wh*/, window& wnd)
 	android_only::app->userData = &wnd;
 }
 
-std::optional<message_t> peek_message(const window_handle& wh)
+std::optional<message> peek_message(const window_handle& wh)
 {
-	message_t msg;
-	if ((ALooper_pollAll(0, nullptr, &msg.events, cast<void**>(&msg.source)) < 0) |
-		(ASensorEventQueue_getEvents(wh.sensorEventQueue, &sensorEvent, 1) <= 0))
+	message msg{};
+	if (ALooper_pollAll(0, nullptr, &msg.events, cast<void**>(&msg.source)) >= 0)
+	{
+		ASensorEventQueue_getEvents(wh.sensorEventQueue, &msg.sensorEvent, 1);
 		return msg;
+	}
 	else
+	{
 		return std::nullopt;
+	}
 }
 
-void process_message(window& /*wnd*/, const message_t& msg)
+void process_message(window& /*wnd*/, const message& msg)
 {
 	if (msg.source)
 		msg.source->process(android_only::app, msg.source);
