@@ -45,6 +45,15 @@ bool make_current(const context_handle& ch)
 	return wglMakeCurrent(ch.hdc, ch.hglrc);
 }
 
+void swap_buffers(const context_handle& ch)
+{
+	SwapBuffers(ch.hdc);
+}
+
+void recreate_surface(context_handle& /*ch*/)
+{
+}
+
 }
 }
 }

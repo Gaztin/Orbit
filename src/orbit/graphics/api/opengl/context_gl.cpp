@@ -39,12 +39,14 @@ context::~context()
 
 void context::resize(uint32_t width, uint32_t height)
 {
+	platform::gl::recreate_surface(m_handle);
+	platform::gl::make_current(m_handle);
 	glViewport(0, 0, width, height);
 }
 
 void context::swap_buffers()
 {
-	SwapBuffers(m_handle.hdc);
+	platform::gl::swap_buffers(m_handle);
 }
 
 void context::clear(buffer_mask mask)

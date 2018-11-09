@@ -39,6 +39,8 @@ inline GLbitfield get_buffer_bits(buffer_mask mask)
 extern context_handle create_context_handle(const window_handle& wh);
 extern void destroy_context_handle(const window_handle& wh, const context_handle& ch);
 extern bool make_current(const context_handle& ch);
+extern void swap_buffers(const context_handle& ch);
+extern void recreate_surface(context_handle& ch);
 
 }
 }
