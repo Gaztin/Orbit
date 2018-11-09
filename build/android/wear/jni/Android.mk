@@ -6,7 +6,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE     := orbit_core
 LOCAL_SRC_FILES  := $(wildcard $(LOCAL_PATH)/../../../../src/orbit/core/*.cpp) \
-                    $(wildcard $(LOCAL_PATH)/../../../../src/orbit/core/internal/*_android.cpp)
+                    $(wildcard $(LOCAL_PATH)/../../../../src/orbit/core/platform/*_android.cpp)
 LOCAL_CPPFLAGS   := -std=c++1z -fexceptions -Wall -DORB_BUILD
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../src/ \
                     $(NDK_ROOT)/sources/android/native_app_glue/
@@ -16,7 +16,8 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE           := orbit_graphics
 LOCAL_SRC_FILES        := $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/*.cpp) \
-                          $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/internal/*_egl.cpp)
+                          $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/platform/opengl/*_android.cpp) \
+                          $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/api/opengl/*.cpp)
 LOCAL_CPPFLAGS         := -std=c++1z -fexceptions -Wall -DORB_BUILD
 LOCAL_C_INCLUDES       := $(LOCAL_PATH)/../../../../src/ \
                           $(NDK_ROOT)/sources/android/native_app_glue/
