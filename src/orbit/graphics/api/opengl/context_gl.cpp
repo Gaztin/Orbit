@@ -24,34 +24,34 @@ namespace orb
 namespace gl
 {
 
-context::context(const platform::window_handle& wh)
+context::context(const orb::platform::window_handle& wh)
 	: m_parentWindowHandle(wh)
-	, m_handle(platform::gl::create_context_handle(wh))
+	, m_handle(orb::platform::gl::create_context_handle(wh))
 {
 	// TODO: Figure out an object-oriented approach to manage "current" contexts
-	platform::gl::make_current(m_handle);
+	orb::platform::gl::make_current(m_handle);
 }
 
 context::~context()
 {
-	platform::gl::destroy_context_handle(m_parentWindowHandle, m_handle);
+	orb::platform::gl::destroy_context_handle(m_parentWindowHandle, m_handle);
 }
 
 void context::resize(uint32_t width, uint32_t height)
 {
-	platform::gl::recreate_surface(m_handle);
-	platform::gl::make_current(m_handle);
+	orb::platform::gl::recreate_surface(m_handle);
+	orb::platform::gl::make_current(m_handle);
 	glViewport(0, 0, width, height);
 }
 
 void context::swap_buffers()
 {
-	platform::gl::swap_buffers(m_handle);
+	orb::platform::gl::swap_buffers(m_handle);
 }
 
 void context::clear(buffer_mask mask)
 {
-	glClear(platform::gl::get_buffer_bits(mask));
+	glClear(orb::platform::gl::get_buffer_bits(mask));
 }
 
 void context::set_clear_color(float r, float g, float b)

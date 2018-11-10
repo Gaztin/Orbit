@@ -19,90 +19,94 @@
 
 #include <Cocoa/Cocoa.h>
 
-namespace orb
-{
-namespace this_platform
-{
+#include "orbit/core/window.h"
 
 @interface window_delegate : NSObject<NSWindowDelegate>
-@property window* windowPtr;
+@property orb::window* windowPtr;
 - (void)windowWillClose:(NSNotification*)notification;
 @end
 
 @implementation window_delegate
 - (void)windowWillClose:(NSNotification*)notification
 {
-	if (windowPtr)
-		windowPtr->close();
+	if (_windowPtr)
+		_windowPtr->close();
 }
 @end
 
+namespace orb
+{
+namespace platform
+{
+
 window_handle create_window_handle(uint32_t width, uint32_t height)
 {
-	window_handle handle;
-
-	handle.nsWindow = [NSWindow alloc];
-	[handle.nsWindow
+	window_handle wh{};
+	wh.nsWindow = [NSWindow alloc];
+	[(NSWindow*)wh.nsWindow
 		initWithContentRect:NSMakeRect(0.0f, 0.0f, width, height)
 		styleMask:(NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable)
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
-	handle.delegate = [window_delegate alloc];
-	[handle.nsWindow setDelegate:handle.delegate];
+	wh.delegate = [window_delegate alloc];
+	[(NSWindow*)wh.nsWindow setDelegate:(window_delegate*)wh.delegate];
 
-	return handle;
+	return wh;
 }
 
 void set_window_user_data(window_handle& wh, window& wnd)
 {
-	[wh.delegate setWindowPtr:&wnd];
+	[(window_delegate*)wh.delegate setWindowPtr:&wnd];
 }
 
-std::optional<message_t> peek_message(const window_handle& wh)
+std::optional<message> peek_message(const window_handle& wh)
 {
-	message_t msg = [wh.nsWindow nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES];
-	if (msg != nullptr)
+	message msg{};
+	msg.nsEvent = [(const NSWindow*)wh.nsWindow nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES];
+	if (msg.nsEvent != nullptr)
 		return msg;
 	else
 		return std::nullopt;
 }
 
-void process_message(window& wnd, const message_t& msg)
+void process_message(window& wnd, const message& msg)
 {
-	switch ([msg type])
+	switch ([(const NSEvent*)msg.nsEvent type])
 	{
 		default:
 			break;
 	}
+
+	[(NSWindow*)wnd.get_handle().nsWindow sendEvent:(NSEvent*)msg.nsEvent];
 }
 
 void set_window_title(const window_handle& wh, const std::string& title)
 {
 	NSString* nsTitle = [NSString stringWithUTF8String:title.c_str()];
-	[wh.nsWindow setTitle:nsTitle];
+	[(const NSWindow*)wh.nsWindow setTitle:nsTitle];
 	[nsTitle release];
 }
 
 void set_window_position(const window_handle& wh, int x, int y)
 {
-	NSRect frame = [wh.nsWindow frame];
+	NSRect frame = [(const NSWindow*)wh.nsWindow frame];
 	frame.origin.x = x;
 	frame.origin.y = y;
-	[wh.nsWindow setFrame:frame display:YES];
+	[(const NSWindow*)wh.nsWindow setFrame:frame display:YES];
 }
 
 void set_window_size(const window_handle& wh, uint32_t width, uint32_t height)
 {
-	NSRect frame = [wh.nsWindow frame];
+	NSRect frame = [(const NSWindow*)wh.nsWindow frame];
 	frame.size.width  = width;
 	frame.size.height = height;
-	[wh.nsWindow setFrame:frame display:YES];
+	[(const NSWindow*)wh.nsWindow setFrame:frame display:YES];
 }
 
 void set_window_visibility(const window_handle& wh, bool visible)
 {
-	[wh.nsWindow setIsVisible:visible];
+	[(const NSWindow*)wh.nsWindow setIsVisible:visible];
 }
 
 }

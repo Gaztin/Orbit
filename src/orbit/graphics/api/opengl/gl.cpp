@@ -23,6 +23,8 @@
 
 #if defined(ORB_OS_LINUX)
 #include <GL/glx.h>
+#elif defined(ORB_OS_MACOS)
+#include <dlfcn.h>
 #elif defined(ORB_OS_ANDROID)
 #include <EGL/egl.h>
 #endif

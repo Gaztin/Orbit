@@ -155,6 +155,8 @@ decl_module("Graphics")
 decl_sample("Base")
   filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
   filter{"system:linux"  } links{"X11", "GL"}
+  filter{"system:macosx"}  links{"Cocoa.framework", "OpenGL.framework"}
 decl_sample("Benchmarking")
   filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
   filter{"system:linux"  } links{"X11", "GL"}
+  filter{"system:macosx"}  links{"Cocoa.framework", "OpenGL.framework"}

@@ -28,6 +28,8 @@
 #include <gl/GL.h>
 #elif defined(ORB_OS_LINUX)
 #include <GL/gl.h>
+#elif defined(ORB_OS_MACOS)
+#include <OpenGL/gl.h>
 #elif defined(ORB_OS_ANDROID)
 #include <GLES/gl.h>
 #endif
