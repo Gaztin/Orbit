@@ -17,50 +17,54 @@
 
 #include "core_platform.h"
 
+#include "orbit/core/platform/window_handle.h"
+#include "orbit/core/platform/message.h"
+#include "orbit/core/window.h"
+
 namespace orb
 {
-namespace this_platform
+namespace platform
 {
 
 window_handle create_window_handle(uint32_t width, uint32_t height)
 {
-	window_handle h;
-	h.display = XOpenDisplay(nullptr);
+	window_handle wh{};
+	wh.display = XOpenDisplay(nullptr);
 
-	const int            screen  = DefaultScreen(h.display);
-	XSetWindowAttributes attribs = { };
-	handle.window = XCreateWindow(
-		h.display,
-		XRootWindow(h.display, screen),
+	const int screen  = DefaultScreen(wh.display);
+	XSetWindowAttributes attribs{};
+	wh.window = XCreateWindow(
+		wh.display,
+		XRootWindow(wh.display, screen),
 		0,
 		0,
 		width,
 		height,
 		0,
-		DefaultDepth(h.display, screen),
+		DefaultDepth(wh.display, screen),
 		InputOutput,
-		DefaultVisual(h.display, screen),
+		DefaultVisual(wh.display, screen),
 		CWBackPixel,
 		&attribs
 	);
 
 	/* Override the close event by including the DELETE_WINDOW atom in the protocol. */
-	Atom atom = XInternAtom(h.display, "WM_DELETE_WINDOW", True);
-	XSetWMProtocols(h.display, h.window, &atom, 1);
+	Atom atom = XInternAtom(wh.display, "WM_DELETE_WINDOW", True);
+	XSetWMProtocols(wh.display, wh.window, &atom, 1);
 
-	return h;
+	return wh;
 }
 
 void set_window_user_data(window_handle& /*wh*/, window& /*wnd*/)
 {
 }
 
-std::optional<message_t> peek_message(const window_handle& wh)
+std::optional<message> peek_message(const window_handle& wh)
 {
 	if (XPending(wh.display))
 	{
-		message_t msg;
-		XNextEvent(wh.display, &msg);
+		message msg;
+		XNextEvent(wh.display, &msg.xEvent);
 		return msg;
 	}
 	else
@@ -69,13 +73,14 @@ std::optional<message_t> peek_message(const window_handle& wh)
 	}
 }
 
-void process_message(window& wnd, const message_t& msg)
+void process_message(window& wnd, const message& msg)
 {
-	switch (msg.type)
+	switch (msg.xEvent.type)
 	{
 		case ClientMessage:
 			wnd.close();
 			break;
+
 		default:
 			break;
 	}

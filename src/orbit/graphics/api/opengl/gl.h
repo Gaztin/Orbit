@@ -21,10 +21,13 @@
 #if defined(ORB_HAS_OPENGL)
 
 #include <string_view>
+#include <stddef.h>
 
 #if defined(ORB_OS_WINDOWS)
 #include <windows.h>
 #include <gl/GL.h>
+#elif defined(ORB_OS_LINUX)
+#include <GL/gl.h>
 #elif defined(ORB_OS_ANDROID)
 #include <GLES/gl.h>
 #endif
@@ -153,7 +156,7 @@ extern void (*vertex_attrib3f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2)
 extern void (*vertex_attrib4f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
 extern void (*vertex_attrib_pointer)(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
 
-namespace this_platform
+namespace platform
 {
 
 extern void* get_proc_address(std::string_view name);

@@ -39,7 +39,6 @@ namespace orb
 
 enum class graphics_api
 {
-	None,
 	OpenGL,
 	D3D11,
 

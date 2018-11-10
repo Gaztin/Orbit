@@ -20,6 +20,9 @@
 
 #if defined(ORB_OS_ANDROID)
 #include <EGL/egl.h>
+#elif defined(ORB_OS_LINUX)
+#include <GL/glx.h>
+#include "orbit/core/platform/window_handle.h"
 #endif
 
 namespace orb
@@ -35,7 +38,7 @@ struct context_handle
 	HDC hdc;
 	HGLRC hglrc;
 #elif defined(ORB_OS_LINUX)
-	Display* display;
+	const window_handle* wndPtr;
 	GC gc;
 	GLXContext glxContext;
 #elif defined(ORB_OS_MACOS)
