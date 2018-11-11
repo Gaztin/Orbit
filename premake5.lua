@@ -1,24 +1,3 @@
-if (_ACTION == "xcode4") then
-	require "xcode"
-
-	local cpplanguagestandards = {["C++11"] = "c++11", ["C++14"] = "c++14", ["C++17"] = "c++1z"}
-	premake.override(premake.modules.xcode, "XCBuildConfiguration_CppLanguageStandard", function(base, settings, cfg)
-		if cfg.cppdialect then
-			settings["CLANG_CXX_LANGUAGE_STANDARD"] = cpplanguagestandards[cfg.cppdialect] or "compiler-default"
-		end
-	end)
-elseif (_ACTION == "codelite") then
-	require "codelite"
-
-	premake.override(premake.modules.codelite.project, "environment", function(base, cfg)
-		local envs = table.concat(cfg.debugenvs, "\n")
-		envs = envs .. string.format("\nLD_LIBRARY_PATH=%s:$LD_LIBRARY_PATH", premake.project.getrelative(cfg.project, cfg.targetdir))
-
-		_p(3, "<Environment EnvVarSetName=\"&lt;Use Default&gt;\" DbgSetName=\"&lt;Use Default&gt;\">")
-		_p(4, "<![CDATA[%s]]>", envs)
-		_p(3, "</Environment>")
-	end)
-end
 
 local function get_arch()
 	return io.popen("uname -m", "r"):read("*l")
