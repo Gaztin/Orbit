@@ -1,6 +1,23 @@
+if _TARGET_OS == "macosx" then
+	newoption {
+		trigger = "ios",
+		description = "Target iOS"
+	}
+	if _OPTIONS["ios"] then
+		_TARGET_OS = "ios"
+	end
+end
 
 local function get_arch()
 	return io.popen("uname -m", "r"):read("*l")
+end
+
+local function get_app_kind()
+	if (_TARGET_OS == "ios") then
+		return "WindowedApp"
+	else
+		return "ConsoleApp"
+	end
 end
 
 local function get_platforms()
@@ -49,6 +66,7 @@ local function foreach_system_keywords(os, functor)
 		["android"] = {"android", "egl"},
 		["linux"]   = {"linux", "x11", "glx"},
 		["macosx"]  = {"macos", "cocoa"},
+		["ios"]     = {"ios"},
 	}
 	if keywords[os] == nil then
 		return
@@ -96,7 +114,7 @@ local function decl_module(name)
 		"src/orbit/" .. lo .. "/**.cpp",
 		"src/orbit/" .. lo .. "/**.h",
 	}
-	filter{"system:macosx"} files{"src/orbit/" .. lo .. "/**.mm"} filter{}
+	filter{"system:macosx or ios"} files{"src/orbit/" .. lo .. "/**.mm"} filter{}
 	filter_system_files()
 	group()
 	table.insert(modules, name)
@@ -107,7 +125,7 @@ local function decl_sample(name)
 	local id = string.format("%02d", sample_index)
 	group("Samples")
 	project (id .. "." .. name)
-	kind    ("ConsoleApp")
+	kind    (get_app_kind())
 	links   (modules)
 	base_config()
 	files {
@@ -129,7 +147,8 @@ decl_module("Core")
 decl_module("Graphics")
   filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
   filter{"system:linux"  } links{"X11", "GL"}
-  filter{"system:macosx"} links{"Cocoa.framework", "OpenGL.framework"}
+  filter{"system:macosx"}  links{"Cocoa.framework", "OpenGL.framework"}
+  filter{"system:ios"}     links{"OpenGLES.framework"}
 
 -- Samples
 decl_sample("Base")
