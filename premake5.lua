@@ -25,14 +25,13 @@ local function get_arch()
 end
 
 local function get_platforms()
-	local platforms = { get_arch() }
 
 	-- Add x86 target for x64 Windows builds
-	if os.host() == "windows" and platforms[1] == "x86_64" then
-		table.insert(platforms, "x86")
+	if os.host() == "windows" and get_arch() == "x86_64" then
+		return { "x64", "x86" }
+	else
+		return { get_arch() }
 	end
-
-	return platforms
 end
 
 local function base_config()
