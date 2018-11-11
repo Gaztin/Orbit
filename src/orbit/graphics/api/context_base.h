@@ -24,7 +24,7 @@ namespace orb
 {
 class window;
 
-class context_base
+class ORB_API_GRAPHICS context_base
 {
 public:
 	virtual ~context_base() {};

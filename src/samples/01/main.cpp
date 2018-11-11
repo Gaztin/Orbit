@@ -1,6 +1,6 @@
 #include <orbit/core/events/window_event.h>
 #include <orbit/core/log.h>
-#include <orbit/core/stringf.h>
+#include <orbit/core/utility.h>
 #include <orbit/core/window.h>
 #include <orbit/graphics/render_context.h>
 
@@ -9,11 +9,11 @@ void on_window_event(const orb::window_event& e)
 	switch (e.type)
 	{
 		case orb::window_event::Resize:
-			orb::log_info(orb::stringf("Resized: (%d, %d)", e.data.resize.w, e.data.resize.h));
+			orb::log_info(orb::format("Resized: (%d, %d)", e.data.resize.w, e.data.resize.h));
 			break;
 
 		case orb::window_event::Move:
-			orb::log_info(orb::stringf("Moved: (%d, %d)", e.data.move.x, e.data.move.y));
+			orb::log_info(orb::format("Moved: (%d, %d)", e.data.move.x, e.data.move.y));
 			break;
 
 		case orb::window_event::Defocus:

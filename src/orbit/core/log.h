@@ -23,8 +23,8 @@
 namespace orb
 {
 
-extern void log_info(const std::string& msg);
-extern void log_warning(const std::string& msg);
-extern void log_error(const std::string& msg);
+extern ORB_API_CORE void log_info(const std::string& msg);
+extern ORB_API_CORE void log_warning(const std::string& msg);
+extern ORB_API_CORE void log_error(const std::string& msg);
 
 }

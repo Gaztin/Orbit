@@ -18,6 +18,8 @@
 #pragma once
 #include <stdint.h>
 
+#include "orbit/core.h"
+
 #if defined(ORB_OS_LINUX)
 // Need to temporarily undefine "None" since Xlib helped themselves to define it as a pre-processor.
 #pragma push_macro("None")
@@ -27,7 +29,7 @@
 namespace orb
 {
 
-struct window_event
+struct ORB_API_CORE window_event
 {
 	enum
 	{

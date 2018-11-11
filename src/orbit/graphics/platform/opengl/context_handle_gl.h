@@ -32,7 +32,7 @@ namespace platform
 namespace gl
 {
 
-struct context_handle
+struct ORB_API_GRAPHICS context_handle
 {
 #if defined(ORB_OS_WINDOWS)
 	HDC hdc;

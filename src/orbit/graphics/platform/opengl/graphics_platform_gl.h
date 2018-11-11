@@ -36,11 +36,11 @@ inline GLbitfield get_buffer_bits(buffer_mask mask)
 	return bits;
 }
 
-extern context_handle create_context_handle(const window_handle& wh);
-extern void destroy_context_handle(const window_handle& wh, const context_handle& ch);
-extern bool make_current(const context_handle& ch);
-extern void swap_buffers(const context_handle& ch);
-extern void recreate_surface(context_handle& ch);
+extern ORB_API_GRAPHICS context_handle create_context_handle(const window_handle& wh);
+extern ORB_API_GRAPHICS void destroy_context_handle(const window_handle& wh, const context_handle& ch);
+extern ORB_API_GRAPHICS bool make_current(const context_handle& ch);
+extern ORB_API_GRAPHICS void swap_buffers(const context_handle& ch);
+extern ORB_API_GRAPHICS void recreate_surface(context_handle& ch);
 
 }
 }

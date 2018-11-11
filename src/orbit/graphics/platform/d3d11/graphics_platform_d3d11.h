@@ -34,14 +34,14 @@ namespace platform
 namespace d3d11
 {
 
-extern swap_chain_handle create_swap_chain_handle(const window_handle& wh);
-extern context_handle create_context_handle(const window_handle& wh, const swap_chain_handle& sch);
-extern void flush_device_context(const swap_chain_handle& sch);
-extern void resize_swap_chain(const swap_chain_handle& sch, uint32_t width, uint32_t height);
-extern void recreate_buffers(context_handle& ch, const window_handle& wh, const swap_chain_handle& sch);
-extern void present(const swap_chain_handle& sch);
-extern void clear_render_target(const swap_chain_handle& sch, const context_handle& ch, const color& clr);
-extern void clear_depth_stencil(const swap_chain_handle& sch, const context_handle& ch);
+extern ORB_API_GRAPHICS swap_chain_handle create_swap_chain_handle(const window_handle& wh);
+extern ORB_API_GRAPHICS context_handle create_context_handle(const window_handle& wh, const swap_chain_handle& sch);
+extern ORB_API_GRAPHICS void flush_device_context(const swap_chain_handle& sch);
+extern ORB_API_GRAPHICS void resize_swap_chain(const swap_chain_handle& sch, uint32_t width, uint32_t height);
+extern ORB_API_GRAPHICS void recreate_buffers(context_handle& ch, const window_handle& wh, const swap_chain_handle& sch);
+extern ORB_API_GRAPHICS void present(const swap_chain_handle& sch);
+extern ORB_API_GRAPHICS void clear_render_target(const swap_chain_handle& sch, const context_handle& ch, const color& clr);
+extern ORB_API_GRAPHICS void clear_depth_stencil(const swap_chain_handle& sch, const context_handle& ch);
 
 }
 }

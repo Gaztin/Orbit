@@ -28,7 +28,7 @@ namespace orb
 namespace d3d11
 {
 
-class context : public context_base
+class ORB_API_GRAPHICS context : public context_base
 {
 public:
 	explicit context(const platform::window_handle& wh);

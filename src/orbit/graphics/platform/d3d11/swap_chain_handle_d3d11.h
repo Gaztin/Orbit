@@ -32,7 +32,7 @@ namespace platform
 namespace d3d11
 {
 
-struct swap_chain_handle
+struct ORB_API_GRAPHICS swap_chain_handle
 {
 #if defined(ORB_OS_WINDOWS)
 	std::shared_ptr<IDXGISwapChain> swapChain;

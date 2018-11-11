@@ -136,32 +136,32 @@ enum class vertex_attrib_data_type : GLenum
 	Float         = 0x1406,
 };
 
-extern void (*bind_buffer)(buffer_target target, GLuint buffer);
-extern void (*buffer_data)(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage);
-extern void (*buffer_sub_data)(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
-extern void (*delete_buffers)(GLsizei n, const GLuint* buffers);
-extern void (*disable_vertex_attrib_array)(GLuint index);
-extern void (*draw_arrays)(draw_mode mode, GLint first, GLsizei count);
-extern void (*draw_elements)(draw_mode, GLsizei count, index_type type, const GLvoid* indices);
-extern void (*enable_vertex_attrib_array)(GLuint index);
-extern void (*gen_buffers)(GLsizei n, GLuint* buffers);
-extern void (*get_buffer_parameteriv)(buffer_target target, buffer_param value, GLint* data);
-extern void (*get_buffer_pointerv)(buffer_target target, buffer_pointer_param pname, GLvoid** params);
-extern void (*get_vertex_attribdv)(GLuint index, vertex_attrib_array_param pname, GLdouble* params);
-extern void (*get_vertex_attribfv)(GLuint index, vertex_attrib_array_param pname, GLfloat* params);
-extern void (*get_vertex_attribiv)(GLuint index, vertex_attrib_array_param pname, GLint* params);
-extern void (*get_vertex_attrib_pointerv)(GLuint index, vertex_attrib_array_pointer_param pname, GLvoid** pointer);
-extern GLboolean (*is_buffer)(GLuint buffer);
-extern void (*vertex_attrib1f)(GLuint index, GLfloat v0);
-extern void (*vertex_attrib2f)(GLuint index, GLfloat v0, GLfloat v1);
-extern void (*vertex_attrib3f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2);
-extern void (*vertex_attrib4f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-extern void (*vertex_attrib_pointer)(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
+extern ORB_API_GRAPHICS void (*bind_buffer)(buffer_target target, GLuint buffer);
+extern ORB_API_GRAPHICS void (*buffer_data)(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage);
+extern ORB_API_GRAPHICS void (*buffer_sub_data)(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
+extern ORB_API_GRAPHICS void (*delete_buffers)(GLsizei n, const GLuint* buffers);
+extern ORB_API_GRAPHICS void (*disable_vertex_attrib_array)(GLuint index);
+extern ORB_API_GRAPHICS void (*draw_arrays)(draw_mode mode, GLint first, GLsizei count);
+extern ORB_API_GRAPHICS void (*draw_elements)(draw_mode, GLsizei count, index_type type, const GLvoid* indices);
+extern ORB_API_GRAPHICS void (*enable_vertex_attrib_array)(GLuint index);
+extern ORB_API_GRAPHICS void (*gen_buffers)(GLsizei n, GLuint* buffers);
+extern ORB_API_GRAPHICS void (*get_buffer_parameteriv)(buffer_target target, buffer_param value, GLint* data);
+extern ORB_API_GRAPHICS void (*get_buffer_pointerv)(buffer_target target, buffer_pointer_param pname, GLvoid** params);
+extern ORB_API_GRAPHICS void (*get_vertex_attribdv)(GLuint index, vertex_attrib_array_param pname, GLdouble* params);
+extern ORB_API_GRAPHICS void (*get_vertex_attribfv)(GLuint index, vertex_attrib_array_param pname, GLfloat* params);
+extern ORB_API_GRAPHICS void (*get_vertex_attribiv)(GLuint index, vertex_attrib_array_param pname, GLint* params);
+extern ORB_API_GRAPHICS void (*get_vertex_attrib_pointerv)(GLuint index, vertex_attrib_array_pointer_param pname, GLvoid** pointer);
+extern ORB_API_GRAPHICS GLboolean (*is_buffer)(GLuint buffer);
+extern ORB_API_GRAPHICS void (*vertex_attrib1f)(GLuint index, GLfloat v0);
+extern ORB_API_GRAPHICS void (*vertex_attrib2f)(GLuint index, GLfloat v0, GLfloat v1);
+extern ORB_API_GRAPHICS void (*vertex_attrib3f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2);
+extern ORB_API_GRAPHICS void (*vertex_attrib4f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+extern ORB_API_GRAPHICS void (*vertex_attrib_pointer)(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
 
 namespace platform
 {
 
-extern void* get_proc_address(std::string_view name);
+extern ORB_API_GRAPHICS void* get_proc_address(std::string_view name);
 
 }
 

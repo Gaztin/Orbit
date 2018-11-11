@@ -17,6 +17,7 @@
 
 #pragma once
 #include <type_traits>
+#include <utility>
 
 #include "orbit/core.h"
 
@@ -63,6 +64,18 @@ Dst cast(Src src)
 
 	/* Invalid cast. */
 	else static_assert(false_type<Src>::value, "Invalid cast");
+}
+
+template<typename... Args>
+std::string format(const char* fmt, Args... args)
+{
+	const int len = snprintf(nullptr, 0, fmt, args...);
+	if (len < 0)
+		return std::string(fmt);
+
+	std::string res(len, '\0');
+	snprintf(&res[0], len + 1, fmt, args...);
+	return res;
 }
 
 }

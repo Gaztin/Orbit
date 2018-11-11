@@ -30,7 +30,7 @@ namespace platform
 namespace d3d11
 {
 
-struct context_handle
+struct ORB_API_GRAPHICS context_handle
 {
 #if defined(ORB_OS_WINDOWS)
 	std::shared_ptr<ID3D11RenderTargetView> renderTargetView;

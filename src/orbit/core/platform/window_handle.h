@@ -16,7 +16,7 @@
 */
 
 #pragma once
-#include "orbit.h"
+#include "orbit/core.h"
 
 #if defined(ORB_OS_WINDOWS)
 #include <wtypes.h>
@@ -31,7 +31,7 @@ namespace orb
 namespace platform
 {
 
-struct window_handle
+struct ORB_API_CORE window_handle
 {
 #if defined(ORB_OS_WINDOWS)
 	HWND hwnd;

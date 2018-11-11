@@ -17,3 +17,9 @@
 
 #pragma once
 #include "orbit.h"
+
+#if defined(ORB_BUILD_CORE)
+#define ORB_API_CORE ORB_DLL_EXPORT
+#else
+#define ORB_API_CORE ORB_DLL_IMPORT
+#endif

@@ -16,7 +16,6 @@
 */
 
 #pragma once
-#include "orbit/core/variant.h"
 #include "orbit/core/window.h"
 #include "orbit/graphics/api/context_base.h"
 
@@ -25,7 +24,7 @@ namespace orb
 
 class window;
  
-class render_context
+class ORB_API_GRAPHICS render_context
 {
 public:
 	render_context(window& parentWindow, graphics_api api);

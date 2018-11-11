@@ -18,7 +18,7 @@
 #pragma once
 #include <memory>
 
-#include "orbit.h"
+#include "orbit/core.h"
 
 #if defined(ORB_OS_WINDOWS)
 #include <windows.h>

@@ -20,6 +20,12 @@
 
 #include "core/bitmask.h"
 
+#if defined(ORB_BUILD_GRAPHICS)
+#define ORB_API_GRAPHICS ORB_DLL_EXPORT
+#else
+#define ORB_API_GRAPHICS ORB_DLL_IMPORT
+#endif
+
 /* Graphics API macros. */
 #if defined(ORB_OS_WINDOWS)
 #define ORB_HAS_D3D11

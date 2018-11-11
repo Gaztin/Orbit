@@ -16,13 +16,14 @@
 */
 
 #pragma once
-
 #include <stdlib.h>
+
+#include "orbit/core.h"
 
 namespace orb
 {
 
-class color
+class ORB_API_CORE color
 {
 public:
 	color();

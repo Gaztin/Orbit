@@ -20,9 +20,13 @@
 /* Per-compiler macros. */
 #if defined(_MSC_VER)
 #define ORB_CC_MSVC
+#define ORB_DLL_EXPORT __declspec(dllexport)
+#define ORB_DLL_IMPORT __declspec(dllimport)
 #define ORB_DLL_LOCAL
 #elif defined(__GNUC__)
 #define ORB_CC_GCC
+#define ORB_DLL_EXPORT __attribute__((visibility("default")))
+#define ORB_DLL_IMPORT __attribute__((visibility("default")))
 #define ORB_DLL_LOCAL  __attribute__((visibility("hidden")))
 #endif
 
@@ -35,4 +39,9 @@
 #define ORB_OS_LINUX
 #elif defined(__APPLE__)
 #define ORB_OS_MACOS
+#endif
+
+#if defined(_MSC_VER)
+/* Suppress MSVC warnings about DLL-interfaces */
+#pragma warning(disable: 4251)
 #endif

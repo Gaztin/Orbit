@@ -16,17 +16,15 @@
 */
 
 #pragma once
+#include "orbit/core.h"
 
-#include "orbit.h"
 #if defined(ORB_OS_WINDOWS)
-
 #include <wtypes.h>
 #elif defined(ORB_OS_LINUX)
 #include <X11/Xlib.h>
 #elif defined(ORB_OS_ANDROID)
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
-
 #endif
 
 namespace orb
@@ -34,7 +32,7 @@ namespace orb
 namespace platform
 {
 
-struct message
+struct ORB_API_CORE message
 {
 #if defined(ORB_OS_WINDOWS)
 	MSG msg;

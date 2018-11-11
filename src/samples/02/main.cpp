@@ -3,7 +3,6 @@
 #include <time.h>
 
 #include <orbit/core/log.h>
-#include <orbit/core/stringf.h>
 #include <orbit/core/window.h>
 #include <orbit/core/utility.h>
 #include <orbit/graphics/render_context.h>
@@ -26,7 +25,7 @@ public:
 		timespec currTimeSpec;
 		timespec_get(&currTimeSpec, TIME_UTC);
 		const double dur = (currTimeSpec.tv_sec - m_startTimeSpec.tv_sec) + 0.000000001 * (currTimeSpec.tv_nsec - m_startTimeSpec.tv_nsec);
-		orb::log_info(orb::stringf("[%.7fs] to %s.", dur, m_verb.c_str()));
+		orb::log_info(orb::format("[%.7fs] to %s.", dur, m_verb.c_str()));
 	}
 
 private:
@@ -51,7 +50,7 @@ static void prepare()
 
 void bench_window_create(size_t count)
 {
-	scoped_benchmark bench(orb::stringf("create %d windows", count));
+	scoped_benchmark bench(orb::format("create %d windows", count));
 	for (size_t i = 0; i < count; ++i)
 	{
 		orb::window w(1024, 1024);
@@ -61,7 +60,7 @@ void bench_window_create(size_t count)
 void bench_context_create(orb::graphics_api api, size_t count)
 {
 	orb::window w(1024, 1024);
-	scoped_benchmark bench(orb::stringf("create %d %s contexts", count, apiNames.at(api).c_str()));
+	scoped_benchmark bench(orb::format("create %d %s contexts", count, apiNames.at(api).c_str()));
 	for (size_t i = 0; i < count; ++i)
 	{
 		orb::render_context(w, api);
@@ -74,7 +73,7 @@ void bench_context_clear(orb::graphics_api api, size_t count)
 	orb::render_context rc(w, api);
 	//rc.make_current(w);
 	rc.set_clear_color(1.0f, 0.0f, 1.0f);
-	scoped_benchmark bench(orb::stringf("clear %s context %d times", apiNames.at(api).c_str(), count));
+	scoped_benchmark bench(orb::format("clear %s context %d times", apiNames.at(api).c_str(), count));
 	for (size_t i = 0; i < count; ++i)
 	{
 		rc.clear(orb::buffer_mask::Color);
