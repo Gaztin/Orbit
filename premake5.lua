@@ -132,6 +132,7 @@ local function decl_sample(name)
 		"src/samples/" .. id .. "/**.cpp",
 		"src/samples/" .. id .. "/**.h",
 	}
+	filter{"system:ios"} files{"res/Info.plist"} filter{}
 	filter_system_files()
 	group()
 	sample_index = sample_index + 1
