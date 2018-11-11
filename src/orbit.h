@@ -38,7 +38,12 @@
 #elif defined(__linux__)
 #define ORB_OS_LINUX
 #elif defined(__APPLE__)
+#include <TargetConditionals.h>
+#if TARGET_OS_IPHONE
+#define ORB_OS_IOS
+#elif TARGET_OS_MAC
 #define ORB_OS_MACOS
+#endif
 #endif
 
 #if defined(_MSC_VER)
