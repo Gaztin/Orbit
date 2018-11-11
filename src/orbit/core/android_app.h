@@ -25,7 +25,7 @@ namespace orb
 namespace android_only
 {
 
-extern android_app* app;
+extern ORB_API_CORE android_app* app;
 
 }
 }
