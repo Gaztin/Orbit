@@ -145,6 +145,7 @@ configurations {"Debug", "Release"}
 -- Engine modules
 decl_module("Core")
   filter{"system:macosx"} links{"Cocoa.framework"}
+  filter{"system:ios"}    links{"UIKit.framework"}
 decl_module("Graphics")
   filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
   filter{"system:linux"  } links{"X11", "GL"}
