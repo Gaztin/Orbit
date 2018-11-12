@@ -4,6 +4,8 @@
 #include <orbit/core/window.h>
 #include <orbit/graphics/render_context.h>
 
+#include <orbit/core/platform/entry_point.h>
+
 void on_window_event(const orb::window_event& e)
 {
 	switch (e.type)
@@ -41,7 +43,7 @@ void on_window_event(const orb::window_event& e)
 	}
 }
 
-int main(int /*argc*/, char* /*argv*/[])
+void orbit_main()
 {
 	orb::log_info("Started!");
 
@@ -61,16 +63,4 @@ int main(int /*argc*/, char* /*argv*/[])
 	}
 
 	orb::log_info("Exited!\n");
-	return 0;
 }
-
-#if defined(ORB_OS_ANDROID)
-#include <orbit/core/android_app.h>
-
-void android_main(android_app* app)
-{
-	orb::android_only::app = app;
-	main(0, {});
-}
-
-#endif
