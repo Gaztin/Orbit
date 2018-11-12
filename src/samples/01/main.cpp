@@ -1,12 +1,44 @@
 #include <orbit/core/events/window_event.h>
+#include <orbit/core/application.h>
 #include <orbit/core/log.h>
 #include <orbit/core/utility.h>
 #include <orbit/core/window.h>
 #include <orbit/graphics/render_context.h>
 
-#include <orbit/core/platform/entry_point.h>
+class sample_app : public orb::application
+{
+public:
+	sample_app();
+	~sample_app();
 
-void on_window_event(const orb::window_event& e)
+	void frame() final override;
+
+	void on_window_event(const orb::window_event& e) const;
+
+private:
+	orb::window m_window;
+	orb::window::subscription_ptr m_windowSubscription;
+	orb::render_context m_renderContext;
+};
+
+sample_app::sample_app()
+	: m_window(800, 600)
+	, m_windowSubscription(m_window.subscribe(std::bind(&sample_app::on_window_event, this, std::placeholders::_1)))
+	, m_renderContext(m_window, orb::graphics_api::DeviceDefault)
+{
+	m_window.set_title("Orbit sample #01");
+	m_window.show();
+	m_renderContext.set_clear_color(1.0f, 0.0f, 1.0f);
+}
+
+void sample_app::frame()
+{
+	m_window.poll_events();
+	m_renderContext.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
+	m_renderContext.swap_buffers();
+}
+
+void sample_app::on_window_event(const orb::window_event& e) const
 {
 	switch (e.type)
 	{
@@ -41,26 +73,4 @@ void on_window_event(const orb::window_event& e)
 		default:
 			break;
 	}
-}
-
-void orbit_main()
-{
-	orb::log_info("Started!");
-
-	orb::window w(800, 600);
-	auto windowSubscription = w.subscribe(&on_window_event);
-	w.set_title("Orbit sample #01");
-	w.show();
-
-	orb::render_context rc(w, orb::graphics_api::DeviceDefault);
-	//rc.make_current(w);
-	rc.set_clear_color(1.0f, 0.0f, 1.0f);
-	while (w)
-	{
-		w.poll_events();
-		rc.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
-		rc.swap_buffers();
-	}
-
-	orb::log_info("Exited!\n");
 }

@@ -46,6 +46,7 @@ void entry_point(int argc, char* argv[])
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
 	orb::log_info("didFinishLaunchingWithOptions()");
+	// TODO: Initialize application
 	return YES;
 }
 
@@ -71,6 +72,7 @@ void entry_point(int argc, char* argv[])
 
 - (void)applicationWillTerminate:(UIApplication*)application
 {
+	// TODO: Deinitialize application
 	orb::log_info("applicationWillTerminate()");
 }
 
