@@ -23,6 +23,11 @@
 #define ORB_DLL_EXPORT __declspec(dllexport)
 #define ORB_DLL_IMPORT __declspec(dllimport)
 #define ORB_DLL_LOCAL
+#elif defined(__clang__)
+#define ORB_CC_CLANG
+#define ORB_DLL_EXPORT __attribute__((visibility("default")))
+#define ORB_DLL_IMPORT __attribute__((visibility("default")))
+#define ORB_DLL_LOCAL  __attribute__((visibility("hidden")))
 #elif defined(__GNUC__)
 #define ORB_CC_GCC
 #define ORB_DLL_EXPORT __attribute__((visibility("default")))
