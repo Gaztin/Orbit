@@ -16,9 +16,10 @@
 */
 
 #pragma once
-#include "orbit.h"
+#include "orbit/core.h"
 
 #include <cstdint>
+#include <initializer_list>
 #include <optional>
 #include <string>
 
@@ -31,6 +32,12 @@ class window;
 
 namespace platform
 {
+
+#if defined(ORB_OS_ANDROID)
+using argv_t= andrid_app*;
+#else
+using argv_t = std::initializer_list<char*>;
+#endif
 
 extern ORB_API_CORE window_handle create_window_handle(uint32_t width = 0, uint32_t height = 0);
 extern ORB_API_CORE void set_window_user_data(window_handle& wh, window& wnd);

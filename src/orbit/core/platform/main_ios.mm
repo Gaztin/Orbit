@@ -15,14 +15,14 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "entry_point.h"
+#include "main.h"
 
 #include <UIKit/UIKit.h>
 
 #include "orbit/core/log.h"
 
 @interface app_delegate : UIResponder<UIApplicationDelegate>
-@property (strong, nonatomic) UIWindow* uiWindow;
+@property (nonatomic) std::unique_ptr<orb::application> app;
 @end
 
 namespace orb
@@ -30,11 +30,14 @@ namespace orb
 namespace platform
 {
 
-void entry_point(int argc, char* argv[])
+static std::unique_ptr<application>(*Ctor)();
+
+void main(platform::argv_t argv, std::unique_ptr<application>(*ctor)())
 {
+	Ctor = ctor;
 	@autoreleasepool
 	{
-		UIApplicationMain(argc, argv, nil, NSStringFromClass([app_delegate class]));
+		UIApplicationMain(argv.size(), argv.begin(), nil, NSStringFromClass([app_delegate class]));
 	}
 }
 
@@ -46,7 +49,7 @@ void entry_point(int argc, char* argv[])
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
 	orb::log_info("didFinishLaunchingWithOptions()");
-	// TODO: Initialize application
+	_app = Ctor();
 	return YES;
 }
 
@@ -72,8 +75,8 @@ void entry_point(int argc, char* argv[])
 
 - (void)applicationWillTerminate:(UIApplication*)application
 {
-	// TODO: Deinitialize application
 	orb::log_info("applicationWillTerminate()");
+	_app.reset();
 }
 
 @end

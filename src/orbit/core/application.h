@@ -16,7 +16,9 @@
  */
 
 #pragma once
-#include "orbit/core.h"
+#include <type_traits>
+
+#include "orbit/core/platform/main.h"
 
 namespace orb
 {
@@ -27,9 +29,15 @@ public:
 	application() = default;
 	virtual ~application() = default;
 
-	virtual void init() {}
-	virtual void deinit() {}
 	virtual void frame() {}
+	virtual operator bool() const { return true; };
+
+	template<typename T,
+		typename = typename std::enable_if_t<std::is_base_of_v<application, T>>>
+	static void main(platform::argv_t argv)
+	{
+		platform::main(argv, []() -> std::unique_ptr<application> { return std::make_unique<T>(); });
+	}
 };
 
 }

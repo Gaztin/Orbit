@@ -62,11 +62,11 @@ end
 
 local function foreach_system_keywords(os, functor)
 	local keywords = {
-		["windows"] = {"windows", "win32", "wgl", "d3d11"},
-		["android"] = {"android", "egl"},
-		["linux"]   = {"linux", "x11", "glx"},
-		["macosx"]  = {"macos", "cocoa"},
-		["ios"]     = {"ios"},
+		["windows"] = {"win32",   "desktop", "gl", "d3d11"},
+		["linux"]   = {"linux",   "desktop", "gl"},
+		["macosx"]  = {"macos",   "desktop", "gl"},
+		["android"] = {"android", "mobile",  "gl"},
+		["ios"]     = {"ios",     "mobile",  "gl"},
 	}
 	if keywords[os] == nil then
 		return

@@ -16,36 +16,18 @@
  */
 
 #pragma once
-#include "orbit/core.h"
+#include <memory>
 
-extern void orbit_main();
+#include "orbit/core/platform/core_platform.h"
 
 namespace orb
 {
+class application;
+
 namespace platform
 {
 
-extern ORB_API_CORE void entry_point(int argc, char* argv[]);
+extern ORB_API_CORE void main(platform::argv_t argv, std::unique_ptr<application>(*ctor)());
 
 }
 }
-
-#if defined(ORB_OS_ANDROID)
-
-#include "orbit/core/android_app.h"
-
-void android_main(android_app* app)
-{
-	orb::android_only::app = app;
-	orb::platform::entry_point(0, {});
-}
-
-#else
-
-int main(int argc, char* argv[])
-{
-	orb::platform::entry_point(argc, argv);
-	return 0;
-}
-
-#endif

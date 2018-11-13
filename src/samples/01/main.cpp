@@ -9,11 +9,11 @@ class sample_app : public orb::application
 {
 public:
 	sample_app();
-	~sample_app();
 
 	void frame() final override;
+	operator bool() const final override { return !!m_window; }
 
-	void on_window_event(const orb::window_event& e) const;
+	static void on_window_event(const orb::window_event& e);
 
 private:
 	orb::window m_window;
@@ -23,7 +23,7 @@ private:
 
 sample_app::sample_app()
 	: m_window(800, 600)
-	, m_windowSubscription(m_window.subscribe(std::bind(&sample_app::on_window_event, this, std::placeholders::_1)))
+	, m_windowSubscription(m_window.subscribe(&sample_app::on_window_event))
 	, m_renderContext(m_window, orb::graphics_api::DeviceDefault)
 {
 	m_window.set_title("Orbit sample #01");
@@ -38,7 +38,7 @@ void sample_app::frame()
 	m_renderContext.swap_buffers();
 }
 
-void sample_app::on_window_event(const orb::window_event& e) const
+void sample_app::on_window_event(const orb::window_event& e)
 {
 	switch (e.type)
 	{
@@ -74,3 +74,19 @@ void sample_app::on_window_event(const orb::window_event& e) const
 			break;
 	}
 }
+
+#if defined(ORB_OS_ANDROID)
+
+void android_main(android_app* app)
+{
+	orb::application::main<sample_app>(app);
+}
+
+#else
+
+int main(int argc, char* argv[])
+{
+	orb::application::main<sample_app>(std::initializer_list(argv, argv + argc));
+}
+
+#endif
