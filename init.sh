@@ -27,8 +27,8 @@ git submodule foreach --recursive "git submodule update --init"
 # Windows setup
 if [ "$os" == "windows" ]; then
 	# Download premake executable
-	curl -L -o "$PREMAKE_LOCATION/premake5.zip" "https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-windows.zip"
-	unzip -u -q "$PREMAKE_LOCATION/premake5.zip" -d "$PREMAKE_LOCATION/"
+	curl -Lo "$PREMAKE_LOCATION/premake5.zip" "https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-windows.zip"
+	unzip -oqu "$PREMAKE_LOCATION/premake5.zip" -d "$PREMAKE_LOCATION/"
 	rm -f "$PREMAKE_LOCATION/premake5.zip"
 
 # Linux setup
@@ -36,12 +36,12 @@ elif [ "$os" == "linux" ]; then
 	# Determine whether we need to build from source or not
 	if [ "$arch" == "x86_64" ]; then
 		# Download premake executable
-		curl -L -o "$PREMAKE_LOCATION/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-linux.tar.gz"
+		curl -Lo "$PREMAKE_LOCATION/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-linux.tar.gz"
 		tar -xvzf "$PREMAKE_LOCATION/premake5.tar.gz" -C "$PREMAKE_LOCATION/"
 		rm -f "$PREMAKE_LOCATION/premake5.tar.gz"
 	else
 		# Download premake source package
-		curl -L -o "$PREMAKE_LOCATION/premake5-src.zip" "https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-src.zip"
+		curl -Lo "$PREMAKE_LOCATION/premake5-src.zip" "https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-src.zip"
 		unzip -o "$PREMAKE_LOCATION/premake5-src.zip" -d "$PREMAKE_LOCATION/"
 
 		# Build premake
@@ -55,7 +55,7 @@ elif [ "$os" == "linux" ]; then
 # Mac OS X setup
 elif [ "$os" == "osx" ]; then
 	# Download premake executable
-	curl -L -o "$PREMAKE_LOCATION/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-macosx.tar.gz"
+	curl -Lo "$PREMAKE_LOCATION/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-macosx.tar.gz"
 	tar -xvzf "$PREMAKE_LOCATION/premake5.tar.gz" -C "$PREMAKE_LOCATION/"
 	rm -f "$PREMAKE_LOCATION/premake5.tar.gz"
 fi
