@@ -24,7 +24,7 @@ namespace orb
 namespace platform
 {
 
-void main(platform::argv_t /*argv*/, std::unique_ptr<application>(*ctor)())
+void main(platform::argv_t /*argv*/, std::shared_ptr<application>(*ctor)())
 {
 	auto app = ctor();
 	while (*app)

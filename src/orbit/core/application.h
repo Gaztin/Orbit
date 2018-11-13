@@ -36,7 +36,7 @@ public:
 		typename = typename std::enable_if_t<std::is_base_of_v<application, T>>>
 	static void main(platform::argv_t argv)
 	{
-		platform::main(argv, []() -> std::unique_ptr<application> { return std::make_unique<T>(); });
+		platform::main(argv, []() -> std::shared_ptr<application> { return std::make_shared<T>(); });
 	}
 };
 

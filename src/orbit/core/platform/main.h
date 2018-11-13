@@ -27,7 +27,7 @@ class application;
 namespace platform
 {
 
-extern ORB_API_CORE void main(platform::argv_t argv, std::unique_ptr<application>(*ctor)());
+extern ORB_API_CORE void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)());
 
 }
 }

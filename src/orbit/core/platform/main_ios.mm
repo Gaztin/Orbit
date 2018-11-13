@@ -20,9 +20,10 @@
 #include <UIKit/UIKit.h>
 
 #include "orbit/core/log.h"
+#include "orbit/core/utility.h"
 
 @interface app_delegate : UIResponder<UIApplicationDelegate>
-@property (nonatomic) std::unique_ptr<orb::application> app;
+@property (atomic) std::shared_ptr<orb::application> app;
 @end
 
 namespace orb
@@ -30,14 +31,14 @@ namespace orb
 namespace platform
 {
 
-static std::unique_ptr<application>(*Ctor)();
+static std::shared_ptr<application>(*Ctor)();
 
-void main(platform::argv_t argv, std::unique_ptr<application>(*ctor)())
+void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
 {
 	Ctor = ctor;
 	@autoreleasepool
 	{
-		UIApplicationMain(argv.size(), argv.begin(), nil, NSStringFromClass([app_delegate class]));
+		UIApplicationMain(argv.first, argv.second, nil, NSStringFromClass([app_delegate class]));
 	}
 }
 
@@ -49,7 +50,7 @@ void main(platform::argv_t argv, std::unique_ptr<application>(*ctor)())
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
 	orb::log_info("didFinishLaunchingWithOptions()");
-	_app = Ctor();
+	_app = orb::platform::Ctor();
 	return YES;
 }
 

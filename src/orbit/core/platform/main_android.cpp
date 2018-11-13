@@ -25,7 +25,7 @@ namespace orb
 namespace platform
 {
 
-void main(platform::argv_t argv, std::unique_ptr<application>(*ctor)())
+void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
 {
 	// TODO: Wait for window initialization here
 	android_only::app = argv;

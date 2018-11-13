@@ -86,7 +86,7 @@ void android_main(android_app* app)
 
 int main(int argc, char* argv[])
 {
-	orb::application::main<sample_app>(std::initializer_list(argv, argv + argc));
+	orb::application::main<sample_app>(std::make_pair(argc, argv));
 }
 
 #endif
