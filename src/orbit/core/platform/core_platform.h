@@ -34,7 +34,7 @@ namespace platform
 {
 
 #if defined(ORB_OS_ANDROID)
-using argv_t= andrid_app*;
+using argv_t = android_app*;
 #else
 using argv_t = std::pair<int, char**>;
 #endif
