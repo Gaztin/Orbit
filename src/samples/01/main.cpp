@@ -1,3 +1,6 @@
+#include <math.h>
+#include <time.h>
+
 #include <orbit/core/events/window_event.h>
 #include <orbit/core/application.h>
 #include <orbit/core/log.h>
@@ -19,6 +22,7 @@ private:
 	orb::window m_window;
 	orb::window::subscription_ptr m_windowSubscription;
 	orb::render_context m_renderContext;
+	float m_time;
 };
 
 sample_app::sample_app()
@@ -33,7 +37,13 @@ sample_app::sample_app()
 
 void sample_app::frame()
 {
+	m_time = static_cast<float>(clock()) / CLOCKS_PER_SEC;
+	const float red   = 0.5f * (1.0f + cos(m_time * M_PI));
+	const float green = 0.0f;
+	const float blue  = 0.5f * (1.0f + sin(m_time * M_PI));
+
 	m_window.poll_events();
+	m_renderContext.set_clear_color(red, green, blue);
 	m_renderContext.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
 	m_renderContext.swap_buffers();
 }
