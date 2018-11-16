@@ -45,6 +45,8 @@ struct ORB_API_CORE window_handle
 	ASensorManager* sensorManager;
 	const ASensor* accelerometerSensor;
 	ASensorEventQueue* sensorEventQueue;
+#elif defined(ORB_OS_IOS)
+	void* uiWindow; // <UIWindow*>
 #endif
 };
 

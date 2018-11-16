@@ -144,13 +144,19 @@ configurations {"Debug", "Release"}
 
 -- Engine modules
 decl_module("Core")
-  filter{"system:macosx"} links{"Cocoa.framework"}
-  filter{"system:ios"}    links{"UIKit.framework"}
+  filter{"system:macosx"}
+    links{"Cocoa.framework"}
+  filter{"system:ios"}
+    links{"UIKit.framework", "QuartzCore.framework"}
 decl_module("Graphics")
-  filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
-  filter{"system:linux"  } links{"X11", "GL"}
-  filter{"system:macosx"}  links{"Cocoa.framework", "OpenGL.framework"}
-  filter{"system:ios"}     links{"OpenGLES.framework"}
+  filter{"system:windows"}
+    links{"opengl32", "d3d11", "dxgi"}
+  filter{"system:linux"}
+    links{"X11", "GL"}
+  filter{"system:macosx"}
+    links{"Cocoa.framework", "OpenGL.framework"}
+  filter{"system:ios"}
+    links{"UIKit.framework", "GLKit.framework", "OpenGLES.framework"}
 
 -- Samples
 decl_sample("Base")

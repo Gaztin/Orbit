@@ -17,14 +17,26 @@
 
 #include "core_platform.h"
 
+#include <UIKit/UIKit.h>
+
 namespace orb
 {
 namespace platform
 {
 
-window_handle create_window_handle(uint32_t width, uint32_t height)
+window_handle create_window_handle(uint32_t /*width*/, uint32_t /*height*/)
 {
-	return window_handle{};
+	window_handle wh{};
+	wh.uiWindow = [UIWindow alloc];
+	[(UIWindow*)wh.uiWindow initWithFrame:[[UIScreen mainScreen] bounds]];
+	((UIWindow*)wh.uiWindow).backgroundColor = [UIColor whiteColor];
+	[(UIWindow*)wh.uiWindow makeKeyAndVisible];
+
+	UIViewController* vc = [UIViewController alloc];
+	[vc initWithNibName:nil bundle:nil];
+	((UIWindow*)wh.uiWindow).rootViewController = vc;
+
+	return wh;
 }
 
 void set_window_user_data(window_handle& wh, window& wnd)

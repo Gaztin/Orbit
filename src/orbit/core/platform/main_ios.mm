@@ -19,6 +19,7 @@
 
 #include <UIKit/UIKit.h>
 
+#include "orbit/core/application.h"
 #include "orbit/core/log.h"
 #include "orbit/core/utility.h"
 
@@ -51,6 +52,10 @@ void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
 {
 	orb::log_info("didFinishLaunchingWithOptions()");
 	_app = orb::platform::Ctor();
+
+	CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:application.delegate selector:@selector(frame:)];
+	[displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+
 	return YES;
 }
 
@@ -78,6 +83,11 @@ void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
 {
 	orb::log_info("applicationWillTerminate()");
 	_app.reset();
+}
+
+- (void)frame:(CADisplayLink*)displayLink
+{
+	_app->frame();
 }
 
 @end

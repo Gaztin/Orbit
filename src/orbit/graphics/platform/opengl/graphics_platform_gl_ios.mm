@@ -17,6 +17,24 @@
 
 #include "graphics_platform_gl.h"
 
+#include <GLKit/GLKit.h>
+
+#include "orbit/core/platform/window_handle.h"
+#include "orbit/graphics/platform/opengl/context_handle_gl.h"
+
+@interface glk_view_delegate : UIResponder<GLKViewDelegate>
+@end
+
+@implementation glk_view_delegate
+
+- (void)glkView:(GLKView*)view drawInRect:(CGRect)rect
+{
+	(void)view;
+	(void)rect;
+}
+
+@end
+
 namespace orb
 {
 namespace platform
@@ -27,19 +45,36 @@ namespace gl
 context_handle create_context_handle(const window_handle& wh)
 {
 	context_handle ch{};
+	ch.eaglContext = [EAGLContext alloc];
+	ch.glkView = [GLKView alloc];
+
+	glk_view_delegate* delegate = [glk_view_delegate alloc];
+	[delegate init];
+
+	[(EAGLContext*)ch.eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES1];
+	[(GLKView*)ch.glkView initWithFrame:[[UIScreen mainScreen] bounds]];
+	((GLKView*)ch.glkView).context = (EAGLContext*)ch.eaglContext;
+	((GLKView*)ch.glkView).delegate = delegate;
+	((GLKView*)ch.glkView).enableSetNeedsDisplay = NO;
+	[(UIWindow*)wh.uiWindow addSubview:(GLKView*)ch.glkView];
+
 	return ch;
 }
 
 void destroy_context_handle(const window_handle& /*wh*/, const context_handle& ch)
 {
+	[(GLKView*)ch.glkView dealloc];
+	[(EAGLContext*)ch.eaglContext dealloc];
 }
 
 bool make_current(const context_handle& ch)
 {
+	return [EAGLContext setCurrentContext:(EAGLContext*)ch.eaglContext];
 }
 
 void swap_buffers(const context_handle& ch)
 {
+	[(GLKView*)ch.glkView display];
 }
 
 void recreate_surface(context_handle& /*ch*/)
