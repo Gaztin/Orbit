@@ -157,6 +157,7 @@ decl_module("Graphics")
     links{"Cocoa.framework", "OpenGL.framework"}
   filter{"system:ios"}
     links{"UIKit.framework", "GLKit.framework", "OpenGLES.framework"}
+    defines{"GLES_SILENCE_DEPRECATION"}
 
 -- Samples
 decl_sample("Base")
