@@ -21,17 +21,8 @@
 
 #include "orbit/core/window.h"
 
-@interface window_delegate : NSObject<NSWindowDelegate>
+@interface WindowDelegate : NSObject<NSWindowDelegate>
 @property orb::window* windowPtr;
-- (void)windowWillClose:(NSNotification*)notification;
-@end
-
-@implementation window_delegate
-- (void)windowWillClose:(NSNotification*)notification
-{
-	if (_windowPtr)
-		_windowPtr->close();
-}
 @end
 
 namespace orb
@@ -49,15 +40,15 @@ window_handle create_window_handle(uint32_t width, uint32_t height)
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
-	wh.delegate = [window_delegate alloc];
-	[(NSWindow*)wh.nsWindow setDelegate:(window_delegate*)wh.delegate];
+	wh.delegate = [WindowDelegate alloc];
+	[(NSWindow*)wh.nsWindow setDelegate:(WindowDelegate*)wh.delegate];
 
 	return wh;
 }
 
 void set_window_user_data(window_handle& wh, window& wnd)
 {
-	[(window_delegate*)wh.delegate setWindowPtr:&wnd];
+	[(WindowDelegate*)wh.delegate setWindowPtr:&wnd];
 }
 
 std::optional<message> peek_message(const window_handle& wh)
@@ -72,13 +63,8 @@ std::optional<message> peek_message(const window_handle& wh)
 
 void process_message(window& wnd, const message& msg)
 {
-	switch ([(const NSEvent*)msg.nsEvent type])
-	{
-		default:
-			break;
-	}
-
-	[(NSWindow*)wnd.get_handle().nsWindow sendEvent:(NSEvent*)msg.nsEvent];
+	const window_handle& wh = wnd.get_handle();
+	[(const NSWindow*)wh.nsWindow sendEvent:(NSEvent*)msg.nsEvent];
 }
 
 void set_window_title(const window_handle& wh, const std::string& title)
@@ -111,3 +97,6 @@ void set_window_visibility(const window_handle& wh, bool visible)
 
 }
 }
+
+@implementation WindowDelegate
+@end
