@@ -33,6 +33,7 @@ window_handle create_window_handle(uint32_t width, uint32_t height)
 
 	const int screen  = DefaultScreen(wh.display);
 	XSetWindowAttributes attribs{};
+	attribs.event_mask = FocusChangeMask | ResizeRedirectMask | StructureNotifyMask;
 	wh.window = XCreateWindow(
 		wh.display,
 		XRootWindow(wh.display, screen),
@@ -44,13 +45,12 @@ window_handle create_window_handle(uint32_t width, uint32_t height)
 		DefaultDepth(wh.display, screen),
 		InputOutput,
 		DefaultVisual(wh.display, screen),
-		CWBackPixel,
+		CWBackPixel | CWEventMask,
 		&attribs
 	);
 
-	/* Override the close event by including the DELETE_WINDOW atom in the protocol. */
-	Atom atom = XInternAtom(wh.display, "WM_DELETE_WINDOW", True);
-	XSetWMProtocols(wh.display, wh.window, &atom, 1);
+	Atom close_atom = XInternAtom(wh.display, "WM_DELETE_WINDOW", True);
+	XSetWMProtocols(wh.display, wh.window, &close_atom, 1);
 
 	return wh;
 }
@@ -77,9 +77,53 @@ void process_message(window& wnd, const message& msg)
 {
 	switch (msg.xEvent.type)
 	{
+		case FocusIn:
+		{
+			if (msg.xEvent.xfocus.mode != NotifyNormal)
+				break;
+				
+			window_event e{};
+			e.type = window_event::Focus;
+			wnd.queue_event(e);
+			break;
+		}
+
+		case FocusOut:
+		{
+			if (msg.xEvent.xfocus.mode != NotifyNormal)
+				break;
+				
+			window_event e{};
+			e.type = window_event::Defocus;
+			wnd.queue_event(e);
+			break;
+		}
+		
+		case ResizeRequest:
+		{
+			window_event e{};
+			e.type = window_event::Resize;
+			e.data.resize.w = msg.xEvent.xresizerequest.width;
+			e.data.resize.h = msg.xEvent.xresizerequest.height;
+			wnd.queue_event(e);
+			break;
+		}
+		
+		case ConfigureNotify:
+		{
+			window_event e{};
+			e.type = window_event::Move;
+			e.data.move.x = msg.xEvent.xconfigure.x;
+			e.data.move.y = msg.xEvent.xconfigure.y;
+			wnd.queue_event(e);
+			break;
+		}
+
 		case ClientMessage:
+		{
 			wnd.close();
 			break;
+		}
 
 		default:
 			break;
