@@ -15,40 +15,24 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include "orbit/core.h"
+#include "main.h"
 
-#if defined(ORB_OS_WINDOWS)
-#include <wtypes.h>
-#elif defined(ORB_OS_LINUX)
-#include <X11/Xlib.h>
-#elif defined(ORB_OS_ANDROID)
-#include <android/sensor.h>
-#endif
+#include "orbit/core/android_app.h"
+#include "orbit/core/application.h"
 
 namespace orb
 {
 namespace platform
 {
 
-struct ORB_API_CORE window_handle
+void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
 {
-#if defined(ORB_OS_WINDOWS)
-	HWND hwnd;
-#elif defined(ORB_OS_LINUX)
-	Display* display;
-	Window window;
-#elif defined(ORB_OS_MACOS)
-	void* nsWindow; // <NSWindow*>
-	void* delegate; // <window_delegate*>
-#elif defined(ORB_OS_ANDROID)
-	ASensorManager* sensorManager;
-	const ASensor* accelerometerSensor;
-	ASensorEventQueue* sensorEventQueue;
-#elif defined(ORB_OS_IOS)
-	void* uiWindow; // <UIWindow*>
-#endif
-};
+	// TODO: Wait for window initialization here
+	android_only::app = argv;
+	auto app = ctor();
+	while (*app)
+		app->frame();
+}
 
 }
 }

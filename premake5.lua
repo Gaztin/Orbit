@@ -1,27 +1,23 @@
-if (_ACTION == "xcode4") then
-	require "xcode"
-
-	local cpplanguagestandards = {["C++11"] = "c++11", ["C++14"] = "c++14", ["C++17"] = "c++1z"}
-	premake.override(premake.modules.xcode, "XCBuildConfiguration_CppLanguageStandard", function(base, settings, cfg)
-		if cfg.cppdialect then
-			settings["CLANG_CXX_LANGUAGE_STANDARD"] = cpplanguagestandards[cfg.cppdialect] or "compiler-default"
-		end
-	end)
-elseif (_ACTION == "codelite") then
-	require "codelite"
-
-	premake.override(premake.modules.codelite.project, "environment", function(base, cfg)
-		local envs = table.concat(cfg.debugenvs, "\n")
-		envs = envs .. string.format("\nLD_LIBRARY_PATH=%s:$LD_LIBRARY_PATH", premake.project.getrelative(cfg.project, cfg.targetdir))
-
-		_p(3, "<Environment EnvVarSetName=\"&lt;Use Default&gt;\" DbgSetName=\"&lt;Use Default&gt;\">")
-		_p(4, "<![CDATA[%s]]>", envs)
-		_p(3, "</Environment>")
-	end)
+if _TARGET_OS == "macosx" then
+	newoption {
+		trigger = "ios",
+		description = "Target iOS"
+	}
+	if _OPTIONS["ios"] then
+		_TARGET_OS = "ios"
+	end
 end
 
 local function get_arch()
 	return io.popen("uname -m", "r"):read("*l")
+end
+
+local function get_app_kind()
+	if (_TARGET_OS == "ios") then
+		return "WindowedApp"
+	else
+		return "ConsoleApp"
+	end
 end
 
 local function get_platforms()
@@ -66,10 +62,11 @@ end
 
 local function foreach_system_keywords(os, functor)
 	local keywords = {
-		["windows"] = {"windows", "win32", "wgl", "d3d11"},
-		["android"] = {"android", "egl"},
-		["linux"]   = {"linux", "x11", "glx"},
-		["macosx"]  = {"macos", "cocoa"},
+		["windows"] = {"win32",   "desktop", "gl", "d3d11"},
+		["linux"]   = {"linux",   "desktop", "gl"},
+		["macosx"]  = {"macos",   "desktop", "gl"},
+		["android"] = {"android", "mobile",  "gl"},
+		["ios"]     = {"ios",     "mobile",  "gl"},
 	}
 	if keywords[os] == nil then
 		return
@@ -117,7 +114,7 @@ local function decl_module(name)
 		"src/orbit/" .. lo .. "/**.cpp",
 		"src/orbit/" .. lo .. "/**.h",
 	}
-	filter{"system:macosx"} files{"src/orbit/" .. lo .. "/**.mm"} filter{}
+	filter{"system:macosx or ios"} files{"src/orbit/" .. lo .. "/**.mm"} filter{}
 	filter_system_files()
 	group()
 	table.insert(modules, name)
@@ -128,13 +125,14 @@ local function decl_sample(name)
 	local id = string.format("%02d", sample_index)
 	group("Samples")
 	project (id .. "." .. name)
-	kind    ("ConsoleApp")
+	kind    (get_app_kind())
 	links   (modules)
 	base_config()
 	files {
 		"src/samples/" .. id .. "/**.cpp",
 		"src/samples/" .. id .. "/**.h",
 	}
+	filter{"system:ios"} files{"res/Info.plist"} filter{}
 	filter_system_files()
 	group()
 	sample_index = sample_index + 1
@@ -146,12 +144,23 @@ configurations {"Debug", "Release"}
 
 -- Engine modules
 decl_module("Core")
-  filter{"system:macosx"} links{"Cocoa.framework"}
+  filter{"system:macosx"}
+    links{"Cocoa.framework"}
+  filter{"system:ios"}
+    links{"UIKit.framework", "QuartzCore.framework"}
 decl_module("Graphics")
-  filter{"system:windows"} links{"opengl32", "d3d11", "dxgi"}
-  filter{"system:linux"  } links{"X11", "GL"}
-  filter{"system:macosx"} links{"Cocoa.framework", "OpenGL.framework"}
+  filter{"system:windows"}
+    links{"opengl32", "d3d11", "dxgi"}
+  filter{"system:linux"}
+    links{"X11", "GL"}
+  filter{"system:macosx"}
+    links{"Cocoa.framework", "OpenGL.framework"}
+  filter{"system:ios"}
+    links{"UIKit.framework", "GLKit.framework", "OpenGLES.framework"}
+    defines{"GLES_SILENCE_DEPRECATION"}
 
 -- Samples
 decl_sample("Base")
+  filter{"system:windows"}
+    defines{"_USE_MATH_DEFINES"}
 decl_sample("Benchmarking")

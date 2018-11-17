@@ -48,6 +48,9 @@ struct ORB_API_GRAPHICS context_handle
 	EGLConfig eglConfig;
 	EGLSurface eglSurface;
 	EGLContext eglContext;
+#elif defined(ORB_OS_IOS)
+	void* eaglContext; // <EAGLContext*>
+	void* glkView; // <GLKView*>
 #endif
 };
 

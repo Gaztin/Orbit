@@ -1,10 +1,54 @@
+#include <math.h>
+#include <time.h>
+
 #include <orbit/core/events/window_event.h>
+#include <orbit/core/application.h>
 #include <orbit/core/log.h>
 #include <orbit/core/utility.h>
 #include <orbit/core/window.h>
 #include <orbit/graphics/render_context.h>
 
-void on_window_event(const orb::window_event& e)
+class sample_app : public orb::application
+{
+public:
+	sample_app();
+
+	void frame() final override;
+	operator bool() const final override { return !!m_window; }
+
+	static void on_window_event(const orb::window_event& e);
+
+private:
+	orb::window m_window;
+	orb::window::subscription_ptr m_windowSubscription;
+	orb::render_context m_renderContext;
+	float m_time;
+};
+
+sample_app::sample_app()
+	: m_window(800, 600)
+	, m_windowSubscription(m_window.subscribe(&sample_app::on_window_event))
+	, m_renderContext(m_window, orb::graphics_api::DeviceDefault)
+{
+	m_window.set_title("Orbit sample #01");
+	m_window.show();
+	m_renderContext.set_clear_color(1.0f, 0.0f, 1.0f);
+}
+
+void sample_app::frame()
+{
+	m_time = static_cast<float>(clock()) / CLOCKS_PER_SEC;
+	const float red   = 0.5f * (1.0f + cos(m_time * static_cast<float>(M_PI)));
+	const float green = 0.0f;
+	const float blue  = 0.5f * (1.0f + sin(m_time * static_cast<float>(M_PI)));
+
+	m_window.poll_events();
+	m_renderContext.set_clear_color(red, green, blue);
+	m_renderContext.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
+	m_renderContext.swap_buffers();
+}
+
+void sample_app::on_window_event(const orb::window_event& e)
 {
 	switch (e.type)
 	{
@@ -41,36 +85,18 @@ void on_window_event(const orb::window_event& e)
 	}
 }
 
-int main(int /*argc*/, char* /*argv*/[])
-{
-	orb::log_info("Started!");
-
-	orb::window w(800, 600);
-	auto windowSubscription = w.subscribe(&on_window_event);
-	w.set_title("Orbit sample #01");
-	w.show();
-
-	orb::render_context rc(w, orb::graphics_api::DeviceDefault);
-	//rc.make_current(w);
-	rc.set_clear_color(1.0f, 0.0f, 1.0f);
-	while (w)
-	{
-		w.poll_events();
-		rc.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
-		rc.swap_buffers();
-	}
-
-	orb::log_info("Exited!\n");
-	return 0;
-}
-
 #if defined(ORB_OS_ANDROID)
-#include <orbit/core/android_app.h>
 
 void android_main(android_app* app)
 {
-	orb::android_only::app = app;
-	main(0, {});
+	orb::application::main<sample_app>(app);
+}
+
+#else
+
+int main(int argc, char* argv[])
+{
+	orb::application::main<sample_app>(std::make_pair(argc, argv));
 }
 
 #endif

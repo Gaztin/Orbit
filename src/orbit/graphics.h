@@ -30,11 +30,13 @@
 #if defined(ORB_OS_WINDOWS)
 #define ORB_HAS_D3D11
 #define ORB_HAS_OPENGL
-#elif defined(ORB_OS_ANDROID)
-#define ORB_HAS_OPENGL
 #elif defined(ORB_OS_LINUX)
 #define ORB_HAS_OPENGL
 #elif defined(ORB_OS_MACOS)
+#define ORB_HAS_OPENGL
+#elif defined(ORB_OS_ANDROID)
+#define ORB_HAS_OPENGL
+#elif defined(ORB_OS_IOS)
 #define ORB_HAS_OPENGL
 #endif
 
