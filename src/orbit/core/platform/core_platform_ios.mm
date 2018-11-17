@@ -19,6 +19,12 @@
 
 #include <UIKit/UIKit.h>
 
+#include "orbit/core/window.h"
+
+@interface ORBWindow : UIWindow
+@property (nonatomic) orb::event_dispatcher<orb::window_event>* eventDispatcher;
+@end
+
 namespace orb
 {
 namespace platform
@@ -27,46 +33,63 @@ namespace platform
 window_handle create_window_handle(uint32_t /*width*/, uint32_t /*height*/)
 {
 	window_handle wh{};
-	wh.uiWindow = [UIWindow alloc];
-	[(UIWindow*)wh.uiWindow initWithFrame:[[UIScreen mainScreen] bounds]];
-	((UIWindow*)wh.uiWindow).backgroundColor = [UIColor whiteColor];
-	[(UIWindow*)wh.uiWindow makeKeyAndVisible];
+	wh.uiWindow = [ORBWindow alloc];
+	[(ORBWindow*)wh.uiWindow initWithFrame:[[UIScreen mainScreen] bounds]];
+	((ORBWindow*)wh.uiWindow).backgroundColor = [UIColor whiteColor];
+	[(ORBWindow*)wh.uiWindow makeKeyAndVisible];
 
 	UIViewController* vc = [UIViewController alloc];
 	[vc initWithNibName:nil bundle:nil];
-	((UIWindow*)wh.uiWindow).rootViewController = vc;
+	((ORBWindow*)wh.uiWindow).rootViewController = vc;
 
 	return wh;
 }
 
 void set_window_user_data(window_handle& wh, window& wnd)
 {
+	[(ORBWindow*)wh.uiWindow setEventDispatcher:&wnd];
 }
 
-std::optional<message> peek_message(const window_handle& wh)
+std::optional<message> peek_message(const window_handle& /*wh*/)
 {
 	return std::nullopt;
 }
 
-void process_message(window& wnd, const message& msg)
+void process_message(window& /*wnd*/, const message& /*msg*/)
 {
 }
 
-void set_window_title(const window_handle& wh, const std::string& title)
+void set_window_title(const window_handle& /*wh*/, const std::string& /*title*/)
 {
 }
 
-void set_window_position(const window_handle& wh, int x, int y)
+void set_window_position(const window_handle& /*wh*/, int /*x*/, int /*y*/)
 {
 }
 
-void set_window_size(const window_handle& wh, uint32_t width, uint32_t height)
+void set_window_size(const window_handle& /*wh*/, uint32_t /*width*/, uint32_t /*height*/)
 {
 }
 
 void set_window_visibility(const window_handle& wh, bool visible)
 {
+	[(ORBWindow*)wh.uiWindow setHidden:!visible];
 }
 
 }
 }
+
+@implementation ORBWindow
+
+- (void)layoutSubviews
+{
+	[super layoutSubviews];
+
+	orb::window_event e{};
+	e.type = orb::window_event::Resize;
+	e.data.resize.w = static_cast<uint32_t>(self.bounds.size.width);
+	e.data.resize.h = static_cast<uint32_t>(self.bounds.size.height);
+	_eventDispatcher->queue_event(e);
+}
+
+@end
