@@ -47,7 +47,6 @@ static NSOpenGLView* create_open_gl_view(const NSWindow* nsWindow)
 	[glView prepareOpenGL];
 	[nsWindow.contentView addSubview:glView];
 
-	//[pixelFormat dealloc];
 	return glView;
 }
 
@@ -74,8 +73,9 @@ void swap_buffers(const context_handle& ch)
 	[[(const NSOpenGLView*)ch.glView openGLContext] flushBuffer];
 }
 
-void recreate_surface(context_handle& /*ch*/, uint32_t /*width*/, uint32_t /*height*/)
+void recreate_surface(context_handle& ch, uint32_t /*width*/, uint32_t /*height*/)
 {
+	[((NSOpenGLView*)ch.glView).openGLContext update];
 }
 
 }
