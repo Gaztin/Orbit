@@ -18,6 +18,7 @@
 #pragma once
 #include <algorithm>
 #include <functional>
+#include <list>
 #include <memory>
 #include <mutex>
 #include <utility>
@@ -32,17 +33,8 @@ template<typename EventType>
 class event_dispatcher
 {
 public:
-	struct subscription
-	{
-		// TODO: Remove in favor of deleters
-		~subscription() { unsubscriber(id); }
-
-		uint64_t id;
-		std::function<void(uint64_t)> unsubscriber;
-	};
-
 	using event_t = EventType;
-	using subscription_ptr = std::shared_ptr<subscription>;
+	using subscription_ptr = std::shared_ptr<uint64_t>;
 
 	event_dispatcher() = default;
 	virtual ~event_dispatcher() = default;
@@ -50,37 +42,24 @@ public:
 	template<typename Functor>
 	[[nodiscard]] subscription_ptr subscribe(Functor&& functor)
 	{
-		// TODO: Construct with deleter
 		static uint64_t uniqueId = 0;
-		subscription_ptr sub = std::make_shared<subscription>();
-		sub->id = ++uniqueId;
-		sub->unsubscriber = [this](uint64_t id) { unsubscribe(id); };
-		m_subscribers.push_back(subscriber{sub->id, std::forward<Functor>(functor)});
+		m_subscribers.push_back(subscriber{++uniqueId, std::forward<Functor>(functor)});
+		subscription_ptr sub(&m_subscribers.back().id, [this](uint64_t* id){ unsubscribe(*id); });
 		return sub;
 	}
 
-	void unsubscribe(uint64_t subscriptionId)
-	{
-		auto it = std::find_if(m_subscribers.begin(), m_subscribers.end(),
-			[subscriptionId](const subscriber& sub) { return sub.subscriptionId == subscriptionId; });
-		if (it == m_subscribers.end())
-			return;
-
-		m_subscribers.erase(it);
-	}
-
-	void queue_event(const EventType& evt)
+	void queue_event(const EventType& et)
 	{
 		m_mutex.lock();
-		m_eventQueue.push_back(evt);
+		m_eventQueue.push_back(et);
 		m_mutex.unlock();
 	}
 
 	void send_events()
 	{
-		for (const EventType& evt : m_eventQueue)
+		for (const EventType& et : m_eventQueue)
 			for (subscriber& sub : m_subscribers)
-				sub.functor(evt);
+				sub.functor(et);
 
 		m_eventQueue.clear();
 	}
@@ -88,11 +67,20 @@ public:
 private:
 	struct subscriber
 	{
-		uint64_t subscriptionId;
+		uint64_t id;
 		std::function<void(const EventType&)> functor;
 	};
 
-	std::vector<subscriber> m_subscribers;
+	void unsubscribe(uint64_t id)
+	{
+		auto it = std::find_if(m_subscribers.begin(), m_subscribers.end(), [id](const subscriber& sub) { return sub.id == id; });
+		if (it == m_subscribers.end())
+			return;
+
+		m_subscribers.erase(it);
+	}
+
+	std::list<subscriber> m_subscribers;
 	std::vector<EventType> m_eventQueue;
 	std::mutex m_mutex;
 };
