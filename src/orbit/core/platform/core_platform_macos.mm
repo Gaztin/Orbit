@@ -99,4 +99,63 @@ void set_window_visibility(const window_handle& wh, bool visible)
 }
 
 @implementation WindowDelegate
+
+- (void)windowWillClose:(NSNotification*)notification
+{
+	(void)notification;
+
+	_windowPtr->close();
+}
+
+- (void)windowDidMove:(NSNotification*)notification
+{
+	const orb::platform::window_handle& wh = _windowPtr->get_handle();
+	const CGPoint point = ((const NSWindow*)wh.nsWindow).frame.origin;
+
+	orb::window_event e{};
+	e.type = orb::window_event::Move;
+	e.data.move.x = static_cast<int>(point.x);
+	e.data.move.y = static_cast<int>(point.y);
+	_windowPtr->queue_event(e);
+}
+
+- (NSSize)windowWillResize:(NSWindow*)sender toSize:(NSSize)frameSize
+{
+	orb::window_event e{};
+	e.type = orb::window_event::Resize;
+	e.data.resize.w = static_cast<uint32_t>(frameSize.width);
+	e.data.resize.h = static_cast<uint32_t>(frameSize.height);
+	_windowPtr->queue_event(e);
+
+	return frameSize;
+}
+
+- (void)windowDidMiniaturize:(NSNotification*)notification
+{
+	orb::window_event e{};
+	e.type = orb::window_event::Suspend;
+	_windowPtr->queue_event(e);
+}
+
+- (void)windowDidDeminiaturize:(NSNotification*)notification
+{
+	orb::window_event e{};
+	e.type = orb::window_event::Restore;
+	_windowPtr->queue_event(e);
+}
+
+- (void)windowDidBecomeMain:(NSNotification*)notification
+{
+	orb::window_event e{};
+	e.type = orb::window_event::Focus;
+	_windowPtr->queue_event(e);
+}
+
+- (void)windowDidResignMain:(NSNotification*)notification
+{
+	orb::window_event e{};
+	e.type = orb::window_event::Defocus;
+	_windowPtr->queue_event(e);
+}
+
 @end
