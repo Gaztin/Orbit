@@ -40,7 +40,7 @@ extern ORB_API_GRAPHICS context_handle create_context_handle(const window_handle
 extern ORB_API_GRAPHICS void destroy_context_handle(const window_handle& wh, const context_handle& ch);
 extern ORB_API_GRAPHICS bool make_current(const context_handle& ch);
 extern ORB_API_GRAPHICS void swap_buffers(const context_handle& ch);
-extern ORB_API_GRAPHICS void recreate_surface(context_handle& ch);
+extern ORB_API_GRAPHICS void recreate_surface(context_handle& ch, uint32_t width, uint32_t height);
 
 }
 }

@@ -105,17 +105,14 @@ void swap_buffers(const context_handle& ch)
 	eglSwapBuffers(ch.eglDisplay, ch.eglSurface);
 }
 
-void recreate_surface(context_handle& ch)
+void recreate_surface(context_handle& ch, uint32_t /*width*/, uint32_t /*height*/)
 {
 	eglMakeCurrent(ch.eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
 	if (ch.eglSurface != EGL_NO_SURFACE)
 		eglDestroySurface(ch.eglDisplay, ch.eglSurface);
-//	if (ch.eglContext != EGL_NO_CONTEXT)
-//		eglDestroyContext(ch.eglDisplay, ch.eglContext);
 
 	ch.eglSurface = create_surface(ch.eglDisplay, ch.eglConfig);
-//	ch.eglContext = create_context(ch.eglDisplay, ch.eglConfig);
 }
 
 }

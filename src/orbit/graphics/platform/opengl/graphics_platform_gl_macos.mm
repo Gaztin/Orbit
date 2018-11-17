@@ -74,7 +74,7 @@ void swap_buffers(const context_handle& ch)
 	[[(const NSOpenGLView*)ch.glView openGLContext] flushBuffer];
 }
 
-void recreate_surface(context_handle& /*ch*/)
+void recreate_surface(context_handle& /*ch*/, uint32_t /*width*/, uint32_t /*height*/)
 {
 }
 

@@ -39,7 +39,7 @@ context::~context()
 
 void context::resize(uint32_t width, uint32_t height)
 {
-	orb::platform::gl::recreate_surface(m_handle);
+	orb::platform::gl::recreate_surface(m_handle, width, height);
 	orb::platform::gl::make_current(m_handle);
 	glViewport(0, 0, width, height);
 }

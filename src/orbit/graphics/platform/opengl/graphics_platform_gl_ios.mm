@@ -67,8 +67,9 @@ void swap_buffers(const context_handle& ch)
 	[(GLKView*)ch.glkView display];
 }
 
-void recreate_surface(context_handle& /*ch*/)
+void recreate_surface(context_handle& ch, uint32_t width, uint32_t height)
 {
+	((GLKView*)ch.glkView).layer.frame = CGRectMake(0.f, 0.f, width, height);
 }
 
 }
