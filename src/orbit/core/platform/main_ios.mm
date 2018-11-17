@@ -23,7 +23,7 @@
 #include "orbit/core/log.h"
 #include "orbit/core/utility.h"
 
-@interface app_delegate : UIResponder<UIApplicationDelegate>
+@interface ORBAppDelegate : UIResponder<UIApplicationDelegate>
 @property (atomic) std::shared_ptr<orb::application> app;
 @end
 
@@ -39,14 +39,14 @@ void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
 	Ctor = ctor;
 	@autoreleasepool
 	{
-		UIApplicationMain(argv.first, argv.second, nil, NSStringFromClass([app_delegate class]));
+		UIApplicationMain(argv.first, argv.second, nil, NSStringFromClass([ORBAppDelegate class]));
 	}
 }
 
 }
 }
 
-@implementation app_delegate
+@implementation ORBAppDelegate
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {

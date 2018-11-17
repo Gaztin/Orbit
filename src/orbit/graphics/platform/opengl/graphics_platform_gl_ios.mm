@@ -22,17 +22,7 @@
 #include "orbit/core/platform/window_handle.h"
 #include "orbit/graphics/platform/opengl/context_handle_gl.h"
 
-@interface glk_view_delegate : UIResponder<GLKViewDelegate>
-@end
-
-@implementation glk_view_delegate
-
-- (void)glkView:(GLKView*)view drawInRect:(CGRect)rect
-{
-	(void)view;
-	(void)rect;
-}
-
+@interface ORBGLKViewDelegate : UIResponder<GLKViewDelegate>
 @end
 
 namespace orb
@@ -48,7 +38,7 @@ context_handle create_context_handle(const window_handle& wh)
 	ch.eaglContext = [EAGLContext alloc];
 	ch.glkView = [GLKView alloc];
 
-	glk_view_delegate* delegate = [glk_view_delegate alloc];
+	ORBGLKViewDelegate* delegate = [ORBGLKViewDelegate alloc];
 	[delegate init];
 
 	[(EAGLContext*)ch.eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES1];
@@ -84,3 +74,13 @@ void recreate_surface(context_handle& /*ch*/)
 }
 }
 }
+
+@implementation ORBGLKViewDelegate
+
+- (void)glkView:(GLKView*)view drawInRect:(CGRect)rect
+{
+	(void)view;
+	(void)rect;
+}
+
+@end
