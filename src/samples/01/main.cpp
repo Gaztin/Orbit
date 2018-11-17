@@ -38,9 +38,9 @@ sample_app::sample_app()
 void sample_app::frame()
 {
 	m_time = static_cast<float>(clock()) / CLOCKS_PER_SEC;
-	const float red   = 0.5f * (1.0f + cos(m_time * M_PI));
+	const float red   = 0.5f * (1.0f + cos(m_time * static_cast<float>(M_PI)));
 	const float green = 0.0f;
-	const float blue  = 0.5f * (1.0f + sin(m_time * M_PI));
+	const float blue  = 0.5f * (1.0f + sin(m_time * static_cast<float>(M_PI)));
 
 	m_window.poll_events();
 	m_renderContext.set_clear_color(red, green, blue);

@@ -161,4 +161,6 @@ decl_module("Graphics")
 
 -- Samples
 decl_sample("Base")
+  filter{"system:windows"}
+    defines{"_USE_MATH_DEFINES"}
 decl_sample("Benchmarking")
