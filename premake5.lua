@@ -31,24 +31,26 @@ local function get_platforms()
 end
 
 local function base_config()
-	location       ("build/%{_ACTION}/")
-	objdir         ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
-	targetdir      ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
-	includedirs    {"src/"}
-	sysincludedirs {"src/"}
-	cppdialect     ("C++17")
-	warnings       ("Extra")
+	location          ("build/%{_ACTION}/")
+	objdir            ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
+	targetdir         ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
+	includedirs       {"src/"}
+	sysincludedirs    {"src/"}
+	cppdialect        ("C++17")
+	warnings          ("Extra")
+	rtti              ("Off")
+	exceptionhandling ("Off")
 	filter{"configurations:Debug"}
-	optimize       ("Off")
-	symbols        ("On")
+	optimize          ("Off")
+	symbols           ("On")
 	filter{"configurations:Release"}
-	defines        {"NDEBUG"}
-	optimize       ("Full")
-	symbols        ("Off")
+	defines           {"NDEBUG"}
+	optimize          ("Full")
+	symbols           ("Off")
 	filter{"system:windows"}
-	toolset        ("msc")
+	toolset           ("msc")
 	filter{"system:not windows"}
-	toolset        ("gcc")
+	toolset           ("gcc")
 	filter{}
 end
 
