@@ -16,31 +16,63 @@
 */
 
 #pragma once
-
-#if defined(ORB_OS_WINDOWS)
-#include <memory>
-#include <dxgi.h>
-#include <d3d11.h>
-#endif
-
 #include "orbit/graphics.h"
+
+#include <memory>
+
+#include <d3d11.h>
+#include <dxgi.h>
+
+#include "orbit/core/color.h"
+#include "orbit/core/utility.h"
 
 namespace orb
 {
 namespace platform
 {
-namespace d3d11
-{
 
-struct ORB_API_GRAPHICS swap_chain_handle
+union render_context_handle
 {
+	struct d3d11_t
+	{
+		IDXGISwapChain* swapChain;
+		ID3D11Device* device;
+		ID3D11DeviceContext* deviceContext;
+		ID3D11RenderTargetView* renderTargetView;
+		ID3D11Texture2D* depthStencilBuffer;
+		ID3D11DepthStencilState* depthStencilState;
+		ID3D11DepthStencilView* depthStencilView;
+		ID3D11RasterizerState* rasterizerState;
+
+		color clearColor;
+
+	} d3d11;
+
+	struct gl_t
+	{
 #if defined(ORB_OS_WINDOWS)
-	std::shared_ptr<IDXGISwapChain> swapChain;
-	ID3D11Device* device;
-	ID3D11DeviceContext* deviceContext;
+		HDC hdc;
+		HGLRC hglrc;
+#elif defined(ORB_OS_LINUX)
+		const window_handle* wndPtr;
+		GC gc;
+		GLXContext glxContext;
+#elif defined(ORB_OS_MACOS)
+		void* glView; // <GLView*>
+#elif defined(ORB_OS_ANDROID)
+		EGLDisplay eglDisplay;
+		EGLConfig eglConfig;
+		EGLSurface eglSurface;
+		EGLContext eglContext;
+#elif defined(ORB_OS_IOS)
+		void* eaglContext; // <EAGLContext*>
+		void* glkView; // <GLKView*>
 #endif
+	} gl;
+
+	render_context_handle(in_place_type<d3d11_t>) : d3d11{} { }
+	render_context_handle(in_place_type<gl_t>)    : gl   {} { }
 };
 
-}
 }
 }

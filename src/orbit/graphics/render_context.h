@@ -17,7 +17,7 @@
 
 #pragma once
 #include "orbit/core/window.h"
-#include "orbit/graphics/api/context_base.h"
+#include "orbit/graphics/platform/render_context_handle.h"
 
 namespace orb
 {
@@ -28,16 +28,17 @@ class ORB_API_GRAPHICS render_context
 {
 public:
 	render_context(window& parentWindow, graphics_api api);
+	~render_context();
 
-	//void make_current(const window& parentWindow);
 	void resize(uint32_t width, uint32_t height);
 	void swap_buffers();
-	void clear(buffer_mask bm);
+	void clear(buffer_mask mask);
 	void set_clear_color(float r, float g, float b);
 
 private:
 	graphics_api m_api;
-	std::unique_ptr<context_base> m_context;
+	platform::window_handle m_parentWindowHandle;
+	platform::render_context_handle m_handle;
 	window::subscription_ptr m_resizeSubscription;
 };
 

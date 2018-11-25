@@ -16,8 +16,8 @@
 */
 
 #pragma once
-#include "orbit/graphics/api/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/context_handle_gl.h"
+#include "orbit/graphics/platform/render_context_handle.h"
+#include "orbit/graphics/gl.h"
 
 namespace orb
 {
@@ -28,19 +28,11 @@ struct window_handle;
 namespace gl
 {
 
-inline GLbitfield get_buffer_bits(buffer_mask mask)
-{
-	GLbitfield bits = 0;
-	bits |= (!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0;
-	bits |= (!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0;
-	return bits;
-}
-
-extern ORB_API_GRAPHICS context_handle create_context_handle(const window_handle& wh);
-extern ORB_API_GRAPHICS void destroy_context_handle(const window_handle& wh, const context_handle& ch);
-extern ORB_API_GRAPHICS bool make_current(const context_handle& ch);
-extern ORB_API_GRAPHICS void swap_buffers(const context_handle& ch);
-extern ORB_API_GRAPHICS void recreate_surface(context_handle& ch, uint32_t width, uint32_t height);
+extern ORB_API_GRAPHICS render_context_handle create_render_context_handle(const window_handle& wh);
+extern ORB_API_GRAPHICS void destroy_context_handle(const window_handle& wh, const render_context_handle& rch);
+extern ORB_API_GRAPHICS bool make_current(const render_context_handle& rch);
+extern ORB_API_GRAPHICS void swap_buffers(const render_context_handle& rch);
+extern ORB_API_GRAPHICS void recreate_surface(render_context_handle& rch, uint32_t width, uint32_t height);
 
 }
 }

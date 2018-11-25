@@ -18,14 +18,8 @@
 #pragma once
 #include <memory>
 
-#include <d3d11.h>
-#include <dxgi.h>
-
 #include "orbit/core/platform/window_handle.h"
-#include "orbit/core/color.h"
-#include "orbit/graphics/platform/d3d11/context_handle_d3d11.h"
-#include "orbit/graphics/platform/d3d11/swap_chain_handle_d3d11.h"
-#include "orbit/graphics.h"
+#include "orbit/graphics/platform/render_context_handle.h"
 
 namespace orb
 {
@@ -34,14 +28,13 @@ namespace platform
 namespace d3d11
 {
 
-extern ORB_API_GRAPHICS swap_chain_handle create_swap_chain_handle(const window_handle& wh);
-extern ORB_API_GRAPHICS context_handle create_context_handle(const window_handle& wh, const swap_chain_handle& sch);
-extern ORB_API_GRAPHICS void flush_device_context(const swap_chain_handle& sch);
-extern ORB_API_GRAPHICS void resize_swap_chain(const swap_chain_handle& sch, uint32_t width, uint32_t height);
-extern ORB_API_GRAPHICS void recreate_buffers(context_handle& ch, const window_handle& wh, const swap_chain_handle& sch);
-extern ORB_API_GRAPHICS void present(const swap_chain_handle& sch);
-extern ORB_API_GRAPHICS void clear_render_target(const swap_chain_handle& sch, const context_handle& ch, const color& clr);
-extern ORB_API_GRAPHICS void clear_depth_stencil(const swap_chain_handle& sch, const context_handle& ch);
+extern ORB_API_GRAPHICS render_context_handle create_render_context_handle(const window_handle& wh);
+extern ORB_API_GRAPHICS void flush_device_context(const render_context_handle& rch);
+extern ORB_API_GRAPHICS void resize_swap_chain(const render_context_handle& rch, uint32_t width, uint32_t height);
+extern ORB_API_GRAPHICS void recreate_buffers(render_context_handle& rch, const window_handle& wh);
+extern ORB_API_GRAPHICS void present(const render_context_handle& rch);
+extern ORB_API_GRAPHICS void clear_render_target(const render_context_handle& rch);
+extern ORB_API_GRAPHICS void clear_depth_stencil(const render_context_handle& rch);
 
 }
 }
