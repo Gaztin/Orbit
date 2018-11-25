@@ -34,7 +34,7 @@ static platform::render_context_handle init_handle(const platform::window_handle
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11: return platform::d3d11::create_render_context_handle(wh);
 #endif
-		default: throw;
+		default: return *cast<platform::render_context_handle*>(nullptr);
 	}
 }
 

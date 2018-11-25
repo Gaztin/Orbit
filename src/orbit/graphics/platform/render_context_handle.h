@@ -60,7 +60,7 @@ union render_context_handle
 		HDC hdc;
 		HGLRC hglrc;
 #elif defined(ORB_OS_LINUX)
-		const window_handle* wndPtr;
+		const struct window_handle* wndPtr;
 		GC gc;
 		GLXContext glxContext;
 #elif defined(ORB_OS_MACOS)
