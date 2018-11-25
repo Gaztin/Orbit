@@ -18,42 +18,66 @@
 #pragma once
 #include "orbit/graphics.h"
 
-#if defined(ORB_OS_ANDROID)
-#include <EGL/egl.h>
-#elif defined(ORB_OS_LINUX)
-#include <GL/glx.h>
-#include "orbit/core/platform/window_handle.h"
+#if defined(ORB_HAS_D3D11)
+#include "orbit/graphics/platform/d3d11/d3d11.h"
 #endif
+#if defined(ORB_HAS_OPENGL)
+#include "orbit/graphics/platform/opengl/gl.h"
+#endif
+
+#include "orbit/core/color.h"
+#include "orbit/core/utility.h"
 
 namespace orb
 {
 namespace platform
 {
-namespace gl
-{
 
-struct ORB_API_GRAPHICS context_handle
+union render_context_handle
 {
+#if defined(ORB_HAS_D3D11)
+	struct d3d11_t
+	{
+		IDXGISwapChain* swapChain;
+		ID3D11Device* device;
+		ID3D11DeviceContext* deviceContext;
+		ID3D11RenderTargetView* renderTargetView;
+		ID3D11Texture2D* depthStencilBuffer;
+		ID3D11DepthStencilState* depthStencilState;
+		ID3D11DepthStencilView* depthStencilView;
+		ID3D11RasterizerState* rasterizerState;
+
+		color clearColor;
+
+	} d3d11;
+	render_context_handle(in_place_type<d3d11_t>) : d3d11{} {}
+#endif
+
+#if defined(ORB_HAS_OPENGL)
+	struct gl_t
+	{
 #if defined(ORB_OS_WINDOWS)
-	HDC hdc;
-	HGLRC hglrc;
+		HDC hdc;
+		HGLRC hglrc;
 #elif defined(ORB_OS_LINUX)
-	const window_handle* wndPtr;
-	GC gc;
-	GLXContext glxContext;
+		const struct window_handle* wndPtr;
+		GC gc;
+		GLXContext glxContext;
 #elif defined(ORB_OS_MACOS)
-	void* glView; // <GLView*>
+		void* glView; // <GLView*>
 #elif defined(ORB_OS_ANDROID)
-	EGLDisplay eglDisplay;
-	EGLConfig eglConfig;
-	EGLSurface eglSurface;
-	EGLContext eglContext;
+		EGLDisplay eglDisplay;
+		EGLConfig eglConfig;
+		EGLSurface eglSurface;
+		EGLContext eglContext;
 #elif defined(ORB_OS_IOS)
-	void* eaglContext; // <EAGLContext*>
-	void* glkView; // <GLKView*>
+		void* eaglContext; // <EAGLContext*>
+		void* glkView; // <GLKView*>
+#endif
+	} gl;
+	render_context_handle(in_place_type<gl_t>) : gl{} {}
 #endif
 };
 
-}
 }
 }

@@ -20,7 +20,6 @@
 #include <GLKit/GLKit.h>
 
 #include "orbit/core/platform/window_handle.h"
-#include "orbit/graphics/platform/opengl/context_handle_gl.h"
 
 @interface ORBGLKViewDelegate : UIResponder<GLKViewDelegate>
 @end
@@ -32,44 +31,44 @@ namespace platform
 namespace gl
 {
 
-context_handle create_context_handle(const window_handle& wh)
+render_context_handle create_render_context_handle(const window_handle& wh)
 {
-	context_handle ch{};
-	ch.eaglContext = [EAGLContext alloc];
-	ch.glkView = [GLKView alloc];
+	render_context_handle rch(in_place_type_v<render_context_handle::gl_t>);
+	rch.gl.eaglContext = [EAGLContext alloc];
+	rch.gl.glkView = [GLKView alloc];
 
 	ORBGLKViewDelegate* delegate = [ORBGLKViewDelegate alloc];
 	[delegate init];
 
-	[(EAGLContext*)ch.eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES1];
-	[(GLKView*)ch.glkView initWithFrame:[[UIScreen mainScreen] bounds]];
-	((GLKView*)ch.glkView).context = (EAGLContext*)ch.eaglContext;
-	((GLKView*)ch.glkView).delegate = delegate;
-	((GLKView*)ch.glkView).enableSetNeedsDisplay = NO;
-	[(UIWindow*)wh.uiWindow addSubview:(GLKView*)ch.glkView];
+	[(EAGLContext*)rch.gl.eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES1];
+	[(GLKView*)rch.gl.glkView initWithFrame:[[UIScreen mainScreen] bounds]];
+	((GLKView*)rch.gl.glkView).context = (EAGLContext*)rch.gl.eaglContext;
+	((GLKView*)rch.gl.glkView).delegate = delegate;
+	((GLKView*)rch.gl.glkView).enableSetNeedsDisplay = NO;
+	[(UIWindow*)wh.uiWindow addSubview:(GLKView*)rch.gl.glkView];
 
-	return ch;
+	return rch;
 }
 
-void destroy_context_handle(const window_handle& /*wh*/, const context_handle& ch)
+void destroy_context_handle(const window_handle& /*wh*/, const render_context_handle& rch)
 {
-	[(GLKView*)ch.glkView dealloc];
-	[(EAGLContext*)ch.eaglContext dealloc];
+	[(GLKView*)rch.gl.glkView dealloc];
+	[(EAGLContext*)rch.gl.eaglContext dealloc];
 }
 
-bool make_current(const context_handle& ch)
+bool make_current(const render_context_handle& rch)
 {
-	return [EAGLContext setCurrentContext:(EAGLContext*)ch.eaglContext];
+	return [EAGLContext setCurrentContext:(EAGLContext*)rch.gl.eaglContext];
 }
 
-void swap_buffers(const context_handle& ch)
+void swap_buffers(const render_context_handle& rch)
 {
-	[(GLKView*)ch.glkView display];
+	[(GLKView*)rch.gl.glkView display];
 }
 
-void recreate_surface(context_handle& ch, uint32_t width, uint32_t height)
+void recreate_surface(render_context_handle& rch, uint32_t width, uint32_t height)
 {
-	((GLKView*)ch.glkView).layer.frame = CGRectMake(0.f, 0.f, width, height);
+	((GLKView*)rch.gl.glkView).layer.frame = CGRectMake(0.f, 0.f, width, height);
 }
 
 }

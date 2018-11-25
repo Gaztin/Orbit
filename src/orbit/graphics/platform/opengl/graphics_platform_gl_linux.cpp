@@ -46,32 +46,32 @@ static GLXContext create_glx_context(Display* display)
 	return glXCreateContext(display, visualInfo, nullptr, true);
 }
 
-context_handle create_context_handle(const window_handle& wh)
+render_context_handle create_render_context_handle(const window_handle& wh)
 {
-	context_handle ch{};
-	ch.wndPtr = &wh;
-	ch.gc = create_gc(wh.display, wh.window);
-	ch.glxContext = create_glx_context(wh.display);
-	return ch;
+	render_context_handle rch(in_place_type_v<render_context_handle::gl_t>);
+	rch.gl.wndPtr = &wh;
+	rch.gl.gc = create_gc(wh.display, wh.window);
+	rch.gl.glxContext = create_glx_context(wh.display);
+	return rch;
 }
 
-void destroy_context_handle(const window_handle& /*wh*/, const context_handle& ch)
+void destroy_context_handle(const window_handle& /*wh*/, const render_context_handle& rch)
 {
-	glXDestroyContext(ch.wndPtr->display, ch.glxContext);
-	XFreeGC(ch.wndPtr->display, ch.gc);
+	glXDestroyContext(rch.gl.wndPtr->display, rch.gl.glxContext);
+	XFreeGC(rch.gl.wndPtr->display, rch.gl.gc);
 }
 
-bool make_current(const context_handle& ch)
+bool make_current(const render_context_handle& rch)
 {
-	return glXMakeCurrent(ch.wndPtr->display, ch.wndPtr->window, ch.glxContext);
+	return glXMakeCurrent(rch.gl.wndPtr->display, rch.gl.wndPtr->window, rch.gl.glxContext);
 }
 
-void swap_buffers(const context_handle& ch)
+void swap_buffers(const render_context_handle& rch)
 {
-	glXSwapBuffers(ch.wndPtr->display, ch.wndPtr->window);
+	glXSwapBuffers(rch.gl.wndPtr->display, rch.gl.wndPtr->window);
 }
 
-void recreate_surface(context_handle& /*ch*/, uint32_t /*width*/, uint32_t /*height*/)
+void recreate_surface(render_context_handle& /*rch*/, uint32_t /*width*/, uint32_t /*height*/)
 {
 }
 

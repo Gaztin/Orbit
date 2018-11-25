@@ -82,7 +82,7 @@ static DXGI_RATIONAL find_monitor_refresh_rate(const platform::window_handle& wh
 	return { 60000, 1000 };
 }
 
-static std::shared_ptr<IDXGISwapChain> create_swap_chain(const platform::window_handle& wh)
+static IDXGISwapChain* create_swap_chain(const platform::window_handle& wh)
 {
 	IDXGISwapChain* swapChain = nullptr;
 
@@ -131,7 +131,7 @@ static std::shared_ptr<IDXGISwapChain> create_swap_chain(const platform::window_
 		nullptr
 	);
 
-	return std::shared_ptr<IDXGISwapChain>(swapChain, com_deleter());
+	return swapChain;
 }
 
 static ID3D11Device* get_device(IDXGISwapChain& swapChain)
@@ -148,17 +148,17 @@ static ID3D11DeviceContext* get_device_context(ID3D11Device& device)
 	return deviceContext;
 }
 
-static std::shared_ptr<ID3D11RenderTargetView> create_render_target_view(IDXGISwapChain& swapChain, ID3D11Device& device)
+static ID3D11RenderTargetView* create_render_target_view(IDXGISwapChain& swapChain, ID3D11Device& device)
 {
 	ID3D11RenderTargetView* renderTargetView;
 	ID3D11Texture2D* backBuffer;
 	swapChain.GetBuffer(0, __uuidof(ID3D11Texture2D), cast<void**>(&backBuffer));
 	device.CreateRenderTargetView(backBuffer, nullptr, &renderTargetView);
 	backBuffer->Release();
-	return std::shared_ptr<ID3D11RenderTargetView>(renderTargetView, com_deleter());
+	return renderTargetView;
 }
 
-static std::shared_ptr<ID3D11Texture2D> create_depth_stencil_buffer(const platform::window_handle& wh, ID3D11Device& device)
+static ID3D11Texture2D* create_depth_stencil_buffer(const platform::window_handle& wh, ID3D11Device& device)
 {
 	ID3D11Texture2D* depthStencilBuffer;
 	RECT windowRect;
@@ -173,10 +173,10 @@ static std::shared_ptr<ID3D11Texture2D> create_depth_stencil_buffer(const platfo
 	desc.SampleDesc.Count = 1;
 	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	device.CreateTexture2D(&desc, nullptr, &depthStencilBuffer);
-	return std::shared_ptr<ID3D11Texture2D>(depthStencilBuffer, com_deleter());
+	return depthStencilBuffer;
 }
 
-static std::shared_ptr<ID3D11DepthStencilState> create_depth_stencil_state(ID3D11Device& device, ID3D11DeviceContext& deviceContext)
+static ID3D11DepthStencilState* create_depth_stencil_state(ID3D11Device& device, ID3D11DeviceContext& deviceContext)
 {
 	ID3D11DepthStencilState* depthStencilState;
 	D3D11_DEPTH_STENCIL_DESC desc{};
@@ -196,10 +196,10 @@ static std::shared_ptr<ID3D11DepthStencilState> create_depth_stencil_state(ID3D1
 	desc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	device.CreateDepthStencilState(&desc, &depthStencilState);
 	deviceContext.OMSetDepthStencilState(depthStencilState, 1);
-	return std::shared_ptr<ID3D11DepthStencilState>(depthStencilState, com_deleter());
+	return depthStencilState;
 }
 
-static std::shared_ptr<ID3D11DepthStencilView> create_depth_stencil_view(ID3D11Device& device, ID3D11DeviceContext& deviceContext, ID3D11Texture2D& depthStencilBuffer, ID3D11RenderTargetView& renderTargetView)
+static ID3D11DepthStencilView* create_depth_stencil_view(ID3D11Device& device, ID3D11DeviceContext& deviceContext, ID3D11Texture2D& depthStencilBuffer, ID3D11RenderTargetView& renderTargetView)
 {
 	ID3D11DepthStencilView* depthStencilView;
 	D3D11_DEPTH_STENCIL_VIEW_DESC desc{};
@@ -209,10 +209,10 @@ static std::shared_ptr<ID3D11DepthStencilView> create_depth_stencil_view(ID3D11D
 
 	ID3D11RenderTargetView* renderTargets[] = { &renderTargetView };
 	deviceContext.OMSetRenderTargets(1, renderTargets, depthStencilView);
-	return std::shared_ptr<ID3D11DepthStencilView>(depthStencilView, com_deleter());
+	return depthStencilView;
 }
 
-static std::shared_ptr<ID3D11RasterizerState> create_rasterization_state(ID3D11Device& device, ID3D11DeviceContext& deviceContext)
+static ID3D11RasterizerState* create_rasterization_state(ID3D11Device& device, ID3D11DeviceContext& deviceContext)
 {
 	ID3D11RasterizerState* rasterizationState;
 	D3D11_RASTERIZER_DESC desc{};
@@ -221,85 +221,65 @@ static std::shared_ptr<ID3D11RasterizerState> create_rasterization_state(ID3D11D
 	desc.FillMode = D3D11_FILL_SOLID;
 	device.CreateRasterizerState(&desc, &rasterizationState);
 	deviceContext.RSSetState(rasterizationState);
-	return std::shared_ptr<ID3D11RasterizerState>(rasterizationState, com_deleter());
+	return rasterizationState;
 }
 
-swap_chain_handle create_swap_chain_handle(const platform::window_handle& wh)
+render_context_handle create_render_context_handle(const platform::window_handle& wh)
 {
-	swap_chain_handle sch{};
-	sch.swapChain = create_swap_chain(wh);
-	sch.device = get_device(*sch.swapChain);
-	sch.deviceContext = get_device_context(*sch.device);
-
-	// TODO: Shouldn't the viewport be set already?
-	/*RECT windowRect;
-	GetWindowRect(wh.hwnd, &windowRect);
-
-	D3D11_VIEWPORT viewport{};
-	viewport.Width = cast<float>(windowRect.right - windowRect.left);
-	viewport.Height = cast<float>(windowRect.bottom - windowRect.top);
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-	sch.deviceContext->RSSetViewports(1, &viewport);*/
-	sch.deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	return sch;
+	render_context_handle rch(in_place_type_v<render_context_handle::d3d11_t>);
+	rch.d3d11.swapChain = create_swap_chain(wh);
+	rch.d3d11.device = get_device(*rch.d3d11.swapChain);
+	rch.d3d11.deviceContext = get_device_context(*rch.d3d11.device);
+	rch.d3d11.deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	rch.d3d11.renderTargetView = create_render_target_view(*rch.d3d11.swapChain, *rch.d3d11.device);
+	rch.d3d11.depthStencilBuffer = create_depth_stencil_buffer(wh, *rch.d3d11.device);
+	rch.d3d11.depthStencilState = create_depth_stencil_state(*rch.d3d11.device, *rch.d3d11.deviceContext);
+	rch.d3d11.depthStencilView = create_depth_stencil_view(*rch.d3d11.device, *rch.d3d11.deviceContext, *rch.d3d11.depthStencilBuffer, *rch.d3d11.renderTargetView);
+	rch.d3d11.rasterizerState = create_rasterization_state(*rch.d3d11.device, *rch.d3d11.deviceContext);
+	return rch;
 }
 
-context_handle create_context_handle(const window_handle& wh, const swap_chain_handle& sch)
+void flush_device_context(const render_context_handle& rch)
 {
-	context_handle ch{};
-	ch.renderTargetView = create_render_target_view(*sch.swapChain, *sch.device);
-	ch.depthStencilBuffer = create_depth_stencil_buffer(wh, *sch.device);
-	ch.depthStencilState = create_depth_stencil_state(*sch.device, *sch.deviceContext);
-	ch.depthStencilView = create_depth_stencil_view(*sch.device, *sch.deviceContext, *ch.depthStencilBuffer, *ch.renderTargetView);
-	ch.rasterizerState = create_rasterization_state(*sch.device, *sch.deviceContext);
-	return ch;
+	rch.d3d11.deviceContext->OMSetRenderTargets(0, 0, 0);
+	rch.d3d11.deviceContext->ClearState();
+	rch.d3d11.deviceContext->Flush();
 }
 
-void flush_device_context(const swap_chain_handle& sch)
-{
-	sch.deviceContext->OMSetRenderTargets(0, 0, 0);
-	sch.deviceContext->ClearState();
-	sch.deviceContext->Flush();
-}
-
-void resize_swap_chain(const swap_chain_handle& sch, uint32_t width, uint32_t height)
+void resize_swap_chain(const render_context_handle& rch, uint32_t width, uint32_t height)
 {
 	DXGI_SWAP_CHAIN_DESC desc;
-	sch.swapChain->GetDesc(&desc);
+	rch.d3d11.swapChain->GetDesc(&desc);
 	desc.BufferDesc.Width = width;
 	desc.BufferDesc.Height = height;
-	sch.swapChain->ResizeBuffers(1, desc.BufferDesc.Width, desc.BufferDesc.Height, desc.BufferDesc.Format, desc.Flags);
+	rch.d3d11.swapChain->ResizeBuffers(1, desc.BufferDesc.Width, desc.BufferDesc.Height, desc.BufferDesc.Format, desc.Flags);
 }
 
-void recreate_buffers(context_handle& ch, const window_handle& wh, const swap_chain_handle& sch)
+void recreate_buffers(render_context_handle& rch, const window_handle& wh)
 {
-	ch.renderTargetView = create_render_target_view(*sch.swapChain, *sch.device);
-	ch.depthStencilBuffer = create_depth_stencil_buffer(wh, *sch.device);
-	ch.depthStencilView = create_depth_stencil_view(*sch.device, *sch.deviceContext, *ch.depthStencilBuffer, *ch.renderTargetView);
+	rch.d3d11.renderTargetView = create_render_target_view(*rch.d3d11.swapChain, *rch.d3d11.device);
+	rch.d3d11.depthStencilBuffer = create_depth_stencil_buffer(wh, *rch.d3d11.device);
+	rch.d3d11.depthStencilView = create_depth_stencil_view(*rch.d3d11.device, *rch.d3d11.deviceContext, *rch.d3d11.depthStencilBuffer, *rch.d3d11.renderTargetView);
 
-	ID3D11RenderTargetView* renderTargetViews[1] = { ch.renderTargetView.get() };
-	sch.deviceContext->OMSetRenderTargets(1, renderTargetViews, ch.depthStencilView.get());
-	sch.deviceContext->OMSetDepthStencilState(ch.depthStencilState.get(), 0);
-	sch.deviceContext->RSSetState(ch.rasterizerState.get());
+	ID3D11RenderTargetView* renderTargetViews[1] = { rch.d3d11.renderTargetView };
+	rch.d3d11.deviceContext->OMSetRenderTargets(1, renderTargetViews, rch.d3d11.depthStencilView);
+	rch.d3d11.deviceContext->OMSetDepthStencilState(rch.d3d11.depthStencilState, 0);
+	rch.d3d11.deviceContext->RSSetState(rch.d3d11.rasterizerState);
 }
 
-void present(const swap_chain_handle& sch)
+void present(const render_context_handle& rch)
 {
-	sch.swapChain->Present(0, 0);
+	rch.d3d11.swapChain->Present(0, 0);
 }
 
-void clear_render_target(const swap_chain_handle& sch, const context_handle& ch, const color& clr)
+void clear_render_target(const render_context_handle& rch)
 {
-	sch.deviceContext->ClearRenderTargetView(ch.renderTargetView.get(), &clr[0]);
+	rch.d3d11.deviceContext->ClearRenderTargetView(rch.d3d11.renderTargetView, &rch.d3d11.clearColor[0]);
 }
 
-void clear_depth_stencil(const swap_chain_handle& sch, const context_handle& ch)
+void clear_depth_stencil(const render_context_handle& rch)
 {
-	sch.deviceContext->ClearDepthStencilView(ch.depthStencilView.get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	rch.d3d11.deviceContext->ClearDepthStencilView(rch.d3d11.depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 }

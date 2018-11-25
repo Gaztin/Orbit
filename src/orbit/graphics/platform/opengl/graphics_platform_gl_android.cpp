@@ -78,41 +78,41 @@ static EGLContext create_context(const EGLDisplay& display, const EGLConfig& con
 	return eglCreateContext(display, config, EGL_NO_CONTEXT, Attribs);
 }
 
-context_handle create_context_handle(const window_handle& wh)
+render_context_handle create_render_context_handle(const window_handle& wh)
 {
-	context_handle ch{};
-	ch.eglDisplay = init_display();
-	ch.eglConfig = choose_config(ch.eglDisplay);
-	ch.eglSurface = create_surface(ch.eglDisplay, ch.eglConfig);
-	ch.eglContext = create_context(ch.eglDisplay, ch.eglConfig);
-	return ch;
+	render_context_handle rch(in_place_type_v<render_context_handle::gl_t>);
+	rch.gl.eglDisplay = init_display();
+	rch.gl.eglConfig = choose_config(rch.gl.eglDisplay);
+	rch.gl.eglSurface = create_surface(rch.gl.eglDisplay, rch.gl.eglConfig);
+	rch.gl.eglContext = create_context(rch.gl.eglDisplay, rch.gl.eglConfig);
+	return rch;
 }
 
-void destroy_context_handle(const window_handle& /*wh*/, const context_handle& ch)
+void destroy_context_handle(const window_handle& /*wh*/, const render_context_handle& rch)
 {
-	eglDestroyContext(ch.eglDisplay, ch.eglContext);
-	eglDestroySurface(ch.eglDisplay, ch.eglSurface);
-	eglTerminate(ch.eglDisplay);
+	eglDestroyContext(rch.gl.eglDisplay, rch.gl.eglContext);
+	eglDestroySurface(rch.gl.eglDisplay, rch.gl.eglSurface);
+	eglTerminate(rch.gl.eglDisplay);
 }
 
-bool make_current(const context_handle& ch)
+bool make_current(const render_context_handle& rch)
 {
-	return (eglMakeCurrent(ch.eglDisplay, ch.eglSurface, ch.eglSurface, ch.eglContext) != 0);
+	return (eglMakeCurrent(rch.gl.eglDisplay, rch.gl.eglSurface, rch.gl.eglSurface, rch.gl.eglContext) != 0);
 }
 
-void swap_buffers(const context_handle& ch)
+void swap_buffers(const render_context_handle& rch)
 {
-	eglSwapBuffers(ch.eglDisplay, ch.eglSurface);
+	eglSwapBuffers(rch.gl.eglDisplay, rch.gl.eglSurface);
 }
 
-void recreate_surface(context_handle& ch, uint32_t /*width*/, uint32_t /*height*/)
+void recreate_surface(render_context_handle& rch, uint32_t /*width*/, uint32_t /*height*/)
 {
-	eglMakeCurrent(ch.eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	eglMakeCurrent(rch.gl.eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
-	if (ch.eglSurface != EGL_NO_SURFACE)
-		eglDestroySurface(ch.eglDisplay, ch.eglSurface);
+	if (rch.gl.eglSurface != EGL_NO_SURFACE)
+		eglDestroySurface(rch.gl.eglDisplay, rch.gl.eglSurface);
 
-	ch.eglSurface = create_surface(ch.eglDisplay, ch.eglConfig);
+	rch.gl.eglSurface = create_surface(rch.gl.eglDisplay, rch.gl.eglConfig);
 }
 
 }

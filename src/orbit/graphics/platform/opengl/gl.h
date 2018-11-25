@@ -27,10 +27,13 @@
 #include <windows.h>
 #include <gl/GL.h>
 #elif defined(ORB_OS_LINUX)
+//#include <X11/Xlib.h>
+#include <GL/glx.h>
 #include <GL/gl.h>
 #elif defined(ORB_OS_MACOS)
 #include <OpenGL/gl.h>
 #elif defined(ORB_OS_ANDROID)
+#include <EGL/egl.h>
 #include <GLES/gl.h>
 #elif defined(ORB_OS_IOS)
 #include <OpenGLES/ES1/gl.h>

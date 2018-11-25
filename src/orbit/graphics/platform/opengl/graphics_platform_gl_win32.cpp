@@ -26,31 +26,46 @@ namespace platform
 namespace gl
 {
 
-context_handle create_context_handle(const window_handle& wh)
+static void set_pixel_format(HDC hdc)
 {
-	context_handle ch{};
-	ch.hdc = GetDC(wh.hwnd);
-	ch.hglrc = wglCreateContext(ch.hdc);
-	return ch;
+	PIXELFORMATDESCRIPTOR desc{};
+	desc.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	desc.nVersion = 1;
+	desc.dwFlags = PFD_DOUBLEBUFFER | PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
+	desc.iPixelType = PFD_TYPE_RGBA;
+	desc.cColorBits = 24;
+	desc.cDepthBits = 24;
+	desc.iLayerType = PFD_MAIN_PLANE;
+	const int format = ChoosePixelFormat(hdc, &desc);
+	SetPixelFormat(hdc, format, &desc);
 }
 
-void destroy_context_handle(const window_handle& wh, const context_handle& ch)
+render_context_handle create_render_context_handle(const window_handle& wh)
 {
-	wglDeleteContext(ch.hglrc);
-	ReleaseDC(wh.hwnd, ch.hdc);
+	render_context_handle rch(in_place_type_v<render_context_handle::gl_t>);
+	rch.gl.hdc = GetDC(wh.hwnd);
+	set_pixel_format(rch.gl.hdc);
+	rch.gl.hglrc = wglCreateContext(rch.gl.hdc);
+	return rch;
 }
 
-bool make_current(const context_handle& ch)
+void destroy_context_handle(const window_handle& wh, const render_context_handle& rch)
 {
-	return wglMakeCurrent(ch.hdc, ch.hglrc);
+	wglDeleteContext(rch.gl.hglrc);
+	ReleaseDC(wh.hwnd, rch.gl.hdc);
 }
 
-void swap_buffers(const context_handle& ch)
+bool make_current(const render_context_handle& rch)
 {
-	SwapBuffers(ch.hdc);
+	return wglMakeCurrent(rch.gl.hdc, rch.gl.hglrc);
 }
 
-void recreate_surface(context_handle& /*ch*/, uint32_t /*width*/, uint32_t /*height*/)
+void swap_buffers(const render_context_handle& rch)
+{
+	SwapBuffers(rch.gl.hdc);
+}
+
+void recreate_surface(render_context_handle& /*ch*/, uint32_t /*width*/, uint32_t /*height*/)
 {
 }
 

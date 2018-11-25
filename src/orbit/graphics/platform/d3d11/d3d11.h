@@ -16,31 +16,9 @@
 */
 
 #pragma once
-
-#if defined(ORB_OS_WINDOWS)
-#include <memory>
-#include <dxgi.h>
-#include <d3d11.h>
-#endif
-
 #include "orbit/graphics.h"
 
-namespace orb
-{
-namespace platform
-{
-namespace d3d11
-{
-
-struct ORB_API_GRAPHICS swap_chain_handle
-{
 #if defined(ORB_OS_WINDOWS)
-	std::shared_ptr<IDXGISwapChain> swapChain;
-	ID3D11Device* device;
-	ID3D11DeviceContext* deviceContext;
+#include <d3d11.h>
+#include <dxgi.h>
 #endif
-};
-
-}
-}
-}

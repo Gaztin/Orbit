@@ -29,6 +29,7 @@ sample_app::sample_app()
 	: m_window(800, 600)
 	, m_windowSubscription(m_window.subscribe(&sample_app::on_window_event))
 	, m_renderContext(m_window, orb::graphics_api::DeviceDefault)
+	, m_time(0.0f)
 {
 	m_window.set_title("Orbit sample #01");
 	m_window.show();
