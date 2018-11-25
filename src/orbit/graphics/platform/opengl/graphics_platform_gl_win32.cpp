@@ -26,27 +26,26 @@ namespace platform
 namespace gl
 {
 
+static void set_pixel_format(HDC hdc)
+{
+	PIXELFORMATDESCRIPTOR desc{};
+	desc.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	desc.nVersion = 1;
+	desc.dwFlags = PFD_DOUBLEBUFFER | PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
+	desc.iPixelType = PFD_TYPE_RGBA;
+	desc.cColorBits = 24;
+	desc.cDepthBits = 24;
+	desc.iLayerType = PFD_MAIN_PLANE;
+	const int format = ChoosePixelFormat(hdc, &desc);
+	SetPixelFormat(hdc, format, &desc);
+}
+
 render_context_handle create_render_context_handle(const window_handle& wh)
 {
 	render_context_handle rch(in_place_type_v<render_context_handle::gl_t>);
 	rch.gl.hdc = GetDC(wh.hwnd);
-
-	PIXELFORMATDESCRIPTOR pixelFormat{};
-	pixelFormat.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-	pixelFormat.nVersion = 1;
-	pixelFormat.dwFlags = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL;
-	pixelFormat.iPixelType = PFD_TYPE_RGBA;
-	pixelFormat.cColorBits = 24;
-	pixelFormat.cAlphaBits = 8;
-	pixelFormat.cAccumBits = 0;
-	pixelFormat.cDepthBits = 24;
-	pixelFormat.cStencilBits = 0;
-	pixelFormat.cAuxBuffers = 0;
-	pixelFormat.iLayerType = PFD_MAIN_PLANE;
-	ChoosePixelFormat(rch.gl.hdc, &pixelFormat);
-
+	set_pixel_format(rch.gl.hdc);
 	rch.gl.hglrc = wglCreateContext(rch.gl.hdc);
-
 	return rch;
 }
 
