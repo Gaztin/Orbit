@@ -50,32 +50,32 @@ static NSOpenGLView* create_open_gl_view(const NSWindow* nsWindow)
 	return glView;
 }
 
-context_handle create_context_handle(const window_handle& wh)
+render_context_handle create_render_context_handle(const window_handle& wh)
 {
-	context_handle ch{};
-	ch.glView = create_open_gl_view((const NSWindow*)wh.nsWindow);
-	return ch;
+	render_context_handle rch(in_place_type_v<render_context_handle::gl_t>);
+	rch.gl.glView = create_open_gl_view((const NSWindow*)wh.nsWindow);
+	return rch;
 }
 
-void destroy_context_handle(const window_handle& /*wh*/, const context_handle& ch)
+void destroy_context_handle(const window_handle& /*wh*/, const render_context_handle& rch)
 {
-	[(const NSOpenGLView*)ch.glView removeFromSuperview];
-	[(const NSOpenGLView*)ch.glView dealloc];
+	[(const NSOpenGLView*)rch.gl.glView removeFromSuperview];
+	[(const NSOpenGLView*)rch.gl.glView dealloc];
 }
 
-bool make_current(const context_handle& ch)
+bool make_current(const render_context_handle& rch)
 {
-	[[(const NSOpenGLView*)ch.glView openGLContext] makeCurrentContext];
+	[[(const NSOpenGLView*)rch.gl.glView openGLContext] makeCurrentContext];
 }
 
-void swap_buffers(const context_handle& ch)
+void swap_buffers(const render_context_handle& rch)
 {
-	[[(const NSOpenGLView*)ch.glView openGLContext] flushBuffer];
+	[[(const NSOpenGLView*)rch.gl.glView openGLContext] flushBuffer];
 }
 
-void recreate_surface(context_handle& ch, uint32_t /*width*/, uint32_t /*height*/)
+void recreate_surface(render_context_handle& rch, uint32_t /*width*/, uint32_t /*height*/)
 {
-	[((NSOpenGLView*)ch.glView).openGLContext update];
+	[((NSOpenGLView*)rch.gl.glView).openGLContext update];
 }
 
 }
