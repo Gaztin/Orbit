@@ -29,10 +29,10 @@ template<typename T>
 struct false_type : std::false_type { };
 
 template<typename T>
-struct in_place_type_t { };
+struct in_place_type { };
 
 template<typename T>
-constexpr in_place_type_t<T> in_place_type { };
+constexpr in_place_type<T> in_place_type_v { };
 
 template<typename T, size_t c>
 constexpr size_t count_of(T(&)[c])
