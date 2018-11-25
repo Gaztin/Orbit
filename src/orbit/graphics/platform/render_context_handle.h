@@ -18,10 +18,12 @@
 #pragma once
 #include "orbit/graphics.h"
 
-#include <memory>
-
-#include <d3d11.h>
-#include <dxgi.h>
+#if defined(ORB_HAS_D3D11)
+#include "orbit/graphics/platform/d3d11/d3d11.h"
+#endif
+#if defined(ORB_HAS_OPENGL)
+#include "orbit/graphics/platform/opengl/gl.h"
+#endif
 
 #include "orbit/core/color.h"
 #include "orbit/core/utility.h"
@@ -33,6 +35,7 @@ namespace platform
 
 union render_context_handle
 {
+#if defined(ORB_HAS_D3D11)
 	struct d3d11_t
 	{
 		IDXGISwapChain* swapChain;
@@ -47,7 +50,10 @@ union render_context_handle
 		color clearColor;
 
 	} d3d11;
+	render_context_handle(in_place_type<d3d11_t>) : d3d11{} {}
+#endif
 
+#if defined(ORB_HAS_OPENGL)
 	struct gl_t
 	{
 #if defined(ORB_OS_WINDOWS)
@@ -69,9 +75,8 @@ union render_context_handle
 		void* glkView; // <GLKView*>
 #endif
 	} gl;
-
-	render_context_handle(in_place_type<d3d11_t>) : d3d11{} { }
-	render_context_handle(in_place_type<gl_t>)    : gl   {} { }
+	render_context_handle(in_place_type<gl_t>) : gl{} {}
+#endif
 };
 
 }

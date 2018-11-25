@@ -31,6 +31,7 @@
 #elif defined(ORB_OS_MACOS)
 #include <OpenGL/gl.h>
 #elif defined(ORB_OS_ANDROID)
+#include <EGL/egl.h>
 #include <GLES/gl.h>
 #elif defined(ORB_OS_IOS)
 #include <OpenGLES/ES1/gl.h>
