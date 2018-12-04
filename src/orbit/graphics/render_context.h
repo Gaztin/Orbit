@@ -38,11 +38,14 @@ public:
 
 	void draw(size_t vertexCount);
 
+	graphics_api get_api() const { return m_api; }
+	const platform::render_context_handle& get_handle() const { return m_handle; }
+
 	static render_context* get_current();
 
 private:
 	graphics_api m_api;
-	platform::window_handle m_parentWindowHandle;
+	const platform::window_handle& m_parentWindowHandle;
 	platform::render_context_handle m_handle;
 	window::subscription_ptr m_resizeSubscription;
 };

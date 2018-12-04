@@ -37,11 +37,11 @@ public:
 	void show();
 	void hide();
 
-	inline void close() { m_open = false; }
+	void close() { m_open = false; }
 
-	inline operator bool() const { return m_open; }
+	operator bool() const { return m_open; }
 
-	inline const platform::window_handle& get_handle() const { return m_handle; }
+	const platform::window_handle& get_handle() const { return m_handle; }
 
 private:
 	platform::window_handle m_handle;
