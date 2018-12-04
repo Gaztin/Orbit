@@ -194,6 +194,25 @@ void render_context::set_clear_color(float r, float g, float b)
 	}
 }
 
+void render_context::draw(size_t vertexCount)
+{
+	switch (m_api)
+	{
+#if defined(ORB_HAS_D3D11)
+		case graphics_api::D3D11:
+			m_handle.d3d11.deviceContext->Draw(static_cast<UINT>(vertexCount), 0);
+			break;
+#endif
+
+#if defined(ORB_HAS_OPENGL)
+		case graphics_api::OpenGL:
+			m_handle.gl.functions.draw_arrays(gl::draw_mode::Triangles, 0, static_cast<GLsizei>(vertexCount));
+			break;
+#endif
+			
+	}
+}
+
 render_context* render_context::get_current()
 {
 	return CurrentContext;
