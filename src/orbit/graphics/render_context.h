@@ -30,10 +30,13 @@ public:
 	render_context(window& parentWindow, graphics_api api);
 	~render_context();
 
+	bool make_current();
 	void resize(uint32_t width, uint32_t height);
 	void swap_buffers();
 	void clear(buffer_mask mask);
 	void set_clear_color(float r, float g, float b);
+
+	static render_context* get_current();
 
 private:
 	graphics_api m_api;

@@ -24,6 +24,8 @@
 namespace orb
 {
 
+static render_context* CurrentContext = nullptr;
+
 static platform::render_context_handle init_handle(const platform::window_handle& wh, graphics_api api)
 {
 	switch (api)
@@ -43,6 +45,9 @@ render_context::render_context(window& parentWindow, graphics_api api)
 	, m_parentWindowHandle(parentWindow.get_handle())
 	, m_handle(init_handle(m_parentWindowHandle, api))
 {
+	if (!CurrentContext)
+		make_current();
+
 #if defined(ORB_HAS_OPENGL)
 	if (m_api == graphics_api::OpenGL)
 		platform::gl::make_current(m_handle);
@@ -85,6 +90,14 @@ render_context::~render_context()
 	}
 }
 
+bool render_context::make_current()
+{
+	if (m_api == graphics_api::OpenGL && !platform::gl::make_current(m_handle))
+		return false;
+
+	CurrentContext = this;
+	return true;
+}
 
 void render_context::resize(uint32_t width, uint32_t height)
 {
@@ -179,6 +192,11 @@ void render_context::set_clear_color(float r, float g, float b)
 		default:
 			break;
 	}
+}
+
+render_context* render_context::get_current()
+{
+	return CurrentContext;
 }
 
 }
