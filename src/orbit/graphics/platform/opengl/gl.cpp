@@ -34,49 +34,34 @@ namespace orb
 namespace gl
 {
 
-static struct functions_t
+functions load_functions()
 {
-	~functions_t()
-	{
-		for (auto pair : pairs)
-			*pair.first = nullptr;
-	};
-
-	std::vector<std::pair<void**, std::string_view>> pairs;
-
-} s_functions;
-
-template<typename Ret, typename... Args>
-static void register_function(Ret(** funPtrAddr)(Args...), std::string_view name)
-{
-	s_functions.pairs.emplace_back(reinterpret_cast<void**>(funPtrAddr), name);
+	functions fns{};
+	*cast<void**>(&fns.bind_buffer                ) = platform::get_proc_address("glBindBuffer");
+	*cast<void**>(&fns.buffer_data                ) = platform::get_proc_address("glBufferData");
+	*cast<void**>(&fns.buffer_sub_data            ) = platform::get_proc_address("glBufferSubData");
+	*cast<void**>(&fns.delete_buffers             ) = platform::get_proc_address("glDeleteBuffers");
+	*cast<void**>(&fns.disable_vertex_attrib_array) = platform::get_proc_address("glDisableVertexAttribArray");
+	*cast<void**>(&fns.draw_arrays                ) = platform::get_proc_address("glDrawArrays");
+	*cast<void**>(&fns.draw_elements              ) = platform::get_proc_address("glDrawElements");
+	*cast<void**>(&fns.enable_vertex_attrib_array ) = platform::get_proc_address("glEnableVertexAttribArray");
+	*cast<void**>(&fns.gen_buffers                ) = platform::get_proc_address("glGenBuffers");
+	*cast<void**>(&fns.get_buffer_parameteriv     ) = platform::get_proc_address("glGetBufferParameteriv");
+	*cast<void**>(&fns.get_buffer_pointerv        ) = platform::get_proc_address("glBufferPointerv");
+	*cast<void**>(&fns.get_vertex_attribdv        ) = platform::get_proc_address("glGetVertexAttribdv");
+	*cast<void**>(&fns.get_vertex_attribfv        ) = platform::get_proc_address("glGetVertexAttribfv");
+	*cast<void**>(&fns.get_vertex_attribiv        ) = platform::get_proc_address("glGetVertexAttribiv");
+	*cast<void**>(&fns.get_vertex_attrib_pointerv ) = platform::get_proc_address("glGetVertexAttribPointerv");
+	*cast<void**>(&fns.is_buffer                  ) = platform::get_proc_address("glIsBuffer");
+	*cast<void**>(&fns.vertex_attrib1f            ) = platform::get_proc_address("glVertexAttrib1f");
+	*cast<void**>(&fns.vertex_attrib2f            ) = platform::get_proc_address("glVertexAttrib2f");
+	*cast<void**>(&fns.vertex_attrib3f            ) = platform::get_proc_address("glVertexAttrib3f");
+	*cast<void**>(&fns.vertex_attrib4f            ) = platform::get_proc_address("glVertexAttrib4f");
+	*cast<void**>(&fns.vertex_attrib_pointer      ) = platform::get_proc_address("glVertexAttribPointer");
+	return fns;
 }
 
-#define REGISTER(X, SYM) decltype(X) X = (register_function(&X, SYM), nullptr)
-
-REGISTER(bind_buffer, "glBindBuffer");
-REGISTER(buffer_data, "glBufferData");
-REGISTER(buffer_sub_data, "glBufferSubData");
-REGISTER(delete_buffers, "glDeleteBuffers");
-REGISTER(disable_vertex_attrib_array, "glDisableVertexAttribArray");
-REGISTER(draw_arrays, "glDrawArrays");
-REGISTER(draw_elements, "glDrawElements");
-REGISTER(enable_vertex_attrib_array, "glEnableVertexAttribArray");
-REGISTER(gen_buffers, "glGenBuffers");
-REGISTER(get_buffer_parameteriv, "glGetBufferParameteriv");
-REGISTER(get_buffer_pointerv, "glBufferPointerv");
-REGISTER(get_vertex_attribdv, "glGetVertexAttribdv");
-REGISTER(get_vertex_attribfv, "glGetVertexAttribfv");
-REGISTER(get_vertex_attribiv, "glGetVertexAttribiv");
-REGISTER(get_vertex_attrib_pointerv, "glGetVertexAttribPointerv");
-REGISTER(is_buffer, "glIsBuffer");
-REGISTER(vertex_attrib1f, "glVertexAttrib1f");
-REGISTER(vertex_attrib2f, "glVertexAttrib2f");
-REGISTER(vertex_attrib3f, "glVertexAttrib3f");
-REGISTER(vertex_attrib4f, "glVertexAttrib4f");
-REGISTER(vertex_attrib_pointer, "glVertexAttribPointer");
-
-namespace this_platform
+namespace platform
 {
 
 void* get_proc_address(std::string_view name)

@@ -74,6 +74,8 @@ union render_context_handle
 		void* eaglContext; // <EAGLContext*>
 		void* glkView; // <GLKView*>
 #endif
+
+		gl::functions functions;
 	} gl;
 	render_context_handle(in_place_type<gl_t>) : gl{} {}
 #endif

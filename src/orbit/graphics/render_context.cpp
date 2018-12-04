@@ -50,7 +50,7 @@ render_context::render_context(window& parentWindow, graphics_api api)
 
 #if defined(ORB_HAS_OPENGL)
 	if (m_api == graphics_api::OpenGL)
-		platform::gl::make_current(m_handle);
+		m_handle.gl.functions = gl::load_functions();
 #endif
 
 	// Resize context when window is updated
