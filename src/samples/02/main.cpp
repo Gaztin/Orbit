@@ -6,6 +6,7 @@
 #include <orbit/core/window.h>
 #include <orbit/core/utility.h>
 #include <orbit/graphics/render_context.h>
+#include <orbit/graphics/vertex_buffer.h>
 
 #if defined(ORB_OS_WINDOWS)
 #include <windows.h>
@@ -80,6 +81,33 @@ void bench_context_clear(orb::graphics_api api, size_t count)
 	}
 }
 
+void bench_vertex_buffer_create(orb::graphics_api api, size_t count, size_t bindCount)
+{
+	orb::window w(1024, 1024);
+	orb::render_context rc(w, api);
+
+	struct vertex
+	{
+		float x, y, z;
+	};
+
+	const std::initializer_list<vertex> vertices =
+	{
+		{ -0.5f,  0.5f, 0.0f },
+		{  0.0f, -0.5f, 0.0f },
+		{  0.5f,  0.5f, 0.0f },
+	};
+
+	scoped_benchmark bench(orb::format("create %d %s vertex buffers and bind them %d times each", count, apiNames.at(api).c_str(), bindCount));
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		orb::vertex_buffer vb(vertices);
+		for (size_t j = 0; j < bindCount; ++j)
+			vb.bind();
+	}
+}
+
 int main(int /*argc*/, char* /*argv*/[])
 {
 	prepare();
@@ -88,15 +116,14 @@ int main(int /*argc*/, char* /*argv*/[])
 	orb::log_info("[__Window__]");
 	bench_window_create(5);
 
-	/* OpenGL benchmarks. */
-	orb::log_info("[__OpenGL__]");
-	bench_context_create(orb::graphics_api::OpenGL, 10);
-	bench_context_clear(orb::graphics_api::OpenGL, 1000);
-
-	/* Direct3D 11 benchmarks. */
-	orb::log_info("[__Direct3D_11__]");
-	bench_context_create(orb::graphics_api::D3D11, 10);
-	bench_context_clear(orb::graphics_api::D3D11, 1000);
+	/* Graphics benchmarks. */
+	for (orb::graphics_api api : {orb::graphics_api::OpenGL, orb::graphics_api::D3D11})
+	{
+		orb::log_info(orb::format("[__%s__]", apiNames.at(api).c_str()));
+		bench_context_create(api, 10);
+		bench_context_clear(api, 1000);
+		bench_vertex_buffer_create(api, 100000, 1000);
+	}
 
 #if !defined(ORB_OS_ANDROID)
 	getc(stdin);
