@@ -88,12 +88,24 @@ render_context::~render_context()
 		default:
 			break;
 	}
+
+	if (CurrentContext == this)
+	{
+#if defined(ORB_HAS_OPENGL)
+		if (m_api == graphics_api::OpenGL)
+			platform::gl::make_current(m_handle, nullptr);
+#endif
+
+		CurrentContext = nullptr;
+	}
 }
 
 bool render_context::make_current()
 {
+#if defined(ORB_HAS_OPENGL)
 	if (m_api == graphics_api::OpenGL && !platform::gl::make_current(m_handle))
 		return false;
+#endif
 
 	CurrentContext = this;
 	return true;

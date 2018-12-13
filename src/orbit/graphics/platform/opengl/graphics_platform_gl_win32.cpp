@@ -60,6 +60,11 @@ bool make_current(const render_context_handle& rch)
 	return wglMakeCurrent(rch.gl.hdc, rch.gl.hglrc);
 }
 
+bool make_current(const render_context_handle& rch, std::nullptr_t)
+{
+	return wglMakeCurrent(rch.gl.hdc, nullptr);
+}
+
 void swap_buffers(const render_context_handle& rch)
 {
 	SwapBuffers(rch.gl.hdc);
