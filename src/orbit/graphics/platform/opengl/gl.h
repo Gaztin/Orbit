@@ -509,6 +509,11 @@ enum class symbolic_constant : GLenum
 	ZoomY                            = 0x0d17,
 };
 
+#if defined(ORB_OS_WINDOWS)
+#define ORB_GL_CALL __stdcall
+#else
+#define ORB_GL_CALL
+#endif
 
 struct functions
 {
@@ -517,27 +522,27 @@ struct functions
 	static inline void get_floatv(symbolic_constant pname, GLfloat* params) { return glGetFloatv(static_cast<GLenum>(pname), params); }
 	static inline void get_integerv(symbolic_constant pname, GLint* params) { return glGetIntegerv(static_cast<GLenum>(pname), params); }
 
-	void (*bind_buffer)(buffer_target target, GLuint buffer);
-	void (*buffer_data)(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage);
-	void (*buffer_sub_data)(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
-	void (*delete_buffers)(GLsizei n, const GLuint* buffers);
-	void (*disable_vertex_attrib_array)(GLuint index);
-	void (*draw_arrays)(draw_mode mode, GLint first, GLsizei count);
-	void (*draw_elements)(draw_mode, GLsizei count, index_type type, const GLvoid* indices);
-	void (*enable_vertex_attrib_array)(GLuint index);
-	void (*gen_buffers)(GLsizei n, GLuint* buffers);
-	void (*get_buffer_parameteriv)(buffer_target target, buffer_param value, GLint* data);
-	void (*get_buffer_pointerv)(buffer_target target, buffer_pointer_param pname, GLvoid** params);
-	void (*get_vertex_attribdv)(GLuint index, vertex_attrib_array_param pname, GLdouble* params);
-	void (*get_vertex_attribfv)(GLuint index, vertex_attrib_array_param pname, GLfloat* params);
-	void (*get_vertex_attribiv)(GLuint index, vertex_attrib_array_param pname, GLint* params);
-	void (*get_vertex_attrib_pointerv)(GLuint index, vertex_attrib_array_pointer_param pname, GLvoid** pointer);
-	GLboolean (*is_buffer)(GLuint buffer);
-	void (*vertex_attrib1f)(GLuint index, GLfloat v0);
-	void (*vertex_attrib2f)(GLuint index, GLfloat v0, GLfloat v1);
-	void (*vertex_attrib3f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2);
-	void (*vertex_attrib4f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-	void (*vertex_attrib_pointer)(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
+	void (ORB_GL_CALL *bind_buffer)(buffer_target target, GLuint buffer);
+	void (ORB_GL_CALL *buffer_data)(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage);
+	void (ORB_GL_CALL *buffer_sub_data)(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
+	void (ORB_GL_CALL *delete_buffers)(GLsizei n, const GLuint* buffers);
+	void (ORB_GL_CALL *disable_vertex_attrib_array)(GLuint index);
+	void (ORB_GL_CALL *draw_arrays)(draw_mode mode, GLint first, GLsizei count);
+	void (ORB_GL_CALL *draw_elements)(draw_mode, GLsizei count, index_type type, const GLvoid* indices);
+	void (ORB_GL_CALL *enable_vertex_attrib_array)(GLuint index);
+	void (ORB_GL_CALL *gen_buffers)(GLsizei n, GLuint* buffers);
+	void (ORB_GL_CALL *get_buffer_parameteriv)(buffer_target target, buffer_param value, GLint* data);
+	void (ORB_GL_CALL *get_buffer_pointerv)(buffer_target target, buffer_pointer_param pname, GLvoid** params);
+	void (ORB_GL_CALL *get_vertex_attribdv)(GLuint index, vertex_attrib_array_param pname, GLdouble* params);
+	void (ORB_GL_CALL *get_vertex_attribfv)(GLuint index, vertex_attrib_array_param pname, GLfloat* params);
+	void (ORB_GL_CALL *get_vertex_attribiv)(GLuint index, vertex_attrib_array_param pname, GLint* params);
+	void (ORB_GL_CALL *get_vertex_attrib_pointerv)(GLuint index, vertex_attrib_array_pointer_param pname, GLvoid** pointer);
+	GLboolean (ORB_GL_CALL *is_buffer)(GLuint buffer);
+	void (ORB_GL_CALL *vertex_attrib1f)(GLuint index, GLfloat v0);
+	void (ORB_GL_CALL *vertex_attrib2f)(GLuint index, GLfloat v0, GLfloat v1);
+	void (ORB_GL_CALL *vertex_attrib3f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2);
+	void (ORB_GL_CALL *vertex_attrib4f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+	void (ORB_GL_CALL *vertex_attrib_pointer)(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
 };
 
 extern ORB_API_GRAPHICS functions load_functions();
