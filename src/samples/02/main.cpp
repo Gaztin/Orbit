@@ -122,7 +122,7 @@ int main(int /*argc*/, char* /*argv*/[])
 		orb::log_info(orb::format("[__%s__]", apiNames.at(api).c_str()));
 		bench_context_create(api, 10);
 		bench_context_clear(api, 1000);
-		bench_vertex_buffer_create(api, 100000, 1000);
+		bench_vertex_buffer_create(api, 1000, 100);
 	}
 
 #if !defined(ORB_OS_ANDROID)

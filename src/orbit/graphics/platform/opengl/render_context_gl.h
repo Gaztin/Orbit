@@ -16,69 +16,53 @@
 */
 
 #pragma once
-#include "orbit/graphics.h"
-
-#if defined(ORB_HAS_D3D11)
-#include "orbit/graphics/platform/d3d11/d3d11.h"
-#endif
-#if defined(ORB_HAS_OPENGL)
 #include "orbit/graphics/platform/opengl/gl.h"
-#endif
-
-#include "orbit/core/color.h"
-#include "orbit/core/utility.h"
+#include "orbit/graphics/platform/render_context_base.h"
 
 namespace orb
 {
 namespace platform
 {
+struct window_handle;
 
-union render_context_handle
+class ORB_API_GRAPHICS render_context_gl : public render_context_base
 {
-#if defined(ORB_HAS_D3D11)
-	struct d3d11_t
-	{
-		IDXGISwapChain* swapChain;
-		ID3D11Device* device;
-		ID3D11DeviceContext* deviceContext;
-		ID3D11RenderTargetView* renderTargetView;
-		ID3D11Texture2D* depthStencilBuffer;
-		ID3D11DepthStencilState* depthStencilState;
-		ID3D11DepthStencilView* depthStencilView;
-		ID3D11RasterizerState* rasterizerState;
+public:
+	render_context_gl(const window_handle& wh);
+	~render_context_gl();
 
-		color clearColor;
+	void make_current() final override;
+	void make_current(std::nullptr_t) final override;
+	void resize(uint32_t width, uint32_t height) final override;
+	void swap_buffers() final override;
+	void set_clear_color(float r, float g, float b) final override;
+	void clear_buffers(buffer_mask mask) final override;
+	void draw(size_t vertexCount) final override;
 
-	} d3d11;
-	render_context_handle(in_place_type<d3d11_t>) : d3d11{} {}
-#endif
+	gl::functions& get_functions() { return m_functions; }
 
-#if defined(ORB_HAS_OPENGL)
-	struct gl_t
-	{
+private:
 #if defined(ORB_OS_WINDOWS)
-		HDC hdc;
-		HGLRC hglrc;
+		HWND m_parentHwnd;
+		HDC m_hdc;
+		HGLRC m_hglrc;
 #elif defined(ORB_OS_LINUX)
-		const struct window_handle* wndPtr;
-		GC gc;
-		GLXContext glxContext;
+		const struct window_handle* m_wndPtr;
+		GC m_gc;
+		GLXContext m_glxContext;
 #elif defined(ORB_OS_MACOS)
-		void* glView; // <GLView*>
+		void* m_glView; // <GLView*>
 #elif defined(ORB_OS_ANDROID)
-		EGLDisplay eglDisplay;
-		EGLConfig eglConfig;
-		EGLSurface eglSurface;
-		EGLContext eglContext;
+		EGLDisplay m_eglDisplay;
+		EGLConfig m_eglConfig;
+		EGLSurface m_eglSurface;
+		EGLContext m_eglContext;
 #elif defined(ORB_OS_IOS)
-		void* eaglContext; // <EAGLContext*>
-		void* glkView; // <GLKView*>
+		void* m_eaglContext; // <EAGLContext*>
+		void* m_glkView; // <GLKView*>
 #endif
 
-		gl::functions functions;
-	} gl;
-	render_context_handle(in_place_type<gl_t>) : gl{} {}
-#endif
+		gl::functions m_functions;
 };
 
 }

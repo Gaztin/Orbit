@@ -19,7 +19,9 @@
 #include <cstddef>
 
 #include "orbit/core/memory.h"
+#include "orbit/core/utility.h"
 #include "orbit/graphics/platform/d3d11/d3d11.h"
+#include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
 #include "orbit/graphics/platform/buffer_base.h"
 #include "orbit/graphics/render_context.h"
 
@@ -27,14 +29,12 @@ namespace orb
 {
 namespace platform
 {
-namespace d3d11
-{
 
 template<D3D11_BIND_FLAG BindFlag>
-class buffer : public buffer_base
+class buffer_d3d11 : public buffer_base
 {
 public:
-	buffer(const void* data, size_t count, size_t size)
+	buffer_d3d11(const void* data, size_t count, size_t size)
 		: m_stride(static_cast<UINT>(size))
 	{
 		D3D11_BUFFER_DESC desc{};
@@ -45,9 +45,9 @@ public:
 		D3D11_SUBRESOURCE_DATA initialData{};
 		initialData.pSysMem = data;
 		
-		const render_context_handle& rch = render_context::get_current()->get_handle();
+		ID3D11Device& device = cast<render_context_d3d11&, render_context_base&>(render_context::get_current()->get_base()).get_device();
 		ID3D11Buffer* buffer;
-		rch.d3d11.device->CreateBuffer(&desc, &initialData, &buffer);
+		device.CreateBuffer(&desc, &initialData, &buffer);
 		m_buffer.reset(buffer);
 	}
 
@@ -59,14 +59,13 @@ private:
 };
 
 template<>
-inline void buffer<D3D11_BIND_VERTEX_BUFFER>::bind()
+inline void buffer_d3d11<D3D11_BIND_VERTEX_BUFFER>::bind()
 {
-	ID3D11DeviceContext* dc = render_context::get_current()->get_handle().d3d11.deviceContext;
+	ID3D11DeviceContext& dc = cast<render_context_d3d11&, render_context_base&>(render_context::get_current()->get_base()).get_device_context();
 	ID3D11Buffer* buffer = m_buffer.get();
 	const UINT offset = 0;
-	dc->IASetVertexBuffers(0, 1, &buffer, &m_stride, &offset);
+	dc.IASetVertexBuffers(0, 1, &buffer, &m_stride, &offset);
 }
 
-}
 }
 }

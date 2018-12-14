@@ -16,24 +16,26 @@
 */
 
 #pragma once
-#include "orbit/graphics/platform/render_context_handle.h"
+#include "orbit/graphics.h"
 
 namespace orb
 {
 namespace platform
 {
-struct window_handle;
 
-namespace gl
+class ORB_API_GRAPHICS render_context_base
 {
+public:
+	virtual ~render_context_base() = default;
 
-extern ORB_API_GRAPHICS render_context_handle create_render_context_handle(const window_handle& wh);
-extern ORB_API_GRAPHICS void destroy_context_handle(const window_handle& wh, const render_context_handle& rch);
-extern ORB_API_GRAPHICS bool make_current(const render_context_handle& rch);
-extern ORB_API_GRAPHICS bool make_current(const render_context_handle& rch, std::nullptr_t);
-extern ORB_API_GRAPHICS void swap_buffers(const render_context_handle& rch);
-extern ORB_API_GRAPHICS void recreate_surface(render_context_handle& rch, uint32_t width, uint32_t height);
+	virtual void make_current() {};
+	virtual void make_current(std::nullptr_t) {};
+	virtual void resize(uint32_t width, uint32_t height) = 0;
+	virtual void swap_buffers() = 0;
+	virtual void set_clear_color(float r, float g, float b) = 0;
+	virtual void clear_buffers(buffer_mask mask) = 0;
+	virtual void draw(size_t vertexCount) = 0;
+};
 
-}
 }
 }

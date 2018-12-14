@@ -18,40 +18,40 @@
 #include "render_context.h"
 
 #include "orbit/core/window.h"
-#include "platform/d3d11/graphics_platform_d3d11.h"
-#include "platform/opengl/graphics_platform_gl.h"
+#include "platform/d3d11/render_context_d3d11.h"
+#include "platform/opengl/render_context_gl.h"
 
 namespace orb
 {
 
 static render_context* CurrentContext = nullptr;
 
-static platform::render_context_handle init_handle(const platform::window_handle& wh, graphics_api api)
+static std::unique_ptr<platform::render_context_base> init_base(const platform::window_handle& wh, graphics_api api)
 {
 	switch (api)
 	{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL: return platform::gl::create_render_context_handle(wh);
+		case graphics_api::OpenGL:
+			return std::make_unique<platform::render_context_gl>(wh);
 #endif
+
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11: return platform::d3d11::create_render_context_handle(wh);
+		case graphics_api::D3D11:
+			return std::make_unique<platform::render_context_d3d11>(wh);
 #endif
-		default: return *cast<platform::render_context_handle*>(nullptr);
+
+		default:
+			return nullptr;
 	}
 }
 
 render_context::render_context(window& parentWindow, graphics_api api)
 	: m_api(api)
 	, m_parentWindowHandle(parentWindow.get_handle())
-	, m_handle(init_handle(m_parentWindowHandle, api))
+	, m_base(init_base(m_parentWindowHandle, m_api))
 {
 	if (!CurrentContext)
 		make_current();
-
-#if defined(ORB_HAS_OPENGL)
-	if (m_api == graphics_api::OpenGL)
-		m_handle.gl.functions = gl::load_functions();
-#endif
 
 	// Resize context when window is updated
 	m_resizeSubscription = parentWindow.subscribe(
@@ -64,165 +64,49 @@ render_context::render_context(window& parentWindow, graphics_api api)
 
 render_context::~render_context()
 {
-	switch (m_api)
-	{
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			m_handle.d3d11.rasterizerState->Release();
-			m_handle.d3d11.depthStencilView->Release();
-			m_handle.d3d11.depthStencilState->Release();
-			m_handle.d3d11.depthStencilBuffer->Release();
-			m_handle.d3d11.renderTargetView->Release();
-			m_handle.d3d11.deviceContext->Release();
-			m_handle.d3d11.device->Release();
-			m_handle.d3d11.swapChain->Release();
-			break;
-#endif
-
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			platform::gl::destroy_context_handle(m_parentWindowHandle, m_handle);
-			break;
-#endif
-
-		default:
-			break;
-	}
-
 	if (CurrentContext == this)
 	{
-#if defined(ORB_HAS_OPENGL)
-		if (m_api == graphics_api::OpenGL)
-			platform::gl::make_current(m_handle, nullptr);
-#endif
-
+		m_base->make_current(nullptr);
 		CurrentContext = nullptr;
 	}
 }
 
 bool render_context::make_current()
 {
-#if defined(ORB_HAS_OPENGL)
-	if (m_api == graphics_api::OpenGL && !platform::gl::make_current(m_handle))
-		return false;
-#endif
-
+	m_base->make_current();
 	CurrentContext = this;
 	return true;
 }
 
 void render_context::resize(uint32_t width, uint32_t height)
 {
-	switch (m_api)
-	{
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			platform::d3d11::flush_device_context(m_handle);
-			platform::d3d11::resize_swap_chain(m_handle, width, height);
-			platform::d3d11::recreate_buffers(m_handle, m_parentWindowHandle);
-			break;
-#endif
+	render_context* prev_current_context = CurrentContext;
+	make_current();
 
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			platform::gl::recreate_surface(m_handle, width, height);
-			platform::gl::make_current(m_handle);
-			glViewport(0, 0, width, height);
-			break;
-#endif
+	m_base->resize(width, height);
 
-		default:
-			break;
-	}
+	if (prev_current_context != this)
+		prev_current_context->make_current();
 }
 
 void render_context::swap_buffers()
 {
-	switch (m_api)
-	{
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			platform::d3d11::present(m_handle);
-			break;
-#endif
-
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			platform::gl::swap_buffers(m_handle);
-			break;
-#endif
-
-		default:
-			break;
-	}
+	m_base->swap_buffers();
 }
 
 void render_context::clear(buffer_mask mask)
 {
-	switch (m_api)
-	{
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			if (!!(mask & buffer_mask::Color))
-				platform::d3d11::clear_render_target(m_handle);
-			if (!!(mask & buffer_mask::Depth))
-				platform::d3d11::clear_depth_stencil(m_handle);
-			break;
-#endif
-
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			glClear(
-				(!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0 |
-				(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
-			break;
-#endif
-
-		default:
-			break;
-	}
+	m_base->clear_buffers(mask);
 }
 
 void render_context::set_clear_color(float r, float g, float b)
 {
-	switch (m_api)
-	{
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			m_handle.d3d11.clearColor.r = r;
-			m_handle.d3d11.clearColor.g = g;
-			m_handle.d3d11.clearColor.b = b;
-			break;
-#endif
-
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			glClearColor(r, g, b, 1.0f);
-			break;
-#endif
-
-		default:
-			break;
-	}
+	m_base->set_clear_color(r, g, b);
 }
 
 void render_context::draw(size_t vertexCount)
 {
-	switch (m_api)
-	{
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			m_handle.d3d11.deviceContext->Draw(static_cast<UINT>(vertexCount), 0);
-			break;
-#endif
-
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			m_handle.gl.functions.draw_arrays(gl::draw_mode::Triangles, 0, static_cast<GLsizei>(vertexCount));
-			break;
-#endif
-			
-	}
+	m_base->draw(vertexCount);
 }
 
 render_context* render_context::get_current()

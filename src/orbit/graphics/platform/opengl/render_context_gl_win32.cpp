@@ -15,15 +15,14 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "graphics_platform_gl.h"
+#include "render_context_gl.h"
 
 #include "orbit/core/platform/window_handle.h"
+#include "orbit/core/utility.h"
 
 namespace orb
 {
 namespace platform
-{
-namespace gl
 {
 
 static void set_pixel_format(HDC hdc)
@@ -36,44 +35,66 @@ static void set_pixel_format(HDC hdc)
 	desc.cColorBits = 24;
 	desc.cDepthBits = 24;
 	desc.iLayerType = PFD_MAIN_PLANE;
+
 	const int format = ChoosePixelFormat(hdc, &desc);
 	SetPixelFormat(hdc, format, &desc);
 }
 
-render_context_handle create_render_context_handle(const window_handle& wh)
+render_context_gl::render_context_gl(const window_handle& wh)
+	: m_parentHwnd(wh.hwnd)
+	, m_hdc(GetDC(m_parentHwnd))
 {
-	render_context_handle rch(in_place_type_v<render_context_handle::gl_t>);
-	rch.gl.hdc = GetDC(wh.hwnd);
-	set_pixel_format(rch.gl.hdc);
-	rch.gl.hglrc = wglCreateContext(rch.gl.hdc);
-	return rch;
+	set_pixel_format(m_hdc);
+
+	m_hglrc = wglCreateContext(m_hdc);
+
+	wglMakeCurrent(m_hdc, m_hglrc);
+	m_functions = gl::load_functions();
+	wglMakeCurrent(m_hdc, nullptr);
 }
 
-void destroy_context_handle(const window_handle& wh, const render_context_handle& rch)
+render_context_gl::~render_context_gl()
 {
-	wglDeleteContext(rch.gl.hglrc);
-	ReleaseDC(wh.hwnd, rch.gl.hdc);
+	wglDeleteContext(m_hglrc);
+	ReleaseDC(m_parentHwnd, m_hdc);
 }
 
-bool make_current(const render_context_handle& rch)
+void render_context_gl::make_current()
 {
-	return wglMakeCurrent(rch.gl.hdc, rch.gl.hglrc);
+	wglMakeCurrent(m_hdc, m_hglrc);
 }
 
-bool make_current(const render_context_handle& rch, std::nullptr_t)
+void render_context_gl::make_current(std::nullptr_t)
 {
-	return wglMakeCurrent(rch.gl.hdc, nullptr);
+	wglMakeCurrent(m_hdc, nullptr);
 }
 
-void swap_buffers(const render_context_handle& rch)
+void render_context_gl::resize(uint32_t width, uint32_t height)
 {
-	SwapBuffers(rch.gl.hdc);
+	glViewport(0, 0, width, height);
 }
 
-void recreate_surface(render_context_handle& /*ch*/, uint32_t /*width*/, uint32_t /*height*/)
+void render_context_gl::swap_buffers()
 {
+	SwapBuffers(m_hdc);
 }
 
+void render_context_gl::set_clear_color(float r, float g, float b)
+{
+	glClearColor(r, g, b, 1.0f);
 }
+
+void render_context_gl::clear_buffers(buffer_mask mask)
+{
+	glClear(
+		(!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0 |
+		(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
+}
+
+void render_context_gl::draw(size_t vertexCount)
+{
+	m_functions.draw_arrays(gl::draw_mode::Triangles, 0, cast<GLsizei>(vertexCount));
+}
+
 }
 }

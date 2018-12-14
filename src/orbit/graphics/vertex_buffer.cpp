@@ -26,18 +26,18 @@
 namespace orb
 {
 
-static platform::buffer_base* init_buffer(const void* data, size_t count, size_t size)
+static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t count, size_t size)
 {
 	switch (render_context::get_current()->get_api())
 	{
-		case graphics_api::OpenGL: return new platform::gl::buffer<gl::buffer_target::Array>(data, count, size);
-		case graphics_api::D3D11: return new platform::d3d11::buffer<D3D11_BIND_VERTEX_BUFFER>(data, count, size);
+		case graphics_api::OpenGL: return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count, size);
+		case graphics_api::D3D11: return std::make_unique<platform::buffer_d3d11<D3D11_BIND_VERTEX_BUFFER>>(data, count, size);
 		default: return nullptr;
 	}
 }
 
 vertex_buffer::vertex_buffer(const void* data, size_t count, size_t size)
-	: m_base(init_buffer(data, count, size))
+	: m_base(init_base(data, count, size))
 {
 }
 

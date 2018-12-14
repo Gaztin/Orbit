@@ -19,38 +19,37 @@
 #include <cstddef>
 
 #include "orbit/graphics/platform/opengl/gl.h"
+#include "orbit/graphics/platform/opengl/render_context_gl.h"
 #include "orbit/graphics/platform/buffer_base.h"
 
 namespace orb
 {
 namespace platform
 {
-namespace gl
-{
 
 template<orb::gl::buffer_target BufferTarget>
-class buffer : public buffer_base
+class buffer_gl : public buffer_base
 {
 public:
-	buffer(const void* data, size_t count, size_t size)
+	buffer_gl(const void* data, size_t count, size_t size)
 		: m_id(0)
 	{
-		const auto& fns = render_context::get_current()->get_handle().gl.functions;
+		const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 		fns.gen_buffers(1, &m_id);
 		fns.bind_buffer(BufferTarget, m_id);
 		fns.buffer_data(BufferTarget, (count * size), data, orb::gl::buffer_usage::StaticDraw);
 		fns.bind_buffer(BufferTarget, 0);
 	}
 
-	~buffer()
+	~buffer_gl()
 	{
-		const auto& fns = render_context::get_current()->get_handle().gl.functions;
+		const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 		fns.delete_buffers(1, &m_id);
 	}
 
 	void bind() final override
 	{
-		const auto& fns = render_context::get_current()->get_handle().gl.functions;
+		const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 		fns.bind_buffer(BufferTarget, m_id);
 	}
 
@@ -58,6 +57,5 @@ private:
 	GLuint m_id;
 };
 
-}
 }
 }
