@@ -31,8 +31,8 @@ public:
 	render_context_gl(const window_handle& wh);
 	~render_context_gl();
 
-	void make_current() final override;
-	void make_current(std::nullptr_t) final override;
+	bool make_current() final override;
+	bool make_current(std::nullptr_t) final override;
 	void resize(uint32_t width, uint32_t height) final override;
 	void swap_buffers() final override;
 	void set_clear_color(float r, float g, float b) final override;

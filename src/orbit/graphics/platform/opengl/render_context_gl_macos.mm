@@ -17,37 +17,40 @@
 
 #include "render_context_gl.h"
 
+#include <Cocoa/Cocoa.h>
+#include <OpenGL/OpenGL.h>
+
 #include "orbit/core/platform/window_handle.h"
-#include "orbit/core/utility.h"
 
 namespace orb
 {
 namespace platform
 {
 
-static void set_pixel_format(HDC hdc)
+static NSOpenGLView* create_open_gl_view(const NSWindow* nsWindow)
 {
-	PIXELFORMATDESCRIPTOR desc{};
-	desc.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-	desc.nVersion = 1;
-	desc.dwFlags = PFD_DOUBLEBUFFER | PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
-	desc.iPixelType = PFD_TYPE_RGBA;
-	desc.cColorBits = 24;
-	desc.cDepthBits = 24;
-	desc.iLayerType = PFD_MAIN_PLANE;
+	const NSOpenGLPixelFormatAttribute Attribs[] =
+	{
+		NSOpenGLPFADoubleBuffer,
+		NSOpenGLPFAColorSize, 24,
+		NSOpenGLPFADepthSize, 24,
+		0
+	};
 
-	const int format = ChoosePixelFormat(hdc, &desc);
-	SetPixelFormat(hdc, format, &desc);
+	NSOpenGLPixelFormat* pixelFormat = [NSOpenGLPixelFormat alloc];
+	[pixelFormat initWithAttributes:Attribs];
+
+	NSOpenGLView* glView = [NSOpenGLView alloc];
+	[glView initWithFrame:nsWindow.contentView.frame pixelFormat:pixelFormat];
+	[glView prepareOpenGL];
+	[nsWindow.contentView addSubview:glView];
+
+	return glView;
 }
 
 render_context_gl::render_context_gl(const window_handle& wh)
-	: m_parentHwnd(wh.hwnd)
-	, m_hdc(GetDC(m_parentHwnd))
+	m_glView(create_open_gl_view((const NSWindow*)wh.nsWindow))
 {
-	set_pixel_format(m_hdc);
-
-	m_hglrc = wglCreateContext(m_hdc);
-	
 	make_current();
 	m_functions = gl::load_functions();
 	make_current(nullptr);
@@ -55,28 +58,29 @@ render_context_gl::render_context_gl(const window_handle& wh)
 
 render_context_gl::~render_context_gl()
 {
-	wglDeleteContext(m_hglrc);
-	ReleaseDC(m_parentHwnd, m_hdc);
+	[(const NSOpenGLView*)m_glView removeFromSuperview];
+	[(const NSOpenGLView*)m_glView dealloc];
 }
 
-bool render_context_gl::make_current()
+void render_context_gl::make_current()
 {
-	return wglMakeCurrent(m_hdc, m_hglrc);
+	[[(const NSOpenGLView*)m_glView openGLContext] makeCurrentContext];
 }
 
-bool render_context_gl::make_current(std::nullptr_t)
+void render_context_gl::make_current(std::nullptr_t)
 {
-	return wglMakeCurrent(m_hdc, nullptr);
+	[NSOpenGLContext clearCurrentContext];
 }
 
 void render_context_gl::resize(uint32_t width, uint32_t height)
 {
+	[((NSOpenGLView*)m_glView).openGLContext update];
 	glViewport(0, 0, width, height);
 }
 
 void render_context_gl::swap_buffers()
 {
-	SwapBuffers(m_hdc);
+	[[(const NSOpenGLView*)m_glView openGLContext] flushBuffer];
 }
 
 void render_context_gl::set_clear_color(float r, float g, float b)

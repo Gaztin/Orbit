@@ -15,18 +15,11 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "graphics_platform_gl.h"
-
-#include <android/native_window.h>
-
-#include "orbit/core/platform/window_handle.h"
-#include "orbit/core/android_app.h"
+#include "render_context_gl.h"
 
 namespace orb
 {
 namespace platform
-{
-namespace gl
 {
 
 static EGLDisplay init_display()
@@ -72,49 +65,68 @@ static EGLContext create_context(const EGLDisplay& display, const EGLConfig& con
 		EGL_NONE,
 	};
 
-	/*EGLConfig config;
-	EGLint numConfig;
-	eglGetConfigs(display, &config, 1, &numConfig);*/
 	return eglCreateContext(display, config, EGL_NO_CONTEXT, Attribs);
 }
 
-render_context_handle create_render_context_handle(const window_handle& wh)
+render_context_gl::render_context_gl(const window_handle& wh)
+	: m_eglDisplay(init_display())
+	, m_eglConfig(choose_config(m_eglDisplay))
+	, m_eglSurface(create_surface(m_eglDisplay, m_eglConfig))
+	, m_eglContext(create_context(m_eglDisplay, m_eglConfig))
 {
-	render_context_handle rch(in_place_type_v<render_context_handle::gl_t>);
-	rch.gl.eglDisplay = init_display();
-	rch.gl.eglConfig = choose_config(rch.gl.eglDisplay);
-	rch.gl.eglSurface = create_surface(rch.gl.eglDisplay, rch.gl.eglConfig);
-	rch.gl.eglContext = create_context(rch.gl.eglDisplay, rch.gl.eglConfig);
-	return rch;
+	make_current();
+	m_functions = gl::load_functions();
+	make_current(nullptr);
 }
 
-void destroy_context_handle(const window_handle& /*wh*/, const render_context_handle& rch)
+render_context_gl::~render_context_gl()
 {
-	eglDestroyContext(rch.gl.eglDisplay, rch.gl.eglContext);
-	eglDestroySurface(rch.gl.eglDisplay, rch.gl.eglSurface);
-	eglTerminate(rch.gl.eglDisplay);
+	eglDestroyContext(m_eglDisplay, m_eglContext);
+	eglDestroySurface(m_eglDisplay, m_eglSurface);
+	eglTerminate(m_eglDisplay);
 }
 
-bool make_current(const render_context_handle& rch)
+void render_context_gl::make_current()
 {
-	return (eglMakeCurrent(rch.gl.eglDisplay, rch.gl.eglSurface, rch.gl.eglSurface, rch.gl.eglContext) != 0);
+	return (eglMakeCurrent(m_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext) != 0);
 }
 
-void swap_buffers(const render_context_handle& rch)
+void render_context_gl::make_current(std::nullptr_t)
 {
-	eglSwapBuffers(rch.gl.eglDisplay, rch.gl.eglSurface);
+	return (eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) != 0);
 }
 
-void recreate_surface(render_context_handle& rch, uint32_t /*width*/, uint32_t /*height*/)
+void render_context_gl::resize(uint32_t /*width*/, uint32_t /*height*/)
 {
-	eglMakeCurrent(rch.gl.eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
-	if (rch.gl.eglSurface != EGL_NO_SURFACE)
-		eglDestroySurface(rch.gl.eglDisplay, rch.gl.eglSurface);
+	if (m_eglSurface != EGL_NO_SURFACE)
+		eglDestroySurface(m_eglDisplay, m_eglSurface);
 
-	rch.gl.eglSurface = create_surface(rch.gl.eglDisplay, rch.gl.eglConfig);
+	m_eglSurface = create_surface(m_eglDisplay, m_eglConfig);
 }
 
+void render_context_gl::swap_buffers()
+{
+	eglSwapBuffers(m_eglDisplay, m_eglSurface);
 }
+
+void render_context_gl::set_clear_color(float r, float g, float b)
+{
+	glClearColor(r, g, b, 1.0f);
+}
+
+void render_context_gl::clear_buffers(buffer_mask mask)
+{
+	glClear(
+		(!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0 |
+		(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
+}
+
+void render_context_gl::draw(size_t vertexCount)
+{
+	m_functions.draw_arrays(gl::draw_mode::Triangles, 0, cast<GLsizei>(vertexCount));
+}
+
 }
 }

@@ -545,14 +545,12 @@ struct functions
 	void (ORB_GL_CALL *vertex_attrib_pointer)(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
 };
 
-extern ORB_API_GRAPHICS functions load_functions();
-
 namespace platform
 {
-
 extern ORB_API_GRAPHICS void* get_proc_address(std::string_view name);
-
 }
+
+extern ORB_API_GRAPHICS functions load_functions();
 
 }
 }

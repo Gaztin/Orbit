@@ -17,36 +17,31 @@
 
 #include "render_context_gl.h"
 
+#include <GLKit/GLKit.h>
+
 #include "orbit/core/platform/window_handle.h"
-#include "orbit/core/utility.h"
+
+@interface ORBGLKViewDelegate : UIResponder<GLKViewDelegate>
+@end
 
 namespace orb
 {
 namespace platform
 {
 
-static void set_pixel_format(HDC hdc)
-{
-	PIXELFORMATDESCRIPTOR desc{};
-	desc.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-	desc.nVersion = 1;
-	desc.dwFlags = PFD_DOUBLEBUFFER | PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
-	desc.iPixelType = PFD_TYPE_RGBA;
-	desc.cColorBits = 24;
-	desc.cDepthBits = 24;
-	desc.iLayerType = PFD_MAIN_PLANE;
-
-	const int format = ChoosePixelFormat(hdc, &desc);
-	SetPixelFormat(hdc, format, &desc);
-}
-
 render_context_gl::render_context_gl(const window_handle& wh)
-	: m_parentHwnd(wh.hwnd)
-	, m_hdc(GetDC(m_parentHwnd))
+	m_eaglContext([EAGLContext alloc])
+	m_glkView([GLKView alloc])
 {
-	set_pixel_format(m_hdc);
+	ORBGLKViewDelegate* delegate = [ORBGLKViewDelegate alloc];
+	[delegate init];
 
-	m_hglrc = wglCreateContext(m_hdc);
+	[(EAGLContext*)m_eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES1];
+	[(GLKView*)m_glkView initWithFrame:[[UIScreen mainScreen] bounds]];
+	((GLKView*)m_glkView).context = (EAGLContext*)m_eaglContext;
+	((GLKView*)m_glkView).delegate = delegate;
+	((GLKView*)m_glkView).enableSetNeedsDisplay = NO;
+	[(UIWindow*)wh.uiWindow addSubview:(GLKView*)m_glkView];
 	
 	make_current();
 	m_functions = gl::load_functions();
@@ -55,28 +50,29 @@ render_context_gl::render_context_gl(const window_handle& wh)
 
 render_context_gl::~render_context_gl()
 {
-	wglDeleteContext(m_hglrc);
-	ReleaseDC(m_parentHwnd, m_hdc);
+	[(GLKView*)m_glkView dealloc];
+	[(EAGLContext*)m_eaglContext dealloc];
 }
 
 bool render_context_gl::make_current()
 {
-	return wglMakeCurrent(m_hdc, m_hglrc);
+	return [EAGLContext setCurrentContext:(EAGLContext*)m_eaglContext];
 }
 
 bool render_context_gl::make_current(std::nullptr_t)
 {
-	return wglMakeCurrent(m_hdc, nullptr);
+	return [EAGLContext setCurrentContext:nullptr];
 }
 
 void render_context_gl::resize(uint32_t width, uint32_t height)
 {
+	((GLKView*)m_glkView).layer.frame = CGRectMake(0.f, 0.f, width, height);
 	glViewport(0, 0, width, height);
 }
 
 void render_context_gl::swap_buffers()
 {
-	SwapBuffers(m_hdc);
+	[(GLKView*)m_glkView display];
 }
 
 void render_context_gl::set_clear_color(float r, float g, float b)

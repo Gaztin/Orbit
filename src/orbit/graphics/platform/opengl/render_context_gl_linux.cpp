@@ -15,15 +15,13 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "graphics_platform_gl.h"
+#include "render_context_gl.h"
 
 #include "orbit/core/platform/window_handle.h"
 
 namespace orb
 {
 namespace platform
-{
-namespace gl
 {
 
 static GC create_gc(Display* display, const Window& window)
@@ -46,35 +44,58 @@ static GLXContext create_glx_context(Display* display)
 	return glXCreateContext(display, visualInfo, nullptr, true);
 }
 
-render_context_handle create_render_context_handle(const window_handle& wh)
+render_context_gl::render_context_gl(const window_handle& wh)
+	: m_wndPtr(&wh)
+	, m_gc(create_gc(wh.display, wh.window))
+	, m_glxContext(create_glx_context(wh.display))
 {
-	render_context_handle rch(in_place_type_v<render_context_handle::gl_t>);
-	rch.gl.wndPtr = &wh;
-	rch.gl.gc = create_gc(wh.display, wh.window);
-	rch.gl.glxContext = create_glx_context(wh.display);
-	return rch;
+	make_current();
+	m_functions = gl::load_functions();
+	make_current(nullptr);
 }
 
-void destroy_context_handle(const window_handle& /*wh*/, const render_context_handle& rch)
+render_context_gl::~render_context_gl()
 {
-	glXDestroyContext(rch.gl.wndPtr->display, rch.gl.glxContext);
-	XFreeGC(rch.gl.wndPtr->display, rch.gl.gc);
+	glXDestroyContext(m_wndPtr->display, m_glxContext);
+	XFreeGC(m_wndPtr->display, m_gc);
 }
 
-bool make_current(const render_context_handle& rch)
+void render_context_gl::make_current()
 {
-	return glXMakeCurrent(rch.gl.wndPtr->display, rch.gl.wndPtr->window, rch.gl.glxContext);
+	return glXMakeCurrent(m_wndPtr->display, m_wndPtr->window, m_glxContext);
 }
 
-void swap_buffers(const render_context_handle& rch)
+void render_context_gl::make_current(std::nullptr_t)
 {
-	glXSwapBuffers(rch.gl.wndPtr->display, rch.gl.wndPtr->window);
+	return glXMakeCurrent(m_wndPtr->display, None, nullptr);
 }
 
-void recreate_surface(render_context_handle& /*rch*/, uint32_t /*width*/, uint32_t /*height*/)
+void render_context_gl::resize(uint32_t width, uint32_t height)
 {
+	glViewport(0, 0, width, height);
 }
 
+void render_context_gl::swap_buffers()
+{
+	glXSwapBuffers(m_wndPtr->display, m_wndPtr->window);
 }
+
+void render_context_gl::set_clear_color(float r, float g, float b)
+{
+	glClearColor(r, g, b, 1.0f);
+}
+
+void render_context_gl::clear_buffers(buffer_mask mask)
+{
+	glClear(
+		(!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0 |
+		(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
+}
+
+void render_context_gl::draw(size_t vertexCount)
+{
+	m_functions.draw_arrays(gl::draw_mode::Triangles, 0, cast<GLsizei>(vertexCount));
+}
+
 }
 }

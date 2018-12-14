@@ -28,8 +28,8 @@ class ORB_API_GRAPHICS render_context_base
 public:
 	virtual ~render_context_base() = default;
 
-	virtual void make_current() {};
-	virtual void make_current(std::nullptr_t) {};
+	virtual bool make_current() { return true; };
+	virtual bool make_current(std::nullptr_t) { return true; };
 	virtual void resize(uint32_t width, uint32_t height) = 0;
 	virtual void swap_buffers() = 0;
 	virtual void set_clear_color(float r, float g, float b) = 0;
