@@ -49,6 +49,7 @@ local function base_config()
 	symbols           ("Off")
 	filter{"system:windows"}
 	toolset           ("msc")
+	defines           {"NOMINMAX"}
 	filter{"system:not windows"}
 	toolset           ("gcc")
 	filter{}
