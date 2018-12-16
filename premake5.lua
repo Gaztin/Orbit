@@ -34,6 +34,7 @@ local function base_config()
 	location          ("build/%{_ACTION}/")
 	objdir            ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
 	targetdir         ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
+	debugdir          ("res/")
 	includedirs       {"src/"}
 	sysincludedirs    {"src/"}
 	cppdialect        ("C++17")
