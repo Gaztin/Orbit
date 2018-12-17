@@ -21,6 +21,10 @@
 
 #if defined(ORB_OS_WINDOWS)
 #include <windows.h>
+#elif defined(ORB_OS_ANDROID)
+#include "orbit/core/android_app.h"
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 #endif
 
 namespace orb
@@ -51,7 +55,28 @@ asset::asset(const char* file_name)
 	m_data.resize(static_cast<size_t>(fileSize.QuadPart));
 
 	DWORD numBytesRead;
-	ReadFile(f.handle, m_data.data(), static_cast<DWORD>(fileSize.QuadPart), &numBytesRead, NULL);
+	ReadFile(f.handle, m_data.data(), static_cast<DWORD>(m_data.size()), &numBytesRead, NULL);
+
+#elif defined(ORB_OS_ANDROID)
+
+	struct aasset
+	{
+		~aasset() { if (ast) AAsset_close(ast); }
+		AAsset* ast;
+	};
+
+	AAssetManager* mgr = android_only::app->activity->assetManager;
+	aasset a{};
+	a.ast = AAssetManager_open(mgr, file_name, AASSET_MODE_BUFFER);
+	if (!a.ast)
+		return;
+
+	const off64_t len = AAsset_getLength64(a.ast);
+	if (len <= 0)
+		return;
+
+	m_data.resize(static_cast<size_t>(len));
+	AAsset_read(a.ast, m_data.data(), m_data.size());
 
 #endif
 }
