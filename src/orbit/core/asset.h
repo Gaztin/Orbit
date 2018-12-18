@@ -26,7 +26,7 @@ namespace orb
 class ORB_API_CORE asset
 {
 public:
-	asset(const char* file_name);
+	asset(const char* file_path);
 
 	const std::vector<uint8_t>& get_data() const { return m_data; }
 

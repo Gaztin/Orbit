@@ -25,12 +25,17 @@
 #include "orbit/core/android_app.h"
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#elif defined(ORB_OS_LINUX) || defined(ORB_OS_MACOS)
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #endif
 
 namespace orb
 {
 
-asset::asset(const char* file_name)
+asset::asset(const char* file_path)
 {
 #if defined(ORB_OS_WINDOWS)
 
@@ -41,7 +46,7 @@ asset::asset(const char* file_name)
 	};
 
 	file f{};
-	f.handle = CreateFileA(file_name, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	f.handle = CreateFileA(file_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (f.handle == INVALID_HANDLE_VALUE)
 	{
 		f.handle = NULL;
@@ -67,7 +72,7 @@ asset::asset(const char* file_name)
 
 	AAssetManager* mgr = android_only::app->activity->assetManager;
 	aasset a{};
-	a.ast = AAssetManager_open(mgr, file_name, AASSET_MODE_BUFFER);
+	a.ast = AAssetManager_open(mgr, file_path, AASSET_MODE_BUFFER);
 	if (!a.ast)
 		return;
 
@@ -77,6 +82,27 @@ asset::asset(const char* file_name)
 
 	m_data.resize(static_cast<size_t>(len));
 	AAsset_read(a.ast, m_data.data(), m_data.size());
+
+#elif defined(ORB_OS_LINUX) || defined(ORB_OS_MACOS)
+
+	struct file
+	{
+		~file() { if (fd > 0) close(fd); }
+		int fd;
+	};
+
+	file f{};
+	f.fd = open(file_path, O_RDONLY);
+	if (f.fd < 0)
+		return;
+
+	const off_t sz = lseek(f.fd, 0, SEEK_END);
+	if (sz <= 0)
+		return;
+
+	lseek(f.fd, 0, SEEK_SET);
+	m_data.resize(static_cast<size_t>(sz));
+	read(f.fd, m_data.data(), m_data.size());
 
 #endif
 }
