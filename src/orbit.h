@@ -51,7 +51,7 @@
 #endif
 #endif
 
-#if defined(_MSC_VER)
+#if defined(ORB_CC_MSVC)
 /* Suppress MSVC warnings about DLL-interfaces */
 #pragma warning(disable: 4251)
 #endif
