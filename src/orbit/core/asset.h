@@ -17,6 +17,7 @@
 
 #pragma once
 #include <vector>
+#include <stdint.h>
 
 #include "orbit/core.h"
 

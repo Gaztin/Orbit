@@ -1,3 +1,5 @@
+OUTDIR = "build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/"
+
 if _TARGET_OS == "macosx" then
 	newoption {
 		trigger = "ios",
@@ -32,8 +34,8 @@ end
 
 local function base_config()
 	location          ("build/%{_ACTION}/")
-	objdir            ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
-	targetdir         ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
+	objdir            (OUTDIR)
+	targetdir         (OUTDIR)
 	debugdir          ("assets/")
 	includedirs       {"src/"}
 	sysincludedirs    {"src/"}
@@ -53,6 +55,8 @@ local function base_config()
 	defines           {"NOMINMAX"}
 	filter{"system:not windows"}
 	toolset           ("gcc")
+	filter{"system:linux"}
+	debugenvs         {"LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../%{OUTDIR}"}
 	filter{}
 end
 
