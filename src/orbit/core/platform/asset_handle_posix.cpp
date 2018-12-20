@@ -55,7 +55,7 @@ size_t read_asset_data(const asset_handle& ah, void* buf, size_t size)
 
 bool close_asset(const asset_handle& ah)
 {
-	if (fd <= 0)
+	if (ah <= 0)
 		return false;
 
 	return close(ah) == 0;
