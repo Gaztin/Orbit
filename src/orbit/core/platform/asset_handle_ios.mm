@@ -15,24 +15,28 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include <vector>
-#include <stdint.h>
-
-#include "orbit/core.h"
+#include "asset_handle.h"
 
 namespace orb
 {
-
-class ORB_API_CORE asset
+namespace platform
 {
-public:
-	asset(const std::string& path);
 
-	const std::vector<uint8_t>& get_data() const { return m_data; }
+asset_handle open_asset(const std::string& path)
+{
+}
 
-private:
-	std::vector<uint8_t> m_data;
-};
+size_t get_asset_size(const asset_handle& ah)
+{
+}
 
+size_t read_asset_data(const asset_handle& ah, void* buf, size_t size)
+{
+}
+
+bool close_asset(const asset_handle& ah)
+{
+}
+
+}
 }

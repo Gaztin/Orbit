@@ -16,23 +16,31 @@
 */
 
 #pragma once
-#include <vector>
-#include <stdint.h>
+#include <string>
 
 #include "orbit/core.h"
 
+#if defined(ORB_OS_WINDOWS)
+#include <windows.h>
+#endif
+
 namespace orb
 {
-
-class ORB_API_CORE asset
+namespace platform
 {
-public:
-	asset(const std::string& path);
 
-	const std::vector<uint8_t>& get_data() const { return m_data; }
+#if defined(ORB_OS_WINDOWS)
+using asset_handle = HANDLE;
+#elif defined(ORB_OS_ANDROID)
+using asset_handle = AAsset*;
+#elif defined(ORB_OS_LINUX) || defined(ORB_OS_MACOS)
+using asset_handle = int;
+#endif
 
-private:
-	std::vector<uint8_t> m_data;
-};
+extern ORB_API_CORE asset_handle open_asset(const std::string& path);
+extern ORB_API_CORE size_t get_asset_size(const asset_handle& ah);
+extern ORB_API_CORE size_t read_asset_data(const asset_handle& ah, void* buf, size_t size);
+extern ORB_API_CORE bool close_asset(const asset_handle& ah);
 
+}
 }

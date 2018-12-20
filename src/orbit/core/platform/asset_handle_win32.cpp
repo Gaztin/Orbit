@@ -15,24 +15,43 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include <vector>
-#include <stdint.h>
-
-#include "orbit/core.h"
+#include "asset_handle.h"
 
 namespace orb
 {
-
-class ORB_API_CORE asset
+namespace platform
 {
-public:
-	asset(const std::string& path);
 
-	const std::vector<uint8_t>& get_data() const { return m_data; }
+asset_handle open_asset(const std::string& path)
+{
+	return CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+}
 
-private:
-	std::vector<uint8_t> m_data;
-};
+size_t get_asset_size(const asset_handle& ah)
+{
+	LARGE_INTEGER fileSize{};
+	if (GetFileSizeEx(ah, &fileSize) == 0)
+		return 0;
 
+	return static_cast<size_t>(fileSize.QuadPart);
+}
+
+size_t read_asset_data(const asset_handle& ah, void* buf, size_t size)
+{
+	DWORD numBytesRead;
+	if (!ReadFile(ah, buf, static_cast<DWORD>(size), &numBytesRead, NULL))
+		return 0;
+
+	return static_cast<size_t>(numBytesRead);
+}
+
+bool close_asset(const asset_handle& ah)
+{
+	if (ah == NULL || ah == INVALID_HANDLE_VALUE)
+		return false;
+
+	return CloseHandle(ah);
+}
+
+}
 }

@@ -70,9 +70,9 @@ end
 
 local function foreach_system_keywords(os, functor)
 	local keywords = {
-		["windows"] = {"win32",   "desktop", "gl", "d3d11"},
-		["linux"]   = {"linux",   "desktop", "gl"},
-		["macosx"]  = {"macos",   "desktop", "gl"},
+		["windows"] = {"win32",   "desktop",          "gl", "d3d11"},
+		["linux"]   = {"linux",   "desktop", "posix", "gl"},
+		["macosx"]  = {"macos",   "desktop", "posix", "gl"},
 		["android"] = {"android", "mobile",  "gl"},
 		["ios"]     = {"ios",     "mobile",  "gl"},
 	}
