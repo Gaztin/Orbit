@@ -20,7 +20,7 @@
 
 #include "orbit/core/event_dispatcher.h"
 #include "orbit/core/events/window_event.h"
-#include "orbit/core/platform/core_platform.h"
+#include "orbit/core/platform/window_handle.h"
 
 namespace orb
 {

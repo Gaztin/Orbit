@@ -15,7 +15,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "core_platform.h"
+#include "window_handle.h"
 
 #include <android_native_app_glue.h>
 #include <orbit/core/events/window_event.h>
