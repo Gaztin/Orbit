@@ -17,8 +17,8 @@
 
 #include "asset_handle.h"
 
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -29,7 +29,11 @@ namespace platform
 
 asset_handle open_asset(const std::string& path)
 {
-	return open(path.c_str(), O_RDONLY);
+	asset_handle ah = open(path.c_str(), O_RDONLY);
+	if (ah < 0)
+		return 0;
+	
+	return ah;
 }
 
 size_t get_asset_size(const asset_handle& ah)

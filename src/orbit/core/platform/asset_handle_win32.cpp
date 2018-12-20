@@ -24,7 +24,11 @@ namespace platform
 
 asset_handle open_asset(const std::string& path)
 {
-	return CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	asset_handle ah = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (ah == INVALID_HANDLE_VALUE)
+		return NULL;
+
+	return ah;
 }
 
 size_t get_asset_size(const asset_handle& ah)
