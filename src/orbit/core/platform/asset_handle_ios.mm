@@ -17,6 +17,8 @@
 
 #include "asset_handle.h"
 
+#include <Foundation/Foundation.h>
+
 namespace orb
 {
 namespace platform
@@ -24,18 +26,46 @@ namespace platform
 
 asset_handle open_asset(const std::string& path)
 {
+	NSString* nsPath   = [NSString stringWithUTF8String:path.c_str()];
+	NSString* resource = [nsPath stringByDeletingPathExtension];
+	NSString* type     = [nsPath pathExtension];
+	NSBundle* bundle   = [NSBundle mainBundle];
+	NSString* resPath  = [bundle pathForResource:resource ofType:type inDirectory:@"assets"];
+
+	asset_handle ah = open([resPath UTF8String], O_RDONLY);
+	if (ah < 0)
+		return 0;
+
+	return ah;
 }
 
 size_t get_asset_size(const asset_handle& ah)
 {
+	lseek(ah, 0, SEEK_SET);
+	const off_t off = lseek(ah, 0, SEEK_END);
+	lseek(ah, 0, SEEK_SET);
+
+	if (off < 0)
+		return 0;
+
+	return static_cast<size_t>(off);
 }
 
 size_t read_asset_data(const asset_handle& ah, void* buf, size_t size)
 {
+	const ssize_t numBytesRead = read(ah, buf, size);
+	if (numBytesRead < 0)
+		return 0;
+
+	return static_cast<size_t>(numBytesRead);
 }
 
 bool close_asset(const asset_handle& ah)
 {
+	if (ah <= 0)
+		return false;
+
+	return close(ah) == 0;
 }
 
 }

@@ -33,7 +33,7 @@ namespace platform
 using asset_handle = HANDLE;
 #elif defined(ORB_OS_ANDROID)
 using asset_handle = AAsset*;
-#elif defined(ORB_OS_LINUX) || defined(ORB_OS_MACOS)
+#elif defined(ORB_OS_LINUX) || defined(ORB_OS_MACOS) || defined(ORB_OS_IOS)
 using asset_handle = int;
 #endif
 

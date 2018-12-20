@@ -135,12 +135,13 @@ local function decl_sample(name)
 	project (id .. "." .. name)
 	kind    (get_app_kind())
 	links   (modules)
+	xcodebuildresources("assets")
 	base_config()
 	files {
 		"src/samples/" .. id .. "/**.cpp",
 		"src/samples/" .. id .. "/**.h",
 	}
-	filter{"system:ios"} files{"res/Info.plist"} filter{}
+	filter{"system:ios"} files{"res/Info.plist", "assets"} filter{}
 	filter_system_files()
 	group()
 	sample_index = sample_index + 1
