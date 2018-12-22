@@ -1,3 +1,5 @@
+OUTDIR = "build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/"
+
 if _TARGET_OS == "macosx" then
 	newoption {
 		trigger = "ios",
@@ -32,8 +34,9 @@ end
 
 local function base_config()
 	location          ("build/%{_ACTION}/")
-	objdir            ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
-	targetdir         ("build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/")
+	objdir            (OUTDIR)
+	targetdir         (OUTDIR)
+	debugdir          ("assets/")
 	includedirs       {"src/"}
 	sysincludedirs    {"src/"}
 	cppdialect        ("C++17")
@@ -49,8 +52,11 @@ local function base_config()
 	symbols           ("Off")
 	filter{"system:windows"}
 	toolset           ("msc")
+	defines           {"NOMINMAX"}
 	filter{"system:not windows"}
 	toolset           ("gcc")
+	filter{"system:linux"}
+	debugenvs         {"LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../%{OUTDIR}"}
 	filter{}
 end
 
@@ -64,9 +70,9 @@ end
 
 local function foreach_system_keywords(os, functor)
 	local keywords = {
-		["windows"] = {"win32",   "desktop", "gl", "d3d11"},
-		["linux"]   = {"linux",   "desktop", "gl"},
-		["macosx"]  = {"macos",   "desktop", "gl"},
+		["windows"] = {"win32",   "desktop",          "gl", "d3d11"},
+		["linux"]   = {"linux",   "desktop", "posix", "gl"},
+		["macosx"]  = {"macos",   "desktop", "posix", "gl"},
 		["android"] = {"android", "mobile",  "gl"},
 		["ios"]     = {"ios",     "mobile",  "gl"},
 	}
@@ -129,12 +135,13 @@ local function decl_sample(name)
 	project (id .. "." .. name)
 	kind    (get_app_kind())
 	links   (modules)
+	xcodebuildresources("assets")
 	base_config()
 	files {
 		"src/samples/" .. id .. "/**.cpp",
 		"src/samples/" .. id .. "/**.h",
 	}
-	filter{"system:ios"} files{"res/Info.plist"} filter{}
+	filter{"system:ios"} files{"res/Info.plist", "assets"} filter{}
 	filter_system_files()
 	group()
 	sample_index = sample_index + 1

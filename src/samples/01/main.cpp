@@ -3,6 +3,7 @@
 
 #include <orbit/core/events/window_event.h>
 #include <orbit/core/application.h>
+#include <orbit/core/asset.h>
 #include <orbit/core/log.h>
 #include <orbit/core/utility.h>
 #include <orbit/core/window.h>
@@ -34,6 +35,13 @@ sample_app::sample_app()
 	m_window.set_title("Orbit sample #01");
 	m_window.show();
 	m_renderContext.set_clear_color(1.0f, 0.0f, 1.0f);
+
+	/* Load text asset and log its contents */
+	{
+		orb::asset testAsset("text.txt");
+		const auto& txt = testAsset.get_data();
+		orb::log_info(std::string(reinterpret_cast<const char*>(txt.data()), txt.size()));
+	}
 }
 
 void sample_app::frame()

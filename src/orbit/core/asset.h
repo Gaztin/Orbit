@@ -16,36 +16,23 @@
 */
 
 #pragma once
+#include <vector>
 #include <string>
 
-#include "orbit/core/event_dispatcher.h"
-#include "orbit/core/events/window_event.h"
-#include "orbit/core/platform/window_handle.h"
+#include "orbit/core.h"
 
 namespace orb
 {
 
-class ORB_API_CORE window : public event_dispatcher<window_event>
+class ORB_API_CORE asset
 {
 public:
-	window(uint32_t width, uint32_t height);
+	asset(const std::string& path);
 
-	void poll_events();
-	void set_title(const std::string& title);
-	void set_pos(uint32_t x, uint32_t y);
-	void set_size(uint32_t width, uint32_t height);
-	void show();
-	void hide();
-
-	void close() { m_open = false; }
-
-	operator bool() const { return m_open; }
-
-	const platform::window_handle& get_handle() const { return m_handle; }
+	const std::vector<uint8_t>& get_data() const { return m_data; }
 
 private:
-	platform::window_handle m_handle;
-	bool m_open;
+	std::vector<uint8_t> m_data;
 };
 
 }

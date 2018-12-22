@@ -15,37 +15,30 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include <string>
+#include "asset.h"
 
-#include "orbit/core/event_dispatcher.h"
-#include "orbit/core/events/window_event.h"
-#include "orbit/core/platform/window_handle.h"
+#include <algorithm>
+
+#include "orbit/core/platform/asset_handle.h"
 
 namespace orb
 {
 
-class ORB_API_CORE window : public event_dispatcher<window_event>
+asset::asset(const std::string& path)
 {
-public:
-	window(uint32_t width, uint32_t height);
+	platform::asset_handle ah{};
+	ah = platform::open_asset(path);
+	if (!ah)
+		return;
 
-	void poll_events();
-	void set_title(const std::string& title);
-	void set_pos(uint32_t x, uint32_t y);
-	void set_size(uint32_t width, uint32_t height);
-	void show();
-	void hide();
+	const size_t sz = platform::get_asset_size(ah);
+	if (sz > 0)
+	{
+		m_data.resize(sz);
+		platform::read_asset_data(ah, m_data.data(), m_data.size());
+	}
 
-	void close() { m_open = false; }
-
-	operator bool() const { return m_open; }
-
-	const platform::window_handle& get_handle() const { return m_handle; }
-
-private:
-	platform::window_handle m_handle;
-	bool m_open;
-};
+	platform::close_asset(ah);
+}
 
 }

@@ -18,7 +18,7 @@
 #pragma once
 #include <memory>
 
-#include "orbit/core/platform/core_platform.h"
+#include "orbit/core.h"
 
 namespace orb
 {
@@ -27,7 +27,13 @@ class application;
 namespace platform
 {
 
-extern ORB_API_CORE void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)());
+#if defined(ORB_OS_ANDROID)
+using argv_t = android_app*;
+#else
+using argv_t = std::pair<int, char**>;
+#endif
+
+extern ORB_API_CORE void main(argv_t argv, std::shared_ptr<application>(*ctor)());
 
 }
 }

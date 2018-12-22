@@ -6,6 +6,8 @@
 .vs/
 build/*/
 !build/android/
+build/android/mobile/build/
+build/android/wear/build/
 
 *.iml
 *.sln

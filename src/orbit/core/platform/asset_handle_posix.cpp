@@ -15,37 +15,55 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include <string>
+#include "asset_handle.h"
 
-#include "orbit/core/event_dispatcher.h"
-#include "orbit/core/events/window_event.h"
-#include "orbit/core/platform/window_handle.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 namespace orb
 {
-
-class ORB_API_CORE window : public event_dispatcher<window_event>
+namespace platform
 {
-public:
-	window(uint32_t width, uint32_t height);
 
-	void poll_events();
-	void set_title(const std::string& title);
-	void set_pos(uint32_t x, uint32_t y);
-	void set_size(uint32_t width, uint32_t height);
-	void show();
-	void hide();
+asset_handle open_asset(const std::string& path)
+{
+	asset_handle ah = open(path.c_str(), O_RDONLY);
+	if (ah < 0)
+		return 0;
+	
+	return ah;
+}
 
-	void close() { m_open = false; }
+size_t get_asset_size(const asset_handle& ah)
+{
+	lseek(ah, 0, SEEK_SET);
+	const off_t off = lseek(ah, 0, SEEK_END);
+	lseek(ah, 0, SEEK_SET);
 
-	operator bool() const { return m_open; }
+	if (off < 0)
+		return 0;
 
-	const platform::window_handle& get_handle() const { return m_handle; }
+	return static_cast<size_t>(off);
+}
 
-private:
-	platform::window_handle m_handle;
-	bool m_open;
-};
+size_t read_asset_data(const asset_handle& ah, void* buf, size_t size)
+{
+	const ssize_t numBytesRead = read(ah, buf, size);
+	if (numBytesRead < 0)
+		return 0;
 
+	return static_cast<size_t>(numBytesRead);
+}
+
+bool close_asset(const asset_handle& ah)
+{
+	if (ah <= 0)
+		return false;
+
+	return close(ah) == 0;
+}
+
+}
 }

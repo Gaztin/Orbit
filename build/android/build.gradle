@@ -15,8 +15,8 @@ allprojects {
         jcenter()
         google()
     }
-    // Fix gradle file paths exceeding the character limit on Windows
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    // Fix gradle file paths exceeding the file path character limit on Windows
+    if (Os.isFamily(Os.FAMILY_WINDOWS) && buildDir.length() > 32) {
         buildDir "C:/Temp/"
     }
 }

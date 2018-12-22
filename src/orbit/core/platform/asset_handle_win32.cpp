@@ -15,37 +15,47 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include <string>
-
-#include "orbit/core/event_dispatcher.h"
-#include "orbit/core/events/window_event.h"
-#include "orbit/core/platform/window_handle.h"
+#include "asset_handle.h"
 
 namespace orb
 {
-
-class ORB_API_CORE window : public event_dispatcher<window_event>
+namespace platform
 {
-public:
-	window(uint32_t width, uint32_t height);
 
-	void poll_events();
-	void set_title(const std::string& title);
-	void set_pos(uint32_t x, uint32_t y);
-	void set_size(uint32_t width, uint32_t height);
-	void show();
-	void hide();
+asset_handle open_asset(const std::string& path)
+{
+	asset_handle ah = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (ah == INVALID_HANDLE_VALUE)
+		return NULL;
 
-	void close() { m_open = false; }
+	return ah;
+}
 
-	operator bool() const { return m_open; }
+size_t get_asset_size(const asset_handle& ah)
+{
+	LARGE_INTEGER fileSize{};
+	if (GetFileSizeEx(ah, &fileSize) == 0)
+		return 0;
 
-	const platform::window_handle& get_handle() const { return m_handle; }
+	return static_cast<size_t>(fileSize.QuadPart);
+}
 
-private:
-	platform::window_handle m_handle;
-	bool m_open;
-};
+size_t read_asset_data(const asset_handle& ah, void* buf, size_t size)
+{
+	DWORD numBytesRead;
+	if (!ReadFile(ah, buf, static_cast<DWORD>(size), &numBytesRead, NULL))
+		return 0;
 
+	return static_cast<size_t>(numBytesRead);
+}
+
+bool close_asset(const asset_handle& ah)
+{
+	if (ah == NULL || ah == INVALID_HANDLE_VALUE)
+		return false;
+
+	return CloseHandle(ah);
+}
+
+}
 }

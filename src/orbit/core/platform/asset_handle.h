@@ -16,37 +16,31 @@
 */
 
 #pragma once
+#include <string>
+
 #include "orbit/core.h"
 
-#include <cstdint>
-#include <optional>
-#include <string>
-#include <utility>
-
-#include "orbit/core/platform/message.h"
-#include "orbit/core/platform/window_handle.h"
+#if defined(ORB_OS_WINDOWS)
+#include <windows.h>
+#endif
 
 namespace orb
 {
-class window;
-
 namespace platform
 {
 
-#if defined(ORB_OS_ANDROID)
-using argv_t = android_app*;
-#else
-using argv_t = std::pair<int, char**>;
+#if defined(ORB_OS_WINDOWS)
+using asset_handle = HANDLE;
+#elif defined(ORB_OS_ANDROID)
+using asset_handle = AAsset*;
+#elif defined(ORB_OS_LINUX) || defined(ORB_OS_MACOS) || defined(ORB_OS_IOS)
+using asset_handle = int;
 #endif
 
-extern ORB_API_CORE window_handle create_window_handle(uint32_t width = 0, uint32_t height = 0);
-extern ORB_API_CORE void set_window_user_data(window_handle& wh, window& wnd);
-extern ORB_API_CORE std::optional<message> peek_message(const window_handle& wh);
-extern ORB_API_CORE void process_message(window& wnd, const message& msg);
-extern ORB_API_CORE void set_window_title(const window_handle& wh, const std::string& title);
-extern ORB_API_CORE void set_window_position(const window_handle& wh, int x, int y);
-extern ORB_API_CORE void set_window_size(const window_handle& wh, uint32_t width, uint32_t height);
-extern ORB_API_CORE void set_window_visibility(const window_handle& wh, bool visible);
+extern ORB_API_CORE asset_handle open_asset(const std::string& path);
+extern ORB_API_CORE size_t get_asset_size(const asset_handle& ah);
+extern ORB_API_CORE size_t read_asset_data(const asset_handle& ah, void* buf, size_t size);
+extern ORB_API_CORE bool close_asset(const asset_handle& ah);
 
 }
 }
