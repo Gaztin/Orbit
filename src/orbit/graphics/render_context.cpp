@@ -104,11 +104,6 @@ void render_context::set_clear_color(float r, float g, float b)
 	m_base->set_clear_color(r, g, b);
 }
 
-void render_context::draw(size_t vertexCount)
-{
-	m_base->draw(vertexCount);
-}
-
 render_context* render_context::get_current()
 {
 	return CurrentContext;

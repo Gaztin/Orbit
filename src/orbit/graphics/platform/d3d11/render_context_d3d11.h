@@ -40,7 +40,6 @@ public:
 	void swap_buffers() final override;
 	void set_clear_color(float r, float g, float b) final override;
 	void clear_buffers(buffer_mask mask) final override;
-	void draw(size_t vertexCount) final override;
 
 	ID3D11DeviceContext& get_device_context() { return *m_deviceContext; }
 	ID3D11Device& get_device() { return *m_device; }

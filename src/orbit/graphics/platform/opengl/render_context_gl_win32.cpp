@@ -91,10 +91,5 @@ void render_context_gl::clear_buffers(buffer_mask mask)
 		(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
 }
 
-void render_context_gl::draw(size_t vertexCount)
-{
-	m_functions.draw_arrays(gl::draw_mode::Triangles, 0, cast<GLsizei>(vertexCount));
-}
-
 }
 }

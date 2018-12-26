@@ -277,10 +277,5 @@ void render_context_d3d11::clear_buffers(buffer_mask mask)
 		m_deviceContext->ClearDepthStencilView(m_depthStencilView.get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-void render_context_d3d11::draw(size_t vertexCount)
-{
-	m_deviceContext->Draw(cast<UINT>(vertexCount), 0);
-}
-
 }
 }

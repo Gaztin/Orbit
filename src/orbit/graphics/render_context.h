@@ -36,8 +36,6 @@ public:
 	void clear(buffer_mask mask);
 	void set_clear_color(float r, float g, float b);
 
-	void draw(size_t vertexCount);
-
 	graphics_api get_api() const { return m_api; }
 	platform::render_context_base& get_base() { return *m_base; }
 

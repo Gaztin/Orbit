@@ -37,7 +37,6 @@ public:
 	void swap_buffers() final override;
 	void set_clear_color(float r, float g, float b) final override;
 	void clear_buffers(buffer_mask mask) final override;
-	void draw(size_t vertexCount) final override;
 
 	gl::functions& get_functions() { return m_functions; }
 

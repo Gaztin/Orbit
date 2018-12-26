@@ -34,7 +34,6 @@ public:
 	virtual void swap_buffers() = 0;
 	virtual void set_clear_color(float r, float g, float b) = 0;
 	virtual void clear_buffers(buffer_mask mask) = 0;
-	virtual void draw(size_t vertexCount) = 0;
 };
 
 }
