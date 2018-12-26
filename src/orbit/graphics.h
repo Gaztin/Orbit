@@ -64,4 +64,10 @@ enum class buffer_mask
 };
 ORB_ENABLE_BITMASKING(buffer_mask);
 
+enum class shader_type
+{
+	Vertex,
+	Fragment,
+};
+
 }

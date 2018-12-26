@@ -28,13 +28,8 @@ class asset;
 class ORB_API_GRAPHICS shader
 {
 public:
-	enum class type
-	{
-		Vertex,
-		Fragment,
-	};
+	shader(shader_type t, const asset& ast);
 
-	shader(type t, const asset& ast);
 
 private:
 	std::unique_ptr<platform::shader_base> m_base;

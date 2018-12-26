@@ -25,7 +25,7 @@
 namespace orb
 {
 
-static std::unique_ptr<platform::shader_base> init_base(shader::type type, const asset& ast)
+static std::unique_ptr<platform::shader_base> init_base(shader_type type, const asset& ast)
 {
 	switch (render_context::get_current()->get_api())
 	{
@@ -33,10 +33,10 @@ static std::unique_ptr<platform::shader_base> init_base(shader::type type, const
 		case graphics_api::OpenGL:
 			switch (type)
 			{
-				case shader::type::Vertex:
+				case shader_type::Vertex:
 					return std::make_unique<platform::shader_gl<gl::shader_type::Vertex>>(ast);
 
-				case shader::type::Fragment:
+				case shader_type::Fragment:
 					return std::make_unique<platform::shader_gl<gl::shader_type::Fragment>>(ast);
 
 				default:
@@ -48,10 +48,10 @@ static std::unique_ptr<platform::shader_base> init_base(shader::type type, const
 		case graphics_api::D3D11:
 			switch (type)
 			{
-				case shader::type::Vertex:
+				case shader_type::Vertex:
 					return std::make_unique<platform::shader_vertex_d3d11>(ast);
 
-				case shader::type::Fragment:
+				case shader_type::Fragment:
 					return std::make_unique<platform::shader_pixel_d3d11>(ast);
 
 				default:
@@ -64,8 +64,8 @@ static std::unique_ptr<platform::shader_base> init_base(shader::type type, const
 	}
 }
 
-shader::shader(type t, const asset& ast)
-	: m_base(init_base(t, ast))
+shader::shader(shader_type type, const asset& ast)
+	: m_base(init_base(type, ast))
 {
 }
 
