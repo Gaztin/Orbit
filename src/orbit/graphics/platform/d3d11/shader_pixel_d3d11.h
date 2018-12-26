@@ -44,20 +44,20 @@ public:
 #else
 		flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 #endif
-		ID3DBlob* pixel_data = nullptr;
-		ID3DBlob* pixel_errors = nullptr;
-		if (D3DCompile(data.data(), data.size(), NULL, macros, nullptr, "main", "ps_5_0", flags, 0, &pixel_data, &pixel_errors) != S_OK)
+		ID3DBlob* pixelData = nullptr;
+		ID3DBlob* pixelErrors = nullptr;
+		if (D3DCompile(data.data(), data.size(), NULL, macros, nullptr, "main", "ps_5_0", flags, 0, &pixelData, &pixelErrors) != S_OK)
 		{
-			log_error(format("%s", static_cast<const char*>(pixel_errors->GetBufferPointer())));
-			pixel_errors->Release();
+			log_error(format("%s", static_cast<const char*>(pixelErrors->GetBufferPointer())));
+			pixelErrors->Release();
 			return;
 		}
 
 		ID3D11Device& device = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device();
 		ID3D11PixelShader* pixelShader;
-		device.CreatePixelShader(pixel_data->GetBufferPointer(), pixel_data->GetBufferSize(), nullptr, &pixelShader);
+		device.CreatePixelShader(pixelData->GetBufferPointer(), pixelData->GetBufferSize(), nullptr, &pixelShader);
 		m_pixelShader.reset(pixelShader);
-		pixel_data->Release();
+		pixelData->Release();
 	}
 
 	shader_type get_type() const final override { return shader_type::Fragment; }

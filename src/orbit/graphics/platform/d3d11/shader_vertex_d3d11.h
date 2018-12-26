@@ -44,25 +44,26 @@ public:
 #else
 		flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 #endif
-		ID3DBlob* vertex_data = nullptr;
-		ID3DBlob* vertex_errors = nullptr;
-		if (D3DCompile(data.data(), data.size(), NULL, macros, nullptr, "main", "vs_5_0", flags, 0, &vertex_data, &vertex_errors) != S_OK)
+		ID3DBlob* vertexData = nullptr;
+		ID3DBlob* vertexErrors = nullptr;
+		if (D3DCompile(data.data(), data.size(), NULL, macros, nullptr, "main", "vs_5_0", flags, 0, &vertexData, &vertexErrors) != S_OK)
 		{
-			log_error(format("%s", static_cast<const char*>(vertex_errors->GetBufferPointer())));
-			vertex_errors->Release();
+			log_error(format("%s", static_cast<const char*>(vertexErrors->GetBufferPointer())));
+			vertexErrors->Release();
 			return;
 		}
 
 		ID3D11Device& device = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device();
 		ID3D11VertexShader* vertexShader;
-		device.CreateVertexShader(vertex_data->GetBufferPointer(), vertex_data->GetBufferSize(), nullptr, &vertexShader);
+		device.CreateVertexShader(vertexData->GetBufferPointer(), vertexData->GetBufferSize(), nullptr, &vertexShader);
+		m_vertexData.reset(vertexData);
 		m_vertexShader.reset(vertexShader);
-		vertex_data->Release();
 	}
 
 	shader_type get_type() const final override { return shader_type::Vertex; }
 
 private:
+	com_ptr<ID3DBlob> m_vertexData;
 	com_ptr<ID3D11VertexShader> m_vertexShader;
 };
 
