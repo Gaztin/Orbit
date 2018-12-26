@@ -159,7 +159,7 @@ decl_module("Core")
     links{"UIKit.framework", "QuartzCore.framework"}
 decl_module("Graphics")
   filter{"system:windows"}
-    links{"opengl32", "d3d11", "dxgi"}
+    links{"opengl32", "d3d11", "dxgi", "D3DCompiler"}
   filter{"system:linux"}
     links{"X11", "GL"}
   filter{"system:macosx"}

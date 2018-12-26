@@ -39,15 +39,15 @@
 #include <OpenGLES/ES1/gl.h>
 #endif
 
-namespace orb
-{
-namespace gl
-{
-
 using GLintptr = ptrdiff_t;
 using GLsizeiptr = size_t;
 using GLdouble = double;
 using GLchar = char;
+
+namespace orb
+{
+namespace gl
+{
 
 enum class buffer_target : GLenum
 {
