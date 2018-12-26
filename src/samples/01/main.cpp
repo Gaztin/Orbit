@@ -7,7 +7,10 @@
 #include <orbit/core/log.h>
 #include <orbit/core/utility.h>
 #include <orbit/core/window.h>
+#include <orbit/graphics/graphics_pipeline.h>
 #include <orbit/graphics/render_context.h>
+#include <orbit/graphics/shader.h>
+#include <orbit/graphics/vertex_buffer.h>
 
 class sample_app : public orb::application
 {
@@ -23,18 +26,48 @@ private:
 	orb::window m_window;
 	orb::window::subscription_ptr m_windowSubscription;
 	orb::render_context m_renderContext;
+	orb::shader m_vertexShader;
+	orb::shader m_fragmentShader;
+	orb::vertex_buffer m_triangleVertexBuffer;
+	orb::graphics_pipeline m_mainPipeline;
 	float m_time;
+};
+
+struct vertex
+{
+	float x, y;
+	float r, g, b, a;
+};
+
+const std::initializer_list<vertex> triangleVertices =
+{
+	{ -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f },
+	{  0.0f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
+	{  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f },
 };
 
 sample_app::sample_app()
 	: m_window(800, 600)
 	, m_windowSubscription(m_window.subscribe(&sample_app::on_window_event))
-	, m_renderContext(m_window, orb::graphics_api::DeviceDefault)
+	, m_renderContext(m_window, orb::graphics_api::D3D11)
+	, m_vertexShader(orb::shader_type::Vertex, orb::asset("shader.vs"))
+	, m_fragmentShader(orb::shader_type::Fragment, orb::asset("shader.fs"))
+	, m_triangleVertexBuffer(triangleVertices)
 	, m_time(0.0f)
 {
 	m_window.set_title("Orbit sample #01");
 	m_window.show();
 	m_renderContext.set_clear_color(1.0f, 0.0f, 1.0f);
+
+	const orb::vertex_layout vertexLayout =
+	{
+		{"POSITION", orb::vertex_component::Vec2},
+		{"COLOR", orb::vertex_component::Vec4},
+	};
+
+	m_mainPipeline.add_shader(m_vertexShader);
+	m_mainPipeline.add_shader(m_fragmentShader);
+	m_mainPipeline.describe_vertex_layout(vertexLayout);
 
 	/* Load text asset and log its contents */
 	{
@@ -54,6 +87,10 @@ void sample_app::frame()
 	m_window.poll_events();
 	m_renderContext.set_clear_color(red, green, blue);
 	m_renderContext.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
+
+	m_triangleVertexBuffer.bind();
+	m_mainPipeline.draw(3);
+
 	m_renderContext.swap_buffers();
 }
 
