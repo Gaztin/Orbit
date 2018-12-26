@@ -54,6 +54,8 @@ void* get_proc_address(std::string_view name)
 functions load_functions()
 {
 	functions fns{};
+
+	/* Buffer objects */
 	*cast<void**>(&fns.bind_buffer                ) = platform::get_proc_address("glBindBuffer");
 	*cast<void**>(&fns.buffer_data                ) = platform::get_proc_address("glBufferData");
 	*cast<void**>(&fns.buffer_sub_data            ) = platform::get_proc_address("glBufferSubData");
@@ -75,6 +77,41 @@ functions load_functions()
 	*cast<void**>(&fns.vertex_attrib3f            ) = platform::get_proc_address("glVertexAttrib3f");
 	*cast<void**>(&fns.vertex_attrib4f            ) = platform::get_proc_address("glVertexAttrib4f");
 	*cast<void**>(&fns.vertex_attrib_pointer      ) = platform::get_proc_address("glVertexAttribPointer");
+
+	/* Shaders */
+	*cast<void**>(&fns.attach_shader       ) = platform::get_proc_address("glAttachShader");
+	*cast<void**>(&fns.bind_attrib_location) = platform::get_proc_address("glBindAttribLocation");
+	*cast<void**>(&fns.compile_shader      ) = platform::get_proc_address("glCompileShader");
+	*cast<void**>(&fns.create_program      ) = platform::get_proc_address("glCreateProgram");
+	*cast<void**>(&fns.create_shader       ) = platform::get_proc_address("glCreateShader");
+	*cast<void**>(&fns.delete_program      ) = platform::get_proc_address("glDeleteProgram");
+	*cast<void**>(&fns.delete_shader       ) = platform::get_proc_address("glDeleteShader");
+	*cast<void**>(&fns.detach_shader       ) = platform::get_proc_address("glDetachShader");
+	*cast<void**>(&fns.get_active_attrib   ) = platform::get_proc_address("glGetActiveAttrib");
+	*cast<void**>(&fns.get_active_uniform  ) = platform::get_proc_address("glGetActiveUniform");
+	*cast<void**>(&fns.get_attached_shaders) = platform::get_proc_address("glGetAttachedShaders");
+	*cast<void**>(&fns.get_attrib_location ) = platform::get_proc_address("glGetAttribLocation");
+	*cast<void**>(&fns.get_program_info_log) = platform::get_proc_address("glGetProgramInfoLog");
+	*cast<void**>(&fns.get_shader_info_log ) = platform::get_proc_address("glGetShaderInfoLog");
+	*cast<void**>(&fns.get_shader_source   ) = platform::get_proc_address("glGetShaderSource");
+	*cast<void**>(&fns.get_uniformfv       ) = platform::get_proc_address("glGetUniformfv");
+	*cast<void**>(&fns.get_uniformiv       ) = platform::get_proc_address("glGetUniformiv");
+	*cast<void**>(&fns.get_uniform_location) = platform::get_proc_address("glGetUniformLocation");
+	*cast<void**>(&fns.is_program          ) = platform::get_proc_address("glIsProgram");
+	*cast<void**>(&fns.is_shader           ) = platform::get_proc_address("glIsShader");
+	*cast<void**>(&fns.link_program        ) = platform::get_proc_address("glLinkProgram");
+	*cast<void**>(&fns.shader_source       ) = platform::get_proc_address("glShaderSource");
+	*cast<void**>(&fns.uniform1f           ) = platform::get_proc_address("glUniform1f");
+	*cast<void**>(&fns.uniform2f           ) = platform::get_proc_address("glUniform2f");
+	*cast<void**>(&fns.uniform3f           ) = platform::get_proc_address("glUniform3f");
+	*cast<void**>(&fns.uniform4f           ) = platform::get_proc_address("glUniform4f");
+	*cast<void**>(&fns.uniform1i           ) = platform::get_proc_address("glUniform1i");
+	*cast<void**>(&fns.uniform2i           ) = platform::get_proc_address("glUniform2i");
+	*cast<void**>(&fns.uniform3i           ) = platform::get_proc_address("glUniform3i");
+	*cast<void**>(&fns.uniform4i           ) = platform::get_proc_address("glUniform4i");
+	*cast<void**>(&fns.use_program         ) = platform::get_proc_address("glUseProgram");
+	*cast<void**>(&fns.validate_program    ) = platform::get_proc_address("glValidateProgram");
+
 	return fns;
 }
 }

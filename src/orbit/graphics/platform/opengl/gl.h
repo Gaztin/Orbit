@@ -47,6 +47,7 @@ namespace gl
 using GLintptr = ptrdiff_t;
 using GLsizeiptr = size_t;
 using GLdouble = double;
+using GLchar = char;
 
 enum class buffer_target : GLenum
 {
@@ -141,7 +142,7 @@ enum class vertex_attrib_data_type : GLenum
 	Float         = 0x1406,
 };
 
-enum class symbolic_constant : GLenum
+enum class state_variable_type : GLenum
 {
 	AccumAlphaBits                   = 0x0d5b,
 	AccumBlueBits                    = 0x0d5a,
@@ -509,6 +510,163 @@ enum class symbolic_constant : GLenum
 	ZoomY                            = 0x0d17,
 };
 
+enum class shader_type : GLenum
+{
+	Compute        = 0x91b9,
+	Vertex         = 0x8b31,
+	TessControl    = 0x8e88,
+	TessEvaluation = 0x8e87,
+	Geometry       = 0x8dd9,
+	Fragment       = 0x8b30,
+};
+
+enum class attrib_data_type : GLenum
+{
+	Float           = 0x1406,
+	FloatVec2       = 0x8B50,
+	FloatVec3       = 0x8B51,
+	FloatVec4       = 0x8B52,
+	FloatMat2       = 0x8B5A,
+	FloatMat3       = 0x8B5B,
+	FloatMat4       = 0x8B5C,
+	FloatMat2x3     = 0x8B65,
+	FloatMat2x4     = 0x8B66,
+	FloatMat3x2     = 0x8B67,
+	FloatMat3x4     = 0x8B68,
+	FloatMat4x2     = 0x8B69,
+	FloatMat4x3     = 0x8B6A,
+	Int             = 0x1404,
+	IntVec2         = 0x8B53,
+	IntVec3         = 0x8B54,
+	IntVec4         = 0x8B55,
+	UnsignedInt     = 0x1405,
+	UnsignedIntVec2 = 0x8DC6,
+	UnsignedIntVec3 = 0x8DC7,
+	UnsignedIntVec4 = 0x8DC8,
+	Double          = 0x140A,
+	DoubleVec2      = 0x8FFC,
+	DoubleVec3      = 0x8FFD,
+	DoubleVec4      = 0x8FFE,
+	DoubleMat2      = 0x8F46,
+	DoubleMat3      = 0x8F47,
+	DoubleMat4      = 0x8F48,
+	DoubleMat2x3    = 0x8F49,
+	DoubleMat2x4    = 0x8F4A,
+	DoubleMat3x2    = 0x8F4B,
+	DoubleMat3x4    = 0x8F4C,
+	DoubleMat4x2    = 0x8F4D,
+	DoubleMat4x3    = 0x8F4E,
+};
+
+enum class uniform_data_type : GLenum
+{
+	Float                                = 0x1406,
+	FloatVec2                            = 0x8B50,
+	FloatVec3                            = 0x8B51,
+	FloatVec4                            = 0x8B52,
+	Double                               = 0x140A,
+	DoubleVec2                           = 0x8FFC,
+	DoubleVec3                           = 0x8FFD,
+	DoubleVec4                           = 0x8FFE,
+	Int                                  = 0x1404,
+	IntVec2                              = 0x8B53,
+	IntVec3                              = 0x8B54,
+	IntVec4                              = 0x8B55,
+	UnsignedInt                          = 0x1405,
+	UnsignedIntVec2                      = 0x8DC6,
+	UnsignedIntVec3                      = 0x8DC7,
+	UnsignedIntVec4                      = 0x8DC8,
+	Bool                                 = 0x8B56,
+	BoolVec2                             = 0x8B57,
+	BoolVec3                             = 0x8B58,
+	BoolVec4                             = 0x8B59,
+	FloatMat2                            = 0x8B5A,
+	FloatMat3                            = 0x8B5B,
+	FloatMat4                            = 0x8B5C,
+	FloatMat2x3                          = 0x8B65,
+	FloatMat2x4                          = 0x8B66,
+	FloatMat3x2                          = 0x8B67,
+	FloatMat3x4                          = 0x8B68,
+	FloatMat4x2                          = 0x8B69,
+	FloatMat4x3                          = 0x8B6A,
+	DoubleMat2                           = 0x8F46,
+	DoubleMat3                           = 0x8F47,
+	DoubleMat4                           = 0x8F48,
+	DoubleMat2x3                         = 0x8F49,
+	DoubleMat2x4                         = 0x8F4A,
+	DoubleMat3x2                         = 0x8F4B,
+	DoubleMat3x4                         = 0x8F4C,
+	DoubleMat4x2                         = 0x8F4D,
+	DoubleMat4x3                         = 0x8F4E,
+	Sampler1d                            = 0x8B5D,
+	Sampler2d                            = 0x8B5E,
+	Sampler3d                            = 0x8B5F,
+	SamplerCube                          = 0x8B60,
+	Sampler1dShadow                      = 0x8B61,
+	Sampler2dShadow                      = 0x8B62,
+	Sampler1dArray                       = 0x8DC0,
+	Sampler2dArray                       = 0x8DC1,
+	Sampler1dArrayShadow                 = 0x8DC3,
+	Sampler2dArrayShadow                 = 0x8DC4,
+	Sampler2dMultisample                 = 0x9108,
+	Sampler2dMultisampleArray            = 0x910B,
+	SamplerCubeShadow                    = 0x8DC5,
+	SamplerBuffer                        = 0x8DC2,
+	Sampler2dRect                        = 0x8B63,
+	Sampler2dRectShadow                  = 0x8B64,
+	IntSampler1d                         = 0x8DC9,
+	IntSampler2d                         = 0x8DCA,
+	IntSampler3d                         = 0x8DCB,
+	IntSamplerCube                       = 0x8DCC,
+	IntSampler1dArray                    = 0x8DCE,
+	IntSampler2dArray                    = 0x8DCF,
+	IntSampler2dMultisample              = 0x9109,
+	IntSampler2dMultisampleArray         = 0x910C,
+	IntSamplerBuffer                     = 0x8DD0,
+	IntSampler2dRect                     = 0x8DCD,
+	UnsignedIntSampler1d                 = 0x8DD1,
+	UnsignedIntSampler2d                 = 0x8DD2,
+	UnsignedIntSampler3d                 = 0x8DD3,
+	UnsignedIntSamplerCube               = 0x8DD4,
+	UnsignedIntSampler1dArray            = 0x8DD6,
+	UnsignedIntSampler2dArray            = 0x8DD7,
+	UnsignedIntSampler2dMultisample      = 0x910A,
+	UnsignedIntSampler2dMultisampleArray = 0x910D,
+	UnsignedIntSamplerBuffer             = 0x8DD8,
+	UnsignedIntSampler2dRect             = 0x8DD5,
+	Image1d                              = 0x904C,
+	Image2d                              = 0x904D,
+	Image3d                              = 0x904E,
+	Image2dRect                          = 0x904F,
+	ImageCube                            = 0x9050,
+	ImageBuffer                          = 0x9051,
+	Image1dArray                         = 0x9052,
+	Image2dArray                         = 0x9053,
+	Image2dMultisample                   = 0x9055,
+	Image2dMultisampleArray              = 0x9056,
+	IntImage1d                           = 0x9057,
+	IntImage2d                           = 0x9058,
+	IntImage3d                           = 0x9059,
+	IntImage2dRect                       = 0x905A,
+	IntImageCube                         = 0x905B,
+	IntImageBuffer                       = 0x905C,
+	IntImage1dArray                      = 0x905D,
+	IntImage2dArray                      = 0x905E,
+	IntImage2dMultisample                = 0x9060,
+	IntImage2dMultisampleArray           = 0x9061,
+	UnsignedIntImage1d                   = 0x9062,
+	UnsignedIntImage2d                   = 0x9063,
+	UnsignedIntImage3d                   = 0x9064,
+	UnsignedIntImage2dRect               = 0x9065,
+	UnsignedIntImageCube                 = 0x9066,
+	UnsignedIntImageBuffer               = 0x9067,
+	UnsignedIntImage1dArray              = 0x9068,
+	UnsignedIntImage2dArray              = 0x9069,
+	UnsignedIntImage2dMultisample        = 0x906B,
+	UnsignedIntImage2dMultisampleArray   = 0x906C,
+	UnsignedIntAtomicCounter             = 0x92DB,
+};
+
 #if defined(ORB_OS_WINDOWS)
 #define ORB_GL_CALL __stdcall
 #else
@@ -517,11 +675,12 @@ enum class symbolic_constant : GLenum
 
 struct functions
 {
-	static inline void get_booleanv(symbolic_constant pname, GLboolean* params) { return glGetBooleanv(static_cast<GLenum>(pname), params); }
-	static inline void get_doublev(symbolic_constant pname, GLdouble* params) { return glGetDoublev(static_cast<GLenum>(pname), params); }
-	static inline void get_floatv(symbolic_constant pname, GLfloat* params) { return glGetFloatv(static_cast<GLenum>(pname), params); }
-	static inline void get_integerv(symbolic_constant pname, GLint* params) { return glGetIntegerv(static_cast<GLenum>(pname), params); }
+	static inline void get_booleanv(state_variable_type pname, GLboolean* params) { return glGetBooleanv(static_cast<GLenum>(pname), params); }
+	static inline void get_doublev(state_variable_type pname, GLdouble* params) { return glGetDoublev(static_cast<GLenum>(pname), params); }
+	static inline void get_floatv(state_variable_type pname, GLfloat* params) { return glGetFloatv(static_cast<GLenum>(pname), params); }
+	static inline void get_integerv(state_variable_type pname, GLint* params) { return glGetIntegerv(static_cast<GLenum>(pname), params); }
 
+	/* Buffer objects */
 	void (ORB_GL_CALL *bind_buffer)(buffer_target target, GLuint buffer);
 	void (ORB_GL_CALL *buffer_data)(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage);
 	void (ORB_GL_CALL *buffer_sub_data)(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
@@ -543,6 +702,40 @@ struct functions
 	void (ORB_GL_CALL *vertex_attrib3f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2);
 	void (ORB_GL_CALL *vertex_attrib4f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
 	void (ORB_GL_CALL *vertex_attrib_pointer)(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
+
+	/* Shaders */
+	void (ORB_GL_CALL *attach_shader)(GLuint program, GLuint shader);
+	void (ORB_GL_CALL *bind_attrib_location)(GLuint program, GLuint index, const GLchar* name);
+	void (ORB_GL_CALL *compile_shader)(GLuint shader);
+	GLuint (ORB_GL_CALL *create_program)();
+	GLuint (ORB_GL_CALL *create_shader)(shader_type type);
+	void (ORB_GL_CALL *delete_program)(GLuint program);
+	void (ORB_GL_CALL *delete_shader)(GLuint shader);
+	void (ORB_GL_CALL *detach_shader)(GLuint program, GLuint shader);
+	void (ORB_GL_CALL *get_active_attrib)(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, attrib_data_type* type, GLchar* name);
+	void (ORB_GL_CALL *get_active_uniform)(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, uniform_data_type* type, GLchar* name);
+	void (ORB_GL_CALL *get_attached_shaders)(GLuint program, GLsizei maxCount, GLsizei* count, GLuint* shaders);
+	GLint (ORB_GL_CALL *get_attrib_location)(GLuint program, const GLchar* name);
+	void (ORB_GL_CALL *get_program_info_log)(GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
+	void (ORB_GL_CALL *get_shader_info_log)(GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
+	void (ORB_GL_CALL *get_shader_source)(GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* source);
+	void (ORB_GL_CALL *get_uniformfv)(GLuint program, GLint location, GLfloat* params);
+	void (ORB_GL_CALL *get_uniformiv)(GLuint program, GLint location, GLint* params);
+	GLint (ORB_GL_CALL *get_uniform_location)(GLuint program, const GLchar* name);
+	GLboolean (ORB_GL_CALL *is_program)(GLuint program);
+	GLboolean (ORB_GL_CALL *is_shader)(GLuint shader);
+	void (ORB_GL_CALL *link_program)(GLuint program);
+	void (ORB_GL_CALL *shader_source)(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length);
+	void (ORB_GL_CALL *uniform1f)(GLint location, GLfloat v0);
+	void (ORB_GL_CALL *uniform2f)(GLint location, GLfloat v0, GLfloat v1);
+	void (ORB_GL_CALL *uniform3f)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+	void (ORB_GL_CALL *uniform4f)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+	void (ORB_GL_CALL *uniform1i)(GLint location, GLint v0);
+	void (ORB_GL_CALL *uniform2i)(GLint location, GLint v0, GLint v1);
+	void (ORB_GL_CALL *uniform3i)(GLint location, GLint v0, GLint v1, GLint v2);
+	void (ORB_GL_CALL *uniform4i)(GLint location, GLint v0, GLint v1, GLint v2, GLint v3);
+	void (ORB_GL_CALL *use_program)(GLuint program);
+	void (ORB_GL_CALL *validate_program)(GLuint program);
 };
 
 namespace platform
