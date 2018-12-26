@@ -56,6 +56,8 @@ public:
 
 	shader_type get_type() const final override;
 
+	GLuint get_id() const { return m_id; }
+
 private:
 	GLuint m_id;
 };

@@ -62,6 +62,9 @@ public:
 
 	shader_type get_type() const final override { return shader_type::Vertex; }
 
+	const ID3DBlob& get_data() const { return *m_vertexData; }
+	const ID3D11VertexShader& get_vertex_shader() const { return *m_vertexShader; }
+
 private:
 	com_ptr<ID3DBlob> m_vertexData;
 	com_ptr<ID3D11VertexShader> m_vertexShader;

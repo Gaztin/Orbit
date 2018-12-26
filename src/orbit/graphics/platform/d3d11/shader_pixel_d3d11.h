@@ -62,6 +62,8 @@ public:
 
 	shader_type get_type() const final override { return shader_type::Fragment; }
 
+	const ID3D11PixelShader& get_pixel_shader() const { return *m_pixelShader; }
+
 private:
 	com_ptr<ID3D11PixelShader> m_pixelShader;
 };
