@@ -54,9 +54,23 @@ public:
 		}
 	}
 
+	shader_type get_type() const final override;
+
 private:
 	GLuint m_id;
 };
+
+template<>
+inline shader_type shader_gl<gl::shader_type::Vertex>::get_type() const
+{
+	return shader_type::Vertex;
+}
+
+template<>
+inline shader_type shader_gl<gl::shader_type::Fragment>::get_type() const
+{
+	return shader_type::Fragment;
+}
 
 }
 }

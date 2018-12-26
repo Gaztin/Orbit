@@ -27,6 +27,8 @@ class ORB_API_GRAPHICS shader_base
 {
 public:
 	virtual ~shader_base() {}
+
+	virtual shader_type get_type() const = 0;
 };
 
 }

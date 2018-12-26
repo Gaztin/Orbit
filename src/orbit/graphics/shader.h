@@ -30,6 +30,9 @@ class ORB_API_GRAPHICS shader
 public:
 	shader(shader_type t, const asset& ast);
 
+	shader_type get_type() const { return m_base->get_type(); }
+
+	const platform::shader_base& get_base() const { return *m_base; }
 
 private:
 	std::unique_ptr<platform::shader_base> m_base;

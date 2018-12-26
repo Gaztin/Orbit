@@ -60,6 +60,8 @@ public:
 		vertex_data->Release();
 	}
 
+	shader_type get_type() const final override { return shader_type::Vertex; }
+
 private:
 	com_ptr<ID3D11VertexShader> m_vertexShader;
 };

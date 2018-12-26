@@ -60,6 +60,8 @@ public:
 		pixel_data->Release();
 	}
 
+	shader_type get_type() const final override { return shader_type::Fragment; }
+
 private:
 	com_ptr<ID3D11PixelShader> m_pixelShader;
 };
