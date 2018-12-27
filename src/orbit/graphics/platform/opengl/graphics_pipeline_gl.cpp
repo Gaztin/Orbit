@@ -65,20 +65,46 @@ static GLsizei get_data_type_size(gl::vertex_attrib_data_type type)
 	}
 }
 
+graphics_pipeline_gl::graphics_pipeline_gl()
+{
+	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	m_programId = fns.create_program();
+}
+
+graphics_pipeline_gl::~graphics_pipeline_gl()
+{
+	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	fns.delete_program(m_programId);
+}
+
 void graphics_pipeline_gl::add_shader(const shader& shr)
 {
+	GLuint shader_id = 0;
 	switch (shr.get_type())
 	{
 		case shader_type::Vertex:
-			m_shaderIds.push_back(reinterpret_cast<const shader_gl<gl::shader_type::Vertex>&>(shr.get_base()).get_id());
+			shader_id = reinterpret_cast<const shader_gl<gl::shader_type::Vertex>&>(shr.get_base()).get_id();
 			break;
 
 		case shader_type::Fragment:
-			m_shaderIds.push_back(reinterpret_cast<const shader_gl<gl::shader_type::Fragment>&>(shr.get_base()).get_id());
+			shader_id = reinterpret_cast<const shader_gl<gl::shader_type::Fragment>&>(shr.get_base()).get_id();
 			break;
 
 		default:
-			break;
+			return;
+	}
+
+	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	fns.attach_shader(m_programId, shader_id);
+	fns.link_program(m_programId);
+
+	GLint loglen = 0;
+	fns.get_programiv(m_programId, gl::program_param::InfoLogLength, &loglen);
+	if (loglen > 0)
+	{
+		std::string logbuf(static_cast<size_t>(loglen), '\0');
+		fns.get_program_info_log(m_programId, loglen, nullptr, &logbuf[0]);
+		log_error(logbuf);
 	}
 }
 
@@ -95,6 +121,8 @@ void graphics_pipeline_gl::describe_vertex_layout(vertex_layout layout)
 void graphics_pipeline_gl::draw(size_t vertexCount)
 {
 	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	fns.use_program(m_programId);
+
 	const uint8_t* pointer = nullptr;
 	for (GLuint i = 0; i < m_layout.size(); ++i)
 	{
@@ -109,9 +137,9 @@ void graphics_pipeline_gl::draw(size_t vertexCount)
 	fns.draw_arrays(gl::draw_mode::Triangles, 0, static_cast<GLsizei>(vertexCount));
 
 	for (GLuint i = 0; i < m_layout.size(); ++i)
-	{
 		fns.disable_vertex_attrib_array(i);
-	}
+
+	fns.use_program(0);
 }
 
 }

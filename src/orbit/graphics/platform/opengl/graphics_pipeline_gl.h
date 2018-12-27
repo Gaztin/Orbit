@@ -29,7 +29,8 @@ namespace platform
 class ORB_API_GRAPHICS graphics_pipeline_gl : public graphics_pipeline_base
 {
 public:
-	graphics_pipeline_gl() = default;
+	graphics_pipeline_gl();
+	~graphics_pipeline_gl();
 
 	void add_shader(const shader& shr) final override;
 	void describe_vertex_layout(vertex_layout layout) final override;
@@ -38,8 +39,8 @@ public:
 
 private:
 	std::vector<vertex_component> m_layout;
-	std::vector<GLuint> m_shaderIds;
 	GLsizei m_stride;
+	GLuint m_programId;
 };
 
 }
