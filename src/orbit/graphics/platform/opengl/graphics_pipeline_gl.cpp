@@ -89,7 +89,7 @@ void graphics_pipeline_gl::describe_vertex_layout(vertex_layout layout)
 	/* Calculate stride */
 	m_stride = 0;
 	for (const vertex_component& cmp : m_layout)
-		m_stride += get_data_type_size(get_vertex_component_data_type(cmp.type));
+		m_stride += get_vertex_component_length(cmp.type) * get_data_type_size(get_vertex_component_data_type(cmp.type));
 }
 
 void graphics_pipeline_gl::draw(size_t vertexCount)
@@ -100,9 +100,10 @@ void graphics_pipeline_gl::draw(size_t vertexCount)
 	{
 		const vertex_component& cmp = m_layout[i];
 		const gl::vertex_attrib_data_type data_type = get_vertex_component_data_type(cmp.type);
+		const GLint length = get_vertex_component_length(cmp.type);
 		fns.enable_vertex_attrib_array(i);
-		fns.vertex_attrib_pointer(i, get_vertex_component_length(cmp.type), data_type, GL_FALSE, m_stride, pointer);
-		pointer += get_data_type_size(data_type);
+		fns.vertex_attrib_pointer(i, length, data_type, GL_FALSE, m_stride, pointer);
+		pointer += length * get_data_type_size(data_type);
 	}
 
 	fns.draw_arrays(gl::draw_mode::Triangles, 0, static_cast<GLsizei>(vertexCount));
