@@ -142,7 +142,7 @@ enum class vertex_attrib_data_type : GLenum
 	Float         = 0x1406,
 };
 
-enum class state_variable_type : GLenum
+enum class state_param : GLenum
 {
 	AccumAlphaBits                   = 0x0d5b,
 	AccumBlueBits                    = 0x0d5a,
@@ -667,6 +667,39 @@ enum class uniform_data_type : GLenum
 	UnsignedIntAtomicCounter             = 0x92DB,
 };
 
+enum class program_param : GLenum
+{
+	DeleteStatus                      = 0x8B80,
+	LinkStatus                        = 0x8B82,
+	ValidateStatus                    = 0x8B83,
+	InfoLogLength                     = 0x8B84,
+	AttachedShaders                   = 0x8B85,
+	ActiveAtomicCounterBuffers        = 0x92D9,
+	ActiveAttributes                  = 0x8B89,
+	ActiveAttributeMaxLength          = 0x8B8A,
+	ActiveUniforms                    = 0x8B86,
+	ActiveUniformBlocks               = 0x8A36,
+	ActiveUniformBlockMaxNameLength   = 0x8A35,
+	ActiveUniformMaxLength            = 0x8B87,
+	ComputeWorkGroupSize              = 0x8267,
+	ProgramBinaryLength               = 0x8741,
+	TransformFeedbackBufferMode       = 0x8C7F,
+	TransformFeedbackVaryings         = 0x8C83,
+	TransformFeedbackVaryingMaxLength = 0x8C76,
+	GeometryVerticesOut               = 0x8916,
+	GeometryInputType                 = 0x8917,
+	GeometryOutputType                = 0x8918,
+};
+
+enum class shader_param : GLenum
+{
+	ShaderType         = 0x8B4F,
+	DeleteStatus       = 0x8B80,
+	CompileStatus      = 0x8B81,
+	InfoLogLength      = 0x8B84,
+	ShaderSourceLength = 0x8B88,
+};
+
 #if defined(ORB_OS_WINDOWS)
 #define ORB_GL_CALL __stdcall
 #else
@@ -675,10 +708,10 @@ enum class uniform_data_type : GLenum
 
 struct functions
 {
-	static inline void get_booleanv(state_variable_type pname, GLboolean* params) { return glGetBooleanv(static_cast<GLenum>(pname), params); }
-	static inline void get_doublev(state_variable_type pname, GLdouble* params) { return glGetDoublev(static_cast<GLenum>(pname), params); }
-	static inline void get_floatv(state_variable_type pname, GLfloat* params) { return glGetFloatv(static_cast<GLenum>(pname), params); }
-	static inline void get_integerv(state_variable_type pname, GLint* params) { return glGetIntegerv(static_cast<GLenum>(pname), params); }
+	static inline void get_booleanv(state_param pname, GLboolean* params) { return glGetBooleanv(static_cast<GLenum>(pname), params); }
+	static inline void get_doublev(state_param pname, GLdouble* params) { return glGetDoublev(static_cast<GLenum>(pname), params); }
+	static inline void get_floatv(state_param pname, GLfloat* params) { return glGetFloatv(static_cast<GLenum>(pname), params); }
+	static inline void get_integerv(state_param pname, GLint* params) { return glGetIntegerv(static_cast<GLenum>(pname), params); }
 
 	/* Buffer objects */
 	void (ORB_GL_CALL *bind_buffer)(buffer_target target, GLuint buffer);
@@ -717,8 +750,10 @@ struct functions
 	void (ORB_GL_CALL *get_attached_shaders)(GLuint program, GLsizei maxCount, GLsizei* count, GLuint* shaders);
 	GLint (ORB_GL_CALL *get_attrib_location)(GLuint program, const GLchar* name);
 	void (ORB_GL_CALL *get_program_info_log)(GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
+	void (ORB_GL_CALL *get_programiv)(GLuint program, program_param pname, GLint* params);
 	void (ORB_GL_CALL *get_shader_info_log)(GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
 	void (ORB_GL_CALL *get_shader_source)(GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* source);
+	void (ORB_GL_CALL *get_shaderiv)(GLuint shader, shader_param pname, GLint* params);
 	void (ORB_GL_CALL *get_uniformfv)(GLuint program, GLint location, GLfloat* params);
 	void (ORB_GL_CALL *get_uniformiv)(GLuint program, GLint location, GLint* params);
 	GLint (ORB_GL_CALL *get_uniform_location)(GLuint program, const GLchar* name);

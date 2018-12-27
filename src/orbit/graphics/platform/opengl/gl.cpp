@@ -92,8 +92,10 @@ functions load_functions()
 	*cast<void**>(&fns.get_attached_shaders) = platform::get_proc_address("glGetAttachedShaders");
 	*cast<void**>(&fns.get_attrib_location ) = platform::get_proc_address("glGetAttribLocation");
 	*cast<void**>(&fns.get_program_info_log) = platform::get_proc_address("glGetProgramInfoLog");
+	*cast<void**>(&fns.get_programiv       ) = platform::get_proc_address("glGetProgramiv");
 	*cast<void**>(&fns.get_shader_info_log ) = platform::get_proc_address("glGetShaderInfoLog");
 	*cast<void**>(&fns.get_shader_source   ) = platform::get_proc_address("glGetShaderSource");
+	*cast<void**>(&fns.get_shaderiv        ) = platform::get_proc_address("glGetShaderiv");
 	*cast<void**>(&fns.get_uniformfv       ) = platform::get_proc_address("glGetUniformfv");
 	*cast<void**>(&fns.get_uniformiv       ) = platform::get_proc_address("glGetUniformiv");
 	*cast<void**>(&fns.get_uniform_location) = platform::get_proc_address("glGetUniformLocation");
