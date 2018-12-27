@@ -35,15 +35,21 @@ private:
 
 struct vertex
 {
-	float x, y;
+	float x, y, z, w;
 	float r, g, b, a;
+};
+
+const orb::vertex_layout vertexLayout =
+{
+	{"POSITION", orb::vertex_component::Vec4},
+	{"COLOR", orb::vertex_component::Vec4},
 };
 
 const std::initializer_list<vertex> triangleVertices =
 {
-	{ -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f },
-	{  0.0f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
-	{  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f },
+	{ -0.5f, -0.5f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f, 1.0f },
+	{  0.0f,  0.5f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f, 1.0f },
+	{  0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
 };
 
 sample_app::sample_app()
@@ -58,12 +64,6 @@ sample_app::sample_app()
 	m_window.set_title("Orbit sample #01");
 	m_window.show();
 	m_renderContext.set_clear_color(1.0f, 0.0f, 1.0f);
-
-	const orb::vertex_layout vertexLayout =
-	{
-		{"POSITION", orb::vertex_component::Vec2},
-		{"COLOR", orb::vertex_component::Vec4},
-	};
 
 	m_mainPipeline.add_shader(m_vertexShader);
 	m_mainPipeline.add_shader(m_fragmentShader);
