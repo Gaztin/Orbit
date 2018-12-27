@@ -17,6 +17,7 @@
 
 #pragma once
 #include "orbit/core/log.h"
+#include "orbit/core/utility.h"
 #include "orbit/graphics/platform/opengl/gl.h"
 #include "orbit/graphics/platform/opengl/render_context_gl.h"
 #include "orbit/graphics/platform/shader_base.h"
@@ -39,17 +40,17 @@ public:
 		const auto& data = ast.get_data();
 		m_id = fns.create_shader(ShaderType);
 
-		const GLchar* sources[] = { "#define ORB_GLSL 1\n", cast<const GLchar*>(data.data()) };
-		const GLint lengths[] = { 19, static_cast<GLint>(data.size()) };
-		fns.shader_source(m_id, 2, sources, lengths);
+		const GLchar* sources[] = { "#version 410\n", "#define ORB_GLSL 1\n", cast<const GLchar*>(data.data()) };
+		const GLint lengths[] = { 13, 19, static_cast<GLint>(data.size()) };
+		fns.shader_source(m_id, count_of(sources), sources, lengths);
 		fns.compile_shader(m_id);
 
-		GLsizei loglen = 0;
-		fns.get_shader_info_log(m_id, 0, &loglen, nullptr);
+		GLint loglen = 0;
+		fns.get_shaderiv(m_id, gl::shader_param::InfoLogLength, &loglen);
 		if (loglen > 0)
 		{
 			std::string logbuf(static_cast<size_t>(loglen), '\0');
-			fns.get_shader_info_log(m_id, loglen, &loglen, &logbuf[0]);
+			fns.get_shader_info_log(m_id, loglen, nullptr, &logbuf[0]);
 			log_error(logbuf);
 		}
 	}
