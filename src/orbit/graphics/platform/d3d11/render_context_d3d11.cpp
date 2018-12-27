@@ -111,6 +111,7 @@ static IDXGISwapChain* create_swap_chain(HWND hwnd)
 	desc.BufferCount = 1;
 	desc.OutputWindow = hwnd;
 	desc.Windowed = true;
+	desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
 	D3D11CreateDeviceAndSwapChain(
 		nullptr,
