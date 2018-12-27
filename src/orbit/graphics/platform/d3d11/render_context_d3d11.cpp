@@ -266,6 +266,22 @@ void render_context_d3d11::resize(uint32_t width, uint32_t height)
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.get(), 0);
 	m_deviceContext->RSSetState(m_rasterizerState.get());
 	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	D3D11_VIEWPORT viewport{};
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = static_cast<FLOAT>(width);
+	viewport.Height = static_cast<FLOAT>(height);
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	m_deviceContext->RSSetViewports(1, &viewport);
+
+	RECT scissor{};
+	scissor.left = 0;
+	scissor.right = width;
+	scissor.top = 0;
+	scissor.bottom = height;
+	m_deviceContext->RSSetScissorRects(1, &scissor);
 }
 
 void render_context_d3d11::swap_buffers()
