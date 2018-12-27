@@ -247,6 +247,10 @@ void render_context_d3d11::resize(uint32_t width, uint32_t height)
 	m_deviceContext->ClearState();
 	m_deviceContext->Flush();
 
+	m_renderTargetView.reset();
+	m_depthStencilBuffer.reset();
+	m_depthStencilView.reset();
+
 	DXGI_SWAP_CHAIN_DESC desc;
 	m_swapChain->GetDesc(&desc);
 	desc.BufferDesc.Width = width;
@@ -257,10 +261,11 @@ void render_context_d3d11::resize(uint32_t width, uint32_t height)
 	m_depthStencilBuffer.reset(create_depth_stencil_buffer(*m_device, width, height));
 	m_depthStencilView.reset(create_depth_stencil_view(*m_device, *m_deviceContext, *m_depthStencilBuffer, *m_renderTargetView));
 
-	ID3D11RenderTargetView* renderTargetViews = m_renderTargetView.get();
-	m_deviceContext->OMSetRenderTargets(1, &renderTargetViews, m_depthStencilView.get());
+	ID3D11RenderTargetView* renderTargetViews[] = { m_renderTargetView.get() };
+	m_deviceContext->OMSetRenderTargets(1, renderTargetViews, m_depthStencilView.get());
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.get(), 0);
 	m_deviceContext->RSSetState(m_rasterizerState.get());
+	m_deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void render_context_d3d11::swap_buffers()
