@@ -47,15 +47,19 @@ const orb::vertex_layout vertexLayout =
 
 const std::initializer_list<vertex> triangleVertices =
 {
-	{ -0.5f, -0.5f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f, 1.0f },
-	{  0.0f,  0.5f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f, 1.0f },
-	{  0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
+	{ -0.5f,  0.5f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f, 1.0f },
+	{  0.5f,  0.5f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f, 1.0f },
+	{ -0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
+
+	{  0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 0.0f, 1.0f },
+	{ -0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
+	{  0.5f,  0.5f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f, 1.0f },
 };
 
 sample_app::sample_app()
 	: m_window(800, 600)
 	, m_windowSubscription(m_window.subscribe(&sample_app::on_window_event))
-	, m_renderContext(m_window, orb::graphics_api::D3D11)
+	, m_renderContext(m_window, orb::graphics_api::DeviceDefault)
 	, m_vertexShader(orb::shader_type::Vertex, orb::asset("shader.vs"))
 	, m_fragmentShader(orb::shader_type::Fragment, orb::asset("shader.fs"))
 	, m_triangleVertexBuffer(triangleVertices)
@@ -89,7 +93,7 @@ void sample_app::frame()
 	m_renderContext.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
 
 	m_triangleVertexBuffer.bind();
-	m_mainPipeline.draw(3);
+	m_mainPipeline.draw(triangleVertices.size());
 
 	m_renderContext.swap_buffers();
 }
