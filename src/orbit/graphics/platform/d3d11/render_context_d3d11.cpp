@@ -222,6 +222,7 @@ static ID3D11RasterizerState* create_rasterization_state(ID3D11Device& device, I
 	desc.CullMode = D3D11_CULL_BACK;
 	desc.DepthClipEnable = true;
 	desc.FillMode = D3D11_FILL_SOLID;
+	desc.FrontCounterClockwise = false;
 	device.CreateRasterizerState(&desc, &rasterizationState);
 	deviceContext.RSSetState(rasterizationState);
 	return rasterizationState;
