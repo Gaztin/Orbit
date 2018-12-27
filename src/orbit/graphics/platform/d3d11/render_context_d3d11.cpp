@@ -155,15 +155,12 @@ static ID3D11RenderTargetView* create_render_target_view(IDXGISwapChain& swapCha
 	return renderTargetView;
 }
 
-static ID3D11Texture2D* create_depth_stencil_buffer(HWND hwnd, ID3D11Device& device)
+static ID3D11Texture2D* create_depth_stencil_buffer(ID3D11Device& device, UINT width, UINT height)
 {
 	ID3D11Texture2D* depthStencilBuffer;
-	RECT windowRect;
-	GetWindowRect(hwnd, &windowRect);
-
 	D3D11_TEXTURE2D_DESC desc{};
-	desc.Width = (windowRect.right - windowRect.left);
-	desc.Height = (windowRect.bottom - windowRect.top);
+	desc.Width = width;
+	desc.Height = height;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.Format = DepthBufferFormat;
@@ -171,6 +168,15 @@ static ID3D11Texture2D* create_depth_stencil_buffer(HWND hwnd, ID3D11Device& dev
 	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	device.CreateTexture2D(&desc, nullptr, &depthStencilBuffer);
 	return depthStencilBuffer;
+}
+
+static ID3D11Texture2D* create_depth_stencil_buffer(ID3D11Device& device, HWND hwnd)
+{
+	RECT rect;
+	if (GetWindowRect(hwnd, &rect))
+		return create_depth_stencil_buffer(device, (rect.right - rect.left), (rect.bottom - rect.top));
+	else
+		return nullptr;
 }
 
 static ID3D11DepthStencilState* create_depth_stencil_state(ID3D11Device& device, ID3D11DeviceContext& deviceContext)
@@ -222,12 +228,11 @@ static ID3D11RasterizerState* create_rasterization_state(ID3D11Device& device, I
 }
 
 render_context_d3d11::render_context_d3d11(const window_handle& wh)
-	: m_parentHwnd(wh.hwnd)
-	, m_swapChain(create_swap_chain(m_parentHwnd))
+	: m_swapChain(create_swap_chain(wh.hwnd))
 	, m_device(create_device(*m_swapChain))
 	, m_deviceContext(create_device_context(*m_device))
 	, m_renderTargetView(create_render_target_view(*m_swapChain, *m_device))
-	, m_depthStencilBuffer(create_depth_stencil_buffer(m_parentHwnd, *m_device))
+	, m_depthStencilBuffer(create_depth_stencil_buffer(*m_device, wh.hwnd))
 	, m_depthStencilState(create_depth_stencil_state(*m_device, *m_deviceContext))
 	, m_depthStencilView(create_depth_stencil_view(*m_device, *m_deviceContext, *m_depthStencilBuffer, *m_renderTargetView))
 	, m_rasterizerState(create_rasterization_state(*m_device, *m_deviceContext))
@@ -248,7 +253,7 @@ void render_context_d3d11::resize(uint32_t width, uint32_t height)
 	m_swapChain->ResizeBuffers(1, desc.BufferDesc.Width, desc.BufferDesc.Height, desc.BufferDesc.Format, desc.Flags);
 	
 	m_renderTargetView.reset(create_render_target_view(*m_swapChain, *m_device));
-	m_depthStencilBuffer.reset(create_depth_stencil_buffer(m_parentHwnd, *m_device));
+	m_depthStencilBuffer.reset(create_depth_stencil_buffer(*m_device, width, height));
 	m_depthStencilView.reset(create_depth_stencil_view(*m_device, *m_deviceContext, *m_depthStencilBuffer, *m_renderTargetView));
 
 	ID3D11RenderTargetView* renderTargetViews = m_renderTargetView.get();

@@ -46,8 +46,6 @@ public:
 
 private:
 #if defined(ORB_OS_WINDOWS)
-	HWND m_parentHwnd;
-
 	com_ptr<IDXGISwapChain> m_swapChain;
 	com_ptr<ID3D11Device> m_device;
 	com_ptr<ID3D11DeviceContext> m_deviceContext;
