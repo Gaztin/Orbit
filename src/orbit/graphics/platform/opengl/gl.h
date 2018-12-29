@@ -38,9 +38,10 @@
 #include <OpenGLES/ES1/gl.h>
 #endif
 
-#ifdef Bool
+#if defined(Bool)
 #pragma push_macro("Bool")
 #undef Bool
+#define UNDEFINED_Bool 1
 #endif
 
 namespace orb
@@ -787,6 +788,8 @@ extern ORB_API_GRAPHICS functions load_functions();
 }
 }
 
+#if defined(UNDEFINED_Bool)
 #pragma pop_macro("Bool")
+#endif
 
 #endif
