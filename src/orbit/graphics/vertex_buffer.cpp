@@ -31,7 +31,7 @@ static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t
 	switch (render_context::get_current()->get_api())
 	{
 		case graphics_api::OpenGL: return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count, size);
-		case graphics_api::D3D11: return std::make_unique<platform::buffer_d3d11<D3D11_BIND_VERTEX_BUFFER>>(data, count, size);
+		case graphics_api::D3D11: return std::make_unique<platform::buffer_d3d11<d3d11::bind_flag::VertexBuffer>>(data, count, size);
 		default: return nullptr;
 	}
 }

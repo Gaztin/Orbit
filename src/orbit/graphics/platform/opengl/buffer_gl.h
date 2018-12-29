@@ -27,7 +27,7 @@ namespace orb
 namespace platform
 {
 
-template<orb::gl::buffer_target BufferTarget>
+template<gl::buffer_target BufferTarget>
 class buffer_gl : public buffer_base
 {
 public:

@@ -39,13 +39,14 @@
 #include <OpenGLES/ES1/gl.h>
 #endif
 
+namespace orb
+{
+
 using GLintptr = ptrdiff_t;
 using GLsizeiptr = size_t;
 using GLdouble = double;
 using GLchar = char;
 
-namespace orb
-{
 namespace gl
 {
 
@@ -709,7 +710,6 @@ enum class shader_param : GLenum
 struct functions
 {
 	static inline void get_booleanv(state_param pname, GLboolean* params) { return glGetBooleanv(static_cast<GLenum>(pname), params); }
-	static inline void get_doublev(state_param pname, GLdouble* params) { return glGetDoublev(static_cast<GLenum>(pname), params); }
 	static inline void get_floatv(state_param pname, GLfloat* params) { return glGetFloatv(static_cast<GLenum>(pname), params); }
 	static inline void get_integerv(state_param pname, GLint* params) { return glGetIntegerv(static_cast<GLenum>(pname), params); }
 

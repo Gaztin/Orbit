@@ -88,12 +88,12 @@ render_context_gl::~render_context_gl()
 	eglTerminate(m_eglDisplay);
 }
 
-void render_context_gl::make_current()
+bool render_context_gl::make_current()
 {
 	return (eglMakeCurrent(m_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext) != 0);
 }
 
-void render_context_gl::make_current(std::nullptr_t)
+bool render_context_gl::make_current(std::nullptr_t)
 {
 	return (eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) != 0);
 }
@@ -123,11 +123,6 @@ void render_context_gl::clear_buffers(buffer_mask mask)
 	glClear(
 		(!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0 |
 		(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
-}
-
-void render_context_gl::draw(size_t vertexCount)
-{
-	m_functions.draw_arrays(gl::draw_mode::Triangles, 0, cast<GLsizei>(vertexCount));
 }
 
 }

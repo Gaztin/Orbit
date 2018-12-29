@@ -22,3 +22,25 @@
 #include <d3d11.h>
 #include <dxgi.h>
 #endif
+
+namespace orb
+{
+namespace d3d11
+{
+
+enum class bind_flag
+{
+	VertexBuffer    = 0x001,
+	IndexBuffer     = 0x002,
+	ConstantBuffer  = 0x004,
+	ShaderResource  = 0x008,
+	StreamOutput    = 0x010,
+	RenderTarget    = 0x020,
+	DepthStencil    = 0x040,
+	UnorderedAccess = 0x080,
+	Decoder         = 0x200,
+	VideoEncoder    = 0x400,
+};
+
+}
+}
