@@ -27,6 +27,8 @@
 #include <dlfcn.h>
 #elif defined(ORB_OS_ANDROID)
 #include <EGL/egl.h>
+#elif defined(ORB_OS_IOS)
+#include <dlfcn.h>
 #endif
 
 namespace orb
@@ -47,6 +49,8 @@ void* get_proc_address(std::string_view name)
 	return dlsym(lib, name.data());
 #elif defined(ORB_OS_ANDROID)
 	return cast<void*>(eglGetProcAddress(name.data()));
+#elif defined(ORB_OS_IOS)
+	return dlsym(RTLD_DEFAULT, name.data());
 #endif
 }
 }
