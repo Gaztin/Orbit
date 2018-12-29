@@ -109,6 +109,8 @@ void set_window_visibility(const window_handle& wh, bool visible)
 
 - (void)windowDidMove:(NSNotification*)notification
 {
+	(void)notification;
+
 	const orb::platform::window_handle& wh = _windowPtr->get_handle();
 	const CGPoint point = ((const NSWindow*)wh.nsWindow).frame.origin;
 
@@ -121,6 +123,8 @@ void set_window_visibility(const window_handle& wh, bool visible)
 
 - (NSSize)windowWillResize:(NSWindow*)sender toSize:(NSSize)frameSize
 {
+	(void)sender;
+
 	orb::window_event e{};
 	e.type = orb::window_event::Resize;
 	e.data.resize.w = static_cast<uint32_t>(frameSize.width);
@@ -132,6 +136,8 @@ void set_window_visibility(const window_handle& wh, bool visible)
 
 - (void)windowDidMiniaturize:(NSNotification*)notification
 {
+	(void)notification;
+
 	orb::window_event e{};
 	e.type = orb::window_event::Suspend;
 	_windowPtr->queue_event(e);
@@ -139,6 +145,8 @@ void set_window_visibility(const window_handle& wh, bool visible)
 
 - (void)windowDidDeminiaturize:(NSNotification*)notification
 {
+	(void)notification;
+
 	orb::window_event e{};
 	e.type = orb::window_event::Restore;
 	_windowPtr->queue_event(e);
@@ -146,6 +154,8 @@ void set_window_visibility(const window_handle& wh, bool visible)
 
 - (void)windowDidBecomeMain:(NSNotification*)notification
 {
+	(void)notification;
+	
 	orb::window_event e{};
 	e.type = orb::window_event::Focus;
 	_windowPtr->queue_event(e);
@@ -153,6 +163,8 @@ void set_window_visibility(const window_handle& wh, bool visible)
 
 - (void)windowDidResignMain:(NSNotification*)notification
 {
+	(void)notification;
+
 	orb::window_event e{};
 	e.type = orb::window_event::Defocus;
 	_windowPtr->queue_event(e);

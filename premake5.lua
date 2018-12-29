@@ -164,6 +164,7 @@ decl_module("Graphics")
     links{"X11", "GL"}
   filter{"system:macosx"}
     links{"Cocoa.framework", "OpenGL.framework"}
+    defines{"GL_SILENCE_DEPRECATION"}
   filter{"system:ios"}
     links{"UIKit.framework", "GLKit.framework", "OpenGLES.framework"}
     defines{"GLES_SILENCE_DEPRECATION"}
