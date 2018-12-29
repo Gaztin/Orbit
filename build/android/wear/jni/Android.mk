@@ -17,8 +17,8 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE           := orbit_graphics
 LOCAL_SRC_FILES        := $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/*.cpp) \
-                          $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/platform/opengl/*_android.cpp) \
-                          $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/api/opengl/*.cpp)
+                          $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/platform/opengl/*gl.cpp) \
+                          $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/platform/opengl/*_android.cpp)
 LOCAL_CPPFLAGS         := -std=c++1z -fexceptions -Wall -DORB_BUILD
 LOCAL_LDLIBS           := -landroid -lEGL -lGLESv1_CM
 LOCAL_C_INCLUDES       := $(LOCAL_PATH)/../../../../src/ \
