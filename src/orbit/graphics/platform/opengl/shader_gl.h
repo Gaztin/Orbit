@@ -16,6 +16,7 @@
 */
 
 #pragma once
+#include "orbit/core/asset.h"
 #include "orbit/core/log.h"
 #include "orbit/core/utility.h"
 #include "orbit/graphics/platform/opengl/gl.h"
@@ -25,8 +26,6 @@
 
 namespace orb
 {
-class asset;
-
 namespace platform
 {
 

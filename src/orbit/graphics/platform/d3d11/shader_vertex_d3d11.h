@@ -24,7 +24,9 @@
 #include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
 #include "orbit/graphics/render_context.h"
 
+#if defined(ORB_OS_WINDOWS)
 #include <d3dcompiler.h>
+#endif
 
 namespace orb
 {
@@ -36,6 +38,7 @@ class ORB_API_GRAPHICS shader_vertex_d3d11 : public shader_base
 public:
 	shader_vertex_d3d11(const asset& ast)
 	{
+#if defined(ORB_OS_WINDOWS)
 		const auto& data = ast.get_data();
 		const D3D_SHADER_MACRO macros[] = { { "ORB_HLSL", "1" }, { NULL, NULL } };
 		UINT flags = D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS;
@@ -58,16 +61,21 @@ public:
 		device.CreateVertexShader(vertexData->GetBufferPointer(), vertexData->GetBufferSize(), nullptr, &vertexShader);
 		m_vertexData.reset(vertexData);
 		m_vertexShader.reset(vertexShader);
+#endif
 	}
 
 	shader_type get_type() const final override { return shader_type::Vertex; }
 
+#if defined(ORB_OS_WINDOWS)
 	const ID3DBlob& get_data() const { return *m_vertexData; }
 	const ID3D11VertexShader& get_vertex_shader() const { return *m_vertexShader; }
+#endif
 
 private:
+#if defined(ORB_OS_WINDOWS)
 	com_ptr<ID3DBlob> m_vertexData;
 	com_ptr<ID3D11VertexShader> m_vertexShader;
+#endif
 };
 
 }

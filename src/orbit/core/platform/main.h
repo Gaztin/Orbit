@@ -18,6 +18,7 @@
 #pragma once
 #include <memory>
 
+#include "orbit/core/android_app.h"
 #include "orbit/core.h"
 
 namespace orb

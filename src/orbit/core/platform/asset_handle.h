@@ -22,6 +22,8 @@
 
 #if defined(ORB_OS_WINDOWS)
 #include <windows.h>
+#elif defined(ORB_OS_ANDROID)
+#include <android/asset_manager.h>
 #endif
 
 namespace orb

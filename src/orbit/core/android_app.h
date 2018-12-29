@@ -16,16 +16,22 @@
 */
 
 #pragma once
-#include <android_native_app_glue.h>
-
 #include "orbit/core.h"
+
+#if defined(ORB_OS_ANDROID)
+#include <android_native_app_glue.h>
+#endif
 
 namespace orb
 {
+
+#if defined(ORB_OS_ANDROID)
 namespace android_only
 {
 
 extern ORB_API_CORE android_app* app;
 
 }
+#endif
+
 }

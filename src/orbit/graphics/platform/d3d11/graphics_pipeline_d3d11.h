@@ -36,10 +36,12 @@ public:
 	void draw(size_t vertexCount) final override;
 
 private:
+#if defined(ORB_OS_WINDOWS)
 	ID3DBlob* m_vertexData;
 	ID3D11PixelShader* m_pixelShader;
 	ID3D11VertexShader* m_vertexShader;
 	com_ptr<ID3D11InputLayout> m_inputLayout;
+#endif
 };
 
 }

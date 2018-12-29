@@ -17,6 +17,8 @@
 
 #include "render_context_gl.h"
 
+#include "orbit/core/android_app.h"
+
 namespace orb
 {
 namespace platform

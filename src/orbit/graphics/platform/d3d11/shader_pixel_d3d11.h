@@ -24,7 +24,9 @@
 #include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
 #include "orbit/graphics/render_context.h"
 
+#if defined(ORB_OS_WINDOWS)
 #include <d3dcompiler.h>
+#endif
 
 namespace orb
 {
@@ -36,6 +38,7 @@ class ORB_API_GRAPHICS shader_pixel_d3d11 : public shader_base
 public:
 	shader_pixel_d3d11(const asset& ast)
 	{
+#if defined(ORB_OS_WINDOWS)
 		const auto& data = ast.get_data();
 		const D3D_SHADER_MACRO macros[] = { { "ORB_HLSL", "1" }, { NULL, NULL } };
 		UINT flags = D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS;
@@ -58,14 +61,19 @@ public:
 		device.CreatePixelShader(pixelData->GetBufferPointer(), pixelData->GetBufferSize(), nullptr, &pixelShader);
 		m_pixelShader.reset(pixelShader);
 		pixelData->Release();
+#endif
 	}
 
 	shader_type get_type() const final override { return shader_type::Fragment; }
 
+#if defined(ORB_OS_WINDOWS)
 	const ID3D11PixelShader& get_pixel_shader() const { return *m_pixelShader; }
+#endif
 
 private:
+#if defined(ORB_OS_WINDOWS)
 	com_ptr<ID3D11PixelShader> m_pixelShader;
+#endif
 };
 
 }
