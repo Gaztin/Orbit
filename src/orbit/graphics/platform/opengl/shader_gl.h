@@ -16,6 +16,8 @@
 */
 
 #pragma once
+#include <string_view>
+
 #include "orbit/core/asset.h"
 #include "orbit/core/log.h"
 #include "orbit/core/utility.h"
@@ -39,8 +41,13 @@ public:
 		const auto& data = ast.get_data();
 		m_id = fns.create_shader(ShaderType);
 
-		const GLchar* sources[] = { "#version 410\n", "#define ORB_GLSL 1\n", cast<const GLchar*>(data.data()) };
-		const GLint lengths[] = { 13, 19, static_cast<GLint>(data.size()) };
+#if defined(ORB_OS_ANDROID) || defined(ORB_OS_IOS)
+		constexpr std::string_view headerString = "#version 100\n#define ORB_GLSL 1\nprecision highp float;\n";
+#else
+		constexpr std::string_view headerString = "#version 110\n#define ORB_GLSL 1\n";
+#endif
+		const GLchar* sources[] = { headerString.data(), cast<const GLchar*>(data.data()) };
+		const GLint lengths[] = { static_cast<GLint>(headerString.size()), static_cast<GLint>(data.size()) };
 		fns.shader_source(m_id, count_of(sources), sources, lengths);
 		fns.compile_shader(m_id);
 
