@@ -17,6 +17,7 @@
 
 #pragma once
 #include <cstdlib>
+#include <memory>
 #include <type_traits>
 
 #include "orbit/graphics/platform/buffer_base.h"

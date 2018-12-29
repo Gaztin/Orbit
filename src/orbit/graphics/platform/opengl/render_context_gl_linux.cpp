@@ -60,12 +60,12 @@ render_context_gl::~render_context_gl()
 	XFreeGC(m_wndPtr->display, m_gc);
 }
 
-void render_context_gl::make_current()
+bool render_context_gl::make_current()
 {
 	return glXMakeCurrent(m_wndPtr->display, m_wndPtr->window, m_glxContext);
 }
 
-void render_context_gl::make_current(std::nullptr_t)
+bool render_context_gl::make_current(std::nullptr_t)
 {
 	return glXMakeCurrent(m_wndPtr->display, None, nullptr);
 }
@@ -90,11 +90,6 @@ void render_context_gl::clear_buffers(buffer_mask mask)
 	glClear(
 		(!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0 |
 		(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
-}
-
-void render_context_gl::draw(size_t vertexCount)
-{
-	m_functions.draw_arrays(gl::draw_mode::Triangles, 0, cast<GLsizei>(vertexCount));
 }
 
 }

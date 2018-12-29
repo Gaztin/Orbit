@@ -52,6 +52,11 @@ public:
 		ID3D11Buffer* buffer;
 		device.CreateBuffer(&desc, &initialData, &buffer);
 		m_buffer.reset(buffer);
+#else
+		/* Unused parameters */
+		(void)data;
+		(void)count;
+		(void)size;
 #endif
 	}
 

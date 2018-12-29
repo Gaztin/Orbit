@@ -27,7 +27,6 @@
 #include <windows.h>
 #include <gl/GL.h>
 #elif defined(ORB_OS_LINUX)
-//#include <X11/Xlib.h>
 #include <GL/glx.h>
 #include <GL/gl.h>
 #elif defined(ORB_OS_MACOS)
@@ -37,6 +36,11 @@
 #include <GLES/gl.h>
 #elif defined(ORB_OS_IOS)
 #include <OpenGLES/ES1/gl.h>
+#endif
+
+#ifdef Bool
+#pragma push_macro("Bool")
+#undef Bool
 #endif
 
 namespace orb
@@ -782,5 +786,7 @@ extern ORB_API_GRAPHICS functions load_functions();
 
 }
 }
+
+#pragma pop_macro("Bool")
 
 #endif

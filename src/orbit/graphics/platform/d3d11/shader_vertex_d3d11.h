@@ -61,6 +61,9 @@ public:
 		device.CreateVertexShader(vertexData->GetBufferPointer(), vertexData->GetBufferSize(), nullptr, &vertexShader);
 		m_vertexData.reset(vertexData);
 		m_vertexShader.reset(vertexShader);
+#else
+		/* Unused parameters */
+		(void)ast;
 #endif
 	}
 

@@ -61,6 +61,9 @@ public:
 		device.CreatePixelShader(pixelData->GetBufferPointer(), pixelData->GetBufferSize(), nullptr, &pixelShader);
 		m_pixelShader.reset(pixelShader);
 		pixelData->Release();
+#else
+		/* Unused parameters */
+		(void)ast;
 #endif
 	}
 
