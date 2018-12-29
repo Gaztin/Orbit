@@ -30,8 +30,8 @@ namespace platform
 {
 
 render_context_gl::render_context_gl(const window_handle& wh)
-	m_eaglContext([EAGLContext alloc])
-	m_glkView([GLKView alloc])
+	: m_eaglContext([EAGLContext alloc])
+	, m_glkView([GLKView alloc])
 {
 	ORBGLKViewDelegate* delegate = [ORBGLKViewDelegate alloc];
 	[delegate init];
@@ -87,10 +87,16 @@ void render_context_gl::clear_buffers(buffer_mask mask)
 		(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
 }
 
-void render_context_gl::draw(size_t vertexCount)
-{
-	m_functions.draw_arrays(gl::draw_mode::Triangles, 0, cast<GLsizei>(vertexCount));
+}
 }
 
+@implementation ORBGLKViewDelegate
+
+- (void)glkView:(nonnull GLKView*)view drawInRect:(CGRect)rect
+{
+	/* Unused parameters */
+	(void)view;
+	(void)rect;
 }
-}
+
+@end
