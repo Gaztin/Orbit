@@ -20,7 +20,7 @@ LOCAL_SRC_FILES        := $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphic
                           $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/platform/opengl/*gl.cpp) \
                           $(wildcard $(LOCAL_PATH)/../../../../src/orbit/graphics/platform/opengl/*_android.cpp)
 LOCAL_CPPFLAGS         := -std=c++1z -fexceptions -Wall -DORB_BUILD
-LOCAL_LDLIBS           := -landroid -lEGL -lGLESv1_CM
+LOCAL_LDLIBS           := -landroid -lEGL -lGLESv1_CM -lGLESv2
 LOCAL_C_INCLUDES       := $(LOCAL_PATH)/../../../../src/ \
                           $(NDK_ROOT)/sources/android/native_app_glue/
 LOCAL_SHARED_LIBRARIES := orbit_core
