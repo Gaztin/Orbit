@@ -49,7 +49,7 @@ static NSOpenGLView* create_open_gl_view(const NSWindow* nsWindow)
 }
 
 render_context_gl::render_context_gl(const window_handle& wh)
-	m_glView(create_open_gl_view((const NSWindow*)wh.nsWindow))
+	: m_glView(create_open_gl_view((const NSWindow*)wh.nsWindow))
 {
 	make_current();
 	m_functions = gl::load_functions();
@@ -62,14 +62,16 @@ render_context_gl::~render_context_gl()
 	[(const NSOpenGLView*)m_glView dealloc];
 }
 
-void render_context_gl::make_current()
+bool render_context_gl::make_current()
 {
 	[[(const NSOpenGLView*)m_glView openGLContext] makeCurrentContext];
+	return true;
 }
 
-void render_context_gl::make_current(std::nullptr_t)
+bool render_context_gl::make_current(std::nullptr_t)
 {
 	[NSOpenGLContext clearCurrentContext];
+	return true;
 }
 
 void render_context_gl::resize(uint32_t width, uint32_t height)
@@ -93,11 +95,6 @@ void render_context_gl::clear_buffers(buffer_mask mask)
 	glClear(
 		(!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0 |
 		(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
-}
-
-void render_context_gl::draw(size_t vertexCount)
-{
-	m_functions.draw_arrays(gl::draw_mode::Triangles, 0, cast<GLsizei>(vertexCount));
 }
 
 }
