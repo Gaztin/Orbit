@@ -50,6 +50,8 @@ void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
+	(void)launchOptions;
+
 	orb::log_info("didFinishLaunchingWithOptions()");
 	_app = orb::platform::Ctor();
 
@@ -61,32 +63,44 @@ void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
 
 - (void)applicationWillResignActive:(UIApplication*)application
 {
+	(void)application;
+
 	orb::log_info("applicationWillResignActive()");
 }
 
 - (void)applicationDidEnterBackground:(UIApplication*)application
 {
+	(void)application;
+
 	orb::log_info("applicationDidEnterBackground()");
 }
 
 - (void)applicationWillEnterForeground:(UIApplication*)application
 {
+	(void)application;
+
 	orb::log_info("applicationWillEnterForeground()");
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
 {
+	(void)application;
+	
 	orb::log_info("applicationDidBecomeActive()");
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application
 {
+	(void)application;
+
 	orb::log_info("applicationWillTerminate()");
 	_app.reset();
 }
 
 - (void)frame:(CADisplayLink*)displayLink
 {
+	(void)displayLink;
+
 	_app->frame();
 }
 
