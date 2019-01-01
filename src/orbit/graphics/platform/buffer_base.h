@@ -24,7 +24,7 @@ namespace orb
 namespace platform
 {
 
-class buffer_base
+class ORB_API_GRAPHICS buffer_base
 {
 public:
 	virtual ~buffer_base() {}
