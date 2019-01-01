@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -15,35 +15,31 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "vertex_buffer.h"
+#include "vertex_buffer_d3d11.h"
 
-#include <assert.h>
-
+#include "orbit/graphics/platform/d3d11/d3d11.h"
+#include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
 #include "orbit/graphics/render_context.h"
-#include "platform/d3d11/vertex_buffer_d3d11.h"
-#include "platform/opengl/buffer_gl.h"
 
 namespace orb
 {
-
-static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t count, size_t stride)
+namespace platform
 {
-	switch (render_context::get_current()->get_api())
-	{
-		case graphics_api::OpenGL: return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count * stride);
-		case graphics_api::D3D11: return std::make_unique<platform::vertex_buffer_d3d11>(data, count, stride);
-		default: return nullptr;
-	}
-}
 
-vertex_buffer::vertex_buffer(const void* data, size_t count, size_t size)
-	: m_base(init_base(data, count, size))
+vertex_buffer_d3d11::vertex_buffer_d3d11(const void* data, size_t count, size_t stride)
+	: m_buffer(d3d11::create_buffer(d3d11::bind_flag::VertexBuffer, data, count * stride))
+	, m_stride(static_cast<UINT>(stride))
 {
 }
 
-void vertex_buffer::bind()
+void vertex_buffer_d3d11::bind()
 {
-	m_base->bind();
+	ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
+	ID3D11Buffer* buffers[] = { m_buffer.get() };
+	const UINT strides[] = { m_stride };
+	const UINT offsets[] = { 0 };
+	dc.IASetVertexBuffers(0, 1, buffers, strides, offsets);
 }
 
+}
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -15,35 +15,33 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "vertex_buffer.h"
+#include "d3d11.h"
 
-#include <assert.h>
-
+#include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
 #include "orbit/graphics/render_context.h"
-#include "platform/d3d11/vertex_buffer_d3d11.h"
-#include "platform/opengl/buffer_gl.h"
 
 namespace orb
 {
-
-static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t count, size_t stride)
+namespace d3d11
 {
-	switch (render_context::get_current()->get_api())
-	{
-		case graphics_api::OpenGL: return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count * stride);
-		case graphics_api::D3D11: return std::make_unique<platform::vertex_buffer_d3d11>(data, count, stride);
-		default: return nullptr;
-	}
+
+com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size)
+{
+	ID3D11Device& device = static_cast<platform::render_context_d3d11&>(render_context::get_current()->get_base()).get_device();
+
+	D3D11_BUFFER_DESC desc{};
+	desc.ByteWidth = static_cast<UINT>(size);
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = static_cast<D3D11_BIND_FLAG>(bf);
+
+	D3D11_SUBRESOURCE_DATA initialData{};
+	initialData.pSysMem = data;
+
+	ID3D11Buffer* buffer = nullptr;
+	device.CreateBuffer(&desc, &initialData, &buffer);
+
+	return com_ptr<ID3D11Buffer>(buffer);
 }
 
-vertex_buffer::vertex_buffer(const void* data, size_t count, size_t size)
-	: m_base(init_base(data, count, size))
-{
 }
-
-void vertex_buffer::bind()
-{
-	m_base->bind();
-}
-
 }

@@ -15,35 +15,30 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "vertex_buffer.h"
+#pragma once
+#include <cstddef>
 
-#include <assert.h>
-
-#include "orbit/graphics/render_context.h"
-#include "platform/d3d11/vertex_buffer_d3d11.h"
-#include "platform/opengl/buffer_gl.h"
+#include "orbit/core/memory.h"
+#include "orbit/graphics/platform/buffer_base.h"
 
 namespace orb
 {
-
-static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t count, size_t stride)
+namespace platform
 {
-	switch (render_context::get_current()->get_api())
-	{
-		case graphics_api::OpenGL: return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count * stride);
-		case graphics_api::D3D11: return std::make_unique<platform::vertex_buffer_d3d11>(data, count, stride);
-		default: return nullptr;
-	}
-}
 
-vertex_buffer::vertex_buffer(const void* data, size_t count, size_t size)
-	: m_base(init_base(data, count, size))
+class ORB_API_GRAPHICS vertex_buffer_d3d11 : public buffer_base
 {
-}
+public:
+	vertex_buffer_d3d11(const void* data, size_t count, size_t stride);
 
-void vertex_buffer::bind()
-{
-	m_base->bind();
-}
+	void bind() final override;
 
+private:
+#if defined(ORB_OS_WINDOWS)
+	com_ptr<ID3D11Buffer> m_buffer;
+	UINT m_stride;
+#endif
+};
+
+}
 }

@@ -16,6 +16,7 @@
 */
 
 #pragma once
+#include "orbit/core/memory.h"
 #include "orbit/graphics.h"
 
 #if defined(ORB_OS_WINDOWS)
@@ -41,6 +42,10 @@ enum class bind_flag
 	Decoder         = 0x200,
 	VideoEncoder    = 0x400,
 };
+
+#if defined(ORB_OS_WINDOWS)
+com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size);
+#endif
 
 }
 }
