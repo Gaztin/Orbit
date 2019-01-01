@@ -8,6 +8,7 @@
 #include <orbit/core/utility.h>
 #include <orbit/core/window.h>
 #include <orbit/graphics/graphics_pipeline.h>
+#include <orbit/graphics/index_buffer.h>
 #include <orbit/graphics/render_context.h>
 #include <orbit/graphics/shader.h>
 #include <orbit/graphics/vertex_buffer.h>
@@ -29,6 +30,7 @@ private:
 	orb::shader m_vertexShader;
 	orb::shader m_fragmentShader;
 	orb::vertex_buffer m_triangleVertexBuffer;
+	orb::index_buffer m_triangleIndexBuffer;
 	orb::graphics_pipeline m_mainPipeline;
 	float m_time;
 };
@@ -47,22 +49,26 @@ const orb::vertex_layout vertexLayout =
 
 const std::initializer_list<vertex> triangleVertices =
 {
+	{ -0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
 	{ -0.5f,  0.5f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f, 1.0f },
-	{  0.5f,  0.5f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f, 1.0f },
-	{ -0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
-
 	{  0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 0.0f, 1.0f },
-	{ -0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
 	{  0.5f,  0.5f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f, 1.0f },
+};
+
+const std::initializer_list<uint16_t> triangleIndices =
+{
+	0, 1, 2,
+	3, 2, 1,
 };
 
 sample_app::sample_app()
 	: m_window(800, 600)
 	, m_windowSubscription(m_window.subscribe(&sample_app::on_window_event))
-	, m_renderContext(m_window, orb::graphics_api::DeviceDefault)
+	, m_renderContext(m_window, orb::graphics_api::OpenGL)
 	, m_vertexShader(orb::shader_type::Vertex, orb::asset("shader.vs"))
 	, m_fragmentShader(orb::shader_type::Fragment, orb::asset("shader.fs"))
 	, m_triangleVertexBuffer(triangleVertices)
+	, m_triangleIndexBuffer(triangleIndices)
 	, m_time(0.0f)
 {
 	m_window.set_title("Orbit sample #01");
@@ -93,7 +99,8 @@ void sample_app::frame()
 	m_renderContext.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
 
 	m_triangleVertexBuffer.bind();
-	m_mainPipeline.draw(triangleVertices.size());
+	m_triangleIndexBuffer.bind();
+	m_mainPipeline.draw(m_triangleIndexBuffer);
 
 	m_renderContext.swap_buffers();
 }

@@ -21,12 +21,41 @@
 
 #include "orbit/graphics/platform/d3d11/shader_pixel_d3d11.h"
 #include "orbit/graphics/platform/d3d11/shader_vertex_d3d11.h"
+#include "orbit/graphics/index_buffer.h"
 #include "orbit/graphics/shader.h"
+#include "orbit/graphics/vertex_buffer.h"
 
 namespace orb
 {
 namespace platform
 {
+
+namespace d3d11
+{
+
+struct scoped_draw_pass
+{
+	scoped_draw_pass(ID3D11InputLayout* inputLayout, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader)
+	{
+		ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
+		if (inputLayout)
+			dc.IASetInputLayout(inputLayout);
+		if (vertexShader)
+			dc.VSSetShader(vertexShader, nullptr, 0);
+		if (pixelShader)
+			dc.PSSetShader(pixelShader, nullptr, 0);
+	}
+
+	~scoped_draw_pass()
+	{
+		ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
+		dc.PSSetShader(nullptr, nullptr, 0);
+		dc.VSSetShader(nullptr, nullptr, 0);
+		dc.IASetInputLayout(nullptr);
+	}
+};
+
+}
 
 static DXGI_FORMAT get_vertex_component_format(vertex_component::type_t type)
 {
@@ -95,22 +124,18 @@ void graphics_pipeline_d3d11::describe_vertex_layout(vertex_layout layout)
 	m_inputLayout.reset(inputLayout);
 }
 
-void graphics_pipeline_d3d11::draw(size_t vertexCount)
+void graphics_pipeline_d3d11::draw(const vertex_buffer& vb)
 {
 	ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
+	d3d11::scoped_draw_pass pass(m_inputLayout.get(), m_vertexShader, m_pixelShader);
+	dc.Draw(static_cast<UINT>(vb.get_count()), 0);
+}
 
-	if (m_inputLayout)
-		dc.IASetInputLayout(m_inputLayout.get());
-	if (m_vertexShader)
-		dc.VSSetShader(m_vertexShader, nullptr, 0);
-	if (m_pixelShader)
-		dc.PSSetShader(m_pixelShader, nullptr, 0);
-
-	dc.Draw(static_cast<UINT>(vertexCount), 0);
-
-	dc.PSSetShader(nullptr, nullptr, 0);
-	dc.VSSetShader(nullptr, nullptr, 0);
-	dc.IASetInputLayout(nullptr);
+void graphics_pipeline_d3d11::draw(const index_buffer& ib)
+{
+	ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
+	d3d11::scoped_draw_pass pass(m_inputLayout.get(), m_vertexShader, m_pixelShader);
+	dc.DrawIndexed(static_cast<UINT>(ib.get_count()), 0, 0);
 }
 
 }

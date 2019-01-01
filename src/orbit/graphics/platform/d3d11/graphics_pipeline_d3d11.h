@@ -33,7 +33,8 @@ public:
 	void add_shader(const shader& shr) final override;
 	void describe_vertex_layout(vertex_layout layout) final override;
 
-	void draw(size_t vertexCount) final override;
+	void draw(const vertex_buffer& vb) final override;
+	void draw(const index_buffer& ib) final override;
 
 private:
 #if defined(ORB_OS_WINDOWS)

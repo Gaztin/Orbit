@@ -28,7 +28,7 @@ namespace orb
 class ORB_API_GRAPHICS vertex_buffer
 {
 public:
-	vertex_buffer(const void* data, size_t count, size_t size);
+	vertex_buffer(const void* data, size_t count, size_t stride);
 
 	template <typename Vertex,
 		typename = typename std::enable_if_t<std::is_object_v<Vertex>>>
@@ -39,8 +39,11 @@ public:
 
 	void bind();
 
+	size_t get_count() const { return m_count; }
+
 private:
 	std::unique_ptr<platform::buffer_base> m_base;
+	size_t m_count;
 };
 
 }

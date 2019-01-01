@@ -17,13 +17,31 @@
 
 #include "graphics_pipeline_gl.h"
 
+#include "orbit/graphics/platform/opengl/buffer_gl.h"
 #include "orbit/graphics/platform/opengl/shader_gl.h"
+#include "orbit/graphics/index_buffer.h"
 #include "orbit/graphics/shader.h"
+#include "orbit/graphics/vertex_buffer.h"
 
 namespace orb
 {
-namespace platform
+namespace gl
 {
+
+static vertex_attrib_data_type get_vertex_component_data_type(vertex_component::type_t type)
+{
+	switch (type)
+	{
+		case vertex_component::Float:
+		case vertex_component::Vec2:
+		case vertex_component::Vec3:
+		case vertex_component::Vec4:
+			return vertex_attrib_data_type::Float;
+
+		default:
+			return vertex_attrib_data_type::Float;
+	}
+}
 
 static GLint get_vertex_component_length(vertex_component::type_t type)
 {
@@ -37,31 +55,64 @@ static GLint get_vertex_component_length(vertex_component::type_t type)
 	}
 }
 
-static gl::vertex_attrib_data_type get_vertex_component_data_type(vertex_component::type_t type)
+static GLsizei get_data_type_size(vertex_attrib_data_type type)
 {
 	switch (type)
 	{
-		case vertex_component::Float:
-		case vertex_component::Vec2:
-		case vertex_component::Vec3:
-		case vertex_component::Vec4:
-			return gl::vertex_attrib_data_type::Float;
-
-		default:
-			return gl::vertex_attrib_data_type::Float;
+		case vertex_attrib_data_type::Byte: return 1;
+		case vertex_attrib_data_type::UnsignedByte: return 1;
+		case vertex_attrib_data_type::Short: return sizeof(short);
+		case vertex_attrib_data_type::UnsignedShort: return sizeof(unsigned short);
+		case vertex_attrib_data_type::Float: return sizeof(float);
+		default: return 0;
 	}
 }
 
-static GLsizei get_data_type_size(gl::vertex_attrib_data_type type)
+struct scoped_draw_pass
 {
-	switch (type)
+	std::vector<vertex_component>& layout_ref;
+
+	scoped_draw_pass(std::vector<vertex_component>& layout, GLuint programId, GLsizei stride)
+		: layout_ref(layout)
 	{
-		case gl::vertex_attrib_data_type::Byte: return 1;
-		case gl::vertex_attrib_data_type::UnsignedByte: return 1;
-		case gl::vertex_attrib_data_type::Short: return sizeof(short);
-		case gl::vertex_attrib_data_type::UnsignedShort: return sizeof(unsigned short);
-		case gl::vertex_attrib_data_type::Float: return sizeof(float);
-		default: return 0;
+		const auto& fns = static_cast<orb::platform::render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+		fns.use_program(programId);
+
+		const uint8_t* pointer = nullptr;
+		for (GLuint i = 0; i < layout_ref.size(); ++i)
+		{
+			const vertex_component& cmp = layout_ref[i];
+			const gl::vertex_attrib_data_type data_type = get_vertex_component_data_type(cmp.type);
+			const GLint length = get_vertex_component_length(cmp.type);
+			fns.enable_vertex_attrib_array(i);
+			fns.vertex_attrib_pointer(i, length, data_type, GL_FALSE, stride, pointer);
+			pointer += length * get_data_type_size(data_type);
+		}
+	}
+
+	~scoped_draw_pass()
+	{
+		const auto& fns = static_cast<orb::platform::render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+		for (GLuint i = 0; i < layout_ref.size(); ++i)
+			fns.disable_vertex_attrib_array(i);
+
+		fns.use_program(0);
+	}
+};
+
+}
+
+namespace platform
+{
+
+static gl::index_type get_index_type(index_format fmt)
+{
+	switch (fmt)
+	{
+		case index_format::Byte: return gl::index_type::Byte;
+		case index_format::Word: return gl::index_type::Short;
+		case index_format::DoubleWord: return gl::index_type::Int;
+		default: return static_cast<gl::index_type>(0);
 	}
 }
 
@@ -115,31 +166,21 @@ void graphics_pipeline_gl::describe_vertex_layout(vertex_layout layout)
 	/* Calculate stride */
 	m_stride = 0;
 	for (const vertex_component& cmp : m_layout)
-		m_stride += get_vertex_component_length(cmp.type) * get_data_type_size(get_vertex_component_data_type(cmp.type));
+		m_stride += gl::get_vertex_component_length(cmp.type) * gl::get_data_type_size(gl::get_vertex_component_data_type(cmp.type));
 }
 
-void graphics_pipeline_gl::draw(size_t vertexCount)
+void graphics_pipeline_gl::draw(const vertex_buffer& vb)
 {
 	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.use_program(m_programId);
+	gl::scoped_draw_pass pass(m_layout, m_programId, m_stride);
+	fns.draw_arrays(gl::draw_mode::Triangles, 0, static_cast<GLsizei>(vb.get_count()));
+}
 
-	const uint8_t* pointer = nullptr;
-	for (GLuint i = 0; i < m_layout.size(); ++i)
-	{
-		const vertex_component& cmp = m_layout[i];
-		const gl::vertex_attrib_data_type data_type = get_vertex_component_data_type(cmp.type);
-		const GLint length = get_vertex_component_length(cmp.type);
-		fns.enable_vertex_attrib_array(i);
-		fns.vertex_attrib_pointer(i, length, data_type, GL_FALSE, m_stride, pointer);
-		pointer += length * get_data_type_size(data_type);
-	}
-
-	fns.draw_arrays(gl::draw_mode::Triangles, 0, static_cast<GLsizei>(vertexCount));
-
-	for (GLuint i = 0; i < m_layout.size(); ++i)
-		fns.disable_vertex_attrib_array(i);
-
-	fns.use_program(0);
+void graphics_pipeline_gl::draw(const index_buffer& ib)
+{
+	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	gl::scoped_draw_pass pass(m_layout, m_programId, m_stride);
+	fns.draw_elements(gl::draw_mode::Triangles, ib.get_count(), get_index_type(ib.get_format()), nullptr);
 }
 
 }

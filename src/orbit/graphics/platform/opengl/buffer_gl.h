@@ -31,13 +31,13 @@ template<gl::buffer_target BufferTarget>
 class buffer_gl : public buffer_base
 {
 public:
-	buffer_gl(const void* data, size_t count, size_t size)
+	buffer_gl(const void* data, size_t size)
 		: m_id(0)
 	{
 		const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 		fns.gen_buffers(1, &m_id);
 		fns.bind_buffer(BufferTarget, m_id);
-		fns.buffer_data(BufferTarget, (count * size), data, orb::gl::buffer_usage::StaticDraw);
+		fns.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
 		fns.bind_buffer(BufferTarget, 0);
 	}
 

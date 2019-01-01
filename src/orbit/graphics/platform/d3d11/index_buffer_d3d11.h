@@ -16,28 +16,33 @@
 */
 
 #pragma once
-#include <memory>
+#include <cstddef>
 
-#include "orbit/graphics/platform/graphics_pipeline_base.h"
+#include "orbit/core/memory.h"
+#include "orbit/core/utility.h"
+#include "orbit/graphics/platform/d3d11/d3d11.h"
+#include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
+#include "orbit/graphics/platform/buffer_base.h"
+#include "orbit/graphics/render_context.h"
 
 namespace orb
 {
+namespace platform
+{
 
-class ORB_API_GRAPHICS graphics_pipeline
+class ORB_API_GRAPHICS index_buffer_d3d11 : public buffer_base
 {
 public:
-	graphics_pipeline();
+	index_buffer_d3d11(index_format fmt, const void* data, size_t count);
 
-	void add_shader(const shader& shr);
-	void describe_vertex_layout(vertex_layout layout);
-
-	void draw(const vertex_buffer& vb);
-	void draw(const index_buffer& ib);
-
-	platform::graphics_pipeline_base& get_base() { return *m_base; }
+	void bind() final override;
 
 private:
-	std::unique_ptr<platform::graphics_pipeline_base> m_base;
+#if defined(ORB_OS_WINDOWS)
+	com_ptr<ID3D11Buffer> m_buffer;
+	DXGI_FORMAT m_format;
+#endif
 };
 
+}
 }

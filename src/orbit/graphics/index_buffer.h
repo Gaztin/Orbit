@@ -17,27 +17,34 @@
 
 #pragma once
 #include <memory>
+#include <type_traits>
 
-#include "orbit/graphics/platform/graphics_pipeline_base.h"
+#include "orbit/graphics/platform/buffer_base.h"
 
 namespace orb
 {
 
-class ORB_API_GRAPHICS graphics_pipeline
+class ORB_API_GRAPHICS index_buffer
 {
 public:
-	graphics_pipeline();
+	index_buffer(index_format fmt, const void* data, size_t count);
 
-	void add_shader(const shader& shr);
-	void describe_vertex_layout(vertex_layout layout);
+	template<typename T,
+		typename = typename std::enable_if_t<index_format_traits<T>::Enabled>>
+	index_buffer(std::initializer_list<T> indices)
+		: index_buffer(index_format_traits<T>::Format, indices.begin(), indices.size())
+	{
+	}
 
-	void draw(const vertex_buffer& vb);
-	void draw(const index_buffer& ib);
+	void bind();
 
-	platform::graphics_pipeline_base& get_base() { return *m_base; }
+	index_format get_format() const { return m_format; }
+	size_t get_count() const { return m_count; }
 
 private:
-	std::unique_ptr<platform::graphics_pipeline_base> m_base;
+	std::unique_ptr<platform::buffer_base> m_base;
+	index_format m_format;
+	size_t m_count;
 };
 
 }

@@ -15,57 +15,51 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "graphics_pipeline.h"
+#include "index_buffer.h"
 
 #include "orbit/graphics/render_context.h"
-#include "orbit/graphics/platform/d3d11/graphics_pipeline_d3d11.h"
-#include "orbit/graphics/platform/opengl/graphics_pipeline_gl.h"
+#include "orbit/graphics/platform/d3d11/index_buffer_d3d11.h"
+#include "orbit/graphics/platform/opengl/buffer_gl.h"
 
 namespace orb
 {
 
-static std::unique_ptr<platform::graphics_pipeline_base> init_base()
+static size_t format_size(index_format fmt)
+{
+	switch (fmt)
+	{
+		case orb::index_format::Byte: return 1;
+		case orb::index_format::Word: return 2;
+		case orb::index_format::DoubleWord: return 4;
+		default: return 0;
+	}
+}
+
+static std::unique_ptr<platform::buffer_base> init_base(index_format fmt, const void* data, size_t count)
 {
 	switch (render_context::get_current()->get_api())
 	{
-#if defined(ORB_HAS_OPENGL)
 		case graphics_api::OpenGL:
-			return std::make_unique<platform::graphics_pipeline_gl>();
-#endif
+			return std::make_unique<platform::buffer_gl<gl::buffer_target::ElementArray>>(data, count * format_size(fmt));
 
-#if defined(ORB_HAS_D3D11)
 		case graphics_api::D3D11:
-			return std::make_unique<platform::graphics_pipeline_d3d11>();
-#endif
+			return std::make_unique<platform::index_buffer_d3d11>(fmt, data, count);
 
 		default:
 			return nullptr;
 	}
 }
 
-graphics_pipeline::graphics_pipeline()
-	: m_base(init_base())
+index_buffer::index_buffer(index_format fmt, const void* data, size_t count)
+	: m_base(init_base(fmt, data, count))
+	, m_format(fmt)
+	, m_count(count)
 {
 }
 
-void graphics_pipeline::add_shader(const shader& shr)
+void index_buffer::bind()
 {
-	m_base->add_shader(shr);
-}
-
-void graphics_pipeline::describe_vertex_layout(vertex_layout layout)
-{
-	m_base->describe_vertex_layout(layout);
-}
-
-void graphics_pipeline::draw(const vertex_buffer& vb)
-{
-	m_base->draw(vb);
-}
-
-void graphics_pipeline::draw(const index_buffer& ib)
-{
-	m_base->draw(ib);
+	m_base->bind();
 }
 
 }

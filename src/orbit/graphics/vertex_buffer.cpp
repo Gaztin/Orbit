@@ -36,8 +36,9 @@ static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t
 	}
 }
 
-vertex_buffer::vertex_buffer(const void* data, size_t count, size_t size)
-	: m_base(init_base(data, count, size))
+vertex_buffer::vertex_buffer(const void* data, size_t count, size_t stride)
+	: m_base(init_base(data, count, stride))
+	, m_count(count)
 {
 }
 
