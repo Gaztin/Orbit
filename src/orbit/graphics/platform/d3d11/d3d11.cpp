@@ -25,20 +25,27 @@ namespace orb
 namespace d3d11
 {
 
-com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size)
+com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size, usage usg, cpu_access cpu)
 {
 	ID3D11Device& device = static_cast<platform::render_context_d3d11&>(render_context::get_current()->get_base()).get_device();
 
 	D3D11_BUFFER_DESC desc{};
 	desc.ByteWidth = static_cast<UINT>(size);
-	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.Usage = static_cast<D3D11_USAGE>(usg);
 	desc.BindFlags = static_cast<D3D11_BIND_FLAG>(bf);
-
-	D3D11_SUBRESOURCE_DATA initialData{};
-	initialData.pSysMem = data;
+	desc.CPUAccessFlags = static_cast<D3D11_CPU_ACCESS_FLAG>(cpu);
 
 	ID3D11Buffer* buffer = nullptr;
-	device.CreateBuffer(&desc, &initialData, &buffer);
+	if (data)
+	{
+		D3D11_SUBRESOURCE_DATA initialData{};
+		initialData.pSysMem = data;
+		device.CreateBuffer(&desc, &initialData, &buffer);
+	}
+	else
+	{
+		device.CreateBuffer(&desc, nullptr, &buffer);
+	}
 
 	return com_ptr<ID3D11Buffer>(buffer);
 }

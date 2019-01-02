@@ -43,8 +43,23 @@ enum class bind_flag
 	VideoEncoder    = 0x400,
 };
 
+enum class usage
+{
+	Default   = 0x0,
+	Immutable = 0x1,
+	Dynamic   = 0x2,
+	Staging   = 0x3,
+};
+
+enum class cpu_access
+{
+	None  = 0x00000l,
+	Write = 0x10000l,
+	Read  = 0x20000l,
+};
+
 #if defined(ORB_OS_WINDOWS)
-com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size);
+com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size, usage usg = usage::Default, cpu_access cpu = cpu_access::None);
 #endif
 
 }
