@@ -35,7 +35,7 @@ constant_buffer_gl::constant_buffer_gl(const void* data, size_t size)
 	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 	fns.gen_buffers(1, &m_id);
 	fns.bind_buffer(gl::buffer_target::Uniform, m_id);
-	fns.buffer_data(gl::buffer_target::Uniform, size, data, orb::gl::buffer_usage::DynamicDraw);
+	fns.buffer_data(gl::buffer_target::Uniform, size, data, orb::gl::buffer_usage::StreamDraw);
 	fns.bind_buffer(gl::buffer_target::Uniform, 0);
 }
 
