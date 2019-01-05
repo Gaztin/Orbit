@@ -41,9 +41,9 @@ public:
 		const auto& data = ast.get_data();
 		m_id = fns.create_shader(ShaderType);
 
-#if defined(ORB_OS_LINUX)
+#if defined(ORB_OS_LINUX) || defined(ORB_OS_IOS)
 		constexpr std::string_view headerString = "#version 300 es\n#define ORB_GLSL 1\n#extension GL_EXT_separate_shader_objects : enable\nprecision highp float;\n";
-#elif defined(ORB_OS_ANDROID) || defined(ORB_OS_IOS)
+#elif defined(ORB_OS_ANDROID)
 		constexpr std::string_view headerString = "#version 320 es\n#define ORB_GLSL 1\nprecision highp float;\n";
 #else
 		constexpr std::string_view headerString = "#version 410\n#define ORB_GLSL 1\n";
