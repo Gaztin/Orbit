@@ -180,7 +180,7 @@ void graphics_pipeline_gl::draw(const index_buffer& ib)
 {
 	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 	gl::scoped_draw_pass pass(m_layout, m_programId, m_stride);
-	fns.draw_elements(gl::draw_mode::Triangles, ib.get_count(), get_index_type(ib.get_format()), nullptr);
+	fns.draw_elements(gl::draw_mode::Triangles, static_cast<GLsizei>(ib.get_count()), get_index_type(ib.get_format()), nullptr);
 }
 
 }
