@@ -37,7 +37,7 @@
 #include <EGL/eglext.h>
 #include <GLES3/gl3.h>
 #elif defined(ORB_OS_IOS)
-#include <OpenGLES/ES1/gl.h>
+#include <OpenGLES/ES3/gl.h>
 #endif
 
 #if defined(Bool)

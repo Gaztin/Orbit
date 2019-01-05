@@ -36,7 +36,7 @@ render_context_gl::render_context_gl(const window_handle& wh)
 	ORBGLKViewDelegate* delegate = [ORBGLKViewDelegate alloc];
 	[delegate init];
 
-	[(EAGLContext*)m_eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES2];
+	[(EAGLContext*)m_eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES3];
 	[(GLKView*)m_glkView initWithFrame:[[UIScreen mainScreen] bounds]];
 	((GLKView*)m_glkView).context = (EAGLContext*)m_eaglContext;
 	((GLKView*)m_glkView).delegate = delegate;
