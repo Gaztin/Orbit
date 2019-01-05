@@ -24,6 +24,12 @@
 #include <dxgi.h>
 #endif
 
+#if defined(None)
+#pragma push_macro("None")
+#undef None
+#define UNDEFINED_None
+#endif
+
 namespace orb
 {
 namespace d3d11
@@ -64,3 +70,8 @@ com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size,
 
 }
 }
+
+#if defined(UNDEFINED_None)
+#pragma pop_macro("None")
+#undef UNDEFINED_None
+#endif

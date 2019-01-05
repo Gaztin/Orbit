@@ -20,10 +20,10 @@
 
 #include "orbit/core.h"
 
-#if defined(ORB_OS_LINUX)
-// Need to temporarily undefine "None" since Xlib helped themselves to define it as a pre-processor.
+#if defined(None)
 #pragma push_macro("None")
 #undef None
+#define UNDEFINED_None
 #endif
 
 namespace orb
@@ -52,6 +52,7 @@ struct ORB_API_CORE window_event
 
 }
 
-#if defined(ORB_OS_LINUX)
+#if defined(UNDEFINED_None)
 #pragma pop_macro("None")
+#undef UNDEFINED_None
 #endif
