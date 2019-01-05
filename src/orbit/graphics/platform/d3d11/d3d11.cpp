@@ -30,7 +30,7 @@ com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size,
 	ID3D11Device& device = static_cast<platform::render_context_d3d11&>(render_context::get_current()->get_base()).get_device();
 
 	D3D11_BUFFER_DESC desc{};
-	desc.ByteWidth = static_cast<UINT>(size);
+	desc.ByteWidth = static_cast<UINT>((size + 0xf) & ~0xf); /* Align by 16 bytes */
 	desc.Usage = static_cast<D3D11_USAGE>(usg);
 	desc.BindFlags = static_cast<D3D11_BIND_FLAG>(bf);
 	desc.CPUAccessFlags = static_cast<D3D11_CPU_ACCESS_FLAG>(cpu);
