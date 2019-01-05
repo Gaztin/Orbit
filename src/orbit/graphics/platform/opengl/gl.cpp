@@ -61,26 +61,53 @@ functions load_functions()
 
 	/* Buffer objects */
 	*cast<void**>(&fns.bind_buffer                ) = platform::get_proc_address("glBindBuffer");
+	*cast<void**>(&fns.bind_buffer_base           ) = platform::get_proc_address("glBindBufferBase");
+	*cast<void**>(&fns.bind_buffer_range          ) = platform::get_proc_address("glBindBufferRange");
+	*cast<void**>(&fns.bind_vertex_buffer         ) = platform::get_proc_address("glBindVertexBuffer");
 	*cast<void**>(&fns.buffer_data                ) = platform::get_proc_address("glBufferData");
 	*cast<void**>(&fns.buffer_sub_data            ) = platform::get_proc_address("glBufferSubData");
+	*cast<void**>(&fns.copy_buffer_sub_data       ) = platform::get_proc_address("glCopyBufferSubData");
 	*cast<void**>(&fns.delete_buffers             ) = platform::get_proc_address("glDeleteBuffers");
 	*cast<void**>(&fns.disable_vertex_attrib_array) = platform::get_proc_address("glDisableVertexAttribArray");
 	*cast<void**>(&fns.draw_arrays                ) = platform::get_proc_address("glDrawArrays");
+	*cast<void**>(&fns.draw_arrays_indirect       ) = platform::get_proc_address("glDrawArraysIndirect");
+	*cast<void**>(&fns.draw_arrays_instanced      ) = platform::get_proc_address("glDrawArraysInstanced");
 	*cast<void**>(&fns.draw_elements              ) = platform::get_proc_address("glDrawElements");
+	*cast<void**>(&fns.draw_elements_indirect     ) = platform::get_proc_address("glDrawElementsIndirect");
+	*cast<void**>(&fns.draw_elements_instanced    ) = platform::get_proc_address("glDrawElementsInstanced");
+	*cast<void**>(&fns.draw_range_elements        ) = platform::get_proc_address("glDrawRangeElements");
 	*cast<void**>(&fns.enable_vertex_attrib_array ) = platform::get_proc_address("glEnableVertexAttribArray");
+	*cast<void**>(&fns.flush_mapped_buffer_range  ) = platform::get_proc_address("glFlushMappedBufferRange");
 	*cast<void**>(&fns.gen_buffers                ) = platform::get_proc_address("glGenBuffers");
 	*cast<void**>(&fns.get_buffer_parameteriv     ) = platform::get_proc_address("glGetBufferParameteriv");
-	*cast<void**>(&fns.get_buffer_pointerv        ) = platform::get_proc_address("glBufferPointerv");
-	*cast<void**>(&fns.get_vertex_attribdv        ) = platform::get_proc_address("glGetVertexAttribdv");
+	*cast<void**>(&fns.get_buffer_parameteri64v   ) = platform::get_proc_address("glGetBufferParameteri64v");
+	*cast<void**>(&fns.get_buffer_pointerv        ) = platform::get_proc_address("glGetBufferPointerv");
 	*cast<void**>(&fns.get_vertex_attribfv        ) = platform::get_proc_address("glGetVertexAttribfv");
 	*cast<void**>(&fns.get_vertex_attribiv        ) = platform::get_proc_address("glGetVertexAttribiv");
+	*cast<void**>(&fns.get_vertex_attribiiv       ) = platform::get_proc_address("glGetVertexAttribiiv");
+	*cast<void**>(&fns.get_vertex_attribiuiv      ) = platform::get_proc_address("glGetVertexAttribiuiv");
 	*cast<void**>(&fns.get_vertex_attrib_pointerv ) = platform::get_proc_address("glGetVertexAttribPointerv");
 	*cast<void**>(&fns.is_buffer                  ) = platform::get_proc_address("glIsBuffer");
+	*cast<void**>(&fns.map_buffer_range           ) = platform::get_proc_address("glMapBufferRange");
+	*cast<void**>(&fns.unmap_buffer               ) = platform::get_proc_address("glUnmapBuffer");
 	*cast<void**>(&fns.vertex_attrib1f            ) = platform::get_proc_address("glVertexAttrib1f");
 	*cast<void**>(&fns.vertex_attrib2f            ) = platform::get_proc_address("glVertexAttrib2f");
 	*cast<void**>(&fns.vertex_attrib3f            ) = platform::get_proc_address("glVertexAttrib3f");
 	*cast<void**>(&fns.vertex_attrib4f            ) = platform::get_proc_address("glVertexAttrib4f");
+	*cast<void**>(&fns.vertex_attrib_i_4i         ) = platform::get_proc_address("glVertexAttribI4i");
+	*cast<void**>(&fns.vertex_attrib_i_4ui        ) = platform::get_proc_address("glVertexAttribI4ui");
+	*cast<void**>(&fns.vertex_attrib1fv           ) = platform::get_proc_address("glVertexAttrib1fv");
+	*cast<void**>(&fns.vertex_attrib2fv           ) = platform::get_proc_address("glVertexAttrib2fv");
+	*cast<void**>(&fns.vertex_attrib3fv           ) = platform::get_proc_address("glVertexAttrib3fv");
+	*cast<void**>(&fns.vertex_attrib4fv           ) = platform::get_proc_address("glVertexAttrib4fv");
+	*cast<void**>(&fns.vertex_attrib_i_4iv        ) = platform::get_proc_address("glVertexAttribI4iv");
+	*cast<void**>(&fns.vertex_attrib_i_4uiv       ) = platform::get_proc_address("glVertexAttribI4uiv");
+	*cast<void**>(&fns.vertex_attrib_binding      ) = platform::get_proc_address("glVertexAttribBinding");
+	*cast<void**>(&fns.vertex_attrib_divisor      ) = platform::get_proc_address("glVertexAttribDivisor");
+	*cast<void**>(&fns.vertex_attrib_format       ) = platform::get_proc_address("glVertexAttribFormat");
+	*cast<void**>(&fns.vertex_attrib_i_format     ) = platform::get_proc_address("glVertexAttribIFormat");
 	*cast<void**>(&fns.vertex_attrib_pointer      ) = platform::get_proc_address("glVertexAttribPointer");
+	*cast<void**>(&fns.vertex_binding_divisor     ) = platform::get_proc_address("glVertexBindingDivisor");
 
 	/* Shaders */
 	*cast<void**>(&fns.attach_shader       ) = platform::get_proc_address("glAttachShader");

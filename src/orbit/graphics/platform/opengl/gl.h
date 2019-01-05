@@ -16,6 +16,7 @@
 */
 
 #pragma once
+#include "orbit/core/bitmask.h"
 #include "orbit/graphics.h"
 
 #if defined(ORB_HAS_OPENGL)
@@ -51,6 +52,8 @@ using GLintptr = ptrdiff_t;
 using GLsizeiptr = size_t;
 using GLdouble = double;
 using GLchar = char;
+using GLint64 = int64_t;
+using GLsync = struct __GLsync*;
 
 namespace gl
 {
@@ -706,6 +709,22 @@ enum class shader_param : GLenum
 	ShaderSourceLength = 0x8B88,
 };
 
+enum class map_access : GLbitfield
+{
+	ReadBit             = 0x0001,
+	WriteBit            = 0x0002,
+	InvalidateRangeBit  = 0x0004,
+	InvalidateBufferBit = 0x0008,
+	FlushExplicitBit    = 0x0010,
+	UnsynchronizedBit   = 0x0020,
+};
+
+/* Enable masking on bitfield types */
+}
+ORB_ENABLE_BITMASKING(gl::map_access);
+namespace gl
+{
+
 #if defined(ORB_OS_WINDOWS)
 #define ORB_GL_CALL __stdcall
 #else
@@ -720,26 +739,53 @@ struct functions
 
 	/* Buffer objects */
 	void (ORB_GL_CALL *bind_buffer)(buffer_target target, GLuint buffer);
+	void (ORB_GL_CALL *bind_buffer_base)(buffer_target target, GLuint index, GLuint buffer);
+	void (ORB_GL_CALL *bind_buffer_range)(buffer_target target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);
+	void (ORB_GL_CALL *bind_vertex_buffer)(GLuint bindingindex, GLuint buffer, GLintptr offset, GLintptr stride);
 	void (ORB_GL_CALL *buffer_data)(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage);
 	void (ORB_GL_CALL *buffer_sub_data)(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
+	void (ORB_GL_CALL *copy_buffer_sub_data)(buffer_target readtarget, buffer_target writetarget, GLintptr readoffset, GLintptr writeoffset, GLsizeiptr size);
 	void (ORB_GL_CALL *delete_buffers)(GLsizei n, const GLuint* buffers);
 	void (ORB_GL_CALL *disable_vertex_attrib_array)(GLuint index);
 	void (ORB_GL_CALL *draw_arrays)(draw_mode mode, GLint first, GLsizei count);
-	void (ORB_GL_CALL *draw_elements)(draw_mode, GLsizei count, index_type type, const GLvoid* indices);
+	void (ORB_GL_CALL *draw_arrays_indirect)(draw_mode mode, const void *indirect);
+	void (ORB_GL_CALL *draw_arrays_instanced)(draw_mode mode, GLint first, GLsizei count, GLsizei primcount);
+	void (ORB_GL_CALL *draw_elements)(draw_mode mode, GLsizei count, index_type type, const GLvoid* indices);
+	void (ORB_GL_CALL *draw_elements_indirect)(draw_mode mode, index_type type, const void* indirect);
+	void (ORB_GL_CALL *draw_elements_instanced)(draw_mode mode, GLsizei count, index_type type, const void* indices, GLsizei primcount);
+	void (ORB_GL_CALL *draw_range_elements)(draw_mode mode, GLuint start, GLuint end, GLsizei count, index_type type, const GLvoid* indices);
 	void (ORB_GL_CALL *enable_vertex_attrib_array)(GLuint index);
+	GLsync (ORB_GL_CALL *flush_mapped_buffer_range)(buffer_target target, GLintptr offset, GLsizeiptr length);
 	void (ORB_GL_CALL *gen_buffers)(GLsizei n, GLuint* buffers);
 	void (ORB_GL_CALL *get_buffer_parameteriv)(buffer_target target, buffer_param value, GLint* data);
+	void (ORB_GL_CALL *get_buffer_parameteri64v)(buffer_target target, buffer_param value, GLint64* data);
 	void (ORB_GL_CALL *get_buffer_pointerv)(buffer_target target, buffer_pointer_param pname, GLvoid** params);
-	void (ORB_GL_CALL *get_vertex_attribdv)(GLuint index, vertex_attrib_array_param pname, GLdouble* params);
 	void (ORB_GL_CALL *get_vertex_attribfv)(GLuint index, vertex_attrib_array_param pname, GLfloat* params);
 	void (ORB_GL_CALL *get_vertex_attribiv)(GLuint index, vertex_attrib_array_param pname, GLint* params);
+	void (ORB_GL_CALL *get_vertex_attribiiv)(GLuint index, vertex_attrib_array_param pname, GLint* params);
+	void (ORB_GL_CALL *get_vertex_attribiuiv)(GLuint index, vertex_attrib_array_param pname, GLuint* params);
 	void (ORB_GL_CALL *get_vertex_attrib_pointerv)(GLuint index, vertex_attrib_array_pointer_param pname, GLvoid** pointer);
 	GLboolean (ORB_GL_CALL *is_buffer)(GLuint buffer);
+	void* (ORB_GL_CALL *map_buffer_range)(buffer_target target, GLintptr offset, GLsizeiptr length, map_access access);
+	GLboolean (ORB_GL_CALL *unmap_buffer)(buffer_target target);
 	void (ORB_GL_CALL *vertex_attrib1f)(GLuint index, GLfloat v0);
 	void (ORB_GL_CALL *vertex_attrib2f)(GLuint index, GLfloat v0, GLfloat v1);
 	void (ORB_GL_CALL *vertex_attrib3f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2);
 	void (ORB_GL_CALL *vertex_attrib4f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+	void (ORB_GL_CALL *vertex_attrib_i_4i)(GLuint index, GLint v0, GLint v1, GLint v2, GLint v3);
+	void (ORB_GL_CALL *vertex_attrib_i_4ui)(GLuint index, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
+	void (ORB_GL_CALL *vertex_attrib1fv)(GLuint index, const GLfloat* v);
+	void (ORB_GL_CALL *vertex_attrib2fv)(GLuint index, const GLfloat* v);
+	void (ORB_GL_CALL *vertex_attrib3fv)(GLuint index, const GLfloat* v);
+	void (ORB_GL_CALL *vertex_attrib4fv)(GLuint index, const GLfloat* v);
+	void (ORB_GL_CALL *vertex_attrib_i_4iv)(GLuint index, const GLint* v);
+	void (ORB_GL_CALL *vertex_attrib_i_4uiv)(GLuint index, const GLuint* v);
+	void (ORB_GL_CALL *vertex_attrib_binding)(GLuint attribindex, GLuint bindingindex);
+	void (ORB_GL_CALL *vertex_attrib_divisor)(GLuint index, GLuint divisor);
+	void (ORB_GL_CALL *vertex_attrib_format)(GLuint attribindex, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLuint relativeoffset);
+	void (ORB_GL_CALL *vertex_attrib_i_format)(	GLuint attribindex, GLint size, vertex_attrib_data_type type, GLuint relativeoffset);
 	void (ORB_GL_CALL *vertex_attrib_pointer)(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
+	void (ORB_GL_CALL *vertex_binding_divisor)(GLuint bindingindex, GLuint divisor);
 
 	/* Shaders */
 	void (ORB_GL_CALL *attach_shader)(GLuint program, GLuint shader);
@@ -786,6 +832,7 @@ extern ORB_API_GRAPHICS void* get_proc_address(std::string_view name);
 extern ORB_API_GRAPHICS functions load_functions();
 
 }
+
 }
 
 #if defined(UNDEFINED_Bool)
