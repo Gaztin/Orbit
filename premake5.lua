@@ -100,6 +100,7 @@ local function filter_system_files()
 				removefiles {
 					"src/**" .. keyword .. "_**",
 					"src/**_" .. keyword .. "**",
+					"src/**/" .. keyword .. ".*",
 				}
 			end
 		end)
