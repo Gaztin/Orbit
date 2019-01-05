@@ -34,7 +34,8 @@
 #include <OpenGL/gl.h>
 #elif defined(ORB_OS_ANDROID)
 #include <EGL/egl.h>
-#include <GLES/gl.h>
+#include <EGL/eglext.h>
+#include <GLES3/gl3.h>
 #elif defined(ORB_OS_IOS)
 #include <OpenGLES/ES1/gl.h>
 #endif
