@@ -1,11 +1,13 @@
 #if defined(ORB_GLSL)
 
-varying vec4 v_position;
-varying vec4 v_color;
+layout (location = 0) in vec4 v_position;
+layout (location = 1) in vec4 v_color;
+
+layout (location = 0) out vec4 fragColor;
 
 void main()
 {
-	gl_FragColor = v_color;
+	fragColor = v_color;
 }
 
 #elif defined(ORB_HLSL)
