@@ -36,8 +36,8 @@ public:
 	{
 	}
 
+	void bind(shader_type type, uint32_t slot);
 	void update(const void* data, size_t size);
-	void bind(shader_type type);
 
 	template<typename... Types>
 	void update(const std::tuple<Types...>& constants)

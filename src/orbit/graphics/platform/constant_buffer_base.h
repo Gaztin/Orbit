@@ -28,7 +28,7 @@ class ORB_API_GRAPHICS constant_buffer_base
 public:
 	virtual ~constant_buffer_base() {}
 	virtual void update(const void* data, size_t size) = 0;
-	virtual void bind(shader_type type) = 0;
+	virtual void bind(shader_type type, uint32_t slot) = 0;
 };
 
 }

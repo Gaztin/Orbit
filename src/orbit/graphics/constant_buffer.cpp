@@ -44,9 +44,9 @@ void constant_buffer::update(const void* data, size_t size)
 	m_base->update(data, size);
 }
 
-void constant_buffer::bind(shader_type type)
+void constant_buffer::bind(shader_type type, uint32_t slot)
 {
-	m_base->bind(type);
+	m_base->bind(type, slot);
 }
 
 }

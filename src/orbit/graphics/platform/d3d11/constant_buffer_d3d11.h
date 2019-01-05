@@ -31,7 +31,7 @@ public:
 	constant_buffer_d3d11(size_t size);
 
 	void update(const void* data, size_t size) final override;
-	void bind(shader_type type) final override;
+	void bind(shader_type type, uint32_t slot) final override;
 
 private:
 	com_ptr<ID3D11Buffer> m_buffer;

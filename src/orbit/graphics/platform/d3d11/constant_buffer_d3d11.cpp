@@ -55,12 +55,12 @@ void constant_buffer_d3d11::update(const void* data, size_t size)
 	dc.Unmap(m_buffer.get(), 0);
 }
 
-void constant_buffer_d3d11::bind(shader_type type)
+void constant_buffer_d3d11::bind(shader_type type, uint32_t slot)
 {
 	ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
 	ID3D11Buffer* buffers[] = { m_buffer.get() };
 
-	std::invoke(get_setter(type), &dc, 0, 1, buffers);
+	std::invoke(get_setter(type), &dc, slot, 1, buffers);
 }
 
 }

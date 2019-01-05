@@ -49,7 +49,7 @@ void constant_buffer_gl::update(const void* data, size_t size)
 {
 }
 
-void constant_buffer_gl::bind(shader_type type)
+void constant_buffer_gl::bind(shader_type /*type*/, uint32_t slot)
 {
 }
 

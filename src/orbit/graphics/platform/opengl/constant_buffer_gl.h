@@ -33,7 +33,7 @@ public:
 	~constant_buffer_gl();
 
 	void update(const void* data, size_t size) final override;
-	void bind(shader_type type) final override;
+	void bind(shader_type type, uint32_t slot) final override;
 
 private:
 	GLuint m_id;
