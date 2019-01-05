@@ -21,6 +21,7 @@
 #include "orbit/graphics/platform/opengl/gl.h"
 #include "orbit/graphics/platform/opengl/render_context_gl.h"
 #include "orbit/graphics/platform/buffer_base.h"
+#include "orbit/graphics/render_context.h"
 
 namespace orb
 {

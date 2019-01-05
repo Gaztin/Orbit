@@ -15,7 +15,6 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
 #include "constant_buffer_gl.h"
 
 #include <cstddef>
