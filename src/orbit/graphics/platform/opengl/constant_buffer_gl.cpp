@@ -47,10 +47,19 @@ constant_buffer_gl::~constant_buffer_gl()
 
 void constant_buffer_gl::update(const void* data, size_t size)
 {
+	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	fns.bind_buffer(gl::buffer_target::Uniform, m_id);
+	void* dst = fns.map_buffer_range(gl::buffer_target::Uniform, 0, size, gl::map_access::WriteBit);
+	std::memcpy(dst, data, size);
+	fns.unmap_buffer(gl::buffer_target::Uniform);
+	fns.bind_buffer(gl::buffer_target::Uniform, 0);
 }
 
 void constant_buffer_gl::bind(shader_type /*type*/, uint32_t slot)
 {
+	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	fns.bind_buffer(gl::buffer_target::Uniform, m_id);
+	fns.bind_buffer_base(gl::buffer_target::Uniform, slot, m_id);
 }
 
 }
