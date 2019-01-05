@@ -18,6 +18,7 @@
 #include "constant_buffer_gl.h"
 
 #include <cstddef>
+#include <cstring>
 
 #include "orbit/graphics/platform/opengl/gl.h"
 #include "orbit/graphics/platform/opengl/render_context_gl.h"
