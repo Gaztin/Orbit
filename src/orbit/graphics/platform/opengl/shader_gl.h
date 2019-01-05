@@ -42,7 +42,7 @@ public:
 		m_id = fns.create_shader(ShaderType);
 
 #if defined(ORB_OS_ANDROID) || defined(ORB_OS_IOS)
-		constexpr std::string_view headerString = "#version 300\n#define ORB_GLSL 1\nprecision highp float;\n";
+		constexpr std::string_view headerString = "#version 320 es\n#define ORB_GLSL 1\nprecision highp float;\n";
 #else
 		constexpr std::string_view headerString = "#version 410\n#define ORB_GLSL 1\n";
 #endif
