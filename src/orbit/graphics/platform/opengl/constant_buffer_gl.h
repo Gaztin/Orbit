@@ -29,7 +29,7 @@ namespace platform
 class constant_buffer_gl : public constant_buffer_base
 {
 public:
-	constant_buffer_gl(const void* data, size_t size);
+	constant_buffer_gl(size_t size);
 	~constant_buffer_gl();
 
 	void update(const void* data, size_t size) final override;

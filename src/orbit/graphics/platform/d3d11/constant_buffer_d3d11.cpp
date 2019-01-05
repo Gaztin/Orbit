@@ -37,8 +37,8 @@ static set_constant_buffers_t get_setter(shader_type type)
 	}
 }
 
-constant_buffer_d3d11::constant_buffer_d3d11(const void* data, size_t size)
-	: m_buffer(d3d11::create_buffer(d3d11::bind_flag::ConstantBuffer, data, size, d3d11::usage::Dynamic, d3d11::cpu_access::Write))
+constant_buffer_d3d11::constant_buffer_d3d11(size_t size)
+	: m_buffer(d3d11::create_buffer(d3d11::bind_flag::ConstantBuffer, nullptr, size, d3d11::usage::Dynamic, d3d11::cpu_access::Write))
 {
 }
 

@@ -17,6 +17,7 @@
 
 #pragma once
 #include <memory>
+#include <tuple>
 
 #include "orbit/graphics/platform/constant_buffer_base.h"
 #include "orbit/graphics/shader_constant.h"
@@ -27,11 +28,22 @@ namespace orb
 class ORB_API_GRAPHICS constant_buffer
 {
 public:
-	constant_buffer(const void* data, size_t size);
-	constant_buffer(std::initializer_list<shader_constant> constants);
+	constant_buffer(size_t size);
+
+	template<typename... Types>
+	constant_buffer(const std::tuple<Types...>&)
+		: constant_buffer((0 + ... + sizeof(Types)))
+	{
+	}
 
 	void update(const void* data, size_t size);
 	void bind(shader_type type);
+
+	template<typename... Types>
+	void update(const std::tuple<Types...>& constants)
+	{
+		update((sizeof...(Types) > 0 ? &std::get<0>(constants) : nullptr), (0 + ... + sizeof(Types)));
+	}
 
 private:
 	std::unique_ptr<platform::constant_buffer_base> m_base;

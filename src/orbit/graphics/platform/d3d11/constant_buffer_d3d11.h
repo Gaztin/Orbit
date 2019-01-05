@@ -28,7 +28,7 @@ namespace platform
 class ORB_API_GRAPHICS constant_buffer_d3d11 : public constant_buffer_base
 {
 public:
-	constant_buffer_d3d11(const void* data, size_t size);
+	constant_buffer_d3d11(size_t size);
 
 	void update(const void* data, size_t size) final override;
 	void bind(shader_type type) final override;
