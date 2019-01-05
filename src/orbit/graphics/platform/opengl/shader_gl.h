@@ -45,7 +45,7 @@ public:
 		constexpr std::string_view headerString = "#version 300 es\n#define ORB_GLSL 1\n#extension GL_EXT_separate_shader_objects : enable\nprecision highp float;\n";
 #elif defined(ORB_OS_ANDROID)
 		constexpr std::string_view headerString = "#version 320 es\n#define ORB_GLSL 1\nprecision highp float;\n";
-#else
+#elif defined(ORB_OS_WINDOWS) || defined(ORB_OS_MACOS)
 		constexpr std::string_view headerString = "#version 410\n#define ORB_GLSL 1\n";
 #endif
 		const GLchar* sources[] = { headerString.data(), cast<const GLchar*>(data.data()) };
