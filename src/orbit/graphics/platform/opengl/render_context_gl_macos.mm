@@ -31,6 +31,7 @@ static NSOpenGLView* create_open_gl_view(const NSWindow* nsWindow)
 {
 	const NSOpenGLPixelFormatAttribute Attribs[] =
 	{
+		NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
 		NSOpenGLPFADoubleBuffer,
 		NSOpenGLPFAColorSize, 24,
 		NSOpenGLPFADepthSize, 24,
