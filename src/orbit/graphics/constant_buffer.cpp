@@ -28,9 +28,18 @@ static std::unique_ptr<platform::constant_buffer_base> init_base(size_t size)
 {
 	switch (render_context::get_current()->get_api())
 	{
-		case graphics_api::OpenGL: return std::make_unique<platform::constant_buffer_gl>(size);
-		case graphics_api::D3D11: return std::make_unique<platform::constant_buffer_d3d11>(size);
-		default: return nullptr;
+#if defined(ORB_HAS_OPENGL)
+		case graphics_api::OpenGL:
+			return std::make_unique<platform::constant_buffer_gl>(size);
+#endif
+
+#if defined(ORB_HAS_D3D11)
+		case graphics_api::D3D11:
+			return std::make_unique<platform::constant_buffer_d3d11>(size);
+#endif
+
+		default:
+			return nullptr;
 	}
 }
 

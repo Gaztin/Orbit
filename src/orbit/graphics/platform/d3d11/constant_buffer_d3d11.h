@@ -34,7 +34,9 @@ public:
 	void bind(shader_type type, uint32_t slot) final override;
 
 private:
+#if defined(ORB_OS_WINDOWS)
 	com_ptr<ID3D11Buffer> m_buffer;
+#endif
 };
 
 }
