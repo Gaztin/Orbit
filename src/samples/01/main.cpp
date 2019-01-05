@@ -63,10 +63,10 @@ const std::initializer_list<uint16_t> triangleIndices =
 	3, 2, 1,
 };
 
-std::tuple<float> triangleConstants =
-{
-	1.0f,
-};
+std::tuple triangleConstants = std::make_tuple
+(
+	1.0f
+);
 
 sample_app::sample_app()
 	: m_window(800, 600)
@@ -81,7 +81,7 @@ sample_app::sample_app()
 {
 	m_window.set_title("Orbit sample #01");
 	m_window.show();
-	m_renderContext.set_clear_color(0.0f, 0.0f, 0.0f);
+	m_renderContext.set_clear_color(0.0f, 0.0f, 0.5f);
 
 	m_mainPipeline.add_shader(m_vertexShader);
 	m_mainPipeline.add_shader(m_fragmentShader);
