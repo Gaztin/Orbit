@@ -46,6 +46,7 @@ private:
 		HWND m_parentHwnd;
 		HDC m_hdc;
 		HGLRC m_hglrc;
+		HGLRC m_dummyCtx;
 #elif defined(ORB_OS_LINUX)
 		const struct window_handle* m_wndPtr;
 		GC m_gc;
