@@ -18,6 +18,7 @@
 #pragma once
 #include "orbit/core/window.h"
 #include "orbit/graphics/platform/render_context_base.h"
+#include "orbit/graphics/graphics_api.h"
 
 namespace orb
 {

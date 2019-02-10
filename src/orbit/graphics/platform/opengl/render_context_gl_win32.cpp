@@ -19,6 +19,7 @@
 
 #include "orbit/core/platform/window_handle.h"
 #include "orbit/core/utility.h"
+#include "orbit/graphics/platform/opengl/gl_version.h"
 
 namespace orb
 {
@@ -40,11 +41,14 @@ static void set_pixel_format(HDC hdc)
 	SetPixelFormat(hdc, format, &desc);
 }
 
-render_context_gl::render_context_gl(const window_handle& wh)
+render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
 	: m_parentHwnd(wh.hwnd)
 	, m_hdc(GetDC(m_parentHwnd))
 {
 	set_pixel_format(m_hdc);
+
+	// TODO: Initialize using provided OpenGL version
+	(void)v;
 
 	m_hglrc = wglCreateContext(m_hdc);
 	

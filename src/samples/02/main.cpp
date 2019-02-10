@@ -36,8 +36,13 @@ private:
 
 const std::map<orb::graphics_api, std::string> apiNames =
 {
-	{ orb::graphics_api::OpenGL, "OpenGL" },
-	{ orb::graphics_api::D3D11, "Direct3D 11" },
+	{ orb::graphics_api::OpenGL_2_0,  "OpenGL 2.0" },
+	{ orb::graphics_api::OpenGL_3_2,  "OpenGL 3.2" },
+	{ orb::graphics_api::OpenGL_4_1,  "OpenGL 4.1" },
+	{ orb::graphics_api::OpenGL_ES_1, "OpenGL ES 1" },
+	{ orb::graphics_api::OpenGL_ES_2, "OpenGL ES 2" },
+	{ orb::graphics_api::OpenGL_ES_3, "OpenGL ES 3" },
+	{ orb::graphics_api::Direct3D_11, "Direct3D 11" },
 };
 
 static void prepare()
@@ -117,7 +122,7 @@ int main(int /*argc*/, char* /*argv*/[])
 	bench_window_create(5);
 
 	/* Graphics benchmarks. */
-	for (orb::graphics_api api : {orb::graphics_api::OpenGL, orb::graphics_api::D3D11})
+	for (orb::graphics_api api : {orb::graphics_api::OpenGL_4_1, orb::graphics_api::Direct3D_11})
 	{
 		orb::log_info(orb::format("[__%s__]", apiNames.at(api).c_str()));
 		bench_context_create(api, 10);

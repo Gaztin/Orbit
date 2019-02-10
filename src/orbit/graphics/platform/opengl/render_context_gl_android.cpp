@@ -18,11 +18,30 @@
 #include "render_context_gl.h"
 
 #include "orbit/core/android_app.h"
+#include "orbit/graphics/platform/opengl/gl_version.h"
 
 namespace orb
 {
 namespace platform
 {
+
+static EGLint get_renderable_type(gl::version v)
+{
+	switch (v)
+	{
+		case gl::version::vES_1:
+			return EGL_OPENGL_ES_BIT;
+
+		case gl::version::vES_2:
+			return EGL_OPENGL_ES2_BIT;
+
+		case gl::version::vES_3:
+			return EGL_OPENGL_ES3_BIT;
+
+		default:
+			return get_renderable_type(gl::get_system_default_opengl_version());
+	}
+}
 
 static EGLDisplay init_display()
 {
@@ -31,12 +50,12 @@ static EGLDisplay init_display()
 	return display;
 }
 
-static EGLConfig choose_config(const EGLDisplay& display)
+static EGLConfig choose_config(const EGLDisplay& display, gl::version v)
 {
 	constexpr EGLint ConfigAttribs[] =
 	{
 		EGL_SURFACE_TYPE,    EGL_WINDOW_BIT,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_RENDERABLE_TYPE, get_renderable_type(v),
 		EGL_RED_SIZE,        8,
 		EGL_GREEN_SIZE,      8,
 		EGL_BLUE_SIZE,       8,

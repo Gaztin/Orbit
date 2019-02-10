@@ -1,12 +1,12 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
-* 
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+*
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose, including commercial
 * applications, and to alter it and redistribute it freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not claim that you wrote the
 *    original software. If you use this software in a product, an acknowledgment in the product
 *    documentation would be appreciated but is not required.
@@ -15,47 +15,28 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include "orbit.h"
-
-#include "core/bitmask.h"
-
-#if defined(ORB_BUILD_GRAPHICS)
-#define ORB_API_GRAPHICS ORB_DLL_EXPORT
-#else
-#define ORB_API_GRAPHICS ORB_DLL_IMPORT
-#endif
-
-/* Graphics API macros. */
-#if defined(ORB_OS_WINDOWS)
-#define ORB_HAS_D3D11
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_LINUX)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_MACOS)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_ANDROID)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_IOS)
-#define ORB_HAS_OPENGL
-#endif
-
-/* Enumerators */
+#include "gl_version.h"
 
 namespace orb
 {
-
-enum class buffer_mask
+namespace gl
 {
-	Color = 0x1,
-	Depth = 0x2,
-};
-ORB_ENABLE_BITMASKING(buffer_mask);
 
-enum class shader_type
+extern ORB_API_GRAPHICS version get_system_default_opengl_version()
 {
-	Vertex,
-	Fragment,
-};
+#if defined(ORB_OS_WINDOWS)
+	return version::v4_1;
+#elif defined(ORB_OS_LINUX)
+	return version::v4_1;
+#elif defined(ORB_OS_MACOS)
+	return version::v2_0;
+#elif defined(ORB_OS_ANDROID)
+	return version::vES_3;
+#elif defined(ORB_OS_IOS)
+	return version::vES_2;
+#endif
+}
 
 }
+}
+

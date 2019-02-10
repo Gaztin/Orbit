@@ -17,6 +17,7 @@
 
 #pragma once
 #include "orbit/graphics/platform/opengl/gl.h"
+#include "orbit/graphics/platform/opengl/gl_version.h"
 #include "orbit/graphics/platform/render_context_base.h"
 
 namespace orb
@@ -28,7 +29,7 @@ struct window_handle;
 class ORB_API_GRAPHICS render_context_gl : public render_context_base
 {
 public:
-	render_context_gl(const window_handle& wh);
+	render_context_gl(const window_handle& wh, gl::version v);
 	~render_context_gl();
 
 	bool make_current() final override;
