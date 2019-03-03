@@ -1,9 +1,8 @@
 #if defined(ORB_GLSL)
 
-layout (std140) uniform Constants
-{
-	float diffuse;
-};
+ORB_CONSTANTS_BEGIN(Constants)
+ORB_CONSTANT(float, diffuse)
+ORB_CONSTANTS_END
 
 ORB_ATTRIBUTE vec4 a_position;
 ORB_ATTRIBUTE vec4 a_color;

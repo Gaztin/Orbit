@@ -49,14 +49,29 @@ public:
 		const auto& data = ast.get_data();
 		m_id = fns.create_shader(ShaderType);
 
-		std::string_view headerString;
+		std::string_view headerStr;
 		switch (v)
 		{
-			case gl::version::v2_0:  headerString = "#version 110\n#define ORB_GLSL 1\n"; break;
-			case gl::version::v3_2:  headerString = "#version 150\n#define ORB_GLSL 1\n"; break;
-			case gl::version::v4_1:  headerString = "#version 410\n#define ORB_GLSL 1\n"; break;
-			case gl::version::vES_2: headerString = "#version 100\n#define ORB_GLSL 1\nprecision highp float;\n"; break;
-			case gl::version::vES_3: headerString = "#version 300\n#define ORB_GLSL 1\n"; break;
+			case gl::version::v2_0:  headerStr = "#version 110\n#define ORB_GLSL 1\n"; break;
+			case gl::version::v3_2:  headerStr = "#version 150\n#define ORB_GLSL 1\n"; break;
+			case gl::version::v4_1:  headerStr = "#version 410\n#define ORB_GLSL 1\n"; break;
+			case gl::version::vES_2: headerStr = "#version 100\n#define ORB_GLSL 1\nprecision highp float;\n"; break;
+			case gl::version::vES_3: headerStr = "#version 300\n#define ORB_GLSL 1\n"; break;
+		}
+
+		std::string_view constantsMacrosStr;
+		switch (v)
+		{
+			case orb::gl::version::v2_0:
+			case orb::gl::version::vES_2:
+				constantsMacrosStr = "#define ORB_CONSTANTS_BEGIN(X)\n#define ORB_CONSTANTS_END\n#define ORB_CONSTANT(T, N) uniform T N;\n";
+				break;
+
+			case orb::gl::version::v3_2:
+			case orb::gl::version::v4_1:
+			case orb::gl::version::vES_3:
+				constantsMacrosStr = "#define ORB_CONSTANTS_BEGIN(X) layout (std140) uniform X {\n#define ORB_CONSTANTS_END };\n#define ORB_CONSTANT(T, N) T N;\n"; break;
+				break;
 		}
 
 		const std::string_view varyingStr      = traits::make_varying_macro(v);
@@ -65,7 +80,8 @@ public:
 
 		const GLchar* sources[] =
 		{
-			headerString.data(),
+			headerStr.data(),
+			constantsMacrosStr.data(),
 			varyingStr.data(),
 			attributeStr.data(),
 			outColorDeclStr.data(),
@@ -73,7 +89,8 @@ public:
 		};
 		const GLint lengths[] =
 		{
-			static_cast<GLint>(headerString.size()),
+			static_cast<GLint>(headerStr.size()),
+			static_cast<GLint>(constantsMacrosStr.size()),
 			static_cast<GLint>(varyingStr.size()),
 			static_cast<GLint>(attributeStr.size()),
 			static_cast<GLint>(outColorDeclStr.size()),
