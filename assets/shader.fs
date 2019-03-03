@@ -1,11 +1,11 @@
 #if defined(ORB_GLSL)
 
-varying vec4 v_position;
-varying vec4 v_color;
+ORB_VARYING vec4 v_position;
+ORB_VARYING vec4 v_color;
 
 void main()
 {
-	gl_FragColor = v_color;
+	ORB_SET_OUT_COLOR(v_color);
 }
 
 #elif defined(ORB_HLSL)

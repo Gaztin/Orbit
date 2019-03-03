@@ -28,41 +28,41 @@ namespace orb
 
 static std::unique_ptr<platform::shader_base> init_base(shader_type type, const asset& ast)
 {
-	switch (render_context::get_current()->get_api())
+	orb::graphics_api api = render_context::get_current()->get_api();
+
+	switch (type)
 	{
+		case shader_type::Vertex:
+			switch (api)
+			{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL_2_0:
-		case graphics_api::OpenGL_3_2:
-		case graphics_api::OpenGL_4_1:
-		case graphics_api::OpenGL_ES_2:
-		case graphics_api::OpenGL_ES_3:
-			switch (type)
-			{
-				case shader_type::Vertex:
-					return std::make_unique<platform::shader_gl<gl::shader_type::Vertex>>(ast);
-
-				case shader_type::Fragment:
-					return std::make_unique<platform::shader_gl<gl::shader_type::Fragment>>(ast);
-
-				default:
-					return nullptr;
-			}
+				case graphics_api::OpenGL_2_0:  return std::make_unique<platform::shader_gl<gl::shader_type::Vertex>>(ast, gl::version::v2_0 );
+				case graphics_api::OpenGL_3_2:  return std::make_unique<platform::shader_gl<gl::shader_type::Vertex>>(ast, gl::version::v3_2 );
+				case graphics_api::OpenGL_4_1:  return std::make_unique<platform::shader_gl<gl::shader_type::Vertex>>(ast, gl::version::v4_1 );
+				case graphics_api::OpenGL_ES_2: return std::make_unique<platform::shader_gl<gl::shader_type::Vertex>>(ast, gl::version::vES_2);
+				case graphics_api::OpenGL_ES_3: return std::make_unique<platform::shader_gl<gl::shader_type::Vertex>>(ast, gl::version::vES_3);
 #endif
-
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::Direct3D_11:
-			switch (type)
-			{
-				case shader_type::Vertex:
-					return std::make_unique<platform::shader_vertex_d3d11>(ast);
-
-				case shader_type::Fragment:
-					return std::make_unique<platform::shader_pixel_d3d11>(ast);
-
-				default:
-					return nullptr;
-			}
+				case graphics_api::Direct3D_11: return std::make_unique<platform::shader_vertex_d3d11>(ast);
 #endif
+				default: return nullptr;
+			}
+
+		case shader_type::Fragment:
+			switch (api)
+			{
+#if defined(ORB_HAS_OPENGL)
+				case graphics_api::OpenGL_2_0:  return std::make_unique<platform::shader_gl<gl::shader_type::Fragment>>(ast, gl::version::v2_0 );
+				case graphics_api::OpenGL_3_2:  return std::make_unique<platform::shader_gl<gl::shader_type::Fragment>>(ast, gl::version::v3_2 );
+				case graphics_api::OpenGL_4_1:  return std::make_unique<platform::shader_gl<gl::shader_type::Fragment>>(ast, gl::version::v4_1 );
+				case graphics_api::OpenGL_ES_2: return std::make_unique<platform::shader_gl<gl::shader_type::Fragment>>(ast, gl::version::vES_2);
+				case graphics_api::OpenGL_ES_3: return std::make_unique<platform::shader_gl<gl::shader_type::Fragment>>(ast, gl::version::vES_3);
+#endif
+#if defined(ORB_HAS_D3D11)
+				case graphics_api::Direct3D_11: return std::make_unique<platform::shader_pixel_d3d11>(ast);
+#endif
+				default: return nullptr;
+			}
 
 		default:
 			return nullptr;
