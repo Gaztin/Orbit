@@ -135,13 +135,21 @@ functions load_functions()
 	*cast<void**>(&fns.link_program        ) = platform::get_proc_address("glLinkProgram");
 	*cast<void**>(&fns.shader_source       ) = platform::get_proc_address("glShaderSource");
 	*cast<void**>(&fns.uniform1f           ) = platform::get_proc_address("glUniform1f");
+	*cast<void**>(&fns.uniform1fv          ) = platform::get_proc_address("glUniform1fv");
 	*cast<void**>(&fns.uniform2f           ) = platform::get_proc_address("glUniform2f");
+	*cast<void**>(&fns.uniform2fv          ) = platform::get_proc_address("glUniform2fv");
 	*cast<void**>(&fns.uniform3f           ) = platform::get_proc_address("glUniform3f");
+	*cast<void**>(&fns.uniform3fv          ) = platform::get_proc_address("glUniform3fv");
 	*cast<void**>(&fns.uniform4f           ) = platform::get_proc_address("glUniform4f");
+	*cast<void**>(&fns.uniform4fv          ) = platform::get_proc_address("glUniform4fv");
 	*cast<void**>(&fns.uniform1i           ) = platform::get_proc_address("glUniform1i");
+	*cast<void**>(&fns.uniform1iv          ) = platform::get_proc_address("glUniform1iv");
 	*cast<void**>(&fns.uniform2i           ) = platform::get_proc_address("glUniform2i");
+	*cast<void**>(&fns.uniform2iv          ) = platform::get_proc_address("glUniform2iv");
 	*cast<void**>(&fns.uniform3i           ) = platform::get_proc_address("glUniform3i");
+	*cast<void**>(&fns.uniform3iv          ) = platform::get_proc_address("glUniform3iv");
 	*cast<void**>(&fns.uniform4i           ) = platform::get_proc_address("glUniform4i");
+	*cast<void**>(&fns.uniform4iv          ) = platform::get_proc_address("glUniform4iv");
 	*cast<void**>(&fns.use_program         ) = platform::get_proc_address("glUseProgram");
 	*cast<void**>(&fns.validate_program    ) = platform::get_proc_address("glValidateProgram");
 
