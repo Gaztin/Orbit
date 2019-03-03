@@ -41,7 +41,7 @@ static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t
 
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::Direct3D_11:
-			return std::make_unique<platform::buffer_d3d11<d3d11::bind_flag::VertexBuffer>>(data, count, stride);
+			return std::make_unique<platform::vertex_buffer_d3d11>(data, count, stride);
 #endif
 
 		default:

@@ -40,12 +40,16 @@ static std::unique_ptr<platform::buffer_base> init_base(index_format fmt, const 
 	switch (render_context::get_current()->get_api())
 	{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
+		case graphics_api::OpenGL_2_0:
+		case graphics_api::OpenGL_3_2:
+		case graphics_api::OpenGL_4_1:
+		case graphics_api::OpenGL_ES_2:
+		case graphics_api::OpenGL_ES_3:
 			return std::make_unique<platform::buffer_gl<gl::buffer_target::ElementArray>>(data, count * format_size(fmt));
 #endif
 
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
+		case graphics_api::Direct3D_11:
 			return std::make_unique<platform::index_buffer_d3d11>(fmt, data, count);
 #endif
 
