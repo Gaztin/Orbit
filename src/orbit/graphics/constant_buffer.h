@@ -19,6 +19,7 @@
 #include <memory>
 #include <tuple>
 
+#include "orbit/core/utility.h"
 #include "orbit/graphics/platform/constant_buffer_base.h"
 #include "orbit/graphics/shader_constant.h"
 
@@ -37,15 +38,24 @@ public:
 	}
 
 	void bind(shader_type type, uint32_t slot);
-	void update(const void* data, size_t size);
+	void update(size_t location, const void* data, size_t size);
 
 	template<typename... Types>
 	void update(const std::tuple<Types...>& constants)
 	{
-		update((sizeof...(Types) > 0 ? &std::get<0>(constants) : nullptr), (0 + ... + sizeof(Types)));
+		if constexpr (sizeof...(Types) > 0)
+			update_sequencial(constants, gen_seq<sizeof...(Types)>());
+		else
+			update(0, nullptr, 0);
 	}
 
 private:
+	template<typename Tup, size_t... Is>
+	void update_sequencial(Tup&& tup, seq<Is...>)
+	{
+		auto l = { (update(Is, &std::get<Is>(tup), sizeof(std::get<Is>(tup))), 0)... };
+	}
+
 	std::unique_ptr<platform::constant_buffer_base> m_base;
 };
 

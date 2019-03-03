@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,8 +16,9 @@
 */
 
 #pragma once
-#include "orbit/core/memory.h"
-#include "orbit/graphics/platform/d3d11/d3d11.h"
+#include <cstddef>
+
+#include "orbit/graphics/platform/opengl/gl.h"
 #include "orbit/graphics/platform/constant_buffer_base.h"
 
 namespace orb
@@ -25,18 +26,13 @@ namespace orb
 namespace platform
 {
 
-class ORB_API_GRAPHICS constant_buffer_d3d11 : public constant_buffer_base
+class constant_buffer_gl_2_0 : public constant_buffer_base
 {
 public:
-	constant_buffer_d3d11(size_t size);
+	constant_buffer_gl_2_0() = default;
 
 	void update(size_t location, const void* data, size_t size) final override;
 	void bind(shader_type type, uint32_t slot) final override;
-
-private:
-#if defined(ORB_OS_WINDOWS)
-	com_ptr<ID3D11Buffer> m_buffer;
-#endif
 };
 
 }

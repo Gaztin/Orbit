@@ -42,7 +42,7 @@ constant_buffer_d3d11::constant_buffer_d3d11(size_t size)
 {
 }
 
-void constant_buffer_d3d11::update(const void* data, size_t size)
+void constant_buffer_d3d11::update(size_t /*location*/, const void* data, size_t size)
 {
 	ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
 

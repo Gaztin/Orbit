@@ -15,7 +15,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "constant_buffer_gl.h"
+#include "constant_buffer_gl_3_2.h"
 
 #include <cstddef>
 #include <cstring>
@@ -29,7 +29,7 @@ namespace orb
 namespace platform
 {
 
-constant_buffer_gl::constant_buffer_gl(size_t size)
+constant_buffer_gl_3_2::constant_buffer_gl_3_2(size_t size)
 	: m_id(0)
 {
 	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
@@ -39,13 +39,13 @@ constant_buffer_gl::constant_buffer_gl(size_t size)
 	fns.bind_buffer(gl::buffer_target::Uniform, 0);
 }
 
-constant_buffer_gl::~constant_buffer_gl()
+constant_buffer_gl_3_2::~constant_buffer_gl_3_2()
 {
 	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 	fns.delete_buffers(1, &m_id);
 }
 
-void constant_buffer_gl::update(const void* data, size_t size)
+void constant_buffer_gl_3_2::update(size_t /*location*/, const void* data, size_t size)
 {
 	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 	fns.bind_buffer(gl::buffer_target::Uniform, m_id);
@@ -55,7 +55,7 @@ void constant_buffer_gl::update(const void* data, size_t size)
 	fns.bind_buffer(gl::buffer_target::Uniform, 0);
 }
 
-void constant_buffer_gl::bind(shader_type /*type*/, uint32_t slot)
+void constant_buffer_gl_3_2::bind(shader_type /*type*/, uint32_t slot)
 {
 	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 	fns.bind_buffer(gl::buffer_target::Uniform, m_id);

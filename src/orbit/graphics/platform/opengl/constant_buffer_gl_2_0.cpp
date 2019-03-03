@@ -15,29 +15,30 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
+#include "constant_buffer_gl_2_0.h"
+
 #include <cstddef>
+#include <cstring>
 
 #include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/constant_buffer_base.h"
+#include "orbit/graphics/platform/opengl/render_context_gl.h"
+#include "orbit/graphics/render_context.h"
 
 namespace orb
 {
 namespace platform
 {
 
-class constant_buffer_gl : public constant_buffer_base
+void constant_buffer_gl_2_0::update(size_t location, const void* data, size_t /*size*/)
 {
-public:
-	constant_buffer_gl(size_t size);
-	~constant_buffer_gl();
+	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	// #TODO: won't work for any other uniform types other than single floats.
+	fns.uniform1f(location, *reinterpret_cast<const GLfloat*>(data));
+}
 
-	void update(const void* data, size_t size) final override;
-	void bind(shader_type type, uint32_t slot) final override;
-
-private:
-	GLuint m_id;
-};
+void constant_buffer_gl_2_0::bind(shader_type /*type*/, uint32_t /*slot*/)
+{
+}
 
 }
 }
