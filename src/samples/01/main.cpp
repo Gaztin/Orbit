@@ -71,7 +71,7 @@ std::tuple triangleConstants = std::make_tuple
 sample_app::sample_app()
 	: m_window(800, 600)
 	, m_windowSubscription(m_window.subscribe(&sample_app::on_window_event))
-	, m_renderContext(m_window, orb::graphics_api::DeviceDefault)
+	, m_renderContext(m_window, orb::get_system_default_graphics_api())
 	, m_vertexShader(orb::shader_type::Vertex, orb::asset("shader.vs"))
 	, m_fragmentShader(orb::shader_type::Fragment, orb::asset("shader.fs"))
 	, m_triangleVertexBuffer(triangleVertices)

@@ -21,20 +21,39 @@
 #include <OpenGL/OpenGL.h>
 
 #include "orbit/core/platform/window_handle.h"
+#include "orbit/graphics/platform/opengl/gl_version.h"
 
 namespace orb
 {
 namespace platform
 {
 
-static NSOpenGLView* create_open_gl_view(const NSWindow* nsWindow)
+static NSOpenGLPixelFormatAttribute get_opengl_profile(gl::version v)
+{
+	switch (v)
+	{
+		case gl::version::v2_0:
+			return NSOpenGLProfileVersionLegacy;
+
+		case gl::version::v3_2:
+			return NSOpenGLProfileVersion3_2Core;
+
+		case gl::version::v4_1:
+			return NSOpenGLProfileVersion4_1Core;
+
+		default:
+			return get_opengl_profile(gl::get_system_default_opengl_version());
+	}
+}
+
+static NSOpenGLView* create_open_gl_view(const NSWindow* nsWindow, gl::version v)
 {
 	const NSOpenGLPixelFormatAttribute Attribs[] =
 	{
-		NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
-		NSOpenGLPFADoubleBuffer,
-		NSOpenGLPFAColorSize, 24,
-		NSOpenGLPFADepthSize, 24,
+		NSOpenGLPFAOpenGLProfile, get_opengl_profile(v),
+		NSOpenGLPFADoubleBuffer,  true,
+		NSOpenGLPFAColorSize,     24,
+		NSOpenGLPFADepthSize,     24,
 		0
 	};
 
@@ -49,8 +68,8 @@ static NSOpenGLView* create_open_gl_view(const NSWindow* nsWindow)
 	return glView;
 }
 
-render_context_gl::render_context_gl(const window_handle& wh)
-	: m_glView(create_open_gl_view((const NSWindow*)wh.nsWindow))
+render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
+	: m_glView(create_open_gl_view((const NSWindow*)wh.nsWindow, v))
 {
 	make_current();
 	m_functions = gl::load_functions();

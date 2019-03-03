@@ -31,13 +31,17 @@ static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t
 	switch (render_context::get_current()->get_api())
 	{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
+		case graphics_api::OpenGL_2_0:
+		case graphics_api::OpenGL_3_2:
+		case graphics_api::OpenGL_4_1:
+		case graphics_api::OpenGL_ES_2:
+		case graphics_api::OpenGL_ES_3:
 			return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count * stride);
 #endif
 
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
-			return std::make_unique<platform::vertex_buffer_d3d11>(data, count, stride);
+		case graphics_api::Direct3D_11:
+			return std::make_unique<platform::buffer_d3d11<d3d11::bind_flag::VertexBuffer>>(data, count, stride);
 #endif
 
 		default:

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,37 +16,23 @@
 */
 
 #pragma once
-#include "orbit/core/window.h"
-#include "orbit/graphics/platform/render_context_base.h"
-#include "orbit/graphics/graphics_api.h"
+#include "orbit/graphics.h"
 
 namespace orb
 {
-
-class window;
- 
-class ORB_API_GRAPHICS render_context
+namespace gl
 {
-public:
-	render_context(window& parentWindow, graphics_api api);
-	~render_context();
 
-	bool make_current();
-	void resize(uint32_t width, uint32_t height);
-	void swap_buffers();
-	void clear(buffer_mask mask);
-	void set_clear_color(float r, float g, float b);
-
-	graphics_api get_api() const { return m_api; }
-	platform::render_context_base& get_base() { return *m_base; }
-
-	static render_context* get_current();
-
-private:
-	graphics_api m_api;
-	const platform::window_handle& m_parentWindowHandle;
-	std::unique_ptr<platform::render_context_base> m_base;
-	window::subscription_ptr m_resizeSubscription;
+enum class version
+{
+	v2_0,
+	v3_2,
+	v4_1,
+	vES_2,
+	vES_3,
 };
 
+extern ORB_API_GRAPHICS version get_system_default_opengl_version();
+
+}
 }

@@ -18,6 +18,7 @@
 #include "render_context_gl.h"
 
 #include "orbit/core/platform/window_handle.h"
+#include "orbit/graphics/platform/opengl/gl_version.h"
 
 namespace orb
 {
@@ -29,7 +30,7 @@ static GC create_gc(Display* display, const Window& window)
 	return XCreateGC(display, window, 0, nullptr);
 }
 
-static GLXContext create_glx_context(Display* display)
+static GLXContext create_glx_context(Display* display, gl::version v)
 {
 	int screen = DefaultScreen(display);
 	int attribs[] =
@@ -39,6 +40,9 @@ static GLXContext create_glx_context(Display* display)
 		GLX_DEPTH_SIZE, 24,
 		None
 	};
+
+	// TODO: Initialize using provided OpenGL version
+	(void)v;
 
 	XVisualInfo* visualInfo = glXChooseVisual(display, screen, attribs);
 	return glXCreateContext(display, visualInfo, nullptr, true);

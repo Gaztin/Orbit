@@ -47,18 +47,6 @@
 namespace orb
 {
 
-enum class graphics_api
-{
-	OpenGL,
-	D3D11,
-
-#if defined(ORB_OS_WINDOWS)
-	DeviceDefault = D3D11,
-#else
-	DeviceDefault = OpenGL,
-#endif
-};
-
 enum class buffer_mask
 {
 	Color = 0x1,

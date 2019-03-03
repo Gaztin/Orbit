@@ -18,8 +18,8 @@
 #include "render_context.h"
 
 #include "orbit/core/window.h"
-#include "platform/d3d11/render_context_d3d11.h"
-#include "platform/opengl/render_context_gl.h"
+#include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
+#include "orbit/graphics/platform/opengl/render_context_gl.h"
 
 namespace orb
 {
@@ -31,12 +31,24 @@ static std::unique_ptr<platform::render_context_base> init_base(const platform::
 	switch (api)
 	{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
-			return std::make_unique<platform::render_context_gl>(wh);
+		case graphics_api::OpenGL_2_0:
+			return std::make_unique<platform::render_context_gl>(wh, gl::version::v2_0);
+
+		case graphics_api::OpenGL_3_2:
+			return std::make_unique<platform::render_context_gl>(wh, gl::version::v3_2);
+
+		case graphics_api::OpenGL_4_1:
+			return std::make_unique<platform::render_context_gl>(wh, gl::version::v4_1);
+
+		case graphics_api::OpenGL_ES_2:
+			return std::make_unique<platform::render_context_gl>(wh, gl::version::vES_2);
+
+		case graphics_api::OpenGL_ES_3:
+			return std::make_unique<platform::render_context_gl>(wh, gl::version::vES_3);
 #endif
 
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
+		case graphics_api::Direct3D_11:
 			return std::make_unique<platform::render_context_d3d11>(wh);
 #endif
 
