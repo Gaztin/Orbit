@@ -40,9 +40,6 @@ static std::unique_ptr<platform::render_context_base> init_base(const platform::
 		case graphics_api::OpenGL_4_1:
 			return std::make_unique<platform::render_context_gl>(wh, gl::version::v4_1);
 
-		case graphics_api::OpenGL_ES_1:
-			return std::make_unique<platform::render_context_gl>(wh, gl::version::vES_1);
-
 		case graphics_api::OpenGL_ES_2:
 			return std::make_unique<platform::render_context_gl>(wh, gl::version::vES_2);
 

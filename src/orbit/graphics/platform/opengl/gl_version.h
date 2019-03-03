@@ -28,7 +28,6 @@ enum class version
 	v2_0,
 	v3_2,
 	v4_1,
-	vES_1,
 	vES_2,
 	vES_3,
 };

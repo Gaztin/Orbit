@@ -34,7 +34,6 @@ static std::unique_ptr<platform::shader_base> init_base(shader_type type, const 
 		case graphics_api::OpenGL_2_0:
 		case graphics_api::OpenGL_3_2:
 		case graphics_api::OpenGL_4_1:
-		case graphics_api::OpenGL_ES_1:
 		case graphics_api::OpenGL_ES_2:
 		case graphics_api::OpenGL_ES_3:
 			switch (type)

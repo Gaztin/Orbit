@@ -26,7 +26,6 @@ enum class graphics_api
 	OpenGL_2_0,
 	OpenGL_3_2,
 	OpenGL_4_1,
-	OpenGL_ES_1,
 	OpenGL_ES_2,
 	OpenGL_ES_3,
 	Direct3D_11,

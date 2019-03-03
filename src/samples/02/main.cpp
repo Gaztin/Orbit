@@ -39,7 +39,6 @@ const std::map<orb::graphics_api, std::string> apiNames =
 	{ orb::graphics_api::OpenGL_2_0,  "OpenGL 2.0" },
 	{ orb::graphics_api::OpenGL_3_2,  "OpenGL 3.2" },
 	{ orb::graphics_api::OpenGL_4_1,  "OpenGL 4.1" },
-	{ orb::graphics_api::OpenGL_ES_1, "OpenGL ES 1" },
 	{ orb::graphics_api::OpenGL_ES_2, "OpenGL ES 2" },
 	{ orb::graphics_api::OpenGL_ES_3, "OpenGL ES 3" },
 	{ orb::graphics_api::Direct3D_11, "Direct3D 11" },

@@ -34,7 +34,6 @@ static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t
 		case graphics_api::OpenGL_2_0:
 		case graphics_api::OpenGL_3_2:
 		case graphics_api::OpenGL_4_1:
-		case graphics_api::OpenGL_ES_1:
 		case graphics_api::OpenGL_ES_2:
 		case graphics_api::OpenGL_ES_3:
 			return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count, size);
