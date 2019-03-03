@@ -107,9 +107,14 @@ void sample_app::frame()
 
 	m_triangleVertexBuffer.bind();
 	m_triangleIndexBuffer.bind();
-	m_triangleConstantBuffer.bind(orb::shader_type::Vertex, 0);
-	m_triangleConstantBuffer.update(triangleConstants);
-	m_mainPipeline.draw(m_triangleIndexBuffer);
+
+	m_mainPipeline.bind();
+	{
+		m_triangleConstantBuffer.bind(orb::shader_type::Vertex, 0);
+		m_triangleConstantBuffer.update(triangleConstants);
+		m_mainPipeline.draw(m_triangleIndexBuffer);
+	}
+	m_mainPipeline.unbind();
 
 	m_renderContext.swap_buffers();
 }

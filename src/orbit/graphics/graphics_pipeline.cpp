@@ -52,6 +52,16 @@ graphics_pipeline::graphics_pipeline()
 {
 }
 
+void graphics_pipeline::bind()
+{
+	m_base->bind();
+}
+
+void graphics_pipeline::unbind()
+{
+	m_base->unbind();
+}
+
 void graphics_pipeline::add_shader(const shader& shr)
 {
 	m_base->add_shader(shr);

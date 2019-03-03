@@ -32,6 +32,8 @@ class ORB_API_GRAPHICS graphics_pipeline_base
 public:
 	virtual ~graphics_pipeline_base() = default;
 
+	virtual void bind() = 0;
+	virtual void unbind() = 0;
 	virtual void add_shader(const shader& shr) = 0;
 	virtual void describe_vertex_layout(vertex_layout layout) = 0;
 

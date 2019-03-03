@@ -30,6 +30,8 @@ class ORB_API_GRAPHICS graphics_pipeline_d3d11 : public graphics_pipeline_base
 public:
 	graphics_pipeline_d3d11();
 
+	void bind() final override;
+	void unbind() final override;
 	void add_shader(const shader& shr) final override;
 	void describe_vertex_layout(vertex_layout layout) final override;
 

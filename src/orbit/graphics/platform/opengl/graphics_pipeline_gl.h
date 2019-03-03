@@ -32,6 +32,8 @@ public:
 	graphics_pipeline_gl();
 	~graphics_pipeline_gl();
 
+	void bind() final override;
+	void unbind() final override;
 	void add_shader(const shader& shr) final override;
 	void describe_vertex_layout(vertex_layout layout) final override;
 
