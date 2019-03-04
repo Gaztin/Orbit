@@ -34,13 +34,10 @@ static EAGLRenderingAPI get_eagl_rendering_api(gl::version v)
 {
 	switch (v)
 	{
-		case gl::version::ES_1:
-			return kEAGLRenderingAPIOpenGLES1;
-
-		case gl::version::ES_2:
+		case gl::version::vES_2:
 			return kEAGLRenderingAPIOpenGLES2;
 
-		case gl::version::ES_3:
+		case gl::version::vES_3:
 			return kEAGLRenderingAPIOpenGLES3;
 
 		default:
@@ -55,17 +52,7 @@ render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
 	ORBGLKViewDelegate* delegate = [ORBGLKViewDelegate alloc];
 	[delegate init];
 
-	switch (v)
-	{
-		case gl::version::OpenGL_ES_2:
-			[(EAGLContext*)m_eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES2];
-			break;
-
-		case gl::version::OpenGL_ES_3:
-			[(EAGLContext*)m_eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES3];
-			break;
-	}
-
+	[(EAGLContext*)m_eaglContext initWithAPI:get_eagl_rendering_api(v)];
 	[(GLKView*)m_glkView initWithFrame:[[UIScreen mainScreen] bounds]];
 	((GLKView*)m_glkView).context = (EAGLContext*)m_eaglContext;
 	((GLKView*)m_glkView).delegate = delegate;
