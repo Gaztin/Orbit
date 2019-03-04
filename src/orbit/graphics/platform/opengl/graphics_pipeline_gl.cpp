@@ -96,20 +96,13 @@ void graphics_pipeline_gl::bind()
 	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
 	fns.use_program(m_programId);
 
-	GLenum e;
-	e = glGetError();
-
 	const uint8_t* pointer = nullptr;
 	for (GLuint i = 0; i < m_layout.size(); ++i)
 	{
 		const gl::vertex_attrib_data_type data_type = get_vertex_component_data_type(m_layout[i].type);
 		const GLint length = get_vertex_component_length(m_layout[i].type);
 		fns.enable_vertex_attrib_array(i);
-		e = glGetError();
-		GLint p = 0;
-		fns.get_integerv(orb::gl::state_param::ArrayBufferBinding, &p);
 		fns.vertex_attrib_pointer(i, length, data_type, GL_FALSE, m_stride, pointer);
-		e = glGetError();
 		pointer += length * get_data_type_size(data_type);
 	}
 }
