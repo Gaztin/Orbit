@@ -54,6 +54,7 @@ private:
 	void update_sequencial(Tup&& tup, seq<Is...>)
 	{
 		auto l = { (update(Is, &std::get<Is>(tup), sizeof(std::get<Is>(tup))), 0)... };
+		(void)l;
 	}
 
 	std::unique_ptr<platform::constant_buffer_base> m_base;
