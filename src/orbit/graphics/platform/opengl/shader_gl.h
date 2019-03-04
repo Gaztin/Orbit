@@ -146,7 +146,7 @@ struct shader_gl<gl::shader_type::Vertex>::traits
 				return "#define ORB_VARYING out\n";
 
 			default:
-				return std::string_view();
+				return "";
 		}
 	}
 
@@ -164,13 +164,13 @@ struct shader_gl<gl::shader_type::Vertex>::traits
 				return "#define ORB_ATTRIBUTE in\n";
 
 			default:
-				return std::string_view();
+				return "";
 		}
 	}
 
 	static std::string_view make_out_color_declaration(gl::version)
 	{
-		return std::string_view();
+		return "";
 	}
 };
 
@@ -191,7 +191,7 @@ struct shader_gl<gl::shader_type::Fragment>::traits
 				return "#define ORB_VARYING in\n";
 
 			default:
-				return std::string_view();
+				return "";
 		}
 	}
 
@@ -207,7 +207,7 @@ struct shader_gl<gl::shader_type::Fragment>::traits
 			case gl::version::v4_1:
 			case gl::version::vES_3:
 			default:
-				return std::string_view();
+				return "";
 		}
 	}
 
