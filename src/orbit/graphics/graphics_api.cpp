@@ -25,7 +25,7 @@ graphics_api get_system_default_graphics_api()
 #if defined(ORB_OS_WINDOWS)
 	return graphics_api::Direct3D_11;
 #elif defined(ORB_OS_LINUX)
-	return graphics_api::OpenGL_4_1;
+	return graphics_api::OpenGL_3_2;
 #elif defined(ORB_OS_MACOS)
 	return graphics_api::OpenGL_2_0;
 #elif defined(ORB_OS_ANDROID)
