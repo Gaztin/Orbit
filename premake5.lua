@@ -142,6 +142,7 @@ local function decl_sample(name)
 		"src/samples/" .. id .. "/**.cpp",
 		"src/samples/" .. id .. "/**.h",
 	}
+	filter{"system:linux"} linkoptions{"-Wl,-rpath=\\$$ORIGIN"}
 	filter{"system:ios"} files{"res/Info.plist", "assets"} filter{}
 	filter_system_files()
 	group()
