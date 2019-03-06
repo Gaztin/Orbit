@@ -80,40 +80,38 @@ static gl::index_type get_index_type(index_format fmt)
 }
 
 graphics_pipeline_gl::graphics_pipeline_gl()
+	: m_stride(0)
+	, m_programId(gl::get_current_functions().create_program())
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	m_programId = fns.create_program();
 }
 
 graphics_pipeline_gl::~graphics_pipeline_gl()
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.delete_program(m_programId);
+	gl::get_current_functions().delete_program(m_programId);
 }
 
 void graphics_pipeline_gl::bind()
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.use_program(m_programId);
+	auto& gl = gl::get_current_functions();
+	gl.use_program(m_programId);
 
 	const uint8_t* pointer = nullptr;
 	for (GLuint i = 0; i < m_layout.size(); ++i)
 	{
 		const gl::vertex_attrib_data_type data_type = get_vertex_component_data_type(m_layout[i].type);
 		const GLint length = get_vertex_component_length(m_layout[i].type);
-		fns.enable_vertex_attrib_array(i);
-		fns.vertex_attrib_pointer(i, length, data_type, GL_FALSE, m_stride, pointer);
+		gl.enable_vertex_attrib_array(i);
+		gl.vertex_attrib_pointer(i, length, data_type, GL_FALSE, m_stride, pointer);
 		pointer += length * get_data_type_size(data_type);
 	}
 }
 
 void graphics_pipeline_gl::unbind()
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	auto& gl = gl::get_current_functions();
 	for (GLuint i = 0; i < m_layout.size(); ++i)
-		fns.disable_vertex_attrib_array(i);
-
-	fns.use_program(0);
+		gl.disable_vertex_attrib_array(i);
+	gl.use_program(0);
 }
 
 void graphics_pipeline_gl::add_shader(const shader& shr)
@@ -133,16 +131,16 @@ void graphics_pipeline_gl::add_shader(const shader& shr)
 			return;
 	}
 
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.attach_shader(m_programId, shader_id);
-	fns.link_program(m_programId);
+	auto& gl = gl::get_current_functions();
+	gl.attach_shader(m_programId, shader_id);
+	gl.link_program(m_programId);
 
 	GLint loglen = 0;
-	fns.get_programiv(m_programId, gl::program_param::InfoLogLength, &loglen);
+	gl.get_programiv(m_programId, gl::program_param::InfoLogLength, &loglen);
 	if (loglen > 0)
 	{
 		std::string logbuf(static_cast<size_t>(loglen), '\0');
-		fns.get_program_info_log(m_programId, loglen, nullptr, &logbuf[0]);
+		gl.get_program_info_log(m_programId, loglen, nullptr, &logbuf[0]);
 		log_error(logbuf);
 	}
 }
@@ -159,14 +157,12 @@ void graphics_pipeline_gl::describe_vertex_layout(vertex_layout layout)
 
 void graphics_pipeline_gl::draw(const vertex_buffer& vb)
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.draw_arrays(gl::draw_mode::Triangles, 0, static_cast<GLsizei>(vb.get_count()));
+	gl::get_current_functions().draw_arrays(gl::draw_mode::Triangles, 0, static_cast<GLsizei>(vb.get_count()));
 }
 
 void graphics_pipeline_gl::draw(const index_buffer& ib)
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.draw_elements(gl::draw_mode::Triangles, static_cast<GLsizei>(ib.get_count()), get_index_type(ib.get_format()), nullptr);
+	gl::get_current_functions().draw_elements(gl::draw_mode::Triangles, static_cast<GLsizei>(ib.get_count()), get_index_type(ib.get_format()), nullptr);
 }
 
 }

@@ -20,6 +20,8 @@
 #include <vector>
 
 #include "orbit/core/utility.h"
+#include "orbit/graphics/platform/opengl/render_context_gl.h"
+#include "orbit/graphics/render_context.h"
 
 #if defined(ORB_OS_LINUX)
 #include <GL/glx.h>
@@ -155,5 +157,30 @@ functions load_functions()
 
 	return fns;
 }
+
+functions& get_current_functions()
+{
+	thread_local gl::functions defaultFunctions;
+
+	render_context* ctx = render_context::get_current();
+	if (!ctx)
+		return defaultFunctions;
+
+	switch (ctx->get_api())
+	{
+		case graphics_api::OpenGL_2_0:
+		case graphics_api::OpenGL_3_2:
+		case graphics_api::OpenGL_4_1:
+		case graphics_api::OpenGL_ES_2:
+		case graphics_api::OpenGL_ES_3:
+			return reinterpret_cast<orb::platform::render_context_gl*>(ctx)->get_functions();
+
+		case graphics_api::Direct3D_11:
+			return defaultFunctions;
+	}
+
+	return defaultFunctions;
+}
+
 }
 }

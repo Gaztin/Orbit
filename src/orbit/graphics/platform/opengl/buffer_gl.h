@@ -35,23 +35,21 @@ public:
 	buffer_gl(const void* data, size_t size)
 		: m_id(0)
 	{
-		const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-		fns.gen_buffers(1, &m_id);
-		fns.bind_buffer(BufferTarget, m_id);
-		fns.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
-		fns.bind_buffer(BufferTarget, 0);
+		auto& gl = gl::get_current_functions();
+		gl.gen_buffers(1, &m_id);
+		gl.bind_buffer(BufferTarget, m_id);
+		gl.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
+		gl.bind_buffer(BufferTarget, 0);
 	}
 
 	~buffer_gl()
 	{
-		const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-		fns.delete_buffers(1, &m_id);
+		gl::get_current_functions().delete_buffers(1, &m_id);
 	}
 
 	void bind() final override
 	{
-		const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-		fns.bind_buffer(BufferTarget, m_id);
+		gl::get_current_functions().bind_buffer(BufferTarget, m_id);
 	}
 
 private:

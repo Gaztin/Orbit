@@ -31,9 +31,9 @@ namespace platform
 
 void constant_buffer_gl_2_0::update(size_t location, const void* data, size_t /*size*/)
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
+	auto& gl = gl::get_current_functions();
 	// #TODO: won't work for any other uniform types other than single floats.
-	fns.uniform1f(location, *reinterpret_cast<const GLfloat*>(data));
+	gl.uniform1f(location, *reinterpret_cast<const GLfloat*>(data));
 }
 
 void constant_buffer_gl_2_0::bind(shader_type /*type*/, uint32_t /*slot*/)

@@ -839,6 +839,7 @@ extern ORB_API_GRAPHICS void* get_proc_address(std::string_view name);
 }
 
 extern ORB_API_GRAPHICS functions load_functions();
+extern ORB_API_GRAPHICS functions& get_current_functions();
 
 }
 

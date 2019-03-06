@@ -32,34 +32,33 @@ namespace platform
 constant_buffer_gl_3_2::constant_buffer_gl_3_2(size_t size)
 	: m_id(0)
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.gen_buffers(1, &m_id);
-	fns.bind_buffer(gl::buffer_target::Uniform, m_id);
-	fns.buffer_data(gl::buffer_target::Uniform, size, nullptr, orb::gl::buffer_usage::StreamDraw);
-	fns.bind_buffer(gl::buffer_target::Uniform, 0);
+	auto& gl = gl::get_current_functions();
+	gl.gen_buffers(1, &m_id);
+	gl.bind_buffer(gl::buffer_target::Uniform, m_id);
+	gl.buffer_data(gl::buffer_target::Uniform, size, nullptr, orb::gl::buffer_usage::StreamDraw);
+	gl.bind_buffer(gl::buffer_target::Uniform, 0);
 }
 
 constant_buffer_gl_3_2::~constant_buffer_gl_3_2()
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.delete_buffers(1, &m_id);
+	gl::get_current_functions().delete_buffers(1, &m_id);
 }
 
 void constant_buffer_gl_3_2::update(size_t /*location*/, const void* data, size_t size)
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.bind_buffer(gl::buffer_target::Uniform, m_id);
-	void* dst = fns.map_buffer_range(gl::buffer_target::Uniform, 0, size, gl::map_access::WriteBit);
+	auto& gl = gl::get_current_functions();;
+	gl.bind_buffer(gl::buffer_target::Uniform, m_id);
+	void* dst = gl.map_buffer_range(gl::buffer_target::Uniform, 0, size, gl::map_access::WriteBit);
 	std::memcpy(dst, data, size);
-	fns.unmap_buffer(gl::buffer_target::Uniform);
-	fns.bind_buffer(gl::buffer_target::Uniform, 0);
+	gl.unmap_buffer(gl::buffer_target::Uniform);
+	gl.bind_buffer(gl::buffer_target::Uniform, 0);
 }
 
 void constant_buffer_gl_3_2::bind(shader_type /*type*/, uint32_t slot)
 {
-	const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-	fns.bind_buffer(gl::buffer_target::Uniform, m_id);
-	fns.bind_buffer_base(gl::buffer_target::Uniform, slot, m_id);
+	auto& gl = gl::get_current_functions();;
+	gl.bind_buffer(gl::buffer_target::Uniform, m_id);
+	gl.bind_buffer_base(gl::buffer_target::Uniform, slot, m_id);
 }
 
 }

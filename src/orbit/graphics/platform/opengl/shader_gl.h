@@ -45,9 +45,8 @@ private:
 public:
 	shader_gl(const asset& ast, gl::version v)
 	{
-		const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-		const auto& data = ast.get_data();
-		m_id = fns.create_shader(ShaderType);
+		auto& gl = gl::get_current_functions();
+		m_id = gl.create_shader(ShaderType);
 
 		std::string_view headerStr;
 		switch (v)
@@ -77,6 +76,7 @@ public:
 		const std::string_view varyingStr      = traits::make_varying_macro(v);
 		const std::string_view attributeStr    = traits::make_attribute_macro(v);
 		const std::string_view outColorDeclStr = traits::make_out_color_declaration(v);
+		const auto&            data            = ast.get_data();
 
 		const GLchar* sources[] =
 		{
@@ -96,15 +96,15 @@ public:
 			static_cast<GLint>(outColorDeclStr.size()),
 			static_cast<GLint>(data.size()),
 		};
-		fns.shader_source(m_id, count_of(sources), sources, lengths);
-		fns.compile_shader(m_id);
+		gl.shader_source(m_id, count_of(sources), sources, lengths);
+		gl.compile_shader(m_id);
 
 		GLint loglen = 0;
-		fns.get_shaderiv(m_id, gl::shader_param::InfoLogLength, &loglen);
+		gl.get_shaderiv(m_id, gl::shader_param::InfoLogLength, &loglen);
 		if (loglen > 0)
 		{
 			std::string logbuf(static_cast<size_t>(loglen), '\0');
-			fns.get_shader_info_log(m_id, loglen, nullptr, &logbuf[0]);
+			gl.get_shader_info_log(m_id, loglen, nullptr, &logbuf[0]);
 			log_error(logbuf);
 		}
 	}
