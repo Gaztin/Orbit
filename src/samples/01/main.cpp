@@ -106,10 +106,9 @@ void sample_app::frame()
 	m_renderContext.clear(orb::buffer_mask::Color | orb::buffer_mask::Depth);
 
 	m_triangleVertexBuffer.bind();
-	m_triangleIndexBuffer.bind();
-
 	m_mainPipeline.bind();
 	{
+		m_triangleIndexBuffer.bind();
 		m_triangleConstantBuffer.bind(orb::shader_type::Vertex, 0);
 		m_triangleConstantBuffer.update(triangleConstants);
 		m_mainPipeline.draw(m_triangleIndexBuffer);
