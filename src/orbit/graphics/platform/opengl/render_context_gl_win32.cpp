@@ -123,9 +123,7 @@ render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
 		{
 			0x2091, get_context_version_major(v), // WGL_CONTEXT_MAJOR_VERSION_ARB
 			0x2092, get_context_version_minor(v), // WGL_CONTEXT_MINOR_VERSION_ARB
-			// #TODO: Should Core vs Compability be configurable?
-//			0x9126, 0x00000001,                   // WGL_CONTEXT_PROFILE_MASK_ARB = WGL_CONTEXT_CORE_PROFILE_BIT_ARB
-			0x9126, 0x00000002,                   // WGL_CONTEXT_PROFILE_MASK_ARB = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB
+			0x9126, 0x00000001,                   // WGL_CONTEXT_PROFILE_MASK_ARB = WGL_CONTEXT_CORE_PROFILE_BIT_ARB
 			0
 		};
 
