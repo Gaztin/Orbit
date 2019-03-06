@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -15,39 +15,34 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include <optional>
-#include <vector>
+#include "vertex_array_object_gl.h"
 
 #include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/vertex_array_object_gl.h"
-#include "orbit/graphics/platform/graphics_pipeline_base.h"
 
 namespace orb
 {
 namespace platform
 {
 
-class ORB_API_GRAPHICS graphics_pipeline_gl : public graphics_pipeline_base
+vertex_array_object_gl::vertex_array_object_gl()
 {
-public:
-	graphics_pipeline_gl();
-	~graphics_pipeline_gl();
+	orb::gl::get_current_functions().gen_vertex_arrays(1, &m_id);
+}
 
-	void bind() final override;
-	void unbind() final override;
-	void add_shader(const shader& shr) final override;
-	void describe_vertex_layout(vertex_layout layout) final override;
+vertex_array_object_gl::~vertex_array_object_gl()
+{
+	orb::gl::get_current_functions().delete_vertex_arrays(1, &m_id);
+}
 
-	void draw(const vertex_buffer& vb) final override;
-	void draw(const index_buffer& ib) final override;
+void vertex_array_object_gl::bind()
+{
+	orb::gl::get_current_functions().bind_vertex_array(m_id);
+}
 
-private:
-	std::vector<vertex_component> m_layout;
-	GLsizei m_stride;
-	GLuint m_programId;
-	std::optional<vertex_array_object_gl> m_vertexArrayObject;
-};
+void vertex_array_object_gl::unbind()
+{
+	orb::gl::get_current_functions().bind_vertex_array(0);
+}
 
 }
 }

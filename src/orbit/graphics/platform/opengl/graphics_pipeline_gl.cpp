@@ -79,9 +79,24 @@ static gl::index_type get_index_type(index_format fmt)
 	}
 }
 
+static std::optional<vertex_array_object_gl> init_vao()
+{
+	switch (render_context::get_current()->get_api())
+	{
+		case graphics_api::OpenGL_3_2:
+		case graphics_api::OpenGL_4_1:
+		case graphics_api::OpenGL_ES_3:
+			return std::make_optional<vertex_array_object_gl>();
+
+		default:
+			return std::nullopt;
+	}
+}
+
 graphics_pipeline_gl::graphics_pipeline_gl()
 	: m_stride(0)
 	, m_programId(gl::get_current_functions().create_program())
+	, m_vertexArrayObject(init_vao())
 {
 }
 
@@ -93,6 +108,10 @@ graphics_pipeline_gl::~graphics_pipeline_gl()
 void graphics_pipeline_gl::bind()
 {
 	auto& gl = gl::get_current_functions();
+
+	if (m_vertexArrayObject)
+		m_vertexArrayObject->bind();
+
 	gl.use_program(m_programId);
 
 	const uint8_t* pointer = nullptr;
@@ -111,7 +130,11 @@ void graphics_pipeline_gl::unbind()
 	auto& gl = gl::get_current_functions();
 	for (GLuint i = 0; i < m_layout.size(); ++i)
 		gl.disable_vertex_attrib_array(i);
+
 	gl.use_program(0);
+
+	if (m_vertexArrayObject)
+		m_vertexArrayObject->unbind();
 }
 
 void graphics_pipeline_gl::add_shader(const shader& shr)

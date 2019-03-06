@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,37 +16,24 @@
 */
 
 #pragma once
-#include <optional>
-#include <vector>
-
 #include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/vertex_array_object_gl.h"
-#include "orbit/graphics/platform/graphics_pipeline_base.h"
 
 namespace orb
 {
 namespace platform
 {
 
-class ORB_API_GRAPHICS graphics_pipeline_gl : public graphics_pipeline_base
+class vertex_array_object_gl
 {
 public:
-	graphics_pipeline_gl();
-	~graphics_pipeline_gl();
+	vertex_array_object_gl();
+	~vertex_array_object_gl();
 
-	void bind() final override;
-	void unbind() final override;
-	void add_shader(const shader& shr) final override;
-	void describe_vertex_layout(vertex_layout layout) final override;
-
-	void draw(const vertex_buffer& vb) final override;
-	void draw(const index_buffer& ib) final override;
+	void bind();
+	void unbind();
 
 private:
-	std::vector<vertex_component> m_layout;
-	GLsizei m_stride;
-	GLuint m_programId;
-	std::optional<vertex_array_object_gl> m_vertexArrayObject;
+	GLuint m_id;
 };
 
 }
