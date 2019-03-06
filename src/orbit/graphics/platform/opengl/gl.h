@@ -831,6 +831,13 @@ struct functions
 	void (ORB_GL_CALL *uniform4iv)(GLint location, GLsizei count, const GLint* value);
 	void (ORB_GL_CALL *use_program)(GLuint program);
 	void (ORB_GL_CALL *validate_program)(GLuint program);
+
+	// Vertex array objects
+	void (ORB_GL_CALL *bind_vertex_array)(GLuint array);
+	void (ORB_GL_CALL *delete_vertex_arrays)(GLsizei n, const GLuint* arrays);
+	void (ORB_GL_CALL *gen_vertex_arrays)(GLsizei n, GLuint* arrays);
+	GLboolean (ORB_GL_CALL *is_vertex_array)(GLuint array);
+
 };
 
 namespace platform

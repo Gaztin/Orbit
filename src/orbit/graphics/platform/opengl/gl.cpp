@@ -155,6 +155,12 @@ functions load_functions()
 	*cast<void**>(&fns.use_program         ) = platform::get_proc_address("glUseProgram");
 	*cast<void**>(&fns.validate_program    ) = platform::get_proc_address("glValidateProgram");
 
+	// Vertex array objects
+	*cast<void**>(&fns.bind_vertex_array)    = platform::get_proc_address("glBindVertexArray");
+	*cast<void**>(&fns.delete_vertex_arrays) = platform::get_proc_address("glDeleteVertexArrays");
+	*cast<void**>(&fns.gen_vertex_arrays)    = platform::get_proc_address("glGenVertexArrays");
+	*cast<void**>(&fns.is_vertex_array)      = platform::get_proc_address("glIsVertexArray");
+
 	return fns;
 }
 
