@@ -56,7 +56,7 @@ public:
 			case gl::version::v3_2:  headerStr = "#version 150\n#define ORB_GLSL 1\n"; break;
 			case gl::version::v4_1:  headerStr = "#version 410\n#define ORB_GLSL 1\n"; break;
 			case gl::version::vES_2: headerStr = "#version 100\n#define ORB_GLSL 1\nprecision highp float;\n"; break;
-			case gl::version::vES_3: headerStr = "#version 300\n#define ORB_GLSL 1\n"; break;
+			case gl::version::vES_3: headerStr = "#version 300 es\n#define ORB_GLSL 1\nprecision highp float;\n"; break;
 		}
 
 		std::string_view constantsMacrosStr;
