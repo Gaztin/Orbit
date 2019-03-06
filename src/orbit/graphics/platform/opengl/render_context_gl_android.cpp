@@ -17,6 +17,8 @@
 
 #include "render_context_gl.h"
 
+#include <vector>
+
 #include "orbit/core/android_app.h"
 #include "orbit/graphics/platform/opengl/gl_version.h"
 
@@ -29,17 +31,19 @@ static EGLint get_renderable_type(gl::version v)
 {
 	switch (v)
 	{
-		case gl::version::vES_1:
-			return EGL_OPENGL_ES_BIT;
+		case gl::version::vES_2: return EGL_OPENGL_ES2_BIT;
+		case gl::version::vES_3: return EGL_OPENGL_ES3_BIT_KHR;
+		default:                 return 0;
+	}
+}
 
-		case gl::version::vES_2:
-			return EGL_OPENGL_ES2_BIT;
-
-		case gl::version::vES_3:
-			return EGL_OPENGL_ES3_BIT;
-
-		default:
-			return get_renderable_type(gl::get_system_default_opengl_version());
+static EGLint get_context_client(gl::version v)
+{
+	switch (v)
+	{
+		case gl::version::vES_2: return 2;
+		case gl::version::vES_3: return 3;
+		default:                 return 0;
 	}
 }
 
@@ -52,25 +56,81 @@ static EGLDisplay init_display()
 
 static EGLConfig choose_config(const EGLDisplay& display, gl::version v)
 {
-	constexpr EGLint ConfigAttribs[] =
-	{
-		EGL_SURFACE_TYPE,    EGL_WINDOW_BIT,
-		EGL_RENDERABLE_TYPE, get_renderable_type(v),
-		EGL_RED_SIZE,        8,
-		EGL_GREEN_SIZE,      8,
-		EGL_BLUE_SIZE,       8,
-		EGL_ALPHA_SIZE,      8,
-		EGL_DEPTH_SIZE,      24,
-		EGL_NONE
-	};
-	EGLConfig config;
-	EGLint numConfigs;
-	eglChooseConfig(display, ConfigAttribs, &config, 1, &numConfigs);
+	EGLint configCount = 0;
+	if (!eglGetConfigs(display, nullptr, 0, &configCount))
+		return EGL_NO_CONFIG_KHR;
 
-	EGLint visualId;
-	eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &visualId);
+	std::vector<EGLConfig> configs(static_cast<size_t>(configCount));
+	if (!eglGetConfigs(display, configs.data(), configs.size(), &configCount))
+		return EGL_NO_CONFIG_KHR;
+
+	const EGLint requiredConformant  = get_renderable_type(v);
+	const EGLint requiredSurfaceType = EGL_WINDOW_BIT | EGL_PBUFFER_BIT;
+
+	EGLConfig bestConfig     = EGL_NO_CONFIG_KHR;
+	EGLint    bestRedSize    = -1;
+	EGLint    bestGreenSize  = -1;
+	EGLint    bestBlueSize   = -1;
+	EGLint    bestAlphaSize  = -1;
+	EGLint    bestBufferSize = -1;
+	EGLint    bestDepthSize  = -1;
+
+	for (const EGLConfig& config : configs)
+	{
+		EGLint conformant  = 0;
+		eglGetConfigAttrib(display, config, EGL_CONFORMANT,   &conformant);
+		if ((conformant & requiredConformant) == 0)
+			continue;
+
+		EGLint surfaceType = 0;
+		eglGetConfigAttrib(display, config, EGL_SURFACE_TYPE, &surfaceType);
+		if ((surfaceType & requiredSurfaceType) == 0)
+			continue;
+
+		EGLint redSize = 0;
+		eglGetConfigAttrib(display, config, EGL_RED_SIZE, &redSize);
+		if (redSize < bestRedSize)
+			continue;
+
+		EGLint greenSize = 0;
+		eglGetConfigAttrib(display, config, EGL_RED_SIZE, &greenSize);
+		if (greenSize < bestGreenSize)
+			continue;
+
+		EGLint blueSize = 0;
+		eglGetConfigAttrib(display, config, EGL_RED_SIZE, &blueSize);
+		if (blueSize < bestBlueSize)
+			continue;
+
+		EGLint alphaSize = 0;
+		eglGetConfigAttrib(display, config, EGL_RED_SIZE, &alphaSize);
+		if (alphaSize < bestAlphaSize)
+			continue;
+
+		EGLint bufferSize = 0;
+		eglGetConfigAttrib(display, config, EGL_BUFFER_SIZE, &bufferSize);
+		if (bufferSize < bestBufferSize)
+			continue;
+
+		EGLint depthSize = 0;
+		eglGetConfigAttrib(display, config, EGL_DEPTH_SIZE, &depthSize);
+		if (depthSize < bestDepthSize)
+			continue;
+
+		bestConfig     = config;
+		bestRedSize    = redSize;
+		bestGreenSize  = greenSize;
+		bestBlueSize   = blueSize;
+		bestAlphaSize  = alphaSize;
+		bestBufferSize = bufferSize;
+		bestDepthSize  = depthSize;
+	}
+
+	EGLint visualId = 0;
+	eglGetConfigAttrib(display, bestConfig, EGL_NATIVE_VISUAL_ID, &visualId);
 	ANativeWindow_setBuffersGeometry(android_only::app->window, 0, 0, visualId);
-	return config;
+
+	return bestConfig;
 }
 
 static EGLSurface create_surface(const EGLDisplay& display, const EGLConfig& config)
@@ -78,22 +138,22 @@ static EGLSurface create_surface(const EGLDisplay& display, const EGLConfig& con
 	return eglCreateWindowSurface(display, config, android_only::app->window, nullptr);
 }
 
-static EGLContext create_context(const EGLDisplay& display, const EGLConfig& config)
+static EGLContext create_context(const EGLDisplay& display, const EGLConfig& config, gl::version v)
 {
-	constexpr EGLint Attribs[] =
+	const EGLint attribs[] =
 	{
-		EGL_CONTEXT_CLIENT_VERSION, 3,
+		EGL_CONTEXT_CLIENT_VERSION, get_context_client(v),
 		EGL_NONE,
 	};
 
-	return eglCreateContext(display, config, EGL_NO_CONTEXT, Attribs);
+	return eglCreateContext(display, config, EGL_NO_CONTEXT, attribs);
 }
 
-render_context_gl::render_context_gl(const window_handle& wh)
+render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
 	: m_eglDisplay(init_display())
-	, m_eglConfig(choose_config(m_eglDisplay))
+	, m_eglConfig(choose_config(m_eglDisplay, v))
 	, m_eglSurface(create_surface(m_eglDisplay, m_eglConfig))
-	, m_eglContext(create_context(m_eglDisplay, m_eglConfig))
+	, m_eglContext(create_context(m_eglDisplay, m_eglConfig, v))
 {
 	make_current();
 	m_functions = gl::load_functions();
