@@ -173,7 +173,7 @@ functions& get_current_functions()
 		case graphics_api::OpenGL_4_1:
 		case graphics_api::OpenGL_ES_2:
 		case graphics_api::OpenGL_ES_3:
-			return reinterpret_cast<orb::platform::render_context_gl*>(ctx)->get_functions();
+			return static_cast<orb::platform::render_context_gl*>(&ctx->get_base())->get_functions();
 
 		case graphics_api::Direct3D_11:
 			return defaultFunctions;
