@@ -54,10 +54,14 @@ const std::map<GLenum, std::string_view> kErrorCodes =
 	                      " side effect than to set the error flag." },
 	{ GL_OUT_OF_MEMORY, "There is not enough memory left to execute the command. The state of the GL is undefined,"
 	                    " except for the state of the error flags, after this error is recorded." },
+#if defined(GL_TABLE_TOO_LARGE)
 	{ GL_TABLE_TOO_LARGE, "The specified table exceeds the implementation's maximum supported table size. The offending"
 	                      " command is ignored and has no other side effect than to set the error flag." },
+#endif
+#if defined(GL_INVALID_FRAMEBUFFER_OPERATION)
 	{ GL_INVALID_FRAMEBUFFER_OPERATION, "The framebuffer object is not complete. The offending command is ignored and"
 	                                    " has no other side effect than to set the error flag." },
+#endif
 };
 
 namespace platform
