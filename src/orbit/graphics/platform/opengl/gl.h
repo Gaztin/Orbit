@@ -757,19 +757,19 @@ struct functions
 	};
 
 	template<typename ProcLiteral, typename Func>
-	class function_t;
+	class function;
 	
 	template<typename ProcLiteral, typename... Args>
-	class function_t<ProcLiteral, void(Args...)>
+	class function<ProcLiteral, void(Args...)>
 	{
 	public:
-		function_t()
+		function()
 			: m_ptr(platform::get_proc_address(proc_literal_traits<ProcLiteral>::ProcName))
 		{
 		}
 
-		function_t(const function_t&) = delete;
-		function_t(function_t&&) = default;
+		function(const function&) = delete;
+		function(function&&) = default;
 		
 		void operator()(Args... args)
 		{
@@ -790,16 +790,16 @@ struct functions
 	};
 	
 	template<typename ProcLiteral, typename R, typename... Args>
-	class function_t<ProcLiteral, R(Args...)>
+	class function<ProcLiteral, R(Args...)>
 	{
 	public:
-		function_t()
+		function()
 			: m_ptr(platform::get_proc_address(proc_literal_traits<ProcLiteral>::ProcName))
 		{
 		}
 		
-		function_t(const function_t&) = delete;
-		function_t(function_t&&) = default;
+		function(const function&) = delete;
+		function(function&&) = default;
 		
 		R operator()(Args... args)
 		{
@@ -824,104 +824,104 @@ struct functions
 	static inline void get_integerv(state_param pname, GLint* params) { return glGetIntegerv(static_cast<GLenum>(pname), params); }
 
 	/* Buffer objects */
-	function_t<proc_literal_t<'g','l','B','i','n','d','B','u','f','f','e','r'>, void(buffer_target target, GLuint buffer)> bind_buffer;
-	function_t<proc_literal_t<'g','l','B','i','n','d','B','u','f','f','e','r','B','a','s','e'>, void(buffer_target target, GLuint index, GLuint buffer)> bind_buffer_base;
-	function_t<proc_literal_t<'g','l','B','i','n','d','B','u','f','f','e','r','R','a','n','g','e'>, void(buffer_target target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)> bind_buffer_range;
-	function_t<proc_literal_t<'g','l','B','i','n','d','V','e','r','t','e','x','B','u','f','f','e','r'>, void(GLuint bindingindex, GLuint buffer, GLintptr offset, GLintptr stride)> bind_vertex_buffer;
-	function_t<proc_literal_t<'g','l','B','u','f','f','e','r','D','a','t','a'>, void(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage)> buffer_data;
-	function_t<proc_literal_t<'g','l','B','u','f','f','e','r','S','u','b','D','a','t','a'>, void(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data)> buffer_sub_data;
-	function_t<proc_literal_t<'g','l','C','o','p','y','B','u','f','f','e','r','S','u','b','D','a','t','a'>, void(buffer_target readtarget, buffer_target writetarget, GLintptr readoffset, GLintptr writeoffset, GLsizeiptr size)> copy_buffer_sub_data;
-	function_t<proc_literal_t<'g','l','D','e','l','e','t','e','B','u','f','f','e','r','s'>, void(GLsizei n, const GLuint* buffers)> delete_buffers;
-	function_t<proc_literal_t<'g','l','D','i','s','a','b','l','e','V','e','r','t','e','x','A','t','t','r','i','b','A','r','r','a','y'>, void(GLuint index)> disable_vertex_attrib_array;
-	function_t<proc_literal_t<'g','l','D','r','a','w','A','r','r','a','y','s'>, void(draw_mode mode, GLint first, GLsizei count)> draw_arrays;
-	function_t<proc_literal_t<'g','l','D','r','a','w','A','r','r','a','y','s','I','n','d','i','r','e','c','t'>, void(draw_mode mode, const void *indirect)> draw_arrays_indirect;
-	function_t<proc_literal_t<'g','l','D','r','a','w','A','r','r','a','y','s','I','n','s','t','a','n','c','e','d'>, void(draw_mode mode, GLint first, GLsizei count, GLsizei primcount)> draw_arrays_instanced;
-	function_t<proc_literal_t<'g','l','D','r','a','w','E','l','e','m','e','n','t','s'>, void(draw_mode mode, GLsizei count, index_type type, const GLvoid* indices)> draw_elements;
-	function_t<proc_literal_t<'g','l','D','r','a','w','E','l','e','m','e','n','t','s','I','n','d','i','r','e','c','t'>, void(draw_mode mode, index_type type, const void* indirect)> draw_elements_indirect;
-	function_t<proc_literal_t<'g','l','D','r','a','w','E','l','e','m','e','n','t','s','I','n','s','t','a','n','c','e','d'>, void(draw_mode mode, GLsizei count, index_type type, const void* indices, GLsizei primcount)> draw_elements_instanced;
-	function_t<proc_literal_t<'g','l','D','r','a','w','R','a','n','g','e','E','l','e','m','e','n','t','s'>, void(draw_mode mode, GLuint start, GLuint end, GLsizei count, index_type type, const GLvoid* indices)> draw_range_elements;
-	function_t<proc_literal_t<'g','l','E','n','a','b','l','e','V','e','r','t','e','x','A','t','t','r','i','b','A','r','r','a','y'>, void(GLuint index)> enable_vertex_attrib_array;
-	function_t<proc_literal_t<'g','l','F','l','u','s','h','M','a','p','p','e','d','B','u','f','f','e','r','R','a','n','g','e'>, GLsync(buffer_target target, GLintptr offset, GLsizeiptr length)> flush_mapped_buffer_range;
-	function_t<proc_literal_t<'g','l','G','e','n','B','u','f','f','e','r','s'>, void(GLsizei n, GLuint* buffers)> gen_buffers;
-	function_t<proc_literal_t<'g','l','G','e','t','B','u','f','f','e','r','P','a','r','a','m','e','t','e','r','i','v'>, void(buffer_target target, buffer_param value, GLint* data)> get_buffer_parameteriv;
-	function_t<proc_literal_t<'g','l','G','e','t','B','u','f','f','e','r','P','a','r','a','m','e','t','e','r','i','6','4','v'>, void(buffer_target target, buffer_param value, GLint64* data)> get_buffer_parameteri64v;
-	function_t<proc_literal_t<'g','l','G','e','t','B','u','f','f','e','r','P','o','i','n','t','e','r','v'>, void(buffer_target target, buffer_pointer_param pname, GLvoid** params)> get_buffer_pointerv;
-	function_t<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','f','v'>, void(GLuint index, vertex_attrib_array_param pname, GLfloat* params)> get_vertex_attribfv;
-	function_t<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','i','v'>, void(GLuint index, vertex_attrib_array_param pname, GLint* params)> get_vertex_attribiv;
-	function_t<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','i','i','v'>, void(GLuint index, vertex_attrib_array_param pname, GLint* params)> get_vertex_attribiiv;
-	function_t<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','i','u','i','v'>, void(GLuint index, vertex_attrib_array_param pname, GLuint* params)> get_vertex_attribiuiv;
-	function_t<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','P','o','i','n','t','e','r','v'>, void(GLuint index, vertex_attrib_array_pointer_param pname, GLvoid** pointer)> get_vertex_attrib_pointerv;
-	function_t<proc_literal_t<'g','l','I','s','B','u','f','f','e','r'>, GLboolean(GLuint buffer)> is_buffer;
-	function_t<proc_literal_t<'g','l','M','a','p','B','u','f','f','e','r','R','a','n','g','e'>, void*(buffer_target target, GLintptr offset, GLsizeiptr length, map_access access)> map_buffer_range;
-	function_t<proc_literal_t<'g','l','U','n','m','a','p','B','u','f','f','e','r'>, GLboolean(buffer_target target)> unmap_buffer;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','1','f'>, void(GLuint index, GLfloat v0)> vertex_attrib1f;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','2','f'>, void(GLuint index, GLfloat v0, GLfloat v1)> vertex_attrib2f;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','3','f'>, void(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2)> vertex_attrib3f;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','4','f'>, void(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)> vertex_attrib4f;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','4','i'>, void(GLuint index, GLint v0, GLint v1, GLint v2, GLint v3)> vertex_attrib_i_4i;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','4','u','i'>, void(GLuint index, GLuint v0, GLuint v1, GLuint v2, GLuint v3)> vertex_attrib_i_4ui;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','1','f','v'>, void(GLuint index, const GLfloat* v)> vertex_attrib1fv;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','2','f','v'>, void(GLuint index, const GLfloat* v)> vertex_attrib2fv;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','3','f','v'>, void(GLuint index, const GLfloat* v)> vertex_attrib3fv;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','4','f','v'>, void(GLuint index, const GLfloat* v)> vertex_attrib4fv;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','4','i','v'>, void(GLuint index, const GLint* v)> vertex_attrib_i_4iv;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','4','u','i','v'>, void(GLuint index, const GLuint* v)> vertex_attrib_i_4uiv;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','B','i','n','d','i','n','g'>, void(GLuint attribindex, GLuint bindingindex)> vertex_attrib_binding;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','D','i','v','i','s','o','r'>, void(GLuint index, GLuint divisor)> vertex_attrib_divisor;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','F','o','r','m','a','t'>, void(GLuint attribindex, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLuint relativeoffset)> vertex_attrib_format;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','F','o','r','m','a','t'>, void(GLuint attribindex, GLint size, vertex_attrib_data_type type, GLuint relativeoffset)> vertex_attrib_i_format;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','P','o','i','n','t','e','r'>, void(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer)> vertex_attrib_pointer;
-	function_t<proc_literal_t<'g','l','V','e','r','t','e','x','B','i','n','d','i','n','g','D','i','v','i','s','o','r'>, void(GLuint bindingindex, GLuint divisor)> vertex_binding_divisor;
+	function<proc_literal_t<'g','l','B','i','n','d','B','u','f','f','e','r'>, void(buffer_target target, GLuint buffer)> bind_buffer;
+	function<proc_literal_t<'g','l','B','i','n','d','B','u','f','f','e','r','B','a','s','e'>, void(buffer_target target, GLuint index, GLuint buffer)> bind_buffer_base;
+	function<proc_literal_t<'g','l','B','i','n','d','B','u','f','f','e','r','R','a','n','g','e'>, void(buffer_target target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)> bind_buffer_range;
+	function<proc_literal_t<'g','l','B','i','n','d','V','e','r','t','e','x','B','u','f','f','e','r'>, void(GLuint bindingindex, GLuint buffer, GLintptr offset, GLintptr stride)> bind_vertex_buffer;
+	function<proc_literal_t<'g','l','B','u','f','f','e','r','D','a','t','a'>, void(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage)> buffer_data;
+	function<proc_literal_t<'g','l','B','u','f','f','e','r','S','u','b','D','a','t','a'>, void(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data)> buffer_sub_data;
+	function<proc_literal_t<'g','l','C','o','p','y','B','u','f','f','e','r','S','u','b','D','a','t','a'>, void(buffer_target readtarget, buffer_target writetarget, GLintptr readoffset, GLintptr writeoffset, GLsizeiptr size)> copy_buffer_sub_data;
+	function<proc_literal_t<'g','l','D','e','l','e','t','e','B','u','f','f','e','r','s'>, void(GLsizei n, const GLuint* buffers)> delete_buffers;
+	function<proc_literal_t<'g','l','D','i','s','a','b','l','e','V','e','r','t','e','x','A','t','t','r','i','b','A','r','r','a','y'>, void(GLuint index)> disable_vertex_attrib_array;
+	function<proc_literal_t<'g','l','D','r','a','w','A','r','r','a','y','s'>, void(draw_mode mode, GLint first, GLsizei count)> draw_arrays;
+	function<proc_literal_t<'g','l','D','r','a','w','A','r','r','a','y','s','I','n','d','i','r','e','c','t'>, void(draw_mode mode, const void *indirect)> draw_arrays_indirect;
+	function<proc_literal_t<'g','l','D','r','a','w','A','r','r','a','y','s','I','n','s','t','a','n','c','e','d'>, void(draw_mode mode, GLint first, GLsizei count, GLsizei primcount)> draw_arrays_instanced;
+	function<proc_literal_t<'g','l','D','r','a','w','E','l','e','m','e','n','t','s'>, void(draw_mode mode, GLsizei count, index_type type, const GLvoid* indices)> draw_elements;
+	function<proc_literal_t<'g','l','D','r','a','w','E','l','e','m','e','n','t','s','I','n','d','i','r','e','c','t'>, void(draw_mode mode, index_type type, const void* indirect)> draw_elements_indirect;
+	function<proc_literal_t<'g','l','D','r','a','w','E','l','e','m','e','n','t','s','I','n','s','t','a','n','c','e','d'>, void(draw_mode mode, GLsizei count, index_type type, const void* indices, GLsizei primcount)> draw_elements_instanced;
+	function<proc_literal_t<'g','l','D','r','a','w','R','a','n','g','e','E','l','e','m','e','n','t','s'>, void(draw_mode mode, GLuint start, GLuint end, GLsizei count, index_type type, const GLvoid* indices)> draw_range_elements;
+	function<proc_literal_t<'g','l','E','n','a','b','l','e','V','e','r','t','e','x','A','t','t','r','i','b','A','r','r','a','y'>, void(GLuint index)> enable_vertex_attrib_array;
+	function<proc_literal_t<'g','l','F','l','u','s','h','M','a','p','p','e','d','B','u','f','f','e','r','R','a','n','g','e'>, GLsync(buffer_target target, GLintptr offset, GLsizeiptr length)> flush_mapped_buffer_range;
+	function<proc_literal_t<'g','l','G','e','n','B','u','f','f','e','r','s'>, void(GLsizei n, GLuint* buffers)> gen_buffers;
+	function<proc_literal_t<'g','l','G','e','t','B','u','f','f','e','r','P','a','r','a','m','e','t','e','r','i','v'>, void(buffer_target target, buffer_param value, GLint* data)> get_buffer_parameteriv;
+	function<proc_literal_t<'g','l','G','e','t','B','u','f','f','e','r','P','a','r','a','m','e','t','e','r','i','6','4','v'>, void(buffer_target target, buffer_param value, GLint64* data)> get_buffer_parameteri64v;
+	function<proc_literal_t<'g','l','G','e','t','B','u','f','f','e','r','P','o','i','n','t','e','r','v'>, void(buffer_target target, buffer_pointer_param pname, GLvoid** params)> get_buffer_pointerv;
+	function<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','f','v'>, void(GLuint index, vertex_attrib_array_param pname, GLfloat* params)> get_vertex_attribfv;
+	function<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','i','v'>, void(GLuint index, vertex_attrib_array_param pname, GLint* params)> get_vertex_attribiv;
+	function<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','i','i','v'>, void(GLuint index, vertex_attrib_array_param pname, GLint* params)> get_vertex_attribiiv;
+	function<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','i','u','i','v'>, void(GLuint index, vertex_attrib_array_param pname, GLuint* params)> get_vertex_attribiuiv;
+	function<proc_literal_t<'g','l','G','e','t','V','e','r','t','e','x','A','t','t','r','i','b','P','o','i','n','t','e','r','v'>, void(GLuint index, vertex_attrib_array_pointer_param pname, GLvoid** pointer)> get_vertex_attrib_pointerv;
+	function<proc_literal_t<'g','l','I','s','B','u','f','f','e','r'>, GLboolean(GLuint buffer)> is_buffer;
+	function<proc_literal_t<'g','l','M','a','p','B','u','f','f','e','r','R','a','n','g','e'>, void*(buffer_target target, GLintptr offset, GLsizeiptr length, map_access access)> map_buffer_range;
+	function<proc_literal_t<'g','l','U','n','m','a','p','B','u','f','f','e','r'>, GLboolean(buffer_target target)> unmap_buffer;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','1','f'>, void(GLuint index, GLfloat v0)> vertex_attrib1f;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','2','f'>, void(GLuint index, GLfloat v0, GLfloat v1)> vertex_attrib2f;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','3','f'>, void(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2)> vertex_attrib3f;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','4','f'>, void(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)> vertex_attrib4f;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','4','i'>, void(GLuint index, GLint v0, GLint v1, GLint v2, GLint v3)> vertex_attrib_i_4i;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','4','u','i'>, void(GLuint index, GLuint v0, GLuint v1, GLuint v2, GLuint v3)> vertex_attrib_i_4ui;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','1','f','v'>, void(GLuint index, const GLfloat* v)> vertex_attrib1fv;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','2','f','v'>, void(GLuint index, const GLfloat* v)> vertex_attrib2fv;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','3','f','v'>, void(GLuint index, const GLfloat* v)> vertex_attrib3fv;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','4','f','v'>, void(GLuint index, const GLfloat* v)> vertex_attrib4fv;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','4','i','v'>, void(GLuint index, const GLint* v)> vertex_attrib_i_4iv;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','4','u','i','v'>, void(GLuint index, const GLuint* v)> vertex_attrib_i_4uiv;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','B','i','n','d','i','n','g'>, void(GLuint attribindex, GLuint bindingindex)> vertex_attrib_binding;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','D','i','v','i','s','o','r'>, void(GLuint index, GLuint divisor)> vertex_attrib_divisor;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','F','o','r','m','a','t'>, void(GLuint attribindex, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLuint relativeoffset)> vertex_attrib_format;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','I','F','o','r','m','a','t'>, void(GLuint attribindex, GLint size, vertex_attrib_data_type type, GLuint relativeoffset)> vertex_attrib_i_format;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','A','t','t','r','i','b','P','o','i','n','t','e','r'>, void(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer)> vertex_attrib_pointer;
+	function<proc_literal_t<'g','l','V','e','r','t','e','x','B','i','n','d','i','n','g','D','i','v','i','s','o','r'>, void(GLuint bindingindex, GLuint divisor)> vertex_binding_divisor;
 
 	/* Shaders */
-	function_t<proc_literal_t<'g','l','A','t','t','a','c','h','S','h','a','d','e','r'>, void(GLuint program, GLuint shader)> attach_shader;
-	function_t<proc_literal_t<'g','l','B','i','n','d','A','t','t','r','i','b','L','o','c','a','t','i','o','n'>, void(GLuint program, GLuint index, const GLchar* name)> bind_attrib_location;
-	function_t<proc_literal_t<'g','l','C','o','m','p','i','l','e','S','h','a','d','e','r'>, void(GLuint shader)> compile_shader;
-	function_t<proc_literal_t<'g','l','C','r','e','a','t','e','P','r','o','g','r','a','m'>, GLuint()> create_program;
-	function_t<proc_literal_t<'g','l','C','r','e','a','t','e','S','h','a','d','e','r'>, GLuint(shader_type type)> create_shader;
-	function_t<proc_literal_t<'g','l','D','e','l','e','t','e','P','r','o','g','r','a','m'>, void(GLuint program)> delete_program;
-	function_t<proc_literal_t<'g','l','D','e','l','e','t','e','S','h','a','d','e','r'>, void(GLuint shader)> delete_shader;
-	function_t<proc_literal_t<'g','l','D','e','t','a','c','h','S','h','a','d','e','r'>, void(GLuint program, GLuint shader)> detach_shader;
-	function_t<proc_literal_t<'g','l','G','e','t','A','c','t','i','v','e','A','t','t','r','i','b'>, void(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, attrib_data_type* type, GLchar* name)> get_active_attrib;
-	function_t<proc_literal_t<'g','l','G','e','t','A','c','t','i','v','e','U','n','i','f','o','r','m'>, void(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, uniform_data_type* type, GLchar* name)> get_active_uniform;
-	function_t<proc_literal_t<'g','l','G','e','t','A','t','t','a','c','h','e','d','S','h','a','d','e','r','s'>, void(GLuint program, GLsizei maxCount, GLsizei* count, GLuint* shaders)> get_attached_shaders;
-	function_t<proc_literal_t<'g','l','G','e','t','A','t','t','r','i','b','L','o','c','a','t','i','o','n'>, GLint(GLuint program, const GLchar* name)> get_attrib_location;
-	function_t<proc_literal_t<'g','l','G','e','t','P','r','o','g','r','a','m','I','n','f','o','L','o','g'>, void(GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog)> get_program_info_log;
-	function_t<proc_literal_t<'g','l','G','e','t','P','r','o','g','r','a','m','i','v'>, void(GLuint program, program_param pname, GLint* params)> get_programiv;
-	function_t<proc_literal_t<'g','l','G','e','t','S','h','a','d','e','r','I','n','f','o','L','o','g'>, void(GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog)> get_shader_info_log;
-	function_t<proc_literal_t<'g','l','G','e','t','S','h','a','d','e','r','S','o','u','r','c','e'>, void(GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* source)> get_shader_source;
-	function_t<proc_literal_t<'g','l','G','e','t','S','h','a','d','e','r','i','v'>, void(GLuint shader, shader_param pname, GLint* params)> get_shaderiv;
-	function_t<proc_literal_t<'g','l','G','e','t','U','n','i','f','o','r','m','f','v'>, void(GLuint program, GLint location, GLfloat* params)> get_uniformfv;
-	function_t<proc_literal_t<'g','l','G','e','t','U','n','i','f','o','r','m','i','v'>, void(GLuint program, GLint location, GLint* params)> get_uniformiv;
-	function_t<proc_literal_t<'g','l','G','e','t','U','n','i','f','o','r','m','L','o','c','a','t','i','o','n'>, GLint(GLuint program, const GLchar* name)> get_uniform_location;
-	function_t<proc_literal_t<'g','l','I','s','P','r','o','g','r','a','m'>, GLboolean(GLuint program)> is_program;
-	function_t<proc_literal_t<'g','l','I','s','S','h','a','d','e','r'>, GLboolean(GLuint shader)> is_shader;
-	function_t<proc_literal_t<'g','l','L','i','n','k','P','r','o','g','r','a','m'>, void(GLuint program)> link_program;
-	function_t<proc_literal_t<'g','l','S','h','a','d','e','r','S','o','u','r','c','e'>, void(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length)> shader_source;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','1','f'>, void(GLint location, GLfloat v0)> uniform1f;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','1','f','v'>, void(GLint location, GLsizei count, const GLfloat* value)> uniform1fv;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','2','f'>, void(GLint location, GLfloat v0, GLfloat v1)> uniform2f;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','2','f','v'>, void(GLint location, GLsizei count, const GLfloat* value)> uniform2fv;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','3','f'>, void(GLint location, GLfloat v0, GLfloat v1, GLfloat v2)> uniform3f;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','3','f','v'>, void(GLint location, GLsizei count, const GLfloat* value)> uniform3fv;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','4','f'>, void(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)> uniform4f;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','4','f','v'>, void(GLint location, GLsizei count, const GLfloat* value)> uniform4fv;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','1','i'>, void(GLint location, GLint v0)> uniform1i;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','1','i','v'>, void(GLint location, GLsizei count, const GLint* value)> uniform1iv;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','2','i'>, void(GLint location, GLint v0, GLint v1)> uniform2i;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','2','i','v'>, void(GLint location, GLsizei count, const GLint* value)> uniform2iv;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','3','i'>, void(GLint location, GLint v0, GLint v1, GLint v2)> uniform3i;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','3','i','v'>, void(GLint location, GLsizei count, const GLint* value)> uniform3iv;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','4','i'>, void(GLint location, GLint v0, GLint v1, GLint v2, GLint v3)> uniform4i;
-	function_t<proc_literal_t<'g','l','U','n','i','f','o','r','m','4','i','v'>, void(GLint location, GLsizei count, const GLint* value)> uniform4iv;
-	function_t<proc_literal_t<'g','l','U','s','e','P','r','o','g','r','a','m'>, void(GLuint program)> use_program;
-	function_t<proc_literal_t<'g','l','V','a','l','i','d','a','t','e','P','r','o','g','r','a','m'>, void(GLuint program)> validate_program;
+	function<proc_literal_t<'g','l','A','t','t','a','c','h','S','h','a','d','e','r'>, void(GLuint program, GLuint shader)> attach_shader;
+	function<proc_literal_t<'g','l','B','i','n','d','A','t','t','r','i','b','L','o','c','a','t','i','o','n'>, void(GLuint program, GLuint index, const GLchar* name)> bind_attrib_location;
+	function<proc_literal_t<'g','l','C','o','m','p','i','l','e','S','h','a','d','e','r'>, void(GLuint shader)> compile_shader;
+	function<proc_literal_t<'g','l','C','r','e','a','t','e','P','r','o','g','r','a','m'>, GLuint()> create_program;
+	function<proc_literal_t<'g','l','C','r','e','a','t','e','S','h','a','d','e','r'>, GLuint(shader_type type)> create_shader;
+	function<proc_literal_t<'g','l','D','e','l','e','t','e','P','r','o','g','r','a','m'>, void(GLuint program)> delete_program;
+	function<proc_literal_t<'g','l','D','e','l','e','t','e','S','h','a','d','e','r'>, void(GLuint shader)> delete_shader;
+	function<proc_literal_t<'g','l','D','e','t','a','c','h','S','h','a','d','e','r'>, void(GLuint program, GLuint shader)> detach_shader;
+	function<proc_literal_t<'g','l','G','e','t','A','c','t','i','v','e','A','t','t','r','i','b'>, void(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, attrib_data_type* type, GLchar* name)> get_active_attrib;
+	function<proc_literal_t<'g','l','G','e','t','A','c','t','i','v','e','U','n','i','f','o','r','m'>, void(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, uniform_data_type* type, GLchar* name)> get_active_uniform;
+	function<proc_literal_t<'g','l','G','e','t','A','t','t','a','c','h','e','d','S','h','a','d','e','r','s'>, void(GLuint program, GLsizei maxCount, GLsizei* count, GLuint* shaders)> get_attached_shaders;
+	function<proc_literal_t<'g','l','G','e','t','A','t','t','r','i','b','L','o','c','a','t','i','o','n'>, GLint(GLuint program, const GLchar* name)> get_attrib_location;
+	function<proc_literal_t<'g','l','G','e','t','P','r','o','g','r','a','m','I','n','f','o','L','o','g'>, void(GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog)> get_program_info_log;
+	function<proc_literal_t<'g','l','G','e','t','P','r','o','g','r','a','m','i','v'>, void(GLuint program, program_param pname, GLint* params)> get_programiv;
+	function<proc_literal_t<'g','l','G','e','t','S','h','a','d','e','r','I','n','f','o','L','o','g'>, void(GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog)> get_shader_info_log;
+	function<proc_literal_t<'g','l','G','e','t','S','h','a','d','e','r','S','o','u','r','c','e'>, void(GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* source)> get_shader_source;
+	function<proc_literal_t<'g','l','G','e','t','S','h','a','d','e','r','i','v'>, void(GLuint shader, shader_param pname, GLint* params)> get_shaderiv;
+	function<proc_literal_t<'g','l','G','e','t','U','n','i','f','o','r','m','f','v'>, void(GLuint program, GLint location, GLfloat* params)> get_uniformfv;
+	function<proc_literal_t<'g','l','G','e','t','U','n','i','f','o','r','m','i','v'>, void(GLuint program, GLint location, GLint* params)> get_uniformiv;
+	function<proc_literal_t<'g','l','G','e','t','U','n','i','f','o','r','m','L','o','c','a','t','i','o','n'>, GLint(GLuint program, const GLchar* name)> get_uniform_location;
+	function<proc_literal_t<'g','l','I','s','P','r','o','g','r','a','m'>, GLboolean(GLuint program)> is_program;
+	function<proc_literal_t<'g','l','I','s','S','h','a','d','e','r'>, GLboolean(GLuint shader)> is_shader;
+	function<proc_literal_t<'g','l','L','i','n','k','P','r','o','g','r','a','m'>, void(GLuint program)> link_program;
+	function<proc_literal_t<'g','l','S','h','a','d','e','r','S','o','u','r','c','e'>, void(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length)> shader_source;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','1','f'>, void(GLint location, GLfloat v0)> uniform1f;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','1','f','v'>, void(GLint location, GLsizei count, const GLfloat* value)> uniform1fv;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','2','f'>, void(GLint location, GLfloat v0, GLfloat v1)> uniform2f;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','2','f','v'>, void(GLint location, GLsizei count, const GLfloat* value)> uniform2fv;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','3','f'>, void(GLint location, GLfloat v0, GLfloat v1, GLfloat v2)> uniform3f;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','3','f','v'>, void(GLint location, GLsizei count, const GLfloat* value)> uniform3fv;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','4','f'>, void(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)> uniform4f;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','4','f','v'>, void(GLint location, GLsizei count, const GLfloat* value)> uniform4fv;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','1','i'>, void(GLint location, GLint v0)> uniform1i;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','1','i','v'>, void(GLint location, GLsizei count, const GLint* value)> uniform1iv;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','2','i'>, void(GLint location, GLint v0, GLint v1)> uniform2i;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','2','i','v'>, void(GLint location, GLsizei count, const GLint* value)> uniform2iv;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','3','i'>, void(GLint location, GLint v0, GLint v1, GLint v2)> uniform3i;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','3','i','v'>, void(GLint location, GLsizei count, const GLint* value)> uniform3iv;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','4','i'>, void(GLint location, GLint v0, GLint v1, GLint v2, GLint v3)> uniform4i;
+	function<proc_literal_t<'g','l','U','n','i','f','o','r','m','4','i','v'>, void(GLint location, GLsizei count, const GLint* value)> uniform4iv;
+	function<proc_literal_t<'g','l','U','s','e','P','r','o','g','r','a','m'>, void(GLuint program)> use_program;
+	function<proc_literal_t<'g','l','V','a','l','i','d','a','t','e','P','r','o','g','r','a','m'>, void(GLuint program)> validate_program;
 
 	// Vertex array objects
-	function_t<proc_literal_t<'g','l','B','i','n','d','V','e','r','t','e','x','A','r','r','a','y'>, void(GLuint array)> bind_vertex_array;
-	function_t<proc_literal_t<'g','l','D','e','l','e','t','e','V','e','r','t','e','x','A','r','r','a','y','s'>, void(GLsizei n, const GLuint* arrays)> delete_vertex_arrays;
-	function_t<proc_literal_t<'g','l','G','e','n','V','e','r','t','e','x','A','r','r','a','y','s'>, void(GLsizei n, GLuint* arrays)> gen_vertex_arrays;
-	function_t<proc_literal_t<'g','l','I','s','V','e','r','t','e','x','A','r','r','a','y'>, GLboolean(GLuint array)> is_vertex_array;
+	function<proc_literal_t<'g','l','B','i','n','d','V','e','r','t','e','x','A','r','r','a','y'>, void(GLuint array)> bind_vertex_array;
+	function<proc_literal_t<'g','l','D','e','l','e','t','e','V','e','r','t','e','x','A','r','r','a','y','s'>, void(GLsizei n, const GLuint* arrays)> delete_vertex_arrays;
+	function<proc_literal_t<'g','l','G','e','n','V','e','r','t','e','x','A','r','r','a','y','s'>, void(GLsizei n, GLuint* arrays)> gen_vertex_arrays;
+	function<proc_literal_t<'g','l','I','s','V','e','r','t','e','x','A','r','r','a','y'>, GLboolean(GLuint array)> is_vertex_array;
 };
 
 extern ORB_API_GRAPHICS functions& get_current_functions();
