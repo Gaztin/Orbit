@@ -77,17 +77,22 @@ static void set_pixel_format(HDC hdc)
 	SetPixelFormat(hdc, format, &desc);
 }
 
-render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
-	: m_parentHwnd(wh.hwnd)
-	, m_hdc(GetDC(m_parentHwnd))
-	, m_hglrc(nullptr)
-	, m_dummyCtx(nullptr)
+static HDC init_device_context(HWND parentHwnd)
 {
-	set_pixel_format(m_hdc);
+	HDC hdc = GetDC(parentHwnd);
+	set_pixel_format(hdc);
+	return hdc;
+}
 
-	m_dummyCtx = wglCreateContext(m_hdc);
-	wglMakeCurrent(m_hdc, m_dummyCtx);
+static HGLRC init_dummy_context(HDC hdc)
+{
+	HGLRC hglrc = wglCreateContext(hdc);
+	wglMakeCurrent(hdc, hglrc);
+	return hglrc;
+}
 
+static HGLRC init_render_context(HDC hdc, gl::version v)
+{
 	using wglChoosePixelFormatARB_t    = BOOL (WINAPI*)(HDC hdc, const int* iAttribs, const FLOAT* fAttribs, UINT maxFormats, int* formats, UINT* numFormats);
 	using wglCreateContextAttribsARB_t = HGLRC(WINAPI*)(HDC hdc, HGLRC shareContext, const int* attribs);
 
@@ -117,7 +122,7 @@ render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
 
 		int pixelFormats = 0;
 		UINT pixelFormatCount = 0;
-		wglChoosePixelFormatARB(m_hdc, formatAttributes, nullptr, 1, &pixelFormats, &pixelFormatCount);
+		wglChoosePixelFormatARB(hdc, formatAttributes, nullptr, 1, &pixelFormats, &pixelFormatCount);
 
 		const int contextAttributes[] =
 		{
@@ -127,15 +132,25 @@ render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
 			0
 		};
 
-		m_hglrc = wglCreateContextAttribsARB(m_hdc, nullptr, contextAttributes);
-	}
-	else
-	{
-		m_hglrc = wglCreateContext(m_hdc);
+		return wglCreateContextAttribsARB(hdc, nullptr, contextAttributes);
 	}
 
-	make_current();
-	m_functions = gl::load_functions();
+	return wglCreateContext(hdc);
+}
+
+static gl::functions init_functions(render_context_gl* self)
+{
+	self->make_current();
+	return gl::functions{};
+}
+
+render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
+	: m_parentHwnd(wh.hwnd)
+	, m_hdc(init_device_context(m_parentHwnd))
+	, m_dummyCtx(init_dummy_context(m_hdc))
+	, m_hglrc(init_render_context(m_hdc, v))
+	, m_functions(init_functions(this))
+{
 	make_current(nullptr);
 }
 

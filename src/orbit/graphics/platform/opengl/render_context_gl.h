@@ -45,8 +45,8 @@ private:
 #if defined(ORB_OS_WINDOWS)
 		HWND m_parentHwnd;
 		HDC m_hdc;
-		HGLRC m_hglrc;
 		HGLRC m_dummyCtx;
+		HGLRC m_hglrc;
 #elif defined(ORB_OS_LINUX)
 		const struct window_handle* m_wndPtr;
 		GC m_gc;
