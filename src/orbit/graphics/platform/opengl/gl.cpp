@@ -95,7 +95,7 @@ void handle_error(GLenum err)
 	}
 	else
 	{
-		orb::log_error(format_view("Unknown error: %d", err));
+		orb::log_error(format("Unknown error: %d", err));
 	}
 }
 
