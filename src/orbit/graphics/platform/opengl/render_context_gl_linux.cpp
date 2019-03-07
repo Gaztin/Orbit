@@ -47,20 +47,6 @@ static int get_context_minor(gl::version v)
 	}
 }
 
-static int get_context_profile(gl::version v)
-{
-	switch (v)
-	{
-		case gl::version::v2_0:
-		default:
-			return GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
-			
-		case gl::version::v3_2:
-		case gl::version::v4_1:
-			return GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-	}
-}
-
 static GC create_gc(Display* display, const Window& window)
 {
 	return XCreateGC(display, window, 0, nullptr);
@@ -134,7 +120,7 @@ static GLXContext create_glx_context(Display* display, gl::version v)
 		{
 			GLX_CONTEXT_MAJOR_VERSION_ARB, get_context_major(v),
 			GLX_CONTEXT_MINOR_VERSION_ARB, get_context_minor(v),
-			GLX_CONTEXT_FLAGS_ARB,         get_context_profile(v),
+			GLX_CONTEXT_FLAGS_ARB,         GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
 			None
 		};
 		
