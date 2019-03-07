@@ -133,13 +133,18 @@ static GLXContext create_glx_context(Display* display, gl::version v)
 	return glXCreateContext(display, visualInfo, nullptr, true);
 }
 
+static gl::functions init_functions(render_context_gl* self)
+{
+	self->make_current();
+	return gl::functions{};
+}
+
 render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
 	: m_wndPtr(&wh)
 	, m_gc(create_gc(wh.display, wh.window))
 	, m_glxContext(create_glx_context(wh.display, v))
+	, m_functions(init_functions(this))
 {
-	make_current();
-	m_functions = gl::load_functions();
 	make_current(nullptr);
 }
 

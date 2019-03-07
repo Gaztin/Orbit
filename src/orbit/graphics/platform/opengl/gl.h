@@ -22,6 +22,8 @@
 #if defined(ORB_HAS_OPENGL)
 
 #include <string_view>
+#include <type_traits>
+#include <utility>
 #include <stddef.h>
 
 #if defined(ORB_OS_WINDOWS)
@@ -740,115 +742,189 @@ extern ORB_API_GRAPHICS void handle_error(GLenum err);
 #define ORB_GL_CALL
 #endif
 
+template<char... Chars>
+using proc_literal_t = std::integer_sequence<char, Chars...>;
+	
+template<typename T, T... Chars>
+static constexpr proc_literal_t<Chars...> operator""_proc() { return {}; }
+
+template<typename>
+struct proc_literal_traits;
+
+template<char... Chars>
+struct proc_literal_traits<std::integer_sequence<char, Chars...>>
+{
+	static constexpr char ProcName[sizeof...(Chars) + 1] = { Chars..., '\0' };
+};
+	
 struct functions
 {
+	template<typename ProcLiteral, typename Func>
+	class function_t;
+	
+	template<typename ProcLiteral, typename... Args>
+	class function_t<ProcLiteral, void(Args...)>
+	{
+	public:
+		function_t()
+			: m_ptr(platform::get_proc_address(proc_literal_traits<ProcLiteral>::ProcName))
+		{
+		}
+		
+		function_t(const function_t&) = delete;
+		
+		void operator()(Args... args)
+		{
+			using ptr_t = void(ORB_GL_CALL *)(Args...);
+			
+			// Reset error code to 0
+			GLenum err = glGetError();
+			
+			reinterpret_cast<ptr_t>(m_ptr)(args...);
+			
+			err = glGetError();
+			if (err != GL_NO_ERROR)
+				orb::gl::handle_error(err);
+		}
+		
+	private:
+		void* m_ptr;
+	};
+	
+	template<typename ProcLiteral, typename R, typename... Args>
+	class function_t<ProcLiteral, R(Args...)>
+	{
+	public:
+		function_t()
+			: m_ptr(platform::get_proc_address(proc_literal_traits<ProcLiteral>::ProcName))
+		{
+		}
+		
+		function_t(const function_t&) = delete;
+		
+		R operator()(Args... args)
+		{
+			using ptr_t = R(ORB_GL_CALL *)(Args...);
+			
+			// Reset error code to 0
+			glGetError();
+			
+			R res = reinterpret_cast<ptr_t>(m_ptr)(args...);
+			
+			orb::gl::handle_error(glGetError());
+				
+			return res;
+		}
+		
+	private:
+		void* m_ptr;
+	};
+	
 	static inline void get_booleanv(state_param pname, GLboolean* params) { return glGetBooleanv(static_cast<GLenum>(pname), params); }
 	static inline void get_floatv(state_param pname, GLfloat* params) { return glGetFloatv(static_cast<GLenum>(pname), params); }
 	static inline void get_integerv(state_param pname, GLint* params) { return glGetIntegerv(static_cast<GLenum>(pname), params); }
 
 	/* Buffer objects */
-	void (ORB_GL_CALL *bind_buffer)(buffer_target target, GLuint buffer);
-	void (ORB_GL_CALL *bind_buffer_base)(buffer_target target, GLuint index, GLuint buffer);
-	void (ORB_GL_CALL *bind_buffer_range)(buffer_target target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);
-	void (ORB_GL_CALL *bind_vertex_buffer)(GLuint bindingindex, GLuint buffer, GLintptr offset, GLintptr stride);
-	void (ORB_GL_CALL *buffer_data)(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage);
-	void (ORB_GL_CALL *buffer_sub_data)(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
-	void (ORB_GL_CALL *copy_buffer_sub_data)(buffer_target readtarget, buffer_target writetarget, GLintptr readoffset, GLintptr writeoffset, GLsizeiptr size);
-	void (ORB_GL_CALL *delete_buffers)(GLsizei n, const GLuint* buffers);
-	void (ORB_GL_CALL *disable_vertex_attrib_array)(GLuint index);
-	void (ORB_GL_CALL *draw_arrays)(draw_mode mode, GLint first, GLsizei count);
-	void (ORB_GL_CALL *draw_arrays_indirect)(draw_mode mode, const void *indirect);
-	void (ORB_GL_CALL *draw_arrays_instanced)(draw_mode mode, GLint first, GLsizei count, GLsizei primcount);
-	void (ORB_GL_CALL *draw_elements)(draw_mode mode, GLsizei count, index_type type, const GLvoid* indices);
-	void (ORB_GL_CALL *draw_elements_indirect)(draw_mode mode, index_type type, const void* indirect);
-	void (ORB_GL_CALL *draw_elements_instanced)(draw_mode mode, GLsizei count, index_type type, const void* indices, GLsizei primcount);
-	void (ORB_GL_CALL *draw_range_elements)(draw_mode mode, GLuint start, GLuint end, GLsizei count, index_type type, const GLvoid* indices);
-	void (ORB_GL_CALL *enable_vertex_attrib_array)(GLuint index);
-	GLsync (ORB_GL_CALL *flush_mapped_buffer_range)(buffer_target target, GLintptr offset, GLsizeiptr length);
-	void (ORB_GL_CALL *gen_buffers)(GLsizei n, GLuint* buffers);
-	void (ORB_GL_CALL *get_buffer_parameteriv)(buffer_target target, buffer_param value, GLint* data);
-	void (ORB_GL_CALL *get_buffer_parameteri64v)(buffer_target target, buffer_param value, GLint64* data);
-	void (ORB_GL_CALL *get_buffer_pointerv)(buffer_target target, buffer_pointer_param pname, GLvoid** params);
-	void (ORB_GL_CALL *get_vertex_attribfv)(GLuint index, vertex_attrib_array_param pname, GLfloat* params);
-	void (ORB_GL_CALL *get_vertex_attribiv)(GLuint index, vertex_attrib_array_param pname, GLint* params);
-	void (ORB_GL_CALL *get_vertex_attribiiv)(GLuint index, vertex_attrib_array_param pname, GLint* params);
-	void (ORB_GL_CALL *get_vertex_attribiuiv)(GLuint index, vertex_attrib_array_param pname, GLuint* params);
-	void (ORB_GL_CALL *get_vertex_attrib_pointerv)(GLuint index, vertex_attrib_array_pointer_param pname, GLvoid** pointer);
-	GLboolean (ORB_GL_CALL *is_buffer)(GLuint buffer);
-	void* (ORB_GL_CALL *map_buffer_range)(buffer_target target, GLintptr offset, GLsizeiptr length, map_access access);
-	GLboolean (ORB_GL_CALL *unmap_buffer)(buffer_target target);
-	void (ORB_GL_CALL *vertex_attrib1f)(GLuint index, GLfloat v0);
-	void (ORB_GL_CALL *vertex_attrib2f)(GLuint index, GLfloat v0, GLfloat v1);
-	void (ORB_GL_CALL *vertex_attrib3f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2);
-	void (ORB_GL_CALL *vertex_attrib4f)(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-	void (ORB_GL_CALL *vertex_attrib_i_4i)(GLuint index, GLint v0, GLint v1, GLint v2, GLint v3);
-	void (ORB_GL_CALL *vertex_attrib_i_4ui)(GLuint index, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
-	void (ORB_GL_CALL *vertex_attrib1fv)(GLuint index, const GLfloat* v);
-	void (ORB_GL_CALL *vertex_attrib2fv)(GLuint index, const GLfloat* v);
-	void (ORB_GL_CALL *vertex_attrib3fv)(GLuint index, const GLfloat* v);
-	void (ORB_GL_CALL *vertex_attrib4fv)(GLuint index, const GLfloat* v);
-	void (ORB_GL_CALL *vertex_attrib_i_4iv)(GLuint index, const GLint* v);
-	void (ORB_GL_CALL *vertex_attrib_i_4uiv)(GLuint index, const GLuint* v);
-	void (ORB_GL_CALL *vertex_attrib_binding)(GLuint attribindex, GLuint bindingindex);
-	void (ORB_GL_CALL *vertex_attrib_divisor)(GLuint index, GLuint divisor);
-	void (ORB_GL_CALL *vertex_attrib_format)(GLuint attribindex, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLuint relativeoffset);
-	void (ORB_GL_CALL *vertex_attrib_i_format)(	GLuint attribindex, GLint size, vertex_attrib_data_type type, GLuint relativeoffset);
-	void (ORB_GL_CALL *vertex_attrib_pointer)(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
-	void (ORB_GL_CALL *vertex_binding_divisor)(GLuint bindingindex, GLuint divisor);
+	function_t<decltype("glBindBuffer"_proc), void(buffer_target target, GLuint buffer)> bind_buffer;
+	function_t<decltype("glBindBufferBase"_proc), void(buffer_target target, GLuint index, GLuint buffer)> bind_buffer_base;
+	function_t<decltype("glBindBufferRange"_proc), void(buffer_target target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)> bind_buffer_range;
+	function_t<decltype("glBindVertexBuffer"_proc), void(GLuint bindingindex, GLuint buffer, GLintptr offset, GLintptr stride)> bind_vertex_buffer;
+	function_t<decltype("glBufferData"_proc), void(buffer_target target, GLsizeiptr size, const GLvoid* data, buffer_usage usage)> buffer_data;
+	function_t<decltype("glBufferSubData"_proc), void(buffer_target target, GLintptr offset, GLsizeiptr size, const GLvoid* data)> buffer_sub_data;
+	function_t<decltype("glCopyBufferSubData"_proc), void(buffer_target readtarget, buffer_target writetarget, GLintptr readoffset, GLintptr writeoffset, GLsizeiptr size)> copy_buffer_sub_data;
+	function_t<decltype("glDeleteBuffers"_proc), void(GLsizei n, const GLuint* buffers)> delete_buffers;
+	function_t<decltype("glDisableVertexAttribArray"_proc), void(GLuint index)> disable_vertex_attrib_array;
+	function_t<decltype("glDrawArrays"_proc), void(draw_mode mode, GLint first, GLsizei count)> draw_arrays;
+	function_t<decltype("glDrawArraysIndirect"_proc), void(draw_mode mode, const void *indirect)> draw_arrays_indirect;
+	function_t<decltype("glDrawArraysInstanced"_proc), void(draw_mode mode, GLint first, GLsizei count, GLsizei primcount)> draw_arrays_instanced;
+	function_t<decltype("glDrawElements"_proc), void(draw_mode mode, GLsizei count, index_type type, const GLvoid* indices)> draw_elements;
+	function_t<decltype("glDrawElementsIndirect"_proc), void(draw_mode mode, index_type type, const void* indirect)> draw_elements_indirect;
+	function_t<decltype("glDrawElementsInstanced"_proc), void(draw_mode mode, GLsizei count, index_type type, const void* indices, GLsizei primcount)> draw_elements_instanced;
+	function_t<decltype("glDrawRangeElements"_proc), void(draw_mode mode, GLuint start, GLuint end, GLsizei count, index_type type, const GLvoid* indices)> draw_range_elements;
+	function_t<decltype("glEnableVertexAttribArray"_proc), void(GLuint index)> enable_vertex_attrib_array;
+	function_t<decltype("glFlushMappedBufferRange"_proc), GLsync(buffer_target target, GLintptr offset, GLsizeiptr length)> flush_mapped_buffer_range;
+	function_t<decltype("glGenBuffers"_proc), void(GLsizei n, GLuint* buffers)> gen_buffers;
+	function_t<decltype("glGetBufferParameteriv"_proc), void(buffer_target target, buffer_param value, GLint* data)> get_buffer_parameteriv;
+	function_t<decltype("glGetBufferParameteri64v"_proc), void(buffer_target target, buffer_param value, GLint64* data)> get_buffer_parameteri64v;
+	function_t<decltype("glGetBufferPointerv"_proc), void(buffer_target target, buffer_pointer_param pname, GLvoid** params)> get_buffer_pointerv;
+	function_t<decltype("glGetVertexAttribfv"_proc), void(GLuint index, vertex_attrib_array_param pname, GLfloat* params)> get_vertex_attribfv;
+	function_t<decltype("glGetVertexAttribiv"_proc), void(GLuint index, vertex_attrib_array_param pname, GLint* params)> get_vertex_attribiv;
+	function_t<decltype("glGetVertexAttribiiv"_proc), void(GLuint index, vertex_attrib_array_param pname, GLint* params)> get_vertex_attribiiv;
+	function_t<decltype("glGetVertexAttribiuiv"_proc), void(GLuint index, vertex_attrib_array_param pname, GLuint* params)> get_vertex_attribiuiv;
+	function_t<decltype("glGetVertexAttribPointerv"_proc), void(GLuint index, vertex_attrib_array_pointer_param pname, GLvoid** pointer)> get_vertex_attrib_pointerv;
+	function_t<decltype("glIsBuffer"_proc), GLboolean(GLuint buffer)> is_buffer;
+	function_t<decltype("glMapBufferRange"_proc), void*(buffer_target target, GLintptr offset, GLsizeiptr length, map_access access)> map_buffer_range;
+	function_t<decltype("glUnmapBuffer"_proc), GLboolean(buffer_target target)> unmap_buffer;
+	function_t<decltype("glVertexAttrib1f"_proc), void(GLuint index, GLfloat v0)> vertex_attrib1f;
+	function_t<decltype("glVertexAttrib2f"_proc), void(GLuint index, GLfloat v0, GLfloat v1)> vertex_attrib2f;
+	function_t<decltype("glVertexAttrib3f"_proc), void(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2)> vertex_attrib3f;
+	function_t<decltype("glVertexAttrib4f"_proc), void(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)> vertex_attrib4f;
+	function_t<decltype("glVertexAttribI4i"_proc), void(GLuint index, GLint v0, GLint v1, GLint v2, GLint v3)> vertex_attrib_i_4i;
+	function_t<decltype("glVertexAttribI4ui"_proc), void(GLuint index, GLuint v0, GLuint v1, GLuint v2, GLuint v3)> vertex_attrib_i_4ui;
+	function_t<decltype("glVertexAttrib1fv"_proc), void(GLuint index, const GLfloat* v)> vertex_attrib1fv;
+	function_t<decltype("glVertexAttrib2fv"_proc), void(GLuint index, const GLfloat* v)> vertex_attrib2fv;
+	function_t<decltype("glVertexAttrib3fv"_proc), void(GLuint index, const GLfloat* v)> vertex_attrib3fv;
+	function_t<decltype("glVertexAttrib4fv"_proc), void(GLuint index, const GLfloat* v)> vertex_attrib4fv;
+	function_t<decltype("glVertexAttribI4iv"_proc), void(GLuint index, const GLint* v)> vertex_attrib_i_4iv;
+	function_t<decltype("glVertexAttribI4uiv"_proc), void(GLuint index, const GLuint* v)> vertex_attrib_i_4uiv;
+	function_t<decltype("glVertexAttribBinding"_proc), void(GLuint attribindex, GLuint bindingindex)> vertex_attrib_binding;
+	function_t<decltype("glVertexAttribDivisor"_proc), void(GLuint index, GLuint divisor)> vertex_attrib_divisor;
+	function_t<decltype("glVertexAttribFormat"_proc), void(GLuint attribindex, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLuint relativeoffset)> vertex_attrib_format;
+	function_t<decltype("glVertexAttribIFormat"_proc), void(GLuint attribindex, GLint size, vertex_attrib_data_type type, GLuint relativeoffset)> vertex_attrib_i_format;
+	function_t<decltype("glVertexAttribPointer"_proc), void(GLuint index, GLint size, vertex_attrib_data_type type, GLboolean normalized, GLsizei stride, const GLvoid* pointer)> vertex_attrib_pointer;
+	function_t<decltype("glVertexBindingDivisor"_proc), void(GLuint bindingindex, GLuint divisor)> vertex_binding_divisor;
 
 	/* Shaders */
-	void (ORB_GL_CALL *attach_shader)(GLuint program, GLuint shader);
-	void (ORB_GL_CALL *bind_attrib_location)(GLuint program, GLuint index, const GLchar* name);
-	void (ORB_GL_CALL *compile_shader)(GLuint shader);
-	GLuint (ORB_GL_CALL *create_program)();
-	GLuint (ORB_GL_CALL *create_shader)(shader_type type);
-	void (ORB_GL_CALL *delete_program)(GLuint program);
-	void (ORB_GL_CALL *delete_shader)(GLuint shader);
-	void (ORB_GL_CALL *detach_shader)(GLuint program, GLuint shader);
-	void (ORB_GL_CALL *get_active_attrib)(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, attrib_data_type* type, GLchar* name);
-	void (ORB_GL_CALL *get_active_uniform)(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, uniform_data_type* type, GLchar* name);
-	void (ORB_GL_CALL *get_attached_shaders)(GLuint program, GLsizei maxCount, GLsizei* count, GLuint* shaders);
-	GLint (ORB_GL_CALL *get_attrib_location)(GLuint program, const GLchar* name);
-	void (ORB_GL_CALL *get_program_info_log)(GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
-	void (ORB_GL_CALL *get_programiv)(GLuint program, program_param pname, GLint* params);
-	void (ORB_GL_CALL *get_shader_info_log)(GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
-	void (ORB_GL_CALL *get_shader_source)(GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* source);
-	void (ORB_GL_CALL *get_shaderiv)(GLuint shader, shader_param pname, GLint* params);
-	void (ORB_GL_CALL *get_uniformfv)(GLuint program, GLint location, GLfloat* params);
-	void (ORB_GL_CALL *get_uniformiv)(GLuint program, GLint location, GLint* params);
-	GLint (ORB_GL_CALL *get_uniform_location)(GLuint program, const GLchar* name);
-	GLboolean (ORB_GL_CALL *is_program)(GLuint program);
-	GLboolean (ORB_GL_CALL *is_shader)(GLuint shader);
-	void (ORB_GL_CALL *link_program)(GLuint program);
-	void (ORB_GL_CALL *shader_source)(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length);
-	void (ORB_GL_CALL *uniform1f)(GLint location, GLfloat v0);
-	void (ORB_GL_CALL *uniform1fv)(GLint location, GLsizei count, const GLfloat* value);
-	void (ORB_GL_CALL *uniform2f)(GLint location, GLfloat v0, GLfloat v1);
-	void (ORB_GL_CALL *uniform2fv)(GLint location, GLsizei count, const GLfloat* value);
-	void (ORB_GL_CALL *uniform3f)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
-	void (ORB_GL_CALL *uniform3fv)(GLint location, GLsizei count, const GLfloat* value);
-	void (ORB_GL_CALL *uniform4f)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-	void (ORB_GL_CALL *uniform4fv)(GLint location, GLsizei count, const GLfloat* value);
-	void (ORB_GL_CALL *uniform1i)(GLint location, GLint v0);
-	void (ORB_GL_CALL *uniform1iv)(GLint location, GLsizei count, const GLint* value);
-	void (ORB_GL_CALL *uniform2i)(GLint location, GLint v0, GLint v1);
-	void (ORB_GL_CALL *uniform2iv)(GLint location, GLsizei count, const GLint* value);
-	void (ORB_GL_CALL *uniform3i)(GLint location, GLint v0, GLint v1, GLint v2);
-	void (ORB_GL_CALL *uniform3iv)(GLint location, GLsizei count, const GLint* value);
-	void (ORB_GL_CALL *uniform4i)(GLint location, GLint v0, GLint v1, GLint v2, GLint v3);
-	void (ORB_GL_CALL *uniform4iv)(GLint location, GLsizei count, const GLint* value);
-	void (ORB_GL_CALL *use_program)(GLuint program);
-	void (ORB_GL_CALL *validate_program)(GLuint program);
+	function_t<decltype("glAttachShader"_proc), void(GLuint program, GLuint shader)> attach_shader;
+	function_t<decltype("glBindAttribLocation"_proc), void(GLuint program, GLuint index, const GLchar* name)> bind_attrib_location;
+	function_t<decltype("glCompileShader"_proc), void(GLuint shader)> compile_shader;
+	function_t<decltype("glCreateProgram"_proc), GLuint()> create_program;
+	function_t<decltype("glCreateShader"_proc), GLuint(shader_type type)> create_shader;
+	function_t<decltype("glDeleteProgram"_proc), void(GLuint program)> delete_program;
+	function_t<decltype("glDeleteShader"_proc), void(GLuint shader)> delete_shader;
+	function_t<decltype("glDetachShader"_proc), void(GLuint program, GLuint shader)> detach_shader;
+	function_t<decltype("glGetActiveAttrib"_proc), void(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, attrib_data_type* type, GLchar* name)> get_active_attrib;
+	function_t<decltype("glGetActiveUniform"_proc), void(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, uniform_data_type* type, GLchar* name)> get_active_uniform;
+	function_t<decltype("glGetAttachedShaders"_proc), void(GLuint program, GLsizei maxCount, GLsizei* count, GLuint* shaders)> get_attached_shaders;
+	function_t<decltype("glGetAttribLocation"_proc), GLint(GLuint program, const GLchar* name)> get_attrib_location;
+	function_t<decltype("glGetProgramInfoLog"_proc), void(GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog)> get_program_info_log;
+	function_t<decltype("glGetProgramiv"_proc), void(GLuint program, program_param pname, GLint* params)> get_programiv;
+	function_t<decltype("glGetShaderInfoLog"_proc), void(GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog)> get_shader_info_log;
+	function_t<decltype("glGetShaderSource"_proc), void(GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* source)> get_shader_source;
+	function_t<decltype("glGetShaderiv"_proc), void(GLuint shader, shader_param pname, GLint* params)> get_shaderiv;
+	function_t<decltype("glGetUniformfv"_proc), void(GLuint program, GLint location, GLfloat* params)> get_uniformfv;
+	function_t<decltype("glGetUniformiv"_proc), void(GLuint program, GLint location, GLint* params)> get_uniformiv;
+	function_t<decltype("glGetUniformLocation"_proc), GLint(GLuint program, const GLchar* name)> get_uniform_location;
+	function_t<decltype("glIsProgram"_proc), GLboolean(GLuint program)> is_program;
+	function_t<decltype("glIsShader"_proc), GLboolean(GLuint shader)> is_shader;
+	function_t<decltype("glLinkProgram"_proc), void(GLuint program)> link_program;
+	function_t<decltype("glShaderSource"_proc), void(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length)> shader_source;
+	function_t<decltype("glUniform1f"_proc), void(GLint location, GLfloat v0)> uniform1f;
+	function_t<decltype("glUniform1fv"_proc), void(GLint location, GLsizei count, const GLfloat* value)> uniform1fv;
+	function_t<decltype("glUniform2f"_proc), void(GLint location, GLfloat v0, GLfloat v1)> uniform2f;
+	function_t<decltype("glUniform2fv"_proc), void(GLint location, GLsizei count, const GLfloat* value)> uniform2fv;
+	function_t<decltype("glUniform3f"_proc), void(GLint location, GLfloat v0, GLfloat v1, GLfloat v2)> uniform3f;
+	function_t<decltype("glUniform3fv"_proc), void(GLint location, GLsizei count, const GLfloat* value)> uniform3fv;
+	function_t<decltype("glUniform4f"_proc), void(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)> uniform4f;
+	function_t<decltype("glUniform4fv"_proc), void(GLint location, GLsizei count, const GLfloat* value)> uniform4fv;
+	function_t<decltype("glUniform1i"_proc), void(GLint location, GLint v0)> uniform1i;
+	function_t<decltype("glUniform1iv"_proc), void(GLint location, GLsizei count, const GLint* value)> uniform1iv;
+	function_t<decltype("glUniform2i"_proc), void(GLint location, GLint v0, GLint v1)> uniform2i;
+	function_t<decltype("glUniform2iv"_proc), void(GLint location, GLsizei count, const GLint* value)> uniform2iv;
+	function_t<decltype("glUniform3i"_proc), void(GLint location, GLint v0, GLint v1, GLint v2)> uniform3i;
+	function_t<decltype("glUniform3iv"_proc), void(GLint location, GLsizei count, const GLint* value)> uniform3iv;
+	function_t<decltype("glUniform4i"_proc), void(GLint location, GLint v0, GLint v1, GLint v2, GLint v3)> uniform4i;
+	function_t<decltype("glUniform4iv"_proc), void(GLint location, GLsizei count, const GLint* value)> uniform4iv;
+	function_t<decltype("glUseProgram"_proc), void(GLuint program)> use_program;
+	function_t<decltype("glValidateProgram"_proc), void(GLuint program)> validate_program;
 
 	// Vertex array objects
-	void (ORB_GL_CALL *bind_vertex_array)(GLuint array);
-	void (ORB_GL_CALL *delete_vertex_arrays)(GLsizei n, const GLuint* arrays);
-	void (ORB_GL_CALL *gen_vertex_arrays)(GLsizei n, GLuint* arrays);
-	GLboolean (ORB_GL_CALL *is_vertex_array)(GLuint array);
-
+	function_t<decltype("glBindVertexArray"_proc), void(GLuint array)> bind_vertex_array;
+	function_t<decltype("glDeleteVertexArrays"_proc), void(GLsizei n, const GLuint* arrays)> delete_vertex_arrays;
+	function_t<decltype("glGenVertexArrays"_proc), void(GLsizei n, GLuint* arrays)> gen_vertex_arrays;
+	function_t<decltype("glIsVertexArray"_proc), GLboolean(GLuint array)> is_vertex_array;
 };
 
-extern ORB_API_GRAPHICS functions load_functions();
 extern ORB_API_GRAPHICS functions& get_current_functions();
 
 }
