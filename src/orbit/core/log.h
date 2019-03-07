@@ -19,12 +19,13 @@
 #include "orbit/core.h"
 
 #include <string>
+#include <string_view>
 
 namespace orb
 {
 
-extern ORB_API_CORE void log_info(const std::string& msg);
-extern ORB_API_CORE void log_warning(const std::string& msg);
-extern ORB_API_CORE void log_error(const std::string& msg);
+extern ORB_API_CORE void log_info(std::string_view msg);
+extern ORB_API_CORE void log_warning(std::string_view msg);
+extern ORB_API_CORE void log_error(std::string_view msg);
 
 }
