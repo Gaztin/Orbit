@@ -24,8 +24,8 @@
 namespace orb
 {
 
-extern ORB_API_CORE void log_info(std::string_view msg);
-extern ORB_API_CORE void log_warning(std::string_view msg);
-extern ORB_API_CORE void log_error(std::string_view msg);
+extern ORB_API_CORE void log_info    (std::string_view msg);
+extern ORB_API_CORE void log_warning (std::string_view msg);
+extern ORB_API_CORE void log_error   (std::string_view msg);
 
 }

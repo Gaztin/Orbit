@@ -79,8 +79,8 @@ static void log_error_internal(const char* msg)
 #endif
 }
 
-void log_info    (std::string_view msg) { log_info_internal(msg.begin()); }
-void log_warning (std::string_view msg) { log_warning_internal(msg.begin()); }
-void log_error   (std::string_view msg) { log_error_internal(msg.begin()); }
+void log_info    (std::string_view msg) { log_info_internal(msg.data()); }
+void log_warning (std::string_view msg) { log_warning_internal(msg.data()); }
+void log_error   (std::string_view msg) { log_error_internal(msg.data()); }
 
 }
