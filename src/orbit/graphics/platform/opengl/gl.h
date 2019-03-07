@@ -726,6 +726,14 @@ ORB_ENABLE_BITMASKING(gl::map_access);
 namespace gl
 {
 
+namespace platform
+{
+extern ORB_API_GRAPHICS void* get_proc_address(std::string_view name);
+}
+
+extern ORB_API_GRAPHICS void handle_error(GLenum err);
+
+
 #if defined(ORB_OS_WINDOWS)
 #define ORB_GL_CALL __stdcall
 #else
@@ -839,11 +847,6 @@ struct functions
 	GLboolean (ORB_GL_CALL *is_vertex_array)(GLuint array);
 
 };
-
-namespace platform
-{
-extern ORB_API_GRAPHICS void* get_proc_address(std::string_view name);
-}
 
 extern ORB_API_GRAPHICS functions load_functions();
 extern ORB_API_GRAPHICS functions& get_current_functions();
