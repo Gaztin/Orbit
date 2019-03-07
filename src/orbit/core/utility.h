@@ -16,6 +16,7 @@
 */
 
 #pragma once
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -87,6 +88,19 @@ std::string format(const char* fmt, Args... args)
 	std::string res(len, '\0');
 	snprintf(&res[0], len + 1, fmt, args...);
 	return res;
+}
+
+template<typename... Args>
+std::string_view format_view(const char* fmt, Args... args)
+{
+	const int len = snprintf(nullptr, 0, fmt, args...);
+	if (len < 0)
+		return std::string_view(fmt);
+	
+	thread_local std::unique_ptr<char[]> buf;
+	buf = std::make_unique<char[]>(len);
+	snprintf(buf.get(), len + 1, fmt, args...);
+	return std::string_view(buf.get(), len);
 }
 
 }
