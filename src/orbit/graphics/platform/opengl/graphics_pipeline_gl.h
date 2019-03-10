@@ -16,9 +16,11 @@
 */
 
 #pragma once
+#include <optional>
 #include <vector>
 
 #include "orbit/graphics/platform/opengl/gl.h"
+#include "orbit/graphics/platform/opengl/vertex_array_object_gl.h"
 #include "orbit/graphics/platform/graphics_pipeline_base.h"
 
 namespace orb
@@ -32,15 +34,19 @@ public:
 	graphics_pipeline_gl();
 	~graphics_pipeline_gl();
 
+	void bind() final override;
+	void unbind() final override;
 	void add_shader(const shader& shr) final override;
 	void describe_vertex_layout(vertex_layout layout) final override;
 
-	void draw(size_t vertexCount) final override;
+	void draw(const vertex_buffer& vb) final override;
+	void draw(const index_buffer& ib) final override;
 
 private:
 	std::vector<vertex_component> m_layout;
 	GLsizei m_stride;
 	GLuint m_programId;
+	std::optional<vertex_array_object_gl> m_vertexArrayObject;
 };
 
 }

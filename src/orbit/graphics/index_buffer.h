@@ -16,45 +16,35 @@
 */
 
 #pragma once
-#include <cstddef>
+#include <memory>
+#include <type_traits>
 
-#include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/render_context_gl.h"
 #include "orbit/graphics/platform/buffer_base.h"
-#include "orbit/graphics/render_context.h"
 
 namespace orb
 {
-namespace platform
-{
 
-template<gl::buffer_target BufferTarget>
-class buffer_gl : public buffer_base
+class ORB_API_GRAPHICS index_buffer
 {
 public:
-	buffer_gl(const void* data, size_t size)
-		: m_id(0)
+	index_buffer(index_format fmt, const void* data, size_t count);
+
+	template<typename T,
+		typename = typename std::enable_if_t<index_format_traits<T>::Enabled>>
+	index_buffer(std::initializer_list<T> indices)
+		: index_buffer(index_format_traits<T>::Format, indices.begin(), indices.size())
 	{
-		auto& gl = gl::get_current_functions();
-		gl.gen_buffers(1, &m_id);
-		gl.bind_buffer(BufferTarget, m_id);
-		gl.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
-		gl.bind_buffer(BufferTarget, 0);
 	}
 
-	~buffer_gl()
-	{
-		gl::get_current_functions().delete_buffers(1, &m_id);
-	}
+	void bind();
 
-	void bind() final override
-	{
-		gl::get_current_functions().bind_buffer(BufferTarget, m_id);
-	}
+	index_format get_format() const { return m_format; }
+	size_t get_count() const { return m_count; }
 
 private:
-	GLuint m_id;
+	std::unique_ptr<platform::buffer_base> m_base;
+	index_format m_format;
+	size_t m_count;
 };
 
-}
 }

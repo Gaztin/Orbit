@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,44 +16,27 @@
 */
 
 #pragma once
-#include <cstddef>
-
-#include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/render_context_gl.h"
-#include "orbit/graphics/platform/buffer_base.h"
-#include "orbit/graphics/render_context.h"
+#include "orbit/core/memory.h"
+#include "orbit/graphics/platform/d3d11/d3d11.h"
+#include "orbit/graphics/platform/constant_buffer_base.h"
 
 namespace orb
 {
 namespace platform
 {
 
-template<gl::buffer_target BufferTarget>
-class buffer_gl : public buffer_base
+class ORB_API_GRAPHICS constant_buffer_d3d11 : public constant_buffer_base
 {
 public:
-	buffer_gl(const void* data, size_t size)
-		: m_id(0)
-	{
-		auto& gl = gl::get_current_functions();
-		gl.gen_buffers(1, &m_id);
-		gl.bind_buffer(BufferTarget, m_id);
-		gl.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
-		gl.bind_buffer(BufferTarget, 0);
-	}
+	constant_buffer_d3d11(size_t size);
 
-	~buffer_gl()
-	{
-		gl::get_current_functions().delete_buffers(1, &m_id);
-	}
-
-	void bind() final override
-	{
-		gl::get_current_functions().bind_buffer(BufferTarget, m_id);
-	}
+	void update(size_t location, const void* data, size_t size) final override;
+	void bind(shader_type type, uint32_t slot) final override;
 
 private:
-	GLuint m_id;
+#if defined(ORB_OS_WINDOWS)
+	com_ptr<ID3D11Buffer> m_buffer;
+#endif
 };
 
 }

@@ -16,44 +16,19 @@
 */
 
 #pragma once
-#include <cstddef>
-
-#include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/render_context_gl.h"
-#include "orbit/graphics/platform/buffer_base.h"
-#include "orbit/graphics/render_context.h"
+#include "orbit/graphics.h"
 
 namespace orb
 {
 namespace platform
 {
 
-template<gl::buffer_target BufferTarget>
-class buffer_gl : public buffer_base
+class ORB_API_GRAPHICS constant_buffer_base
 {
 public:
-	buffer_gl(const void* data, size_t size)
-		: m_id(0)
-	{
-		auto& gl = gl::get_current_functions();
-		gl.gen_buffers(1, &m_id);
-		gl.bind_buffer(BufferTarget, m_id);
-		gl.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
-		gl.bind_buffer(BufferTarget, 0);
-	}
-
-	~buffer_gl()
-	{
-		gl::get_current_functions().delete_buffers(1, &m_id);
-	}
-
-	void bind() final override
-	{
-		gl::get_current_functions().bind_buffer(BufferTarget, m_id);
-	}
-
-private:
-	GLuint m_id;
+	virtual ~constant_buffer_base() {}
+	virtual void update(size_t location, const void* data, size_t size) = 0;
+	virtual void bind(shader_type type, uint32_t slot) = 0;
 };
 
 }

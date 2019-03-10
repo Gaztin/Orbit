@@ -20,6 +20,7 @@
 #include <GLKit/GLKit.h>
 
 #include "orbit/core/platform/window_handle.h"
+#include "orbit/graphics/platform/opengl/gl_version.h"
 
 @interface ORBGLKViewDelegate : UIResponder<GLKViewDelegate>
 @end
@@ -29,14 +30,29 @@ namespace orb
 namespace platform
 {
 
-render_context_gl::render_context_gl(const window_handle& wh)
+static EAGLRenderingAPI get_eagl_rendering_api(gl::version v)
+{
+	switch (v)
+	{
+		case gl::version::vES_2:
+			return kEAGLRenderingAPIOpenGLES2;
+
+		case gl::version::vES_3:
+			return kEAGLRenderingAPIOpenGLES3;
+
+		default:
+			return get_eagl_rendering_api(gl::get_system_default_opengl_version());
+	}
+}
+
+render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
 	: m_eaglContext([EAGLContext alloc])
 	, m_glkView([GLKView alloc])
 {
 	ORBGLKViewDelegate* delegate = [ORBGLKViewDelegate alloc];
 	[delegate init];
 
-	[(EAGLContext*)m_eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES2];
+	[(EAGLContext*)m_eaglContext initWithAPI:get_eagl_rendering_api(v)];
 	[(GLKView*)m_glkView initWithFrame:[[UIScreen mainScreen] bounds]];
 	((GLKView*)m_glkView).context = (EAGLContext*)m_eaglContext;
 	((GLKView*)m_glkView).delegate = delegate;

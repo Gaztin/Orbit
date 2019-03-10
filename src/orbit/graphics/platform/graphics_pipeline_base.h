@@ -20,7 +20,9 @@
 
 namespace orb
 {
+class index_buffer;
 class shader;
+class vertex_buffer;
 
 namespace platform
 {
@@ -30,10 +32,13 @@ class ORB_API_GRAPHICS graphics_pipeline_base
 public:
 	virtual ~graphics_pipeline_base() = default;
 
+	virtual void bind() = 0;
+	virtual void unbind() = 0;
 	virtual void add_shader(const shader& shr) = 0;
 	virtual void describe_vertex_layout(vertex_layout layout) = 0;
 
-	virtual void draw(size_t vertexCount) = 0;
+	virtual void draw(const vertex_buffer& vb) = 0;
+	virtual void draw(const index_buffer& ib) = 0;
 };
 
 }

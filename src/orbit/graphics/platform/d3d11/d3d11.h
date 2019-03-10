@@ -16,11 +16,18 @@
 */
 
 #pragma once
+#include "orbit/core/memory.h"
 #include "orbit/graphics.h"
 
 #if defined(ORB_OS_WINDOWS)
 #include <d3d11.h>
 #include <dxgi.h>
+#endif
+
+#if defined(None)
+#pragma push_macro("None")
+#undef None
+#define UNDEFINED_None
 #endif
 
 namespace orb
@@ -42,5 +49,29 @@ enum class bind_flag
 	VideoEncoder    = 0x400,
 };
 
+enum class usage
+{
+	Default   = 0x0,
+	Immutable = 0x1,
+	Dynamic   = 0x2,
+	Staging   = 0x3,
+};
+
+enum class cpu_access
+{
+	None  = 0x00000l,
+	Write = 0x10000l,
+	Read  = 0x20000l,
+};
+
+#if defined(ORB_OS_WINDOWS)
+com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size, usage usg = usage::Default, cpu_access cpu = cpu_access::None);
+#endif
+
 }
 }
+
+#if defined(UNDEFINED_None)
+#pragma pop_macro("None")
+#undef UNDEFINED_None
+#endif

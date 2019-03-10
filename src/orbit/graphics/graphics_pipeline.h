@@ -28,10 +28,13 @@ class ORB_API_GRAPHICS graphics_pipeline
 public:
 	graphics_pipeline();
 
+	void bind();
+	void unbind();
 	void add_shader(const shader& shr);
 	void describe_vertex_layout(vertex_layout layout);
 
-	void draw(size_t vertexCount);
+	void draw(const vertex_buffer& vb);
+	void draw(const index_buffer& ib);
 
 	platform::graphics_pipeline_base& get_base() { return *m_base; }
 

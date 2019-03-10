@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -15,12 +15,10 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include <cstddef>
+#include "vertex_buffer_d3d11.h"
 
-#include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/render_context_gl.h"
-#include "orbit/graphics/platform/buffer_base.h"
+#include "orbit/graphics/platform/d3d11/d3d11.h"
+#include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
 #include "orbit/graphics/render_context.h"
 
 namespace orb
@@ -28,33 +26,20 @@ namespace orb
 namespace platform
 {
 
-template<gl::buffer_target BufferTarget>
-class buffer_gl : public buffer_base
+vertex_buffer_d3d11::vertex_buffer_d3d11(const void* data, size_t count, size_t stride)
+	: m_buffer(d3d11::create_buffer(d3d11::bind_flag::VertexBuffer, data, count * stride))
+	, m_stride(static_cast<UINT>(stride))
 {
-public:
-	buffer_gl(const void* data, size_t size)
-		: m_id(0)
-	{
-		auto& gl = gl::get_current_functions();
-		gl.gen_buffers(1, &m_id);
-		gl.bind_buffer(BufferTarget, m_id);
-		gl.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
-		gl.bind_buffer(BufferTarget, 0);
-	}
+}
 
-	~buffer_gl()
-	{
-		gl::get_current_functions().delete_buffers(1, &m_id);
-	}
-
-	void bind() final override
-	{
-		gl::get_current_functions().bind_buffer(BufferTarget, m_id);
-	}
-
-private:
-	GLuint m_id;
-};
+void vertex_buffer_d3d11::bind()
+{
+	ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
+	ID3D11Buffer* buffers[] = { m_buffer.get() };
+	const UINT strides[] = { m_stride };
+	const UINT offsets[] = { 0 };
+	dc.IASetVertexBuffers(0, 1, buffers, strides, offsets);
+}
 
 }
 }

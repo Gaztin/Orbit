@@ -15,46 +15,46 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include <cstddef>
-
-#include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/render_context_gl.h"
-#include "orbit/graphics/platform/buffer_base.h"
-#include "orbit/graphics/render_context.h"
+#include "index_buffer_d3d11.h"
 
 namespace orb
 {
 namespace platform
 {
 
-template<gl::buffer_target BufferTarget>
-class buffer_gl : public buffer_base
+static size_t format_size(index_format fmt)
 {
-public:
-	buffer_gl(const void* data, size_t size)
-		: m_id(0)
+	switch (fmt)
 	{
-		auto& gl = gl::get_current_functions();
-		gl.gen_buffers(1, &m_id);
-		gl.bind_buffer(BufferTarget, m_id);
-		gl.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
-		gl.bind_buffer(BufferTarget, 0);
+		case index_format::Byte: return 1;
+		case index_format::Word: return 2;
+		case index_format::DoubleWord: return 4;
+		default: return 0;
 	}
+}
 
-	~buffer_gl()
+static DXGI_FORMAT dxgi_format(index_format fmt)
+{
+	switch (fmt)
 	{
-		gl::get_current_functions().delete_buffers(1, &m_id);
+		case index_format::Byte: return DXGI_FORMAT_R8_UINT;
+		case index_format::Word: return DXGI_FORMAT_R16_UINT;
+		case index_format::DoubleWord: return DXGI_FORMAT_R32_UINT;
+		default: return DXGI_FORMAT_UNKNOWN;
 	}
+}
 
-	void bind() final override
-	{
-		gl::get_current_functions().bind_buffer(BufferTarget, m_id);
-	}
+index_buffer_d3d11::index_buffer_d3d11(index_format fmt, const void* data, size_t count)
+	: m_buffer(d3d11::create_buffer(d3d11::bind_flag::IndexBuffer, data, count * format_size(fmt)))
+	, m_format(dxgi_format(fmt))
+{
+}
 
-private:
-	GLuint m_id;
-};
+void index_buffer_d3d11::bind()
+{
+	ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
+	dc.IASetIndexBuffer(m_buffer.get(), m_format, 0);
+}
 
 }
 }

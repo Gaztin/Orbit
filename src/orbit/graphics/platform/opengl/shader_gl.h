@@ -34,29 +34,77 @@ namespace platform
 template<gl::shader_type ShaderType>
 class ORB_API_GRAPHICS shader_gl : public shader_base
 {
-public:
-	shader_gl(const asset& ast)
+private:
+	struct traits
 	{
-		const auto& fns = static_cast<render_context_gl&>(render_context::get_current()->get_base()).get_functions();
-		const auto& data = ast.get_data();
-		m_id = fns.create_shader(ShaderType);
+		static std::string_view make_varying_macro(gl::version v);
+		static std::string_view make_attribute_macro(gl::version v);
+		static std::string_view make_out_color_declaration(gl::version v);
+	};
 
-#if defined(ORB_OS_ANDROID) || defined(ORB_OS_IOS)
-		constexpr std::string_view headerString = "#version 100\n#define ORB_GLSL 1\nprecision highp float;\n";
-#else
-		constexpr std::string_view headerString = "#version 110\n#define ORB_GLSL 1\n";
-#endif
-		const GLchar* sources[] = { headerString.data(), cast<const GLchar*>(data.data()) };
-		const GLint lengths[] = { static_cast<GLint>(headerString.size()), static_cast<GLint>(data.size()) };
-		fns.shader_source(m_id, count_of(sources), sources, lengths);
-		fns.compile_shader(m_id);
+public:
+	shader_gl(const asset& ast, gl::version v)
+	{
+		auto& gl = gl::get_current_functions();
+		m_id = gl.create_shader(ShaderType);
+
+		std::string_view headerStr;
+		switch (v)
+		{
+			case gl::version::v2_0:  headerStr = "#version 110\n#define ORB_GLSL 1\n"; break;
+			case gl::version::v3_2:  headerStr = "#version 150\n#define ORB_GLSL 1\n"; break;
+			case gl::version::v4_1:  headerStr = "#version 410\n#define ORB_GLSL 1\n"; break;
+			case gl::version::vES_2: headerStr = "#version 100\n#define ORB_GLSL 1\nprecision highp float;\n"; break;
+			case gl::version::vES_3: headerStr = "#version 300 es\n#define ORB_GLSL 1\nprecision highp float;\n"; break;
+		}
+
+		std::string_view constantsMacrosStr;
+		switch (v)
+		{
+			case orb::gl::version::v2_0:
+			case orb::gl::version::vES_2:
+				constantsMacrosStr = "#define ORB_CONSTANTS_BEGIN(X)\n#define ORB_CONSTANTS_END\n#define ORB_CONSTANT(T, N) uniform T N;\n";
+				break;
+
+			case orb::gl::version::v3_2:
+			case orb::gl::version::v4_1:
+			case orb::gl::version::vES_3:
+				constantsMacrosStr = "#define ORB_CONSTANTS_BEGIN(X) layout (std140) uniform X {\n#define ORB_CONSTANTS_END };\n#define ORB_CONSTANT(T, N) T N;\n"; break;
+				break;
+		}
+
+		const std::string_view varyingStr      = traits::make_varying_macro(v);
+		const std::string_view attributeStr    = traits::make_attribute_macro(v);
+		const std::string_view outColorDeclStr = traits::make_out_color_declaration(v);
+		const auto&            data            = ast.get_data();
+
+		const GLchar* sources[] =
+		{
+			headerStr.data(),
+			constantsMacrosStr.data(),
+			varyingStr.data(),
+			attributeStr.data(),
+			outColorDeclStr.data(),
+			cast<const GLchar*>(data.data()),
+		};
+		const GLint lengths[] =
+		{
+			static_cast<GLint>(headerStr.size()),
+			static_cast<GLint>(constantsMacrosStr.size()),
+			static_cast<GLint>(varyingStr.size()),
+			static_cast<GLint>(attributeStr.size()),
+			static_cast<GLint>(outColorDeclStr.size()),
+			static_cast<GLint>(data.size()),
+		};
+		gl.shader_source(m_id, count_of(sources), sources, lengths);
+		gl.compile_shader(m_id);
 
 		GLint loglen = 0;
-		fns.get_shaderiv(m_id, gl::shader_param::InfoLogLength, &loglen);
+		gl.get_shaderiv(m_id, gl::shader_param::InfoLogLength, &loglen);
 		if (loglen > 0)
 		{
 			std::string logbuf(static_cast<size_t>(loglen), '\0');
-			fns.get_shader_info_log(m_id, loglen, nullptr, &logbuf[0]);
+			gl.get_shader_info_log(m_id, loglen, nullptr, &logbuf[0]);
 			log_error(logbuf);
 		}
 	}
@@ -80,6 +128,105 @@ inline shader_type shader_gl<gl::shader_type::Fragment>::get_type() const
 {
 	return shader_type::Fragment;
 }
+
+template<>
+struct shader_gl<gl::shader_type::Vertex>::traits
+{
+	static std::string_view make_varying_macro(gl::version v)
+	{
+		switch (v)
+		{
+			case gl::version::v2_0:
+			case gl::version::vES_2:
+				return "#define ORB_VARYING varying\n";
+
+			case gl::version::v3_2:
+			case gl::version::v4_1:
+			case gl::version::vES_3:
+				return "#define ORB_VARYING out\n";
+
+			default:
+				return "";
+		}
+	}
+
+	static std::string_view make_attribute_macro(gl::version v)
+	{
+		switch (v)
+		{
+			case gl::version::v2_0:
+			case gl::version::vES_2:
+				return "#define ORB_ATTRIBUTE attribute\n";
+
+			case gl::version::v3_2:
+			case gl::version::v4_1:
+			case gl::version::vES_3:
+				return "#define ORB_ATTRIBUTE in\n";
+
+			default:
+				return "";
+		}
+	}
+
+	static std::string_view make_out_color_declaration(gl::version)
+	{
+		return "";
+	}
+};
+
+template<>
+struct shader_gl<gl::shader_type::Fragment>::traits
+{
+	static std::string_view make_varying_macro(gl::version v)
+	{
+		switch (v)
+		{
+			case gl::version::v2_0:
+			case gl::version::vES_2:
+				return "#define ORB_VARYING varying\n";
+
+			case gl::version::v3_2:
+			case gl::version::v4_1:
+			case gl::version::vES_3:
+				return "#define ORB_VARYING in\n";
+
+			default:
+				return "";
+		}
+	}
+
+	static std::string_view make_attribute_macro(gl::version v)
+	{
+		switch (v)
+		{
+			case gl::version::v2_0:
+			case gl::version::vES_2:
+				return "#define ORB_ATTRIBUTE attribute\n";
+
+			case gl::version::v3_2:
+			case gl::version::v4_1:
+			case gl::version::vES_3:
+			default:
+				return "";
+		}
+	}
+
+	static std::string_view make_out_color_declaration(gl::version v)
+	{
+		switch (v)
+		{
+			case gl::version::v2_0:
+			case gl::version::vES_2:
+			default:
+				return "#define ORB_SET_OUT_COLOR(X) gl_FragColor = X\n";
+
+			case gl::version::v3_2:
+			case gl::version::v4_1:
+			case gl::version::vES_3:
+				return "out vec4 orb_outColor;\n#define ORB_SET_OUT_COLOR(X) orb_outColor = X\n";
+		}
+	}
+};
 
 }
 }

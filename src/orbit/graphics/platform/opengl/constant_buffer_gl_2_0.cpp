@@ -15,12 +15,13 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
+#include "constant_buffer_gl_2_0.h"
+
 #include <cstddef>
+#include <cstring>
 
 #include "orbit/graphics/platform/opengl/gl.h"
 #include "orbit/graphics/platform/opengl/render_context_gl.h"
-#include "orbit/graphics/platform/buffer_base.h"
 #include "orbit/graphics/render_context.h"
 
 namespace orb
@@ -28,33 +29,16 @@ namespace orb
 namespace platform
 {
 
-template<gl::buffer_target BufferTarget>
-class buffer_gl : public buffer_base
+void constant_buffer_gl_2_0::update(size_t location, const void* data, size_t /*size*/)
 {
-public:
-	buffer_gl(const void* data, size_t size)
-		: m_id(0)
-	{
-		auto& gl = gl::get_current_functions();
-		gl.gen_buffers(1, &m_id);
-		gl.bind_buffer(BufferTarget, m_id);
-		gl.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
-		gl.bind_buffer(BufferTarget, 0);
-	}
+	auto& gl = gl::get_current_functions();
+	// #TODO: won't work for any other uniform types other than single floats.
+	gl.uniform1f(location, *reinterpret_cast<const GLfloat*>(data));
+}
 
-	~buffer_gl()
-	{
-		gl::get_current_functions().delete_buffers(1, &m_id);
-	}
-
-	void bind() final override
-	{
-		gl::get_current_functions().bind_buffer(BufferTarget, m_id);
-	}
-
-private:
-	GLuint m_id;
-};
+void constant_buffer_gl_2_0::bind(shader_type /*type*/, uint32_t /*slot*/)
+{
+}
 
 }
 }

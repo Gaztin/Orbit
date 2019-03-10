@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -15,46 +15,40 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
-#include <cstddef>
+#include "d3d11.h"
 
-#include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/render_context_gl.h"
-#include "orbit/graphics/platform/buffer_base.h"
+#include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
 #include "orbit/graphics/render_context.h"
 
 namespace orb
 {
-namespace platform
+namespace d3d11
 {
 
-template<gl::buffer_target BufferTarget>
-class buffer_gl : public buffer_base
+com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size, usage usg, cpu_access cpu)
 {
-public:
-	buffer_gl(const void* data, size_t size)
-		: m_id(0)
+	ID3D11Device& device = static_cast<platform::render_context_d3d11&>(render_context::get_current()->get_base()).get_device();
+
+	D3D11_BUFFER_DESC desc{};
+	desc.ByteWidth = static_cast<UINT>((size + 0xf) & ~0xf); /* Align by 16 bytes */
+	desc.Usage = static_cast<D3D11_USAGE>(usg);
+	desc.BindFlags = static_cast<D3D11_BIND_FLAG>(bf);
+	desc.CPUAccessFlags = static_cast<D3D11_CPU_ACCESS_FLAG>(cpu);
+
+	ID3D11Buffer* buffer = nullptr;
+	if (data)
 	{
-		auto& gl = gl::get_current_functions();
-		gl.gen_buffers(1, &m_id);
-		gl.bind_buffer(BufferTarget, m_id);
-		gl.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
-		gl.bind_buffer(BufferTarget, 0);
+		D3D11_SUBRESOURCE_DATA initialData{};
+		initialData.pSysMem = data;
+		device.CreateBuffer(&desc, &initialData, &buffer);
+	}
+	else
+	{
+		device.CreateBuffer(&desc, nullptr, &buffer);
 	}
 
-	~buffer_gl()
-	{
-		gl::get_current_functions().delete_buffers(1, &m_id);
-	}
-
-	void bind() final override
-	{
-		gl::get_current_functions().bind_buffer(BufferTarget, m_id);
-	}
-
-private:
-	GLuint m_id;
-};
+	return com_ptr<ID3D11Buffer>(buffer);
+}
 
 }
 }

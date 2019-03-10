@@ -1,20 +1,29 @@
 #if defined(ORB_GLSL)
 
-attribute vec4 a_position;
-attribute vec4 a_color;
+ORB_CONSTANTS_BEGIN(Constants)
+ORB_CONSTANT(float, diffuse)
+ORB_CONSTANTS_END
 
-varying vec4 v_position;
-varying vec4 v_color;
+ORB_ATTRIBUTE vec4 a_position;
+ORB_ATTRIBUTE vec4 a_color;
+
+ORB_VARYING vec4 v_position;
+ORB_VARYING vec4 v_color;
 
 void main()
 {
 	v_position = a_position;
-	v_color = a_color;
+	v_color = a_color * diffuse;
 
 	gl_Position = a_position;
 }
 
 #elif defined(ORB_HLSL)
+
+cbuffer Constants
+{
+	float diffuse;
+};
 
 struct VertexInput
 {
@@ -32,7 +41,7 @@ VertexOutput main(VertexInput input)
 {
 	VertexOutput output;
 	output.position = input.position;
-	output.color = input.color;
+	output.color = input.color * diffuse;
 
 	return output;
 }

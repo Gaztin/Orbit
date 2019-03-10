@@ -15,18 +15,27 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "vertex_buffer.h"
-
-#include <assert.h>
+#include "index_buffer.h"
 
 #include "orbit/graphics/render_context.h"
-#include "platform/d3d11/vertex_buffer_d3d11.h"
-#include "platform/opengl/buffer_gl.h"
+#include "orbit/graphics/platform/d3d11/index_buffer_d3d11.h"
+#include "orbit/graphics/platform/opengl/buffer_gl.h"
 
 namespace orb
 {
 
-static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t count, size_t stride)
+static size_t format_size(index_format fmt)
+{
+	switch (fmt)
+	{
+		case orb::index_format::Byte: return 1;
+		case orb::index_format::Word: return 2;
+		case orb::index_format::DoubleWord: return 4;
+		default: return 0;
+	}
+}
+
+static std::unique_ptr<platform::buffer_base> init_base(index_format fmt, const void* data, size_t count)
 {
 	switch (render_context::get_current()->get_api())
 	{
@@ -36,12 +45,12 @@ static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t
 		case graphics_api::OpenGL_4_1:
 		case graphics_api::OpenGL_ES_2:
 		case graphics_api::OpenGL_ES_3:
-			return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count * stride);
+			return std::make_unique<platform::buffer_gl<gl::buffer_target::ElementArray>>(data, count * format_size(fmt));
 #endif
 
 #if defined(ORB_HAS_D3D11)
 		case graphics_api::Direct3D_11:
-			return std::make_unique<platform::vertex_buffer_d3d11>(data, count, stride);
+			return std::make_unique<platform::index_buffer_d3d11>(fmt, data, count);
 #endif
 
 		default:
@@ -49,13 +58,14 @@ static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t
 	}
 }
 
-vertex_buffer::vertex_buffer(const void* data, size_t count, size_t stride)
-	: m_base(init_base(data, count, stride))
+index_buffer::index_buffer(index_format fmt, const void* data, size_t count)
+	: m_base(init_base(fmt, data, count))
+	, m_format(fmt)
 	, m_count(count)
 {
 }
 
-void vertex_buffer::bind()
+void index_buffer::bind()
 {
 	m_base->bind();
 }

@@ -17,9 +17,13 @@
 
 #include "gl.h"
 
+#include <map>
 #include <vector>
 
+#include "orbit/core/log.h"
 #include "orbit/core/utility.h"
+#include "orbit/graphics/platform/opengl/render_context_gl.h"
+#include "orbit/graphics/render_context.h"
 
 #if defined(ORB_OS_LINUX)
 #include <GL/glx.h>
@@ -35,6 +39,30 @@ namespace orb
 {
 namespace gl
 {
+
+const std::map<GLenum, std::string_view> kErrorCodes =
+{
+	{ GL_INVALID_ENUM, "An unacceptable value is specified for an enumerated argument. The offending command is ignored"
+	                   " and has no other side effect than to set the error flag." },
+	{ GL_INVALID_VALUE, "A numeric argument is out of range. The offending command is ignored and has no other side"
+	                    " effect than to set the error flag." },
+	{ GL_INVALID_OPERATION, "The specified operation is not allowed in the current state. The offending command is"
+	                        " ignored and has no other side effect than to set the error flag." },
+	{ GL_STACK_OVERFLOW, "This command would cause a stack overflow. The offending command is ignored and has no other"
+	                     " side effect than to set the error flag." },
+	{ GL_STACK_UNDERFLOW, "This command would cause a stack underflow. The offending command is ignored and has no other"
+	                      " side effect than to set the error flag." },
+	{ GL_OUT_OF_MEMORY, "There is not enough memory left to execute the command. The state of the GL is undefined,"
+	                    " except for the state of the error flags, after this error is recorded." },
+#if defined(GL_TABLE_TOO_LARGE)
+	{ GL_TABLE_TOO_LARGE, "The specified table exceeds the implementation's maximum supported table size. The offending"
+	                      " command is ignored and has no other side effect than to set the error flag." },
+#endif
+#if defined(GL_INVALID_FRAMEBUFFER_OPERATION)
+	{ GL_INVALID_FRAMEBUFFER_OPERATION, "The framebuffer object is not complete. The offending command is ignored and"
+	                                    " has no other side effect than to set the error flag." },
+#endif
+};
 
 namespace platform
 {
@@ -55,70 +83,45 @@ void* get_proc_address(std::string_view name)
 }
 }
 
-functions load_functions()
+void handle_error(GLenum err)
 {
-	functions fns{};
-
-	/* Buffer objects */
-	*cast<void**>(&fns.bind_buffer                ) = platform::get_proc_address("glBindBuffer");
-	*cast<void**>(&fns.buffer_data                ) = platform::get_proc_address("glBufferData");
-	*cast<void**>(&fns.buffer_sub_data            ) = platform::get_proc_address("glBufferSubData");
-	*cast<void**>(&fns.delete_buffers             ) = platform::get_proc_address("glDeleteBuffers");
-	*cast<void**>(&fns.disable_vertex_attrib_array) = platform::get_proc_address("glDisableVertexAttribArray");
-	*cast<void**>(&fns.draw_arrays                ) = platform::get_proc_address("glDrawArrays");
-	*cast<void**>(&fns.draw_elements              ) = platform::get_proc_address("glDrawElements");
-	*cast<void**>(&fns.enable_vertex_attrib_array ) = platform::get_proc_address("glEnableVertexAttribArray");
-	*cast<void**>(&fns.gen_buffers                ) = platform::get_proc_address("glGenBuffers");
-	*cast<void**>(&fns.get_buffer_parameteriv     ) = platform::get_proc_address("glGetBufferParameteriv");
-	*cast<void**>(&fns.get_buffer_pointerv        ) = platform::get_proc_address("glBufferPointerv");
-	*cast<void**>(&fns.get_vertex_attribdv        ) = platform::get_proc_address("glGetVertexAttribdv");
-	*cast<void**>(&fns.get_vertex_attribfv        ) = platform::get_proc_address("glGetVertexAttribfv");
-	*cast<void**>(&fns.get_vertex_attribiv        ) = platform::get_proc_address("glGetVertexAttribiv");
-	*cast<void**>(&fns.get_vertex_attrib_pointerv ) = platform::get_proc_address("glGetVertexAttribPointerv");
-	*cast<void**>(&fns.is_buffer                  ) = platform::get_proc_address("glIsBuffer");
-	*cast<void**>(&fns.vertex_attrib1f            ) = platform::get_proc_address("glVertexAttrib1f");
-	*cast<void**>(&fns.vertex_attrib2f            ) = platform::get_proc_address("glVertexAttrib2f");
-	*cast<void**>(&fns.vertex_attrib3f            ) = platform::get_proc_address("glVertexAttrib3f");
-	*cast<void**>(&fns.vertex_attrib4f            ) = platform::get_proc_address("glVertexAttrib4f");
-	*cast<void**>(&fns.vertex_attrib_pointer      ) = platform::get_proc_address("glVertexAttribPointer");
-
-	/* Shaders */
-	*cast<void**>(&fns.attach_shader       ) = platform::get_proc_address("glAttachShader");
-	*cast<void**>(&fns.bind_attrib_location) = platform::get_proc_address("glBindAttribLocation");
-	*cast<void**>(&fns.compile_shader      ) = platform::get_proc_address("glCompileShader");
-	*cast<void**>(&fns.create_program      ) = platform::get_proc_address("glCreateProgram");
-	*cast<void**>(&fns.create_shader       ) = platform::get_proc_address("glCreateShader");
-	*cast<void**>(&fns.delete_program      ) = platform::get_proc_address("glDeleteProgram");
-	*cast<void**>(&fns.delete_shader       ) = platform::get_proc_address("glDeleteShader");
-	*cast<void**>(&fns.detach_shader       ) = platform::get_proc_address("glDetachShader");
-	*cast<void**>(&fns.get_active_attrib   ) = platform::get_proc_address("glGetActiveAttrib");
-	*cast<void**>(&fns.get_active_uniform  ) = platform::get_proc_address("glGetActiveUniform");
-	*cast<void**>(&fns.get_attached_shaders) = platform::get_proc_address("glGetAttachedShaders");
-	*cast<void**>(&fns.get_attrib_location ) = platform::get_proc_address("glGetAttribLocation");
-	*cast<void**>(&fns.get_program_info_log) = platform::get_proc_address("glGetProgramInfoLog");
-	*cast<void**>(&fns.get_programiv       ) = platform::get_proc_address("glGetProgramiv");
-	*cast<void**>(&fns.get_shader_info_log ) = platform::get_proc_address("glGetShaderInfoLog");
-	*cast<void**>(&fns.get_shader_source   ) = platform::get_proc_address("glGetShaderSource");
-	*cast<void**>(&fns.get_shaderiv        ) = platform::get_proc_address("glGetShaderiv");
-	*cast<void**>(&fns.get_uniformfv       ) = platform::get_proc_address("glGetUniformfv");
-	*cast<void**>(&fns.get_uniformiv       ) = platform::get_proc_address("glGetUniformiv");
-	*cast<void**>(&fns.get_uniform_location) = platform::get_proc_address("glGetUniformLocation");
-	*cast<void**>(&fns.is_program          ) = platform::get_proc_address("glIsProgram");
-	*cast<void**>(&fns.is_shader           ) = platform::get_proc_address("glIsShader");
-	*cast<void**>(&fns.link_program        ) = platform::get_proc_address("glLinkProgram");
-	*cast<void**>(&fns.shader_source       ) = platform::get_proc_address("glShaderSource");
-	*cast<void**>(&fns.uniform1f           ) = platform::get_proc_address("glUniform1f");
-	*cast<void**>(&fns.uniform2f           ) = platform::get_proc_address("glUniform2f");
-	*cast<void**>(&fns.uniform3f           ) = platform::get_proc_address("glUniform3f");
-	*cast<void**>(&fns.uniform4f           ) = platform::get_proc_address("glUniform4f");
-	*cast<void**>(&fns.uniform1i           ) = platform::get_proc_address("glUniform1i");
-	*cast<void**>(&fns.uniform2i           ) = platform::get_proc_address("glUniform2i");
-	*cast<void**>(&fns.uniform3i           ) = platform::get_proc_address("glUniform3i");
-	*cast<void**>(&fns.uniform4i           ) = platform::get_proc_address("glUniform4i");
-	*cast<void**>(&fns.use_program         ) = platform::get_proc_address("glUseProgram");
-	*cast<void**>(&fns.validate_program    ) = platform::get_proc_address("glValidateProgram");
-
-	return fns;
+	if (err == GL_NO_ERROR)
+		return;
+		
+	auto it = kErrorCodes.find(err);
+	if (it != kErrorCodes.end())
+	{
+		orb::log_error(it->second);
+	}
+	else
+	{
+		orb::log_error(format("Unknown error: %d", err));
+	}
 }
+
+functions& get_current_functions()
+{
+	thread_local gl::functions defaultFunctions;
+
+	render_context* ctx = render_context::get_current();
+	if (!ctx)
+		return defaultFunctions;
+
+	switch (ctx->get_api())
+	{
+		case graphics_api::OpenGL_2_0:
+		case graphics_api::OpenGL_3_2:
+		case graphics_api::OpenGL_4_1:
+		case graphics_api::OpenGL_ES_2:
+		case graphics_api::OpenGL_ES_3:
+			return static_cast<orb::platform::render_context_gl*>(&ctx->get_base())->get_functions();
+
+		case graphics_api::Direct3D_11:
+			return defaultFunctions;
+	}
+
+	return defaultFunctions;
+}
+
 }
 }

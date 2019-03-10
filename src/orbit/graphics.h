@@ -16,6 +16,8 @@
 */
 
 #pragma once
+#include <stdint.h>
+
 #include "orbit.h"
 
 #include "core/bitmask.h"
@@ -45,18 +47,6 @@
 namespace orb
 {
 
-enum class graphics_api
-{
-	OpenGL,
-	D3D11,
-
-#if defined(ORB_OS_WINDOWS)
-	DeviceDefault = D3D11,
-#else
-	DeviceDefault = OpenGL,
-#endif
-};
-
 enum class buffer_mask
 {
 	Color = 0x1,
@@ -68,6 +58,42 @@ enum class shader_type
 {
 	Vertex,
 	Fragment,
+};
+
+enum class index_format
+{
+	Byte,
+	Word,
+	DoubleWord,
+};
+
+template<typename T>
+struct index_format_traits
+{
+	static constexpr bool Enabled = false;
+	static constexpr index_format Format = static_cast<index_format>(0);
+};
+
+
+template<>
+struct index_format_traits<uint8_t>
+{
+	static constexpr bool Enabled = true;
+	static constexpr index_format Format = index_format::Byte;
+};
+
+template<>
+struct index_format_traits<uint16_t>
+{
+	static constexpr bool Enabled = true;
+	static constexpr index_format Format = index_format::Word;
+};
+
+template<>
+struct index_format_traits<uint32_t>
+{
+	static constexpr bool Enabled = true;
+	static constexpr index_format Format = index_format::DoubleWord;
 };
 
 }

@@ -26,49 +26,61 @@
 namespace orb
 {
 
-void log_info(const std::string& msg)
+static void log_info_internal(const char* msg)
 {
 #if defined(ORB_OS_ANDROID)
-	__android_log_write(ANDROID_LOG_INFO, "Orbit", msg.c_str());
+	__android_log_write(ANDROID_LOG_INFO, "Orbit", msg);
 #else
-	printf("%s\n", msg.c_str());
+	printf("%s\n", msg);
 #endif
 }
 
-void log_warning(const std::string& msg)
+static void log_warning_internal(const char* msg)
 {
 #if defined(ORB_OS_WINDOWS)
+
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO oldBufferInfo;
 	GetConsoleScreenBufferInfo(h, &oldBufferInfo);
 	SetConsoleTextAttribute(h, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN);
-	printf("%s\n", msg.c_str());
+	printf("%s\n", msg);
 	SetConsoleTextAttribute(h, oldBufferInfo.wAttributes);
 
 #elif defined(ORB_OS_ANDROID)
-	__android_log_write(ANDROID_LOG_WARN, "Orbit", msg.c_str());
+
+	__android_log_write(ANDROID_LOG_WARN, "Orbit", msg);
 
 #else
-	printf("\x1B[33m%s\x1B[0m\n", msg.c_str());
+
+	printf("\x1B[33m%s\x1B[0m\n", msg);
+	
 #endif
 }
 
-void log_error(const std::string& msg)
+static void log_error_internal(const char* msg)
 {
 #if defined(ORB_OS_WINDOWS)
+
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO oldBufferInfo;
 	GetConsoleScreenBufferInfo(h, &oldBufferInfo);
 	SetConsoleTextAttribute(h, FOREGROUND_INTENSITY | FOREGROUND_RED);
-	printf("%s\n", msg.c_str());
+	printf("%s\n", msg);
 	SetConsoleTextAttribute(h, oldBufferInfo.wAttributes);
 
 #elif defined(ORB_OS_ANDROID)
-	__android_log_write(ANDROID_LOG_ERROR, "Orbit", msg.c_str());
+
+	__android_log_write(ANDROID_LOG_ERROR, "Orbit", msg);
 
 #else
-	printf("\x1B[31m%s\x1B[0m\n", msg.c_str());
+
+	printf("\x1B[31m%s\x1B[0m\n", msg);
+	
 #endif
 }
+
+void log_info    (std::string_view msg) { log_info_internal(msg.data()); }
+void log_warning (std::string_view msg) { log_warning_internal(msg.data()); }
+void log_error   (std::string_view msg) { log_error_internal(msg.data()); }
 
 }

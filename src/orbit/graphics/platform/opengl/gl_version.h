@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,45 +16,23 @@
 */
 
 #pragma once
-#include <cstddef>
-
-#include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/platform/opengl/render_context_gl.h"
-#include "orbit/graphics/platform/buffer_base.h"
-#include "orbit/graphics/render_context.h"
+#include "orbit/graphics.h"
 
 namespace orb
 {
-namespace platform
+namespace gl
 {
 
-template<gl::buffer_target BufferTarget>
-class buffer_gl : public buffer_base
+enum class version
 {
-public:
-	buffer_gl(const void* data, size_t size)
-		: m_id(0)
-	{
-		auto& gl = gl::get_current_functions();
-		gl.gen_buffers(1, &m_id);
-		gl.bind_buffer(BufferTarget, m_id);
-		gl.buffer_data(BufferTarget, size, data, orb::gl::buffer_usage::StaticDraw);
-		gl.bind_buffer(BufferTarget, 0);
-	}
-
-	~buffer_gl()
-	{
-		gl::get_current_functions().delete_buffers(1, &m_id);
-	}
-
-	void bind() final override
-	{
-		gl::get_current_functions().bind_buffer(BufferTarget, m_id);
-	}
-
-private:
-	GLuint m_id;
+	v2_0,
+	v3_2,
+	v4_1,
+	vES_2,
+	vES_3,
 };
+
+extern ORB_API_GRAPHICS version get_system_default_opengl_version();
 
 }
 }

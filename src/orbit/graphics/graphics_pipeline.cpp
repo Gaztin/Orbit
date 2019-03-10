@@ -29,12 +29,16 @@ static std::unique_ptr<platform::graphics_pipeline_base> init_base()
 	switch (render_context::get_current()->get_api())
 	{
 #if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL:
+		case graphics_api::OpenGL_2_0:
+		case graphics_api::OpenGL_3_2:
+		case graphics_api::OpenGL_4_1:
+		case graphics_api::OpenGL_ES_2:
+		case graphics_api::OpenGL_ES_3:
 			return std::make_unique<platform::graphics_pipeline_gl>();
 #endif
 
 #if defined(ORB_HAS_D3D11)
-		case graphics_api::D3D11:
+		case graphics_api::Direct3D_11:
 			return std::make_unique<platform::graphics_pipeline_d3d11>();
 #endif
 
@@ -48,6 +52,16 @@ graphics_pipeline::graphics_pipeline()
 {
 }
 
+void graphics_pipeline::bind()
+{
+	m_base->bind();
+}
+
+void graphics_pipeline::unbind()
+{
+	m_base->unbind();
+}
+
 void graphics_pipeline::add_shader(const shader& shr)
 {
 	m_base->add_shader(shr);
@@ -58,9 +72,14 @@ void graphics_pipeline::describe_vertex_layout(vertex_layout layout)
 	m_base->describe_vertex_layout(layout);
 }
 
-void graphics_pipeline::draw(size_t vertexCount)
+void graphics_pipeline::draw(const vertex_buffer& vb)
 {
-	m_base->draw(vertexCount);
+	m_base->draw(vb);
+}
+
+void graphics_pipeline::draw(const index_buffer& ib)
+{
+	m_base->draw(ib);
 }
 
 }
