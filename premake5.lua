@@ -189,6 +189,7 @@ decl_module("Core")
     links{"log", "android"}
   filter{"system:ios"}
     links{"UIKit.framework", "QuartzCore.framework"}
+decl_module("Math")
 decl_module("Graphics")
   filter{"system:windows"}
     links{"opengl32", "d3d11", "dxgi", "D3DCompiler"}
