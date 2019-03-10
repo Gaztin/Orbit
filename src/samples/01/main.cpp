@@ -32,6 +32,9 @@
 #include <orbit/graphics/render_context.h>
 #include <orbit/graphics/vertex_buffer.h>
 #include <orbit/graphics/vertex_shader.h>
+#include <orbit/math/vec2.h>
+#include <orbit/math/vec3.h>
+#include <orbit/math/vec4.h>
 
 ORB_APP_DECL( sample_app )
 {
@@ -58,8 +61,8 @@ private:
 
 struct vertex
 {
-	float x, y, z, w;
-	float r, g, b, a;
+	orb::vec4 pos;
+	orb::color color;
 };
 
 const orb::vertex_layout vertexLayout =
@@ -70,10 +73,10 @@ const orb::vertex_layout vertexLayout =
 
 const std::initializer_list< vertex > triangleVertices =
 {
-	{ -0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
-	{ -0.5f,  0.5f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f, 1.0f },
-	{  0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 0.0f, 1.0f },
-	{  0.5f,  0.5f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f, 1.0f },
+	{ orb::vec4(-0.5f, -0.5f, 0.0f, 1.0f),   orb::color(0.0f, 0.0f, 1.0f, 1.0f) },
+	{ orb::vec4(-0.5f,  0.5f, 0.0f, 1.0f),   orb::color(1.0f, 0.0f, 0.0f, 1.0f) },
+	{ orb::vec4( 0.5f, -0.5f, 0.0f, 1.0f),   orb::color(0.0f, 0.0f, 0.0f, 1.0f) },
+	{ orb::vec4( 0.5f,  0.5f, 0.0f, 1.0f),   orb::color(0.0f, 1.0f, 0.0f, 1.0f) },
 };
 
 const std::initializer_list< uint16_t > triangleIndices =
@@ -122,6 +125,10 @@ void sample_app::frame()
 
 	m_window.poll_events();
 	m_renderContext.clear( orb::buffer_mask::Color | orb::buffer_mask::Depth );
+
+	orb::vec3 right(1.0f, 0.0f, 0.0f);
+	orb::vec3 up(0.0f, 1.0f, 0.0f);
+	orb::vec3 forward = right.cross_product(up);
 
 	m_triangleVertexBuffer.bind();
 	m_mainPipeline.bind();
