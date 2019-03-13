@@ -22,8 +22,6 @@
 
 namespace orb
 {
-namespace internal
-{
 
 template<size_t Size>
 class vec_base
@@ -77,5 +75,4 @@ protected:
 	elements_t m_elements;
 };
 
-}
 }

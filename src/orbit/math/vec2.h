@@ -16,12 +16,12 @@
 */
 
 #pragma once
-#include "orbit/math/internal/vec_base.h"
+#include "orbit/math/vec_base.h"
 
 namespace orb
 {
 
-class vec2 : public internal::vec_base<2>
+class vec2 : public vec_base<2>
 {
 public:
 	vec2() = default;
