@@ -23,3 +23,13 @@
 #else
 #define ORB_API_MATH ORB_DLL_IMPORT
 #endif
+
+namespace orb
+{
+
+constexpr float Pi                 = 3.141592741f;
+constexpr float E                  = 2.718281746f;
+constexpr float PythagorasConstant = 1.414213538f;
+constexpr float GoldenRatio        = 1.618034005f;
+
+}
