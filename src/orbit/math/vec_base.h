@@ -29,6 +29,17 @@ class vec_base
 	using elements_t = std::array<float, Size>;
 
 public:
+
+	float dot_product(const vec_base& v) const
+	{
+		float d = 0.f;
+		for (size_t i = 0; i < Size; ++i)
+			d += (m_elements[i] * v.m_elements[i]);
+		return d;
+	}
+
+	float dot_product() const { return dot_product(*this); }
+
 	float&       operator[](size_t i)       { return m_elements[i]; }
 	const float& operator[](size_t i) const { return m_elements[i]; }
 
@@ -60,16 +71,6 @@ protected:
 	{
 	}
 
-
-	float dot_product(const vec_base& v) const
-	{
-		float d = 0.f;
-		for (size_t i = 0; i < Size; ++i)
-			d += (m_elements[i] * v.m_elements[i]);
-		return d;
-	}
-
-	float dot_product() const { return dot_product(*this); }
 	virtual ~vec_base() = default;
 
 	elements_t m_elements;
