@@ -40,6 +40,13 @@ public:
 
 	float dot_product() const { return dot_product(*this); }
 
+	vec_base& operator=(const vec_base& other)
+	{
+		for (size_t i = 0; i < Size; ++i)
+			m_elements[i] = other.m_elements[i];
+		return *this;
+	}
+
 	Derived operator+(const vec_base& v) const
 	{
 		Derived v;
