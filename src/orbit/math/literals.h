@@ -38,12 +38,12 @@ namespace unit_literals
 namespace metric
 {
 
-constexpr float operator ""mm(long double d)         { return (static_cast<float>(d * 0.001)); }
-constexpr float operator ""mm(unsigned long long i)  { return (static_cast<float>(i * 0.001)); }
-constexpr float operator ""cm(long double d)         { return (static_cast<float>(d * 0.01)); }
-constexpr float operator ""cm(unsigned long long i)  { return (static_cast<float>(i * 0.01)); }
-constexpr float operator ""dm(long double d)         { return (static_cast<float>(d * 0.1)); }
-constexpr float operator ""dm(unsigned long long i)  { return (static_cast<float>(i * 0.1)); }
+constexpr float operator ""mm(long double d)        { return (static_cast<float>(d * 0.001)); }
+constexpr float operator ""mm(unsigned long long i) { return (static_cast<float>(i * 0.001)); }
+constexpr float operator ""cm(long double d)        { return (static_cast<float>(d * 0.01)); }
+constexpr float operator ""cm(unsigned long long i) { return (static_cast<float>(i * 0.01)); }
+constexpr float operator ""dm(long double d)        { return (static_cast<float>(d * 0.1)); }
+constexpr float operator ""dm(unsigned long long i) { return (static_cast<float>(i * 0.1)); }
 constexpr float operator ""m(long double d)         { return (static_cast<float>(d)); }
 constexpr float operator ""m(unsigned long long i)  { return (static_cast<float>(i)); }
 constexpr float operator ""km(long double d)        { return (static_cast<float>(d * 1000.0)); }
