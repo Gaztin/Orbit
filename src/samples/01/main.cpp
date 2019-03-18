@@ -32,6 +32,8 @@
 #include <orbit/graphics/render_context.h>
 #include <orbit/graphics/vertex_buffer.h>
 #include <orbit/graphics/vertex_shader.h>
+#include <orbit/math/literals.h>
+#include <orbit/math/mat4.h>
 #include <orbit/math/vec2.h>
 #include <orbit/math/vec3.h>
 #include <orbit/math/vec4.h>
@@ -126,9 +128,25 @@ void sample_app::frame()
 	m_window.poll_events();
 	m_renderContext.clear( orb::buffer_mask::Color | orb::buffer_mask::Depth );
 
-	orb::vec3 right(1.0f, 0.0f, 0.0f);
-	orb::vec3 up(0.0f, 1.0f, 0.0f);
-	orb::vec3 forward = right.cross_product(up);
+	// Math testing
+	{
+		using namespace orb::math_literals;
+		using namespace orb::unit_literals::metric;
+
+		const orb::vec3 right(1m, 0m, 0m);
+		const orb::vec3 up(0m, 1m, 0m);
+		const orb::vec3 forward = right.cross_product(up);
+
+		const orb::mat4 m1 = {
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			4.0f, 0.0f, 0.0f, 1.0f,
+		};
+
+		orb::mat4 m2 = m1 * m1;
+		m2.translate(orb::vec3(0m, 2m, 0m));
+	}
 
 	m_triangleVertexBuffer.bind();
 	m_mainPipeline.bind();
