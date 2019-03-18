@@ -21,7 +21,7 @@
 namespace orb
 {
 
-class vec2 : public vec_base<2>
+class vec2 : public vec_base<2, vec2>
 {
 public:
 	vec2() = default;

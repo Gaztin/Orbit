@@ -23,7 +23,7 @@
 namespace orb
 {
 
-template<size_t Size>
+template<size_t Size, typename Derived>
 class vec_base
 {
 	using elements_t = std::array<float, Size>;
@@ -60,7 +60,6 @@ protected:
 	{
 	}
 
-	~vec_base() = default;
 
 	float dot_product(const vec_base& v) const
 	{
@@ -71,6 +70,7 @@ protected:
 	}
 
 	float dot_product() const { return dot_product(*this); }
+	virtual ~vec_base() = default;
 
 	elements_t m_elements;
 };
