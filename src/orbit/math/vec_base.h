@@ -40,7 +40,7 @@ public:
 
 	float dot_product() const { return dot_product(*this); }
 
-	Derived operator+(const Derived& v) const
+	Derived operator+(const vec_base& v) const
 	{
 		Derived v;
 		for (size_t i = 0; i < m_elements.size(); ++i)
@@ -48,7 +48,7 @@ public:
 		return v;
 	}
 
-	Derived operator-(const Derived& v) const
+	Derived operator-(const vec_base& v) const
 	{
 		Derived v;
 		for (size_t i = 0; i < m_elements.size(); ++i)
