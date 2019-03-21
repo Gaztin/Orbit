@@ -46,6 +46,23 @@ void mat4::translate(const vec3& t)
 		m_elements[3 * 4 + i] = vec4(m_elements[0 * 4 + i], m_elements[1 * 4 + i], m_elements[2 * 4 + i], m_elements[3 * 4 + i]).dot_product(t4);
 }
 
+void mat4::rotate(const vec3& r)
+{
+	const float sinx = sinf(r.get_x());
+	const float cosx = cosf(r.get_x());
+	const float siny = sinf(r.get_y());
+	const float cosy = cosf(r.get_y());
+	const float sinz = sinf(r.get_z());
+	const float cosz = cosf(r.get_z());
+
+	*this *= {
+		(cosy * cosz), sinz,          siny,          0.f,
+		sinz,          (cosx * cosz), sinx,          0.f,
+		siny,          (0.f - sinx),  (cosx * cosy), 0.f,
+		0.f,           0.f,           0.f,           1.f,
+	};
+}
+
 mat4 mat4::operator*(const mat4& rhs) const
 {
 	return (mat4(*this) *= rhs);

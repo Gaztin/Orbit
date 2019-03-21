@@ -32,6 +32,7 @@ public:
 	mat4(std::initializer_list<float> elements);
 
 	void translate(const vec3& t);
+	void rotate(const vec3& r);
 
 	mat4  operator*  (const mat4& rhs) const;
 	mat4& operator*= (const mat4& rhs);
