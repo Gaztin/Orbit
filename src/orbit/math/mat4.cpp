@@ -48,8 +48,11 @@ void mat4::translate(const vec3& t)
 
 mat4 mat4::operator*(const mat4& rhs) const
 {
-	mat4 result;
+	return (mat4(*this) *= rhs);
+}
 
+mat4& mat4::operator*=(const mat4& rhs)
+{
 	std::array<vec4, 4> columns;
 	for (size_t i = 0; i < 4; ++i)
 		columns[i] = vec4(m_elements[i * 4 + 0], m_elements[i * 4 + 1], m_elements[i * 4 + 2], m_elements[i * 4 + 3]);
@@ -60,9 +63,9 @@ mat4 mat4::operator*(const mat4& rhs) const
 
 	for (size_t row = 0; row < 4; ++row)
 		for (size_t col = 0; col < 4; ++col)
-			result.m_elements[row * 4 + col] = columns[row].dot_product(rows[col]);
+			m_elements[row * 4 + col] = columns[row].dot_product(rows[col]);
 
-	return result;
+	return *this;
 }
 
 }

@@ -33,7 +33,8 @@ public:
 
 	void translate(const vec3& t);
 
-	mat4 operator*(const mat4& rhs) const;
+	mat4  operator*  (const mat4& rhs) const;
+	mat4& operator*= (const mat4& rhs);
 
 private:
 	std::array<float, 16> m_elements;
