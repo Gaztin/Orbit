@@ -155,9 +155,6 @@ render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
 	, m_eglSurface(create_surface(m_eglDisplay, m_eglConfig))
 	, m_eglContext(create_context(m_eglDisplay, m_eglConfig, v))
 {
-	make_current();
-	m_functions = gl::load_functions();
-	make_current(nullptr);
 }
 
 render_context_gl::~render_context_gl()
