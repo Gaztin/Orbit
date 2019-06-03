@@ -4,8 +4,6 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.gaztin.orbit"
-        minSdkVersion 24
-        targetSdkVersion 28
         ndk {
             abiFilters "armeabi-v7a"
         }
@@ -29,8 +27,4 @@ android {
             path "jni/Android.mk"
         }
     }
-}
-
-dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
 }

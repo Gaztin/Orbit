@@ -1,5 +1,3 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
 buildscript {
     repositories {
         jcenter()
@@ -14,9 +12,5 @@ allprojects {
     repositories {
         jcenter()
         google()
-    }
-    // Fix gradle file paths exceeding the file path character limit on Windows
-    if (Os.isFamily(Os.FAMILY_WINDOWS) && buildDir.length() > 32) {
-        buildDir "C:/Temp/"
     }
 }
