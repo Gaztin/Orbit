@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include <memory>
 #include <string>
 
@@ -23,19 +24,18 @@
 
 namespace orb
 {
-class asset;
+	class asset;
 
-class ORB_API_GRAPHICS shader
-{
-public:
-	shader(shader_type t, const asset& ast);
+	class ORB_API_GRAPHICS shader
+	{
+	public:
+		shader( shader_type t, const asset& ast );
 
-	shader_type get_type() const { return m_base->get_type(); }
+		shader_type get_type() const { return m_base->get_type(); }
 
-	const platform::shader_base& get_base() const { return *m_base; }
+		const platform::shader_base& get_base() const { return *m_base; }
 
-private:
-	std::unique_ptr<platform::shader_base> m_base;
-};
-
+	private:
+		std::unique_ptr< platform::shader_base > m_base;
+	};
 }

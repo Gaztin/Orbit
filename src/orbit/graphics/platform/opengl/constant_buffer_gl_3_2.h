@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include <cstddef>
 
 #include "orbit/graphics/platform/opengl/gl.h"
@@ -23,21 +24,19 @@
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		class constant_buffer_gl_3_2 : public constant_buffer_base
+		{
+		public:
+			constant_buffer_gl_3_2( size_t size );
+			~constant_buffer_gl_3_2();
 
-class constant_buffer_gl_3_2 : public constant_buffer_base
-{
-public:
-	constant_buffer_gl_3_2(size_t size);
-	~constant_buffer_gl_3_2();
+			void update ( size_t location, const void* data, size_t size ) final override;
+			void bind   ( shader_type type, uint32_t slot )                final override;
 
-	void update(size_t location, const void* data, size_t size) final override;
-	void bind(shader_type type, uint32_t slot) final override;
-
-private:
-	GLuint m_id;
-};
-
-}
+		private:
+			GLuint m_id;
+		};
+	}
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -25,168 +25,166 @@
 
 namespace orb
 {
-namespace platform
-{
-
-static gl::vertex_attrib_data_type get_vertex_component_data_type(vertex_component::type_t type)
-{
-	switch (type)
+	namespace platform
 	{
-		case vertex_component::Float:
-		case vertex_component::Vec2:
-		case vertex_component::Vec3:
-		case vertex_component::Vec4:
-			return gl::vertex_attrib_data_type::Float;
+		static gl::vertex_attrib_data_type get_vertex_component_data_type( vertex_component::type_t type )
+		{
+			switch( type )
+			{
+				case vertex_component::Float:
+				case vertex_component::Vec2:
+				case vertex_component::Vec3:
+				case vertex_component::Vec4:
+					return gl::vertex_attrib_data_type::Float;
 
-		default:
-			return gl::vertex_attrib_data_type::Float;
+				default:
+					return gl::vertex_attrib_data_type::Float;
+			}
+		}
+
+		static GLint get_vertex_component_length( vertex_component::type_t type )
+		{
+			switch( type )
+			{
+				case vertex_component::Float: return 1;
+				case vertex_component::Vec2:  return 2;
+				case vertex_component::Vec3:  return 3;
+				case vertex_component::Vec4:  return 4;
+				default:                      return 0;
+			}
+		}
+
+		static GLsizei get_data_type_size( gl::vertex_attrib_data_type type )
+		{
+			switch( type )
+			{
+				case gl::vertex_attrib_data_type::Byte:          return 1;
+				case gl::vertex_attrib_data_type::UnsignedByte:  return 1;
+				case gl::vertex_attrib_data_type::Short:         return sizeof( short );
+				case gl::vertex_attrib_data_type::UnsignedShort: return sizeof( unsigned short );
+				case gl::vertex_attrib_data_type::Float:         return sizeof( float );
+				default:                                         return 0;
+			}
+		}
+
+		static gl::index_type get_index_type( index_format fmt )
+		{
+			switch( fmt )
+			{
+				case index_format::Byte:       return gl::index_type::Byte;
+				case index_format::Word:       return gl::index_type::Short;
+				case index_format::DoubleWord: return gl::index_type::Int;
+				default:                       return static_cast< gl::index_type >( 0 );
+			}
+		}
+
+		static std::optional< vertex_array_object_gl > init_vao()
+		{
+			switch( render_context::get_current()->get_api() )
+			{
+				case graphics_api::OpenGL_3_2:
+				case graphics_api::OpenGL_4_1:
+				case graphics_api::OpenGL_ES_3:
+					return std::make_optional< vertex_array_object_gl >();
+
+				default:
+					return std::nullopt;
+			}
+		}
+
+		graphics_pipeline_gl::graphics_pipeline_gl()
+			: m_stride( 0 )
+			, m_programId( gl::get_current_functions().create_program() )
+			, m_vertexArrayObject( init_vao() )
+		{
+		}
+
+		graphics_pipeline_gl::~graphics_pipeline_gl()
+		{
+			gl::get_current_functions().delete_program( m_programId );
+		}
+
+		void graphics_pipeline_gl::bind()
+		{
+			auto& gl = gl::get_current_functions();
+
+			if( m_vertexArrayObject )
+				m_vertexArrayObject->bind();
+
+			gl.use_program( m_programId );
+
+			const uint8_t* pointer = nullptr;
+			for( GLuint i = 0; i < m_layout.size(); ++i )
+			{
+				const gl::vertex_attrib_data_type data_type = get_vertex_component_data_type( m_layout[ i ].type );
+				const GLint length = get_vertex_component_length( m_layout[ i ].type );
+				gl.enable_vertex_attrib_array( i );
+				gl.vertex_attrib_pointer( i, length, data_type, GL_FALSE, m_stride, pointer );
+				pointer += length * get_data_type_size( data_type );
+			}
+		}
+
+		void graphics_pipeline_gl::unbind()
+		{
+			auto& gl = gl::get_current_functions();
+			for( GLuint i = 0; i < m_layout.size(); ++i )
+				gl.disable_vertex_attrib_array( i );
+
+			gl.use_program( 0 );
+
+			if( m_vertexArrayObject )
+				m_vertexArrayObject->unbind();
+		}
+
+		void graphics_pipeline_gl::add_shader( const shader& shr )
+		{
+			GLuint shader_id = 0;
+			switch( shr.get_type() )
+			{
+				case shader_type::Vertex:
+					shader_id = reinterpret_cast< const shader_gl<gl::shader_type::Vertex>& >( shr.get_base() ).get_id();
+					break;
+
+				case shader_type::Fragment:
+					shader_id = reinterpret_cast< const shader_gl<gl::shader_type::Fragment>& >( shr.get_base() ).get_id();
+					break;
+
+				default:
+					return;
+			}
+
+			auto& gl = gl::get_current_functions();
+			gl.attach_shader( m_programId, shader_id );
+			gl.link_program( m_programId );
+
+			GLint loglen = 0;
+			gl.get_programiv( m_programId, gl::program_param::InfoLogLength, &loglen );
+			if( loglen > 0 )
+			{
+				std::string logbuf( static_cast< size_t >( loglen ), '\0' );
+				gl.get_program_info_log( m_programId, loglen, nullptr, &logbuf[ 0 ] );
+				log_error( logbuf );
+			}
+		}
+
+		void graphics_pipeline_gl::describe_vertex_layout( vertex_layout layout )
+		{
+			m_layout.assign( layout );
+
+			/* Calculate stride */
+			m_stride = 0;
+			for( const vertex_component& cmp : m_layout )
+				m_stride += get_vertex_component_length( cmp.type ) * get_data_type_size( get_vertex_component_data_type( cmp.type ) );
+		}
+
+		void graphics_pipeline_gl::draw( const vertex_buffer& vb )
+		{
+			gl::get_current_functions().draw_arrays( gl::draw_mode::Triangles, 0, static_cast< GLsizei >( vb.get_count() ) );
+		}
+
+		void graphics_pipeline_gl::draw( const index_buffer& ib )
+		{
+			gl::get_current_functions().draw_elements( gl::draw_mode::Triangles, static_cast< GLsizei >( ib.get_count() ), get_index_type( ib.get_format() ), nullptr );
+		}
 	}
-}
-
-static GLint get_vertex_component_length(vertex_component::type_t type)
-{
-	switch (type)
-	{
-		case vertex_component::Float: return 1;
-		case vertex_component::Vec2: return 2;
-		case vertex_component::Vec3: return 3;
-		case vertex_component::Vec4: return 4;
-		default: return 0;
-	}
-}
-
-static GLsizei get_data_type_size(gl::vertex_attrib_data_type type)
-{
-	switch (type)
-	{
-		case gl::vertex_attrib_data_type::Byte: return 1;
-		case gl::vertex_attrib_data_type::UnsignedByte: return 1;
-		case gl::vertex_attrib_data_type::Short: return sizeof(short);
-		case gl::vertex_attrib_data_type::UnsignedShort: return sizeof(unsigned short);
-		case gl::vertex_attrib_data_type::Float: return sizeof(float);
-		default: return 0;
-	}
-}
-
-static gl::index_type get_index_type(index_format fmt)
-{
-	switch (fmt)
-	{
-		case index_format::Byte: return gl::index_type::Byte;
-		case index_format::Word: return gl::index_type::Short;
-		case index_format::DoubleWord: return gl::index_type::Int;
-		default: return static_cast<gl::index_type>(0);
-	}
-}
-
-static std::optional<vertex_array_object_gl> init_vao()
-{
-	switch (render_context::get_current()->get_api())
-	{
-		case graphics_api::OpenGL_3_2:
-		case graphics_api::OpenGL_4_1:
-		case graphics_api::OpenGL_ES_3:
-			return std::make_optional<vertex_array_object_gl>();
-
-		default:
-			return std::nullopt;
-	}
-}
-
-graphics_pipeline_gl::graphics_pipeline_gl()
-	: m_stride(0)
-	, m_programId(gl::get_current_functions().create_program())
-	, m_vertexArrayObject(init_vao())
-{
-}
-
-graphics_pipeline_gl::~graphics_pipeline_gl()
-{
-	gl::get_current_functions().delete_program(m_programId);
-}
-
-void graphics_pipeline_gl::bind()
-{
-	auto& gl = gl::get_current_functions();
-
-	if (m_vertexArrayObject)
-		m_vertexArrayObject->bind();
-
-	gl.use_program(m_programId);
-
-	const uint8_t* pointer = nullptr;
-	for (GLuint i = 0; i < m_layout.size(); ++i)
-	{
-		const gl::vertex_attrib_data_type data_type = get_vertex_component_data_type(m_layout[i].type);
-		const GLint length = get_vertex_component_length(m_layout[i].type);
-		gl.enable_vertex_attrib_array(i);
-		gl.vertex_attrib_pointer(i, length, data_type, GL_FALSE, m_stride, pointer);
-		pointer += length * get_data_type_size(data_type);
-	}
-}
-
-void graphics_pipeline_gl::unbind()
-{
-	auto& gl = gl::get_current_functions();
-	for (GLuint i = 0; i < m_layout.size(); ++i)
-		gl.disable_vertex_attrib_array(i);
-
-	gl.use_program(0);
-
-	if (m_vertexArrayObject)
-		m_vertexArrayObject->unbind();
-}
-
-void graphics_pipeline_gl::add_shader(const shader& shr)
-{
-	GLuint shader_id = 0;
-	switch (shr.get_type())
-	{
-		case shader_type::Vertex:
-			shader_id = reinterpret_cast<const shader_gl<gl::shader_type::Vertex>&>(shr.get_base()).get_id();
-			break;
-
-		case shader_type::Fragment:
-			shader_id = reinterpret_cast<const shader_gl<gl::shader_type::Fragment>&>(shr.get_base()).get_id();
-			break;
-
-		default:
-			return;
-	}
-
-	auto& gl = gl::get_current_functions();
-	gl.attach_shader(m_programId, shader_id);
-	gl.link_program(m_programId);
-
-	GLint loglen = 0;
-	gl.get_programiv(m_programId, gl::program_param::InfoLogLength, &loglen);
-	if (loglen > 0)
-	{
-		std::string logbuf(static_cast<size_t>(loglen), '\0');
-		gl.get_program_info_log(m_programId, loglen, nullptr, &logbuf[0]);
-		log_error(logbuf);
-	}
-}
-
-void graphics_pipeline_gl::describe_vertex_layout(vertex_layout layout)
-{
-	m_layout.assign(layout);
-
-	/* Calculate stride */
-	m_stride = 0;
-	for (const vertex_component& cmp : m_layout)
-		m_stride += get_vertex_component_length(cmp.type) * get_data_type_size(get_vertex_component_data_type(cmp.type));
-}
-
-void graphics_pipeline_gl::draw(const vertex_buffer& vb)
-{
-	gl::get_current_functions().draw_arrays(gl::draw_mode::Triangles, 0, static_cast<GLsizei>(vb.get_count()));
-}
-
-void graphics_pipeline_gl::draw(const index_buffer& ib)
-{
-	gl::get_current_functions().draw_elements(gl::draw_mode::Triangles, static_cast<GLsizei>(ib.get_count()), get_index_type(ib.get_format()), nullptr);
-}
-
-}
 }

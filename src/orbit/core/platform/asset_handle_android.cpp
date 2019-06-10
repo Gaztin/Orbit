@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -23,38 +23,36 @@
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		asset_handle_t open_asset( const std::string& path )
+		{
+			AAssetManager* mgr = android_only::app->activity->assetManager;
+			return AAssetManager_open( mgr, path.c_str(), AASSET_MODE_BUFFER );
+		}
 
-asset_handle open_asset(const std::string& path)
-{
-	AAssetManager* mgr = android_only::app->activity->assetManager;
-	return AAssetManager_open(mgr, path.c_str(), AASSET_MODE_BUFFER);
-}
+		size_t get_asset_size( asset_handle_t handle )
+		{
+			const off64_t len = AAsset_getLength64( handle );
+			if( len < 0 )
+				return 0;
 
-size_t get_asset_size(const asset_handle& ah)
-{
-	const off64_t len = AAsset_getLength64(ah);
-	if (len < 0)
-		return 0;
+			return static_cast< size_t >( len );
+		}
 
-	return static_cast<size_t>(len);
-}
+		size_t read_asset_data( asset_handle_t handle, void* buf, size_t size )
+		{
+			const int numBytesRead = AAsset_read( handle, buf, size );
+			if( numBytesRead < 0 )
+				return 0;
 
-size_t read_asset_data(const asset_handle& ah, void* buf, size_t size)
-{
-	const int numBytesRead = AAsset_read(ah, buf, size);
-	if (numBytesRead < 0)
-		return 0;
+			return static_cast< size_t >( numBytesRead );
+		}
 
-	return static_cast<size_t>(numBytesRead);
-}
-
-bool close_asset(const asset_handle& ah)
-{
-	AAsset_close(ah);
-	return true;
-}
-
-}
+		bool close_asset( asset_handle handle )
+		{
+			AAsset_close( handle );
+			return true;
+		}
+	}
 }

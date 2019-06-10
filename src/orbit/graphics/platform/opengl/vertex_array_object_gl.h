@@ -16,25 +16,24 @@
 */
 
 #pragma once
+
 #include "orbit/graphics/platform/opengl/gl.h"
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		class vertex_array_object_gl
+		{
+		public:
+			vertex_array_object_gl();
+			~vertex_array_object_gl();
 
-class vertex_array_object_gl
-{
-public:
-	vertex_array_object_gl();
-	~vertex_array_object_gl();
+			void bind();
+			void unbind();
 
-	void bind();
-	void unbind();
-
-private:
-	GLuint m_id;
-};
-
-}
+		private:
+			GLuint m_id;
+		};
+	}
 }

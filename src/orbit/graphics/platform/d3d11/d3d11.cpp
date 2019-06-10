@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -22,33 +22,31 @@
 
 namespace orb
 {
-namespace d3d11
-{
-
-com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size, usage usg, cpu_access cpu)
-{
-	ID3D11Device& device = static_cast<platform::render_context_d3d11&>(render_context::get_current()->get_base()).get_device();
-
-	D3D11_BUFFER_DESC desc{};
-	desc.ByteWidth = static_cast<UINT>((size + 0xf) & ~0xf); /* Align by 16 bytes */
-	desc.Usage = static_cast<D3D11_USAGE>(usg);
-	desc.BindFlags = static_cast<D3D11_BIND_FLAG>(bf);
-	desc.CPUAccessFlags = static_cast<D3D11_CPU_ACCESS_FLAG>(cpu);
-
-	ID3D11Buffer* buffer = nullptr;
-	if (data)
+	namespace d3d11
 	{
-		D3D11_SUBRESOURCE_DATA initialData{};
-		initialData.pSysMem = data;
-		device.CreateBuffer(&desc, &initialData, &buffer);
-	}
-	else
-	{
-		device.CreateBuffer(&desc, nullptr, &buffer);
-	}
+		com_ptr< ID3D11Buffer > create_buffer( bind_flag bf, const void* data, size_t size, usage usg, cpu_access cpu )
+		{
+			ID3D11Device& device = static_cast< platform::render_context_d3d11& >( render_context::get_current()->get_base() ).get_device();
 
-	return com_ptr<ID3D11Buffer>(buffer);
-}
+			D3D11_BUFFER_DESC desc = { };
+			desc.ByteWidth      = static_cast< UINT >( ( size + 0xf ) & ~0xf ); /* Align by 16 bytes */
+			desc.Usage          = static_cast< D3D11_USAGE >( usg );
+			desc.BindFlags      = static_cast< D3D11_BIND_FLAG >( bf );
+			desc.CPUAccessFlags = static_cast< D3D11_CPU_ACCESS_FLAG >( cpu );
 
-}
+			ID3D11Buffer* buffer = nullptr;
+			if( data )
+			{
+				D3D11_SUBRESOURCE_DATA initialData = { };
+				initialData.pSysMem = data;
+				device.CreateBuffer( &desc, &initialData, &buffer );
+			}
+			else
+			{
+				device.CreateBuffer( &desc, nullptr, &buffer );
+			}
+
+			return com_ptr< ID3D11Buffer >( buffer );
+		}
+	}
 }

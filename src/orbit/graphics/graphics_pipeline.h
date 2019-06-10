@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,30 +16,29 @@
 */
 
 #pragma once
+
 #include <memory>
 
 #include "orbit/graphics/platform/graphics_pipeline_base.h"
 
 namespace orb
 {
+	class ORB_API_GRAPHICS graphics_pipeline
+	{
+	public:
+		graphics_pipeline();
 
-class ORB_API_GRAPHICS graphics_pipeline
-{
-public:
-	graphics_pipeline();
+		void bind();
+		void unbind();
+		void add_shader( const shader& shr );
+		void describe_vertex_layout( vertex_layout layout );
 
-	void bind();
-	void unbind();
-	void add_shader(const shader& shr);
-	void describe_vertex_layout(vertex_layout layout);
+		void draw( const vertex_buffer& vb );
+		void draw( const index_buffer& ib );
 
-	void draw(const vertex_buffer& vb);
-	void draw(const index_buffer& ib);
+		platform::graphics_pipeline_base& get_base() { return *m_base; }
 
-	platform::graphics_pipeline_base& get_base() { return *m_base; }
-
-private:
-	std::unique_ptr<platform::graphics_pipeline_base> m_base;
-};
-
+	private:
+		std::unique_ptr< platform::graphics_pipeline_base > m_base;
+	};
 }

@@ -19,24 +19,22 @@
 
 namespace orb
 {
-namespace gl
-{
-
-extern ORB_API_GRAPHICS version get_system_default_opengl_version()
-{
-#if defined(ORB_OS_WINDOWS)
-	return version::v4_1;
-#elif defined(ORB_OS_LINUX)
-	return version::v4_1;
-#elif defined(ORB_OS_MACOS)
-	return version::v2_0;
-#elif defined(ORB_OS_ANDROID)
-	return version::vES_3;
-#elif defined(ORB_OS_IOS)
-	return version::vES_2;
-#endif
-}
-
-}
+	namespace gl
+	{
+		extern ORB_API_GRAPHICS version get_system_default_opengl_version()
+		{
+		#if defined( ORB_OS_WINDOWS )
+			return version::v4_1;
+		#elif defined( ORB_OS_LINUX )
+			return version::v4_1;
+		#elif defined( ORB_OS_MACOS )
+			return version::v2_0;
+		#elif defined( ORB_OS_ANDROID )
+			return version::vES_3;
+		#elif defined( ORB_OS_IOS )
+			return version::vES_2;
+		#endif
+		}
+	}
 }
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -18,71 +18,69 @@
 #pragma once
 #include <type_traits>
 
-#define ORB_ENABLE_BITMASKING(ENUM)          \
-	template<>                               \
-	struct enable_bit_masking<ENUM>          \
-	{                                        \
-		static constexpr bool enable = true; \
-	}
+#define ORB_ENABLE_BITMASKING( ENUM )          \
+    template<>                                 \
+    struct enable_bit_masking< ENUM >          \
+    {                                          \
+        static constexpr bool Enable = true;   \
+    }                                          \
 
 namespace orb
 {
+	template< typename E >
+	struct enable_bit_masking
+	{
+		static constexpr bool Enable = false;
+	};
 
-template<typename E>
-struct enable_bit_masking
-{
-	static constexpr bool enable = false;
-};
+	template< typename E >
+	constexpr bool enable_bit_masking_v = enable_bit_masking< E >::Enable;
 
-template<typename E>
-constexpr bool enable_bit_masking_v = enable_bit_masking<E>::enable;
+	template< typename E >
+	typename std::enable_if_t< enable_bit_masking_v< E >, bool > operator!( E rhs )
+	{
+		return !static_cast< std::underlying_type_t< E > >( rhs );
+	}
 
-template<typename E>
-typename std::enable_if_t<enable_bit_masking_v<E>, bool> operator!(E rhs)
-{
-	return !static_cast<std::underlying_type_t<E>>(rhs);
-}
+	template< typename E >
+	typename std::enable_if_t< enable_bit_masking_v< E >, E > operator~( E rhs )
+	{
+		return static_cast< E >( ~static_cast< std::underlying_type_t< E > >( rhs ) );
+	}
 
-template<typename E>
-typename std::enable_if_t<enable_bit_masking_v<E>, E> operator~(E rhs)
-{
-	return static_cast<E>(~static_cast<std::underlying_type_t<E>>(rhs));
-}
+	template< typename E >
+	typename std::enable_if_t< enable_bit_masking_v< E >, E > operator|( E lhs, E rhs )
+	{
+		return static_cast< E >( static_cast< std::underlying_type_t< E > >( lhs ) | static_cast< std::underlying_type_t< E > >( rhs ) );
+	}
 
-template<typename E>
-typename std::enable_if_t<enable_bit_masking_v<E>, E> operator|(E lhs, E rhs)
-{
-	return static_cast<E>(static_cast<std::underlying_type_t<E>>(lhs) | static_cast<std::underlying_type_t<E>>(rhs));
-}
+	template< typename E >
+	typename std::enable_if_t< enable_bit_masking_v< E >, E > operator&( E lhs, E rhs )
+	{
+		return static_cast< E >( static_cast< std::underlying_type_t< E > >( lhs ) & static_cast< std::underlying_type_t< E > >( rhs ) );
+	}
 
-template<typename E>
-typename std::enable_if_t<enable_bit_masking_v<E>, E> operator&(E lhs, E rhs)
-{
-	return static_cast<E>(static_cast<std::underlying_type_t<E>>(lhs) & static_cast<std::underlying_type_t<E>>(rhs));
-}
+	template< typename E >
+	typename std::enable_if_t< enable_bit_masking_v< E >, E > operator^( E lhs, E rhs )
+	{
+		return static_cast< E >( static_cast< std::underlying_type_t< E > >( lhs ) ^ static_cast< std::underlying_type_t< E > >( rhs ) );
+	}
 
-template<typename E>
-typename std::enable_if_t<enable_bit_masking_v<E>, E> operator^(E lhs, E rhs)
-{
-	return static_cast<E>(static_cast<std::underlying_type_t<E>>(lhs) ^ static_cast<std::underlying_type_t<E>>(rhs));
-}
+	template< typename E >
+	typename std::enable_if_t< enable_bit_masking_v< E >, E& > operator|=( E& lhs, E rhs )
+	{
+		return ( lhs = static_cast< E >( static_cast< std::underlying_type_t< E > >( lhs ) | static_cast< std::underlying_type_t< E > >( rhs ) ) );
+	}
 
-template<typename E>
-typename std::enable_if_t<enable_bit_masking_v<E>, E&> operator|=(E& lhs, E rhs)
-{
-	return (lhs = static_cast<E>(static_cast<std::underlying_type_t<E>>(lhs) | static_cast<std::underlying_type_t<E>>(rhs)));
-}
+	template< typename E >
+	typename std::enable_if_t< enable_bit_masking_v< E >, E& > operator&=( E& lhs, E rhs )
+	{
+		return ( lhs = static_cast< E >( static_cast< std::underlying_type_t< E > >( lhs ) & static_cast< std::underlying_type_t< E > >( rhs ) ) );
+	}
 
-template<typename E>
-typename std::enable_if_t<enable_bit_masking_v<E>, E&> operator&=(E& lhs, E rhs)
-{
-	return (lhs = static_cast<E>(static_cast<std::underlying_type_t<E>>(lhs) & static_cast<std::underlying_type_t<E>>(rhs)));
-}
-
-template<typename E>
-typename std::enable_if_t<enable_bit_masking_v<E>, E&> operator^=(E& lhs, E rhs)
-{
-	return (lhs = static_cast<E>(static_cast<std::underlying_type_t<E>>(lhs) ^ static_cast<std::underlying_type_t<E>>(rhs)));
-}
-
+	template< typename E >
+	typename std::enable_if_t< enable_bit_masking_v< E >, E& > operator^=( E& lhs, E rhs )
+	{
+		return ( lhs = static_cast< E >( static_cast< std::underlying_type_t< E > >( lhs ) ^ static_cast< std::underlying_type_t< E > >( rhs ) ) );
+	}
 }

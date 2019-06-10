@@ -21,28 +21,26 @@
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		vertex_array_object_gl::vertex_array_object_gl()
+		{
+			orb::gl::get_current_functions().gen_vertex_arrays( 1, &m_id );
+		}
 
-vertex_array_object_gl::vertex_array_object_gl()
-{
-	orb::gl::get_current_functions().gen_vertex_arrays(1, &m_id);
-}
+		vertex_array_object_gl::~vertex_array_object_gl()
+		{
+			orb::gl::get_current_functions().delete_vertex_arrays( 1, &m_id );
+		}
 
-vertex_array_object_gl::~vertex_array_object_gl()
-{
-	orb::gl::get_current_functions().delete_vertex_arrays(1, &m_id);
-}
+		void vertex_array_object_gl::bind()
+		{
+			orb::gl::get_current_functions().bind_vertex_array( m_id );
+		}
 
-void vertex_array_object_gl::bind()
-{
-	orb::gl::get_current_functions().bind_vertex_array(m_id);
-}
-
-void vertex_array_object_gl::unbind()
-{
-	orb::gl::get_current_functions().bind_vertex_array(0);
-}
-
-}
+		void vertex_array_object_gl::unbind()
+		{
+			orb::gl::get_current_functions().bind_vertex_array( 0 );
+		}
+	}
 }

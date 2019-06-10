@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -23,51 +23,49 @@
 
 namespace orb
 {
-
-static size_t format_size(index_format fmt)
-{
-	switch (fmt)
+	static size_t format_size( index_format fmt )
 	{
-		case orb::index_format::Byte: return 1;
-		case orb::index_format::Word: return 2;
-		case orb::index_format::DoubleWord: return 4;
-		default: return 0;
+		switch( fmt )
+		{
+			case orb::index_format::Byte:       return 1;
+			case orb::index_format::Word:       return 2;
+			case orb::index_format::DoubleWord: return 4;
+			default:                            return 0;
+		}
 	}
-}
 
-static std::unique_ptr<platform::buffer_base> init_base(index_format fmt, const void* data, size_t count)
-{
-	switch (render_context::get_current()->get_api())
+	static std::unique_ptr< platform::buffer_base > init_base( index_format fmt, const void* data, size_t count )
 	{
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL_2_0:
-		case graphics_api::OpenGL_3_2:
-		case graphics_api::OpenGL_4_1:
-		case graphics_api::OpenGL_ES_2:
-		case graphics_api::OpenGL_ES_3:
-			return std::make_unique<platform::buffer_gl<gl::buffer_target::ElementArray>>(data, count * format_size(fmt));
-#endif
+		switch( render_context::get_current()->get_api() )
+		{
+		#if defined( ORB_HAS_OPENGL )
+			case graphics_api::OpenGL_2_0:
+			case graphics_api::OpenGL_3_2:
+			case graphics_api::OpenGL_4_1:
+			case graphics_api::OpenGL_ES_2:
+			case graphics_api::OpenGL_ES_3:
+				return std::make_unique< platform::buffer_gl< gl::buffer_target::ElementArray > >( data, count * format_size( fmt ) );
+		#endif
 
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::Direct3D_11:
-			return std::make_unique<platform::index_buffer_d3d11>(fmt, data, count);
-#endif
+		#if defined( ORB_HAS_D3D11 )
+			case graphics_api::Direct3D_11:
+				return std::make_unique< platform::index_buffer_d3d11 >( fmt, data, count );
+		#endif
 
-		default:
-			return nullptr;
+			default:
+				return nullptr;
+		}
 	}
-}
 
-index_buffer::index_buffer(index_format fmt, const void* data, size_t count)
-	: m_base(init_base(fmt, data, count))
-	, m_format(fmt)
-	, m_count(count)
-{
-}
+	index_buffer::index_buffer( index_format fmt, const void* data, size_t count )
+		: m_base( init_base( fmt, data, count ) )
+		, m_format( fmt )
+		, m_count( count )
+	{
+	}
 
-void index_buffer::bind()
-{
-	m_base->bind();
-}
-
+	void index_buffer::bind()
+	{
+		m_base->bind();
+	}
 }

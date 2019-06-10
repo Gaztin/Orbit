@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 * 
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,84 +16,81 @@
 */
 
 #pragma once
-#include <stdint.h>
 
+#include <cstdint>
+
+#include "orbit/core/bitmask.h"
 #include "orbit.h"
 
-#include "core/bitmask.h"
-
-#if defined(ORB_BUILD_GRAPHICS)
-#define ORB_API_GRAPHICS ORB_DLL_EXPORT
+#if defined( ORB_BUILD_GRAPHICS )
+#  define ORB_API_GRAPHICS ORB_DLL_EXPORT
 #else
-#define ORB_API_GRAPHICS ORB_DLL_IMPORT
+#  define ORB_API_GRAPHICS ORB_DLL_IMPORT
 #endif
 
 /* Graphics API macros. */
-#if defined(ORB_OS_WINDOWS)
-#define ORB_HAS_D3D11
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_LINUX)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_MACOS)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_ANDROID)
-#define ORB_HAS_OPENGL
-#elif defined(ORB_OS_IOS)
-#define ORB_HAS_OPENGL
+#if defined( ORB_OS_WINDOWS )
+#  define ORB_HAS_D3D11
+#  define ORB_HAS_OPENGL
+#elif defined( ORB_OS_LINUX )
+#  define ORB_HAS_OPENGL
+#elif defined( ORB_OS_MACOS )
+#  define ORB_HAS_OPENGL
+#elif defined( ORB_OS_ANDROID )
+#  define ORB_HAS_OPENGL
+#elif defined( ORB_OS_IOS )
+#  define ORB_HAS_OPENGL
 #endif
 
 /* Enumerators */
 
 namespace orb
 {
+	enum class buffer_mask
+	{
+		Color = 0x1,
+		Depth = 0x2,
+	};
+	ORB_ENABLE_BITMASKING( buffer_mask );
 
-enum class buffer_mask
-{
-	Color = 0x1,
-	Depth = 0x2,
-};
-ORB_ENABLE_BITMASKING(buffer_mask);
+	enum class shader_type
+	{
+		Vertex,
+		Fragment,
+	};
 
-enum class shader_type
-{
-	Vertex,
-	Fragment,
-};
+	enum class index_format
+	{
+		Byte,
+		Word,
+		DoubleWord,
+	};
 
-enum class index_format
-{
-	Byte,
-	Word,
-	DoubleWord,
-};
+	template< typename T >
+	struct index_format_traits
+	{
+		static constexpr bool         Enabled = false;
+		static constexpr index_format Format  = static_cast< index_format >( 0 );
+	};
 
-template<typename T>
-struct index_format_traits
-{
-	static constexpr bool Enabled = false;
-	static constexpr index_format Format = static_cast<index_format>(0);
-};
+	template<>
+	struct index_format_traits< uint8_t >
+	{
+		static constexpr bool Enabled = true;
+		static constexpr index_format Format = index_format::Byte;
+	};
 
+	template<>
+	struct index_format_traits< uint16_t >
+	{
+		static constexpr bool Enabled = true;
+		static constexpr index_format Format = index_format::Word;
+	};
 
-template<>
-struct index_format_traits<uint8_t>
-{
-	static constexpr bool Enabled = true;
-	static constexpr index_format Format = index_format::Byte;
-};
-
-template<>
-struct index_format_traits<uint16_t>
-{
-	static constexpr bool Enabled = true;
-	static constexpr index_format Format = index_format::Word;
-};
-
-template<>
-struct index_format_traits<uint32_t>
-{
-	static constexpr bool Enabled = true;
-	static constexpr index_format Format = index_format::DoubleWord;
-};
-
+	template<>
+	struct index_format_traits< uint32_t >
+	{
+		static constexpr bool         Enabled = true;
+		static constexpr index_format Format  = index_format::DoubleWord;
+	};
 }

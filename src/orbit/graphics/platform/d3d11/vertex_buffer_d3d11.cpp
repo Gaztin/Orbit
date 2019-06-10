@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -23,23 +23,21 @@
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		vertex_buffer_d3d11::vertex_buffer_d3d11( const void* data, size_t count, size_t stride )
+			: m_buffer( d3d11::create_buffer( d3d11::bind_flag::VertexBuffer, data, count* stride ) )
+			, m_stride( static_cast< UINT >( stride ) )
+		{
+		}
 
-vertex_buffer_d3d11::vertex_buffer_d3d11(const void* data, size_t count, size_t stride)
-	: m_buffer(d3d11::create_buffer(d3d11::bind_flag::VertexBuffer, data, count * stride))
-	, m_stride(static_cast<UINT>(stride))
-{
-}
-
-void vertex_buffer_d3d11::bind()
-{
-	ID3D11DeviceContext& dc = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device_context();
-	ID3D11Buffer* buffers[] = { m_buffer.get() };
-	const UINT strides[] = { m_stride };
-	const UINT offsets[] = { 0 };
-	dc.IASetVertexBuffers(0, 1, buffers, strides, offsets);
-}
-
-}
+		void vertex_buffer_d3d11::bind()
+		{
+			ID3D11DeviceContext& dc        = static_cast< render_context_d3d11& >( render_context::get_current()->get_base() ).get_device_context();
+			ID3D11Buffer*        buffers[] = { m_buffer.get() };
+			const UINT           strides[] = { m_stride };
+			const UINT           offsets[] = { 0 };
+			dc.IASetVertexBuffers( 0, 1, buffers, strides, offsets );
+		}
+	}
 }

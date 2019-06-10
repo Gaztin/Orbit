@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,33 +16,33 @@
 */
 
 #pragma once
+
 #include <string>
 
 #include "orbit/core.h"
 
-#if defined(ORB_OS_WINDOWS)
+#if defined( ORB_OS_WINDOWS )
 #include <windows.h>
-#elif defined(ORB_OS_ANDROID)
+#elif defined( ORB_OS_ANDROID )
 #include <android/asset_manager.h>
 #endif
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
 
-#if defined(ORB_OS_WINDOWS)
-using asset_handle = HANDLE;
-#elif defined(ORB_OS_ANDROID)
-using asset_handle = AAsset*;
-#elif defined(ORB_OS_LINUX) || defined(ORB_OS_MACOS) || defined(ORB_OS_IOS)
-using asset_handle = int;
+#if defined( ORB_OS_WINDOWS )
+		using asset_handle_t = HANDLE;
+#elif defined( ORB_OS_ANDROID )
+		using asset_handle_t = AAsset*;
+#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS ) || defined( ORB_OS_IOS )
+		using asset_handle_t = int;
 #endif
 
-extern ORB_API_CORE asset_handle open_asset(const std::string& path);
-extern ORB_API_CORE size_t get_asset_size(const asset_handle& ah);
-extern ORB_API_CORE size_t read_asset_data(const asset_handle& ah, void* buf, size_t size);
-extern ORB_API_CORE bool close_asset(const asset_handle& ah);
-
-}
+		extern ORB_API_CORE asset_handle_t open_asset      ( const std::string& path );
+		extern ORB_API_CORE size_t         get_asset_size  ( asset_handle_t handle );
+		extern ORB_API_CORE size_t         read_asset_data ( asset_handle_t handle, void* buf, size_t size );
+		extern ORB_API_CORE bool           close_asset     ( asset_handle_t handle );
+	}
 }

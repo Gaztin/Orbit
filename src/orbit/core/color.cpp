@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -19,21 +19,19 @@
 
 namespace orb
 {
+	color::color()
+		: r( 0.0f )
+		, g( 0.0f )
+		, b( 0.0f )
+		, a( 0.0f )
+	{
+	}
 
-color::color()
-	: r(0.0f)
-	, g(0.0f)
-	, b(0.0f)
-	, a(0.0f)
-{
-}
-
-color::color(float r, float g, float b, float a)
-	: r(r)
-	, g(g)
-	, b(b)
-	, a(a)
-{
-}
-
+	color::color( float r, float g, float b, float a )
+		: r( r )
+		, g( g )
+		, b( b )
+		, a( a )
+	{
+	}
 }

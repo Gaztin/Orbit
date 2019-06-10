@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include <vector>
 #include <string>
 
@@ -23,16 +24,14 @@
 
 namespace orb
 {
+	class ORB_API_CORE asset
+	{
+	public:
+		asset( const std::string& path );
 
-class ORB_API_CORE asset
-{
-public:
-	asset(const std::string& path);
+		const std::vector< uint8_t >& get_data() const { return m_data; }
 
-	const std::vector<uint8_t>& get_data() const { return m_data; }
-
-private:
-	std::vector<uint8_t> m_data;
-};
-
+	private:
+		std::vector< uint8_t > m_data;
+	};
 }

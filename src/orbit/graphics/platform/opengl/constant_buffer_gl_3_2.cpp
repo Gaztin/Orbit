@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -26,40 +26,38 @@
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		constant_buffer_gl_3_2::constant_buffer_gl_3_2( size_t size )
+			: m_id( 0 )
+		{
+			auto& gl = gl::get_current_functions();
+			gl.gen_buffers( 1, &m_id );
+			gl.bind_buffer( gl::buffer_target::Uniform, m_id );
+			gl.buffer_data( gl::buffer_target::Uniform, size, nullptr, orb::gl::buffer_usage::StreamDraw );
+			gl.bind_buffer( gl::buffer_target::Uniform, 0 );
+		}
 
-constant_buffer_gl_3_2::constant_buffer_gl_3_2(size_t size)
-	: m_id(0)
-{
-	auto& gl = gl::get_current_functions();
-	gl.gen_buffers(1, &m_id);
-	gl.bind_buffer(gl::buffer_target::Uniform, m_id);
-	gl.buffer_data(gl::buffer_target::Uniform, size, nullptr, orb::gl::buffer_usage::StreamDraw);
-	gl.bind_buffer(gl::buffer_target::Uniform, 0);
-}
+		constant_buffer_gl_3_2::~constant_buffer_gl_3_2()
+		{
+			gl::get_current_functions().delete_buffers( 1, &m_id );
+		}
 
-constant_buffer_gl_3_2::~constant_buffer_gl_3_2()
-{
-	gl::get_current_functions().delete_buffers(1, &m_id);
-}
+		void constant_buffer_gl_3_2::update( size_t /*location*/, const void* data, size_t size )
+		{
+			auto& gl = gl::get_current_functions();;
+			gl.bind_buffer( gl::buffer_target::Uniform, m_id );
+			void* dst = gl.map_buffer_range( gl::buffer_target::Uniform, 0, size, gl::map_access::WriteBit );
+			std::memcpy( dst, data, size );
+			gl.unmap_buffer( gl::buffer_target::Uniform );
+			gl.bind_buffer( gl::buffer_target::Uniform, 0 );
+		}
 
-void constant_buffer_gl_3_2::update(size_t /*location*/, const void* data, size_t size)
-{
-	auto& gl = gl::get_current_functions();;
-	gl.bind_buffer(gl::buffer_target::Uniform, m_id);
-	void* dst = gl.map_buffer_range(gl::buffer_target::Uniform, 0, size, gl::map_access::WriteBit);
-	std::memcpy(dst, data, size);
-	gl.unmap_buffer(gl::buffer_target::Uniform);
-	gl.bind_buffer(gl::buffer_target::Uniform, 0);
-}
-
-void constant_buffer_gl_3_2::bind(shader_type /*type*/, uint32_t slot)
-{
-	auto& gl = gl::get_current_functions();;
-	gl.bind_buffer(gl::buffer_target::Uniform, m_id);
-	gl.bind_buffer_base(gl::buffer_target::Uniform, slot, m_id);
-}
-
-}
+		void constant_buffer_gl_3_2::bind( shader_type /*type*/, uint32_t slot )
+		{
+			auto& gl = gl::get_current_functions();;
+			gl.bind_buffer( gl::buffer_target::Uniform, m_id );
+			gl.bind_buffer_base( gl::buffer_target::Uniform, slot, m_id );
+		}
+	}
 }

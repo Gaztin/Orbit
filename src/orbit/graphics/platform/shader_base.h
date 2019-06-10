@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,20 +16,19 @@
 */
 
 #pragma once
+
 #include "orbit/graphics.h"
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		class ORB_API_GRAPHICS shader_base
+		{
+		public:
+			virtual ~shader_base() {}
 
-class ORB_API_GRAPHICS shader_base
-{
-public:
-	virtual ~shader_base() {}
-
-	virtual shader_type get_type() const = 0;
-};
-
-}
+			virtual shader_type get_type() const = 0;
+		};
+	}
 }

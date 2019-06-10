@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,36 +16,37 @@
 */
 
 #pragma once
+
 #include "orbit/core/memory.h"
 #include "orbit/graphics/platform/d3d11/d3d11.h"
 #include "orbit/graphics/platform/graphics_pipeline_base.h"
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		class ORB_API_GRAPHICS graphics_pipeline_d3d11 : public graphics_pipeline_base
+		{
+		public:
+			graphics_pipeline_d3d11();
 
-class ORB_API_GRAPHICS graphics_pipeline_d3d11 : public graphics_pipeline_base
-{
-public:
-	graphics_pipeline_d3d11();
+			void bind()                                         final override;
+			void unbind()                                       final override;
+			void add_shader( const shader& shr )                final override;
+			void describe_vertex_layout( vertex_layout layout ) final override;
 
-	void bind() final override;
-	void unbind() final override;
-	void add_shader(const shader& shr) final override;
-	void describe_vertex_layout(vertex_layout layout) final override;
+			void draw( const vertex_buffer& vb ) final override;
+			void draw( const index_buffer& ib )  final override;
 
-	void draw(const vertex_buffer& vb) final override;
-	void draw(const index_buffer& ib) final override;
+		private:
 
-private:
-#if defined(ORB_OS_WINDOWS)
-	ID3DBlob* m_vertexData;
-	ID3D11PixelShader* m_pixelShader;
-	ID3D11VertexShader* m_vertexShader;
-	com_ptr<ID3D11InputLayout> m_inputLayout;
-#endif
-};
+		#if defined(ORB_OS_WINDOWS)
+			ID3DBlob*                    m_vertexData;
+			ID3D11PixelShader*           m_pixelShader;
+			ID3D11VertexShader*          m_vertexShader;
+			com_ptr< ID3D11InputLayout > m_inputLayout;
+		#endif
 
-}
+		};
+	}
 }

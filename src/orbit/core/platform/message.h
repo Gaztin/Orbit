@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -18,34 +18,34 @@
 #pragma once
 #include "orbit/core.h"
 
-#if defined(ORB_OS_WINDOWS)
+#if defined( ORB_OS_WINDOWS )
 #include <wtypes.h>
-#elif defined(ORB_OS_LINUX)
+#elif defined( ORB_OS_LINUX )
 #include <X11/Xlib.h>
-#elif defined(ORB_OS_ANDROID)
+#elif defined( ORB_OS_ANDROID )
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
 #endif
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		struct ORB_API_CORE message
+		{
 
-struct ORB_API_CORE message
-{
-#if defined(ORB_OS_WINDOWS)
-	MSG msg;
-#elif defined(ORB_OS_LINUX)
-	XEvent xEvent;
-#elif defined(ORB_OS_MACOS)
-	void* nsEvent; // <NSEvent*>
-#elif defined(ORB_OS_ANDROID)
-	android_poll_source* source;
-	int events;
-	ASensorEvent sensorEvent;
-#endif
-};
+		#if defined( ORB_OS_WINDOWS )
+			MSG msg;
+		#elif defined( ORB_OS_LINUX )
+			XEvent xEvent;
+		#elif defined( ORB_OS_MACOS )
+			void* nsEvent; // <NSEvent*>
+		#elif defined( ORB_OS_ANDROID )
+			android_poll_source* source;
+			int                  events;
+			ASensorEvent         sensorEvent;
+		#endif
 
-}
+		};
+	}
 }

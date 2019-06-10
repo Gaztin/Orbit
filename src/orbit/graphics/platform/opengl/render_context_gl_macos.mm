@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -25,97 +25,93 @@
 
 namespace orb
 {
-namespace platform
-{
-
-static NSOpenGLPixelFormatAttribute get_opengl_profile(gl::version v)
-{
-	switch (v)
+	namespace platform
 	{
-		case gl::version::v2_0:
-			return NSOpenGLProfileVersionLegacy;
+		static NSOpenGLPixelFormatAttribute get_opengl_profile( gl::version v )
+		{
+			switch (v)
+			{
+				case gl::version::v2_0:
+					return NSOpenGLProfileVersionLegacy;
 
-		case gl::version::v3_2:
-			return NSOpenGLProfileVersion3_2Core;
+				case gl::version::v3_2:
+					return NSOpenGLProfileVersion3_2Core;
 
-		case gl::version::v4_1:
-			return NSOpenGLProfileVersion4_1Core;
+				case gl::version::v4_1:
+					return NSOpenGLProfileVersion4_1Core;
 
-		default:
-			return get_opengl_profile(gl::get_system_default_opengl_version());
+				default:
+					return get_opengl_profile( gl::get_system_default_opengl_version() );
+			}
+		}
+
+		static NSOpenGLView* create_open_gl_view( const NSWindow* nsWindow, gl::version v )
+		{
+			const NSOpenGLPixelFormatAttribute Attribs[] =
+			{
+				NSOpenGLPFAOpenGLProfile, get_opengl_profile( v ),
+				NSOpenGLPFADoubleBuffer,  true,
+				NSOpenGLPFAColorSize,     24,
+				NSOpenGLPFADepthSize,     24,
+				0
+			};
+
+			NSOpenGLPixelFormat* pixelFormat = [ NSOpenGLPixelFormat alloc ];
+			[ pixelFormat initWithAttributes:Attribs ];
+
+			NSOpenGLView* glView = [ NSOpenGLView alloc ];
+			[ glView initWithFrame:nsWindow.contentView.frame pixelFormat:pixelFormat ];
+			[ glView prepareOpenGL ];
+			[ nsWindow.contentView addSubview:glView ];
+
+			return glView;
+		}
+
+		render_context_gl::render_context_gl( const window_handle& wh, gl::version v )
+			: m_glView( create_open_gl_view( ( const NSWindow* )wh.nsWindow, v ) )
+		{
+			make_current();
+			m_functions = gl::load_functions();
+			make_current(nullptr);
+		}
+
+		render_context_gl::~render_context_gl()
+		{
+			[ ( const NSOpenGLView* )m_glView removeFromSuperview ];
+			[ ( const NSOpenGLView* )m_glView dealloc ];
+		}
+
+		bool render_context_gl::make_current()
+		{
+			[ [ ( const NSOpenGLView* )m_glView openGLContext ] makeCurrentContext ];
+			return true;
+		}
+
+		bool render_context_gl::make_current( std::nullptr_t )
+		{
+			[ NSOpenGLContext clearCurrentContext ];
+			return true;
+		}
+
+		void render_context_gl::resize( uint32_t width, uint32_t height )
+		{
+			[ ( ( NSOpenGLView* )m_glView ).openGLContext update ];
+			glViewport( 0, 0, width, height );
+		}
+
+		void render_context_gl::swap_buffers()
+		{
+			[ [ ( const NSOpenGLView* )m_glView openGLContext ] flushBuffer ];
+		}
+
+		void render_context_gl::set_clear_color( float r, float g, float b )
+		{
+			glClearColor( r, g, b, 1.0f );
+		}
+
+		void render_context_gl::clear_buffers( buffer_mask mask )
+		{
+			glClear( (!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0 | (!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0 );
+		}
 	}
-}
-
-static NSOpenGLView* create_open_gl_view(const NSWindow* nsWindow, gl::version v)
-{
-	const NSOpenGLPixelFormatAttribute Attribs[] =
-	{
-		NSOpenGLPFAOpenGLProfile, get_opengl_profile(v),
-		NSOpenGLPFADoubleBuffer,  true,
-		NSOpenGLPFAColorSize,     24,
-		NSOpenGLPFADepthSize,     24,
-		0
-	};
-
-	NSOpenGLPixelFormat* pixelFormat = [NSOpenGLPixelFormat alloc];
-	[pixelFormat initWithAttributes:Attribs];
-
-	NSOpenGLView* glView = [NSOpenGLView alloc];
-	[glView initWithFrame:nsWindow.contentView.frame pixelFormat:pixelFormat];
-	[glView prepareOpenGL];
-	[nsWindow.contentView addSubview:glView];
-
-	return glView;
-}
-
-render_context_gl::render_context_gl(const window_handle& wh, gl::version v)
-	: m_glView(create_open_gl_view((const NSWindow*)wh.nsWindow, v))
-{
-	make_current();
-	m_functions = gl::load_functions();
-	make_current(nullptr);
-}
-
-render_context_gl::~render_context_gl()
-{
-	[(const NSOpenGLView*)m_glView removeFromSuperview];
-	[(const NSOpenGLView*)m_glView dealloc];
-}
-
-bool render_context_gl::make_current()
-{
-	[[(const NSOpenGLView*)m_glView openGLContext] makeCurrentContext];
-	return true;
-}
-
-bool render_context_gl::make_current(std::nullptr_t)
-{
-	[NSOpenGLContext clearCurrentContext];
-	return true;
-}
-
-void render_context_gl::resize(uint32_t width, uint32_t height)
-{
-	[((NSOpenGLView*)m_glView).openGLContext update];
-	glViewport(0, 0, width, height);
-}
-
-void render_context_gl::swap_buffers()
-{
-	[[(const NSOpenGLView*)m_glView openGLContext] flushBuffer];
-}
-
-void render_context_gl::set_clear_color(float r, float g, float b)
-{
-	glClearColor(r, g, b, 1.0f);
-}
-
-void render_context_gl::clear_buffers(buffer_mask mask)
-{
-	glClear(
-		(!!(mask & buffer_mask::Color)) ? GL_COLOR_BUFFER_BIT : 0 |
-		(!!(mask & buffer_mask::Depth)) ? GL_DEPTH_BUFFER_BIT : 0);
-}
-
-}
 }

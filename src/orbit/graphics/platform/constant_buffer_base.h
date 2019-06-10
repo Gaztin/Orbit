@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,20 +16,20 @@
 */
 
 #pragma once
+
 #include "orbit/graphics.h"
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		class ORB_API_GRAPHICS constant_buffer_base
+		{
+		public:
+			virtual ~constant_buffer_base() { }
 
-class ORB_API_GRAPHICS constant_buffer_base
-{
-public:
-	virtual ~constant_buffer_base() {}
-	virtual void update(size_t location, const void* data, size_t size) = 0;
-	virtual void bind(shader_type type, uint32_t slot) = 0;
-};
-
-}
+			virtual void update ( size_t location, const void* data, size_t size ) = 0;
+			virtual void bind   ( shader_type type, uint32_t slot )                = 0;
+		};
+	}
 }

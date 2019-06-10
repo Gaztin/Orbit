@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include <cstdlib>
 #include <memory>
 #include <type_traits>
@@ -24,26 +25,24 @@
 
 namespace orb
 {
-
-class ORB_API_GRAPHICS vertex_buffer
-{
-public:
-	vertex_buffer(const void* data, size_t count, size_t stride);
-
-	template <typename Vertex,
-		typename = typename std::enable_if_t<std::is_object_v<Vertex>>>
-	vertex_buffer(std::initializer_list<Vertex> vertices)
-		: vertex_buffer(vertices.begin(), vertices.size(), sizeof(Vertex))
+	class ORB_API_GRAPHICS vertex_buffer
 	{
-	}
+	public:
+		vertex_buffer( const void* data, size_t count, size_t stride );
 
-	void bind();
+		template< typename Vertex,
+			typename = typename std::enable_if_t< std::is_object_v< Vertex > > >
+		vertex_buffer( std::initializer_list< Vertex > vertices )
+			: vertex_buffer( vertices.begin(), vertices.size(), sizeof( Vertex ) )
+		{
+		}
 
-	size_t get_count() const { return m_count; }
+		void bind();
 
-private:
-	std::unique_ptr<platform::buffer_base> m_base;
-	size_t m_count;
-};
+		size_t get_count() const { return m_count; }
 
+	private:
+		std::unique_ptr< platform::buffer_base > m_base;
+		size_t                                   m_count;
+	};
 }

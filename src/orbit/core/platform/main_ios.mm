@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+ * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -23,83 +23,81 @@
 #include "orbit/core/log.h"
 #include "orbit/core/utility.h"
 
-@interface ORBAppDelegate : UIResponder<UIApplicationDelegate>
-@property (atomic) std::shared_ptr<orb::application> app;
+@interface ORBAppDelegate : UIResponder< UIApplicationDelegate >
+@property ( atomic ) std::shared_ptr< orb::application > app;
 @end
 
 namespace orb
 {
-namespace platform
-{
-
-static std::shared_ptr<application>(*Ctor)();
-
-void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
-{
-	Ctor = ctor;
-	@autoreleasepool
+	namespace platform
 	{
-		UIApplicationMain(argv.first, argv.second, nil, NSStringFromClass([ORBAppDelegate class]));
-	}
-}
+		static std::shared_ptr<application>(*Ctor)();
 
-}
+		void main( platform::argv_t argv, std::shared_ptr< application >( *ctor )() )
+		{
+			Ctor = ctor;
+			@autoreleasepool
+			{
+				UIApplicationMain( argv.first, argv.second, nil, NSStringFromClass( [ ORBAppDelegate class ] ) );
+			}
+		}
+	}
 }
 
 @implementation ORBAppDelegate
 
-- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
+- ( BOOL )application:( UIApplication* )application didFinishLaunchingWithOptions:( NSDictionary* )launchOptions
 {
-	(void)launchOptions;
+	( void )launchOptions;
 
-	orb::log_info("didFinishLaunchingWithOptions()");
+	orb::log_info( "didFinishLaunchingWithOptions()" );
 	_app = orb::platform::Ctor();
 
-	CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:application.delegate selector:@selector(frame:)];
-	[displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	CADisplayLink* displayLink = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( frame: ) ];
+	[ displayLink addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
 
 	return YES;
 }
 
-- (void)applicationWillResignActive:(UIApplication*)application
+- ( void )applicationWillResignActive:( UIApplication* )application
 {
-	(void)application;
+	( void )application;
 
-	orb::log_info("applicationWillResignActive()");
+	orb::log_info( "applicationWillResignActive()" );
 }
 
-- (void)applicationDidEnterBackground:(UIApplication*)application
+- ( void )applicationDidEnterBackground:( UIApplication* )application
 {
-	(void)application;
+	( void )application;
 
-	orb::log_info("applicationDidEnterBackground()");
+	orb::log_info( "applicationDidEnterBackground()" );
 }
 
-- (void)applicationWillEnterForeground:(UIApplication*)application
+- ( void )applicationWillEnterForeground:( UIApplication* )application
 {
-	(void)application;
+	( void )application;
 
-	orb::log_info("applicationWillEnterForeground()");
+	orb::log_info( "applicationWillEnterForeground()" );
 }
 
-- (void)applicationDidBecomeActive:(UIApplication*)application
+- ( void )applicationDidBecomeActive:( UIApplication* )application
 {
-	(void)application;
+	( void )application;
 	
-	orb::log_info("applicationDidBecomeActive()");
+	orb::log_info( "applicationDidBecomeActive()" );
 }
 
-- (void)applicationWillTerminate:(UIApplication*)application
+- ( void )applicationWillTerminate:( UIApplication* )application
 {
-	(void)application;
+	( void )application;
 
-	orb::log_info("applicationWillTerminate()");
+	orb::log_info( "applicationWillTerminate()" );
 	_app.reset();
 }
 
-- (void)frame:(CADisplayLink*)displayLink
+- ( void )frame:( CADisplayLink* )displayLink
 {
-	(void)displayLink;
+	( void )displayLink;
 
 	_app->frame();
 }

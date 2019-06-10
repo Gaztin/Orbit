@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include "orbit/core/asset.h"
 #include "orbit/core/log.h"
 #include "orbit/core/utility.h"
@@ -24,60 +25,61 @@
 #include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
 #include "orbit/graphics/render_context.h"
 
-#if defined(ORB_OS_WINDOWS)
+#if defined( ORB_OS_WINDOWS )
 #include <d3dcompiler.h>
 #endif
 
 namespace orb
 {
-namespace platform
-{
-
-class ORB_API_GRAPHICS shader_pixel_d3d11 : public shader_base
-{
-public:
-	shader_pixel_d3d11(const asset& ast)
+	namespace platform
 	{
-#if defined(ORB_OS_WINDOWS)
-		const auto& data = ast.get_data();
-		const D3D_SHADER_MACRO macros[] = { { "ORB_HLSL", "1" }, { NULL, NULL } };
-		UINT flags = D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS;
-#if defined(_DEBUG)
-		flags |= D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#else
-		flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
-#endif
-		ID3DBlob* pixelData = nullptr;
-		ID3DBlob* pixelErrors = nullptr;
-		if (D3DCompile(data.data(), data.size(), NULL, macros, nullptr, "main", "ps_5_0", flags, 0, &pixelData, &pixelErrors) != S_OK)
+		class ORB_API_GRAPHICS shader_pixel_d3d11 : public shader_base
 		{
-			log_error(format("%s", static_cast<const char*>(pixelErrors->GetBufferPointer())));
-			pixelErrors->Release();
-			return;
-		}
+		public:
+			shader_pixel_d3d11( const asset& ast )
+			{
+			#if defined( ORB_OS_WINDOWS )
+				const auto&            data     = ast.get_data();
+				const D3D_SHADER_MACRO macros[] = { { "ORB_HLSL", "1" }, { NULL, NULL } };
+				UINT                   flags    = ( D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS );
+			#if defined( _DEBUG )
+				flags |= ( D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION );
+			#else
+				flags |= ( D3DCOMPILE_OPTIMIZATION_LEVEL3 );
+			#endif
 
-		ID3D11Device& device = static_cast<render_context_d3d11&>(render_context::get_current()->get_base()).get_device();
-		ID3D11PixelShader* pixelShader;
-		device.CreatePixelShader(pixelData->GetBufferPointer(), pixelData->GetBufferSize(), nullptr, &pixelShader);
-		m_pixelShader.reset(pixelShader);
-		pixelData->Release();
-#else
-		/* Unused parameters */
-		(void)ast;
-#endif
+				ID3DBlob* pixelData   = nullptr;
+				ID3DBlob* pixelErrors = nullptr;
+				if( D3DCompile( data.data(), data.size(), NULL, macros, nullptr, "main", "ps_5_0", flags, 0, &pixelData, &pixelErrors ) != S_OK )
+				{
+					log_error( format( "%s", static_cast< const char* >( pixelErrors->GetBufferPointer() ) ) );
+					pixelErrors->Release();
+					return;
+				}
+
+				ID3D11Device&      device = static_cast< render_context_d3d11& >( render_context::get_current()->get_base() ).get_device();
+				ID3D11PixelShader* pixelShader;
+				device.CreatePixelShader( pixelData->GetBufferPointer(), pixelData->GetBufferSize(), nullptr, &pixelShader );
+				m_pixelShader.reset( pixelShader );
+				pixelData->Release();
+			#else
+				/* Unused parameters */
+				( void )ast;
+			#endif
+			}
+
+			shader_type get_type() const final override { return shader_type::Fragment; }
+
+		#if defined( ORB_OS_WINDOWS )
+			const ID3D11PixelShader& get_pixel_shader() const { return *m_pixelShader; }
+		#endif
+
+		private:
+
+		#if defined( ORB_OS_WINDOWS )
+			com_ptr< ID3D11PixelShader > m_pixelShader;
+		#endif
+
+		};
 	}
-
-	shader_type get_type() const final override { return shader_type::Fragment; }
-
-#if defined(ORB_OS_WINDOWS)
-	const ID3D11PixelShader& get_pixel_shader() const { return *m_pixelShader; }
-#endif
-
-private:
-#if defined(ORB_OS_WINDOWS)
-	com_ptr<ID3D11PixelShader> m_pixelShader;
-#endif
-};
-
-}
 }

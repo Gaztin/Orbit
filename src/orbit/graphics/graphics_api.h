@@ -16,21 +16,20 @@
 */
 
 #pragma once
+
 #include "orbit/graphics.h"
 
 namespace orb
 {
+	enum class graphics_api
+	{
+		OpenGL_2_0,
+		OpenGL_3_2,
+		OpenGL_4_1,
+		OpenGL_ES_2,
+		OpenGL_ES_3,
+		Direct3D_11,
+	};
 
-enum class graphics_api
-{
-	OpenGL_2_0,
-	OpenGL_3_2,
-	OpenGL_4_1,
-	OpenGL_ES_2,
-	OpenGL_ES_3,
-	Direct3D_11,
-};
-
-extern ORB_API_GRAPHICS graphics_api get_system_default_graphics_api();
-
+	extern ORB_API_GRAPHICS graphics_api get_system_default_graphics_api();
 }

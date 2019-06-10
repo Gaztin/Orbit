@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+ * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -21,153 +21,152 @@
 
 #include "orbit/core/window.h"
 
-@interface WindowDelegate : NSObject<NSWindowDelegate>
+@interface WindowDelegate : NSObject< NSWindowDelegate >
 @property orb::window* windowPtr;
 @end
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
 
-window_handle create_window_handle(uint32_t width, uint32_t height)
-{
-	window_handle wh{};
-	wh.nsWindow = [NSWindow alloc];
-	[(NSWindow*)wh.nsWindow
-		initWithContentRect:NSMakeRect(0.0f, 0.0f, width, height)
-		styleMask:(NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable)
-		backing:NSBackingStoreBuffered
-		defer:NO];
+		window_handle create_window_handle( uint32_t width, uint32_t height )
+		{
+			window_handle wh = { };
+			wh.nsWindow = [ NSWindow alloc ];
+			[ ( NSWindow* )wh.nsWindow
+				initWithContentRect:NSMakeRect( 0.0f, 0.0f, width, height )
+				styleMask:( NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable )
+				backing:NSBackingStoreBuffered
+				defer:NO ];
 
-	wh.delegate = [WindowDelegate alloc];
-	[(NSWindow*)wh.nsWindow setDelegate:(WindowDelegate*)wh.delegate];
+			wh.delegate = [ WindowDelegate alloc ];
+			[ ( NSWindow* )wh.nsWindow setDelegate:( WindowDelegate* )wh.delegate ];
 
-	return wh;
-}
+			return wh;
+		}
 
-void set_window_user_data(window_handle& wh, window& wnd)
-{
-	[(WindowDelegate*)wh.delegate setWindowPtr:&wnd];
-}
+		void set_window_user_data( window_handle& wh, window& wnd )
+		{
+			[ ( WindowDelegate* )wh.delegate setWindowPtr:&wnd ];
+		}
 
-std::optional<message> peek_message(const window_handle& wh)
-{
-	message msg{};
-	msg.nsEvent = [(const NSWindow*)wh.nsWindow nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES];
-	if (msg.nsEvent != nullptr)
-		return msg;
-	else
-		return std::nullopt;
-}
+		std::optional< message > peek_message( const window_handle& wh )
+		{
+			message msg = { };
+			msg.nsEvent = [ ( const NSWindow* )wh.nsWindow nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ];
+			if( msg.nsEvent != nullptr )
+				return msg;
+			else
+				return std::nullopt;
+		}
 
-void process_message(window& wnd, const message& msg)
-{
-	const window_handle& wh = wnd.get_handle();
-	[(const NSWindow*)wh.nsWindow sendEvent:(NSEvent*)msg.nsEvent];
-}
+		void process_message( window& wnd, const message& msg )
+		{
+			const window_handle& wh = wnd.get_handle();
+			[ ( const NSWindow* )wh.nsWindow sendEvent:( NSEvent* )msg.nsEvent ];
+		}
 
-void set_window_title(const window_handle& wh, const std::string& title)
-{
-	NSString* nsTitle = [NSString stringWithUTF8String:title.c_str()];
-	[(const NSWindow*)wh.nsWindow setTitle:nsTitle];
-	[nsTitle release];
-}
+		void set_window_title( const window_handle& wh, const std::string& title )
+		{
+			NSString* nsTitle = [ NSString stringWithUTF8String:title.c_str() ];
+			[ ( const NSWindow* )wh.nsWindow setTitle:nsTitle ];
+			[ nsTitle release ];
+		}
 
-void set_window_position(const window_handle& wh, int x, int y)
-{
-	NSRect frame = [(const NSWindow*)wh.nsWindow frame];
-	frame.origin.x = x;
-	frame.origin.y = y;
-	[(const NSWindow*)wh.nsWindow setFrame:frame display:YES];
-}
+		void set_window_position( const window_handle& wh, int x, int y )
+		{
+			NSRect frame = [ ( const NSWindow* )wh.nsWindow frame ];
+			frame.origin.x = x;
+			frame.origin.y = y;
+			[ ( const NSWindow* )wh.nsWindow setFrame:frame display:YES ];
+		}
 
-void set_window_size(const window_handle& wh, uint32_t width, uint32_t height)
-{
-	NSRect frame = [(const NSWindow*)wh.nsWindow frame];
-	frame.size.width  = width;
-	frame.size.height = height;
-	[(const NSWindow*)wh.nsWindow setFrame:frame display:YES];
-}
+		void set_window_size( const window_handle& wh, uint32_t width, uint32_t height )
+		{
+			NSRect frame = [ ( const NSWindow* )wh.nsWindow frame ];
+			frame.size.width  = width;
+			frame.size.height = height;
+			[ ( const NSWindow* )wh.nsWindow setFrame:frame display:YES ];
+		}
 
-void set_window_visibility(const window_handle& wh, bool visible)
-{
-	[(const NSWindow*)wh.nsWindow setIsVisible:visible];
-}
-
-}
+		void set_window_visibility( const window_handle& wh, bool visible )
+		{
+			[ ( const NSWindow* )wh.nsWindow setIsVisible:visible ];
+		}
+	}
 }
 
 @implementation WindowDelegate
 
-- (void)windowWillClose:(NSNotification*)notification
+- ( void )windowWillClose:( NSNotification* )notification
 {
-	(void)notification;
+	( void )notification;
 
 	_windowPtr->close();
 }
 
-- (void)windowDidMove:(NSNotification*)notification
+- ( void )windowDidMove:( NSNotification* )notification
 {
-	(void)notification;
+	( void )notification;
 
 	const orb::platform::window_handle& wh = _windowPtr->get_handle();
-	const CGPoint point = ((const NSWindow*)wh.nsWindow).frame.origin;
+	const CGPoint point = ( ( const NSWindow* )wh.nsWindow ).frame.origin;
 
-	orb::window_event e{};
-	e.type = orb::window_event::Move;
-	e.data.move.x = static_cast<int>(point.x);
-	e.data.move.y = static_cast<int>(point.y);
-	_windowPtr->queue_event(e);
+	orb::window_event e = { };
+	e.type        = orb::window_event::Move;
+	e.data.move.x = static_cast< int >( point.x );
+	e.data.move.y = static_cast< int >( point.y );
+	_windowPtr->queue_event( e );
 }
 
-- (NSSize)windowWillResize:(NSWindow*)sender toSize:(NSSize)frameSize
+- ( NSSize )windowWillResize:( NSWindow* )sender toSize:( NSSize )frameSize
 {
-	(void)sender;
+	( void )sender;
 
-	orb::window_event e{};
-	e.type = orb::window_event::Resize;
-	e.data.resize.w = static_cast<uint32_t>(frameSize.width);
-	e.data.resize.h = static_cast<uint32_t>(frameSize.height);
-	_windowPtr->queue_event(e);
+	orb::window_event e = { };
+	e.type          = orb::window_event::Resize;
+	e.data.resize.w = static_cast< uint32_t >( frameSize.width );
+	e.data.resize.h = static_cast< uint32_t >( frameSize.height );
+	_windowPtr->queue_event( e );
 
 	return frameSize;
 }
 
-- (void)windowDidMiniaturize:(NSNotification*)notification
+- ( void )windowDidMiniaturize:( NSNotification* )notification
 {
-	(void)notification;
+	( void )notification;
 
-	orb::window_event e{};
+	orb::window_event e = { };
 	e.type = orb::window_event::Suspend;
-	_windowPtr->queue_event(e);
+	_windowPtr->queue_event( e );
 }
 
-- (void)windowDidDeminiaturize:(NSNotification*)notification
+- ( void )windowDidDeminiaturize:( NSNotification* )notification
 {
-	(void)notification;
+	( void )notification;
 
-	orb::window_event e{};
+	orb::window_event e = { };
 	e.type = orb::window_event::Restore;
-	_windowPtr->queue_event(e);
+	_windowPtr->queue_event( e );
 }
 
-- (void)windowDidBecomeMain:(NSNotification*)notification
+- ( void )windowDidBecomeMain:( NSNotification* )notification
 {
-	(void)notification;
+	( void )notification;
 	
-	orb::window_event e{};
+	orb::window_event e = { };
 	e.type = orb::window_event::Focus;
-	_windowPtr->queue_event(e);
+	_windowPtr->queue_event( e );
 }
 
-- (void)windowDidResignMain:(NSNotification*)notification
+- ( void )windowDidResignMain:( NSNotification* )notification
 {
-	(void)notification;
+	( void )notification;
 
-	orb::window_event e{};
+	orb::window_event e = { };
 	e.type = orb::window_event::Defocus;
-	_windowPtr->queue_event(e);
+	_windowPtr->queue_event( e );
 }
 
 @end

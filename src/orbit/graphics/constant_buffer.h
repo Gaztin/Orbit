@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include <memory>
 #include <tuple>
 
@@ -25,39 +26,37 @@
 
 namespace orb
 {
-
-class ORB_API_GRAPHICS constant_buffer
-{
-public:
-	constant_buffer(size_t size);
-
-	template<typename... Types>
-	constant_buffer(const std::tuple<Types...>&)
-		: constant_buffer((0 + ... + sizeof(Types)))
+	class ORB_API_GRAPHICS constant_buffer
 	{
-	}
+	public:
+		constant_buffer( size_t size );
 
-	void bind(shader_type type, uint32_t slot);
-	void update(size_t location, const void* data, size_t size);
+		template< typename... Types >
+		constant_buffer( const std::tuple< Types... >& )
+			: constant_buffer( ( 0 + ... + sizeof( Types ) ) )
+		{
+		}
 
-	template<typename... Types>
-	void update(const std::tuple<Types...>& constants)
-	{
-		if constexpr (sizeof...(Types) > 0)
-			update_sequencial(constants, gen_seq<sizeof...(Types)>());
-		else
-			update(0, nullptr, 0);
-	}
+		void bind   ( shader_type type, uint32_t slot );
+		void update ( size_t location, const void* data, size_t size );
 
-private:
-	template<typename Tup, size_t... Is>
-	void update_sequencial(Tup&& tup, seq<Is...>)
-	{
-		auto l = { (update(Is, &std::get<Is>(tup), sizeof(std::get<Is>(tup))), 0)... };
-		(void)l;
-	}
+		template< typename... Types >
+		void update( const std::tuple< Types... >& constants )
+		{
+			if constexpr( sizeof...( Types ) > 0 )
+				update_sequencial( constants, gen_seq< sizeof...( Types ) >() );
+			else
+				update( 0, nullptr, 0 );
+		}
 
-	std::unique_ptr<platform::constant_buffer_base> m_base;
-};
+	private:
+		template< typename Tup, size_t... Is >
+		void update_sequencial( Tup&& tup, seq< Is... > )
+		{
+			auto l = { ( update( Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
+			( void )l;
+		}
 
+		std::unique_ptr< platform::constant_buffer_base > m_base;
+	};
 }

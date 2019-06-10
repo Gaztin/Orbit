@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,50 +16,51 @@
 */
 
 #pragma once
+
 #include "orbit/core/color.h"
 #include "orbit/core/memory.h"
 #include "orbit/graphics/platform/render_context_base.h"
 
-#if defined(ORB_OS_WINDOWS)
+#if defined( ORB_OS_WINDOWS )
 #include <d3d11.h>
 #include <dxgi.h>
 #endif
 
 namespace orb
 {
-namespace platform
-{
-struct window_handle;
+	namespace platform
+	{
+		struct window_handle;
 
-class ORB_API_GRAPHICS render_context_d3d11 : public render_context_base
-{
-public:
-	render_context_d3d11(const window_handle& wh);
+		class ORB_API_GRAPHICS render_context_d3d11 : public render_context_base
+		{
+		public:
+			render_context_d3d11( const window_handle& wh );
 
-	void resize(uint32_t width, uint32_t height) final override;
-	void swap_buffers() final override;
-	void set_clear_color(float r, float g, float b) final override;
-	void clear_buffers(buffer_mask mask) final override;
+			void resize( uint32_t width, uint32_t height )    final override;
+			void swap_buffers()                               final override;
+			void set_clear_color( float r, float g, float b ) final override;
+			void clear_buffers( buffer_mask mask )            final override;
 
-#if defined(ORB_OS_WINDOWS)
-	ID3D11DeviceContext& get_device_context() { return *m_deviceContext; }
-	ID3D11Device& get_device() { return *m_device; }
-#endif
+		#if defined( ORB_OS_WINDOWS )
+			ID3D11DeviceContext& get_device_context() { return *m_deviceContext; }
+			ID3D11Device&        get_device()         { return *m_device; }
+		#endif
 
-private:
-#if defined(ORB_OS_WINDOWS)
-	com_ptr<IDXGISwapChain> m_swapChain;
-	com_ptr<ID3D11Device> m_device;
-	com_ptr<ID3D11DeviceContext> m_deviceContext;
-	com_ptr<ID3D11RenderTargetView> m_renderTargetView;
-	com_ptr<ID3D11Texture2D> m_depthStencilBuffer;
-	com_ptr<ID3D11DepthStencilState> m_depthStencilState;
-	com_ptr<ID3D11DepthStencilView> m_depthStencilView;
-	com_ptr<ID3D11RasterizerState> m_rasterizerState;
+		private:
 
-	color m_clearColor;
-#endif
-};
+		#if defined( ORB_OS_WINDOWS )
+			com_ptr< IDXGISwapChain >          m_swapChain;
+			com_ptr< ID3D11Device >            m_device;
+			com_ptr< ID3D11DeviceContext >     m_deviceContext;
+			com_ptr< ID3D11RenderTargetView >  m_renderTargetView;
+			com_ptr< ID3D11Texture2D >         m_depthStencilBuffer;
+			com_ptr< ID3D11DepthStencilState > m_depthStencilState;
+			com_ptr< ID3D11DepthStencilView >  m_depthStencilView;
+			com_ptr< ID3D11RasterizerState >   m_rasterizerState;
+			color                              m_clearColor;
+		#endif
 
-}
+		};
+	}
 }

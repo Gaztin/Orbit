@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,26 +16,25 @@
 */
 
 #pragma once
+
 #include <string>
 
 #include "orbit/graphics.h"
 
 namespace orb
 {
+	enum class shader_constant_type
+	{
+		Float,
+		Vec2,
+		Vec3,
+		Vec4,
+		Mat4,
+	};
 
-enum class shader_constant_type
-{
-	Float,
-	Vec2,
-	Vec3,
-	Vec4,
-	Mat4,
-};
-
-struct ORB_API_GRAPHICS shader_constant
-{
-	std::string name;
-	shader_constant_type type;
-};
-
+	struct ORB_API_GRAPHICS shader_constant
+	{
+		std::string          name;
+		shader_constant_type type;
+	};
 }

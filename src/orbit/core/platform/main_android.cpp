@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -22,17 +22,14 @@
 
 namespace orb
 {
-namespace platform
-{
-
-void main(platform::argv_t argv, std::shared_ptr<application>(*ctor)())
-{
-	// TODO: Wait for window initialization here
-	android_only::app = argv;
-	auto app = ctor();
-	while (*app)
-		app->frame();
-}
-
-}
+	namespace platform
+	{
+		void main( platform::argv_t argv, std::shared_ptr< application >( *ctor )() )
+		{
+			android_only::app = argv;
+			auto app = ctor();
+			while( *app )
+				app->frame();
+		}
+	}
 }

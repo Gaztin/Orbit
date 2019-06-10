@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -24,45 +24,43 @@
 
 namespace orb
 {
-
-static std::unique_ptr<platform::constant_buffer_base> init_base(size_t size)
-{
-	switch (render_context::get_current()->get_api())
+	static std::unique_ptr< platform::constant_buffer_base > init_base( size_t size )
 	{
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL_2_0:
-		case graphics_api::OpenGL_ES_2:
-			return std::make_unique<platform::constant_buffer_gl_2_0>();
+		switch( render_context::get_current()->get_api() )
+		{
+		#if defined( ORB_HAS_OPENGL )
+			case graphics_api::OpenGL_2_0:
+			case graphics_api::OpenGL_ES_2:
+				return std::make_unique< platform::constant_buffer_gl_2_0 >();
 
-		case graphics_api::OpenGL_3_2:
-		case graphics_api::OpenGL_4_1:
-		case graphics_api::OpenGL_ES_3:
-			return std::make_unique<platform::constant_buffer_gl_3_2>(size);
-#endif
+			case graphics_api::OpenGL_3_2:
+			case graphics_api::OpenGL_4_1:
+			case graphics_api::OpenGL_ES_3:
+				return std::make_unique< platform::constant_buffer_gl_3_2 >( size );
+		#endif
 
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::Direct3D_11:
-			return std::make_unique<platform::constant_buffer_d3d11>(size);
-#endif
+		#if defined( ORB_HAS_D3D11 )
+			case graphics_api::Direct3D_11:
+				return std::make_unique< platform::constant_buffer_d3d11 >( size );
+		#endif
 
-		default:
-			return nullptr;
+			default:
+				return nullptr;
+		}
 	}
-}
 
-constant_buffer::constant_buffer(size_t size)
-	: m_base(init_base(size))
-{
-}
+	constant_buffer::constant_buffer( size_t size )
+		: m_base( init_base( size ) )
+	{
+	}
 
-void constant_buffer::update(size_t location, const void* data, size_t size)
-{
-	m_base->update(location, data, size);
-}
+	void constant_buffer::update( size_t location, const void* data, size_t size )
+	{
+		m_base->update( location, data, size );
+	}
 
-void constant_buffer::bind(shader_type type, uint32_t slot)
-{
-	m_base->bind(type, slot);
-}
-
+	void constant_buffer::bind( shader_type type, uint32_t slot )
+	{
+		m_base->bind( type, slot );
+	}
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -19,43 +19,41 @@
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		asset_handle_t open_asset( const std::string& path )
+		{
+			HANDLE handle = CreateFileA( path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+			if( handle == INVALID_HANDLE_VALUE )
+				return NULL;
 
-asset_handle open_asset(const std::string& path)
-{
-	asset_handle ah = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (ah == INVALID_HANDLE_VALUE)
-		return NULL;
+			return { handle };
+		}
 
-	return ah;
-}
+		size_t get_asset_size( asset_handle_t handle )
+		{
+			LARGE_INTEGER fileSize = { };
+			if( GetFileSizeEx( handle, &fileSize ) == 0 )
+				return 0;
 
-size_t get_asset_size(const asset_handle& ah)
-{
-	LARGE_INTEGER fileSize{};
-	if (GetFileSizeEx(ah, &fileSize) == 0)
-		return 0;
+			return static_cast< size_t >( fileSize.QuadPart );
+		}
 
-	return static_cast<size_t>(fileSize.QuadPart);
-}
+		size_t read_asset_data( asset_handle_t handle, void* buf, size_t size )
+		{
+			DWORD numBytesRead;
+			if( !ReadFile( handle, buf, static_cast< DWORD >( size ), &numBytesRead, NULL ) )
+				return 0;
 
-size_t read_asset_data(const asset_handle& ah, void* buf, size_t size)
-{
-	DWORD numBytesRead;
-	if (!ReadFile(ah, buf, static_cast<DWORD>(size), &numBytesRead, NULL))
-		return 0;
+			return static_cast< size_t >( numBytesRead );
+		}
 
-	return static_cast<size_t>(numBytesRead);
-}
+		bool close_asset( asset_handle_t handle )
+		{
+			if( handle == NULL || handle == INVALID_HANDLE_VALUE )
+				return false;
 
-bool close_asset(const asset_handle& ah)
-{
-	if (ah == NULL || ah == INVALID_HANDLE_VALUE)
-		return false;
-
-	return CloseHandle(ah);
-}
-
-}
+			return CloseHandle( handle );
+		}
+	}
 }

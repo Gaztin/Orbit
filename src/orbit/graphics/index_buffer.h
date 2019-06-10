@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include <memory>
 #include <type_traits>
 
@@ -23,28 +24,26 @@
 
 namespace orb
 {
-
-class ORB_API_GRAPHICS index_buffer
-{
-public:
-	index_buffer(index_format fmt, const void* data, size_t count);
-
-	template<typename T,
-		typename = typename std::enable_if_t<index_format_traits<T>::Enabled>>
-	index_buffer(std::initializer_list<T> indices)
-		: index_buffer(index_format_traits<T>::Format, indices.begin(), indices.size())
+	class ORB_API_GRAPHICS index_buffer
 	{
-	}
+	public:
+		index_buffer( index_format fmt, const void* data, size_t count );
 
-	void bind();
+		template< typename T,
+			typename = typename std::enable_if_t< index_format_traits< T >::Enabled > >
+		index_buffer( std::initializer_list< T > indices )
+			: index_buffer( index_format_traits< T >::Format, indices.begin(), indices.size() )
+		{
+		}
 
-	index_format get_format() const { return m_format; }
-	size_t get_count() const { return m_count; }
+		void bind();
 
-private:
-	std::unique_ptr<platform::buffer_base> m_base;
-	index_format m_format;
-	size_t m_count;
-};
+		index_format get_format() const { return m_format; }
+		size_t       get_count()  const { return m_count; }
 
+	private:
+		std::unique_ptr< platform::buffer_base > m_base;
+		index_format                             m_format;
+		size_t                                   m_count;
+	};
 }

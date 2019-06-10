@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,25 +16,24 @@
 */
 
 #pragma once
+
 #include "orbit/graphics.h"
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		class ORB_API_GRAPHICS render_context_base
+		{
+		public:
+			virtual ~render_context_base() = default;
 
-class ORB_API_GRAPHICS render_context_base
-{
-public:
-	virtual ~render_context_base() = default;
-
-	virtual bool make_current() { return true; };
-	virtual bool make_current(std::nullptr_t) { return true; };
-	virtual void resize(uint32_t width, uint32_t height) = 0;
-	virtual void swap_buffers() = 0;
-	virtual void set_clear_color(float r, float g, float b) = 0;
-	virtual void clear_buffers(buffer_mask mask) = 0;
-};
-
-}
+			virtual bool make_current()                               { return true; };
+			virtual bool make_current( std::nullptr_t )               { return true; };
+			virtual void resize( uint32_t width, uint32_t height )    = 0;
+			virtual void swap_buffers()                               = 0;
+			virtual void set_clear_color( float r, float g, float b ) = 0;
+			virtual void clear_buffers( buffer_mask mask )            = 0;
+		};
+	}
 }

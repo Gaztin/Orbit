@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -19,48 +19,46 @@
 
 namespace orb
 {
-
-window::window(uint32_t width, uint32_t height)
-	: m_handle(platform::create_window_handle(width, height))
-	, m_open(true)
-{
-	platform::set_window_user_data(m_handle, *this);
-}
-
-void window::poll_events()
-{
-	std::optional<platform::message> msg;
-	while ((msg = platform::peek_message(m_handle)))
+	window::window( uint32_t width, uint32_t height )
+		: m_handle( platform::create_window_handle( width, height ) )
+		, m_open( true )
 	{
-		platform::process_message(*this, *msg);
+		platform::set_window_user_data( m_handle, *this );
 	}
 
-	send_events();
-}
+	void window::poll_events()
+	{
+		std::optional< platform::message > msg;
+		while( ( msg = platform::peek_message( m_handle ) ) )
+		{
+			platform::process_message( *this, *msg );
+		}
 
-void window::set_title(const std::string& title)
-{
-	platform::set_window_title(m_handle, title);
-}
+		send_events();
+	}
 
-void window::set_pos(uint32_t x, uint32_t y)
-{
-	platform::set_window_position(m_handle, x, y);
-}
+	void window::set_title( const std::string& title )
+	{
+		platform::set_window_title( m_handle, title );
+	}
 
-void window::set_size(uint32_t width, uint32_t height)
-{
-	platform::set_window_size(m_handle, width, height);
-}
+	void window::set_pos( uint32_t x, uint32_t y )
+	{
+		platform::set_window_position( m_handle, x, y );
+	}
 
-void window::show()
-{
-	platform::set_window_visibility(m_handle, true);
-}
+	void window::set_size( uint32_t width, uint32_t height )
+	{
+		platform::set_window_size( m_handle, width, height );
+	}
 
-void window::hide()
-{
-	platform::set_window_visibility(m_handle, false);
-}
+	void window::show()
+	{
+		platform::set_window_visibility( m_handle, true );
+	}
 
+	void window::hide()
+	{
+		platform::set_window_visibility( m_handle, false );
+	}
 }

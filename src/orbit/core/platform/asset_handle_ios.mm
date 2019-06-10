@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -21,52 +21,50 @@
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		asset_handle_t open_asset( const std::string& path )
+		{
+			NSString* nsPath   = [ NSString stringWithUTF8String:path.c_str() ];
+			NSString* resource = [ nsPath stringByDeletingPathExtension ];
+			NSString* type     = [ nsPath pathExtension ];
+			NSBundle* bundle   = [ NSBundle mainBundle ];
+			NSString* resPath  = [ bundle pathForResource:resource ofType:type inDirectory:@"assets" ];
 
-asset_handle open_asset(const std::string& path)
-{
-	NSString* nsPath   = [NSString stringWithUTF8String:path.c_str()];
-	NSString* resource = [nsPath stringByDeletingPathExtension];
-	NSString* type     = [nsPath pathExtension];
-	NSBundle* bundle   = [NSBundle mainBundle];
-	NSString* resPath  = [bundle pathForResource:resource ofType:type inDirectory:@"assets"];
+			asset_handle_t handle = open( [ resPath UTF8String ], O_RDONLY );
+			if( handle < 0 )
+				return 0;
 
-	asset_handle ah = open([resPath UTF8String], O_RDONLY);
-	if (ah < 0)
-		return 0;
+			return handle;
+		}
 
-	return ah;
-}
+		size_t get_asset_size( asset_handle handle )
+		{
+			lseek( handle, 0, SEEK_SET );
+			const off_t off = lseek( handle, 0, SEEK_END );
+			lseek( handle, 0, SEEK_SET );
 
-size_t get_asset_size(const asset_handle& ah)
-{
-	lseek(ah, 0, SEEK_SET);
-	const off_t off = lseek(ah, 0, SEEK_END);
-	lseek(ah, 0, SEEK_SET);
+			if( off < 0 )
+				return 0;
 
-	if (off < 0)
-		return 0;
+			return static_cast< size_t >( off );
+		}
 
-	return static_cast<size_t>(off);
-}
+		size_t read_asset_data( asset_handle handle, void* buf, size_t size )
+		{
+			const ssize_t numBytesRead = read( handle, buf, size );
+			if( numBytesRead < 0 )
+				return 0;
 
-size_t read_asset_data(const asset_handle& ah, void* buf, size_t size)
-{
-	const ssize_t numBytesRead = read(ah, buf, size);
-	if (numBytesRead < 0)
-		return 0;
+			return static_cast< size_t >( numBytesRead );
+		}
 
-	return static_cast<size_t>(numBytesRead);
-}
+		bool close_asset( asset_handle handle )
+		{
+			if( handle <= 0 )
+				return false;
 
-bool close_asset(const asset_handle& ah)
-{
-	if (ah <= 0)
-		return false;
-
-	return close(ah) == 0;
-}
-
-}
+			return ( close( ah ) == 0 );
+		}
+	}
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include <cstddef>
 
 #include "orbit/core/memory.h"
@@ -23,22 +24,22 @@
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		class ORB_API_GRAPHICS vertex_buffer_d3d11 : public buffer_base
+		{
+		public:
+			vertex_buffer_d3d11( const void* data, size_t count, size_t stride );
 
-class ORB_API_GRAPHICS vertex_buffer_d3d11 : public buffer_base
-{
-public:
-	vertex_buffer_d3d11(const void* data, size_t count, size_t stride);
+			void bind() final override;
 
-	void bind() final override;
+		private:
 
-private:
-#if defined(ORB_OS_WINDOWS)
-	com_ptr<ID3D11Buffer> m_buffer;
-	UINT m_stride;
-#endif
-};
+		#if defined( ORB_OS_WINDOWS )
+			com_ptr< ID3D11Buffer > m_buffer;
+			UINT                    m_stride;
+		#endif
 
-}
+		};
+	}
 }

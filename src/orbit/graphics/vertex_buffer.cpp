@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -25,39 +25,37 @@
 
 namespace orb
 {
-
-static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t count, size_t stride)
-{
-	switch (render_context::get_current()->get_api())
+	static std::unique_ptr< platform::buffer_base > init_base( const void* data, size_t count, size_t stride )
 	{
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL_2_0:
-		case graphics_api::OpenGL_3_2:
-		case graphics_api::OpenGL_4_1:
-		case graphics_api::OpenGL_ES_2:
-		case graphics_api::OpenGL_ES_3:
-			return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count * stride);
-#endif
+		switch( render_context::get_current()->get_api() )
+		{
+		#if defined( ORB_HAS_OPENGL )
+			case graphics_api::OpenGL_2_0:
+			case graphics_api::OpenGL_3_2:
+			case graphics_api::OpenGL_4_1:
+			case graphics_api::OpenGL_ES_2:
+			case graphics_api::OpenGL_ES_3:
+				return std::make_unique< platform::buffer_gl< gl::buffer_target::Array > >( data, count * stride );
+			#endif
 
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::Direct3D_11:
-			return std::make_unique<platform::vertex_buffer_d3d11>(data, count, stride);
-#endif
+			#if defined( ORB_HAS_D3D11 )
+			case graphics_api::Direct3D_11:
+				return std::make_unique< platform::vertex_buffer_d3d11 >( data, count, stride );
+			#endif
 
-		default:
-			return nullptr;
+			default:
+				return nullptr;
+		}
 	}
-}
 
-vertex_buffer::vertex_buffer(const void* data, size_t count, size_t stride)
-	: m_base(init_base(data, count, stride))
-	, m_count(count)
-{
-}
+	vertex_buffer::vertex_buffer( const void* data, size_t count, size_t stride )
+		: m_base( init_base( data, count, stride ) )
+		, m_count( count )
+	{
+	}
 
-void vertex_buffer::bind()
-{
-	m_base->bind();
-}
-
+	void vertex_buffer::bind()
+	{
+		m_base->bind();
+	}
 }

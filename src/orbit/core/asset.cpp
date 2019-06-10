@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -23,22 +23,20 @@
 
 namespace orb
 {
-
-asset::asset(const std::string& path)
-{
-	platform::asset_handle ah{};
-	ah = platform::open_asset(path);
-	if (!ah)
-		return;
-
-	const size_t sz = platform::get_asset_size(ah);
-	if (sz > 0)
+	asset::asset( const std::string& path )
 	{
-		m_data.resize(sz);
-		platform::read_asset_data(ah, m_data.data(), m_data.size());
+		platform::asset_handle_t ah = { };
+		ah = platform::open_asset( path );
+		if( !ah )
+			return;
+
+		const size_t sz = platform::get_asset_size( ah );
+		if( sz > 0 )
+		{
+			m_data.resize( sz );
+			platform::read_asset_data( ah, m_data.data(), m_data.size() );
+		}
+
+		platform::close_asset( ah );
 	}
-
-	platform::close_asset(ah);
-}
-
 }

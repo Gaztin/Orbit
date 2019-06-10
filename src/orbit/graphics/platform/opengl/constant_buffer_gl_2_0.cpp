@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -26,19 +26,17 @@
 
 namespace orb
 {
-namespace platform
-{
+	namespace platform
+	{
+		void constant_buffer_gl_2_0::update( size_t location, const void* data, size_t /*size*/ )
+		{
+			auto& gl = gl::get_current_functions();
+			// #TODO: won't work for any other uniform types other than single floats.
+			gl.uniform1f( location, *reinterpret_cast< const GLfloat* >( data ) );
+		}
 
-void constant_buffer_gl_2_0::update(size_t location, const void* data, size_t /*size*/)
-{
-	auto& gl = gl::get_current_functions();
-	// #TODO: won't work for any other uniform types other than single floats.
-	gl.uniform1f(location, *reinterpret_cast<const GLfloat*>(data));
-}
-
-void constant_buffer_gl_2_0::bind(shader_type /*type*/, uint32_t /*slot*/)
-{
-}
-
-}
+		void constant_buffer_gl_2_0::bind( shader_type /*type*/, uint32_t /*slot*/ )
+		{
+		}
+	}
 }

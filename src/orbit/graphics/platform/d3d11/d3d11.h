@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,62 +16,62 @@
 */
 
 #pragma once
+
 #include "orbit/core/memory.h"
 #include "orbit/graphics.h"
 
-#if defined(ORB_OS_WINDOWS)
+#if defined( ORB_OS_WINDOWS )
 #include <d3d11.h>
 #include <dxgi.h>
 #endif
 
-#if defined(None)
-#pragma push_macro("None")
-#undef None
-#define UNDEFINED_None
+#if defined( None )
+#  pragma push_macro( "None" )
+#  undef None
+#  define UNDEFINED_None
 #endif
 
 namespace orb
 {
-namespace d3d11
-{
+	namespace d3d11
+	{
+		enum class bind_flag
+		{
+			VertexBuffer    = 0x001,
+			IndexBuffer     = 0x002,
+			ConstantBuffer  = 0x004,
+			ShaderResource  = 0x008,
+			StreamOutput    = 0x010,
+			RenderTarget    = 0x020,
+			DepthStencil    = 0x040,
+			UnorderedAccess = 0x080,
+			Decoder         = 0x200,
+			VideoEncoder    = 0x400,
+		};
 
-enum class bind_flag
-{
-	VertexBuffer    = 0x001,
-	IndexBuffer     = 0x002,
-	ConstantBuffer  = 0x004,
-	ShaderResource  = 0x008,
-	StreamOutput    = 0x010,
-	RenderTarget    = 0x020,
-	DepthStencil    = 0x040,
-	UnorderedAccess = 0x080,
-	Decoder         = 0x200,
-	VideoEncoder    = 0x400,
-};
+		enum class usage
+		{
+			Default   = 0x0,
+			Immutable = 0x1,
+			Dynamic   = 0x2,
+			Staging   = 0x3,
+		};
 
-enum class usage
-{
-	Default   = 0x0,
-	Immutable = 0x1,
-	Dynamic   = 0x2,
-	Staging   = 0x3,
-};
+		enum class cpu_access
+		{
+			None  = 0x00000l,
+			Write = 0x10000l,
+			Read  = 0x20000l,
+		};
 
-enum class cpu_access
-{
-	None  = 0x00000l,
-	Write = 0x10000l,
-	Read  = 0x20000l,
-};
+	#if defined( ORB_OS_WINDOWS )
+		com_ptr< ID3D11Buffer > create_buffer( bind_flag bf, const void* data, size_t size, usage usg = usage::Default, cpu_access cpu = cpu_access::None );
+	#endif
 
-#if defined(ORB_OS_WINDOWS)
-com_ptr<ID3D11Buffer> create_buffer(bind_flag bf, const void* data, size_t size, usage usg = usage::Default, cpu_access cpu = cpu_access::None);
-#endif
-
+	}
 }
-}
 
-#if defined(UNDEFINED_None)
-#pragma pop_macro("None")
-#undef UNDEFINED_None
+#if defined( UNDEFINED_None )
+#  pragma pop_macro( "None" )
+#  undef UNDEFINED_None
 #endif

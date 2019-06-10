@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+ * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
  */
 
 #pragma once
+
 #include <memory>
 
 #include "orbit/core/android_app.h"
@@ -23,18 +24,17 @@
 
 namespace orb
 {
-class application;
+	class application;
 
-namespace platform
-{
+	namespace platform
+	{
 
-#if defined(ORB_OS_ANDROID)
-using argv_t = android_app*;
-#else
-using argv_t = std::pair<int, char**>;
-#endif
+	#if defined( ORB_OS_WINDOWS ) || defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS ) || defined( ORB_OS_IOS )
+		using argv_t = std::pair< int, char** >;
+	#elif defined( ORB_OS_ANDROID )
+		using argv_t = android_app*;
+	#endif
 
-extern ORB_API_CORE void main(argv_t argv, std::shared_ptr<application>(*ctor)());
-
-}
+		extern ORB_API_CORE void main( argv_t argv, std::shared_ptr< application >( *ctor )() );
+	}
 }

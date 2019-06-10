@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,26 +16,25 @@
 */
 
 #pragma once
+
 #include <stdlib.h>
 
 #include "orbit/core.h"
 
 namespace orb
 {
+	class ORB_API_CORE color
+	{
+	public:
+		color();
+		color( float r, float g, float b, float a = 1.0f );
 
-class ORB_API_CORE color
-{
-public:
-	color();
-	color(float r, float g, float b, float a = 1.0f);
+		float&       operator[]( size_t i )       { return ( &r )[ i ]; }
+		const float& operator[]( size_t i ) const { return ( &r )[ i ]; }
 
-	float& operator[](size_t i) { return (&r)[i]; }
-	const float& operator[](size_t i) const { return (&r)[i]; }
-
-	float r;
-	float g;
-	float b;
-	float a;
-};
-
+		float r;
+		float g;
+		float b;
+		float a;
+	};
 }

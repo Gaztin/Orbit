@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+ * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -22,22 +22,25 @@
 
 namespace orb
 {
-
-class application
-{
-public:
-	application() = default;
-	virtual ~application() = default;
-
-	virtual void frame() {}
-	virtual operator bool() const { return true; };
-
-	template<typename T,
-		typename = typename std::enable_if_t<std::is_base_of_v<application, T>>>
-	static void main(platform::argv_t argv)
+	class application
 	{
-		platform::main(argv, []() -> std::shared_ptr<application> { return std::make_shared<T>(); });
-	}
-};
+	public:
+		application() = default;
+		virtual ~application() = default;
 
+		virtual void frame() { }
+		virtual operator bool() const { return true; };
+
+		template<typename T,
+			typename = typename std::enable_if_t< std::is_base_of_v< application, T > > >
+		static void main( platform::argv_t argv )
+		{
+			platform::main( argv,
+				[]() -> std::shared_ptr< application >
+				{
+					return std::make_shared< T >();
+				}
+			);
+		}
+	};
 }

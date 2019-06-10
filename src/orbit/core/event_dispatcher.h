@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include <algorithm>
 #include <functional>
 #include <list>
@@ -28,61 +29,59 @@
 
 namespace orb
 {
-
-template<typename EventType>
-class event_dispatcher
-{
-public:
-	using event_t = EventType;
-	using subscription_ptr = std::shared_ptr<uint64_t>;
-
-	event_dispatcher() = default;
-	virtual ~event_dispatcher() = default;
-
-	template<typename Functor>
-	[[nodiscard]] subscription_ptr subscribe(Functor&& functor)
+	template< typename EventType >
+	class event_dispatcher
 	{
-		static uint64_t uniqueId = 0;
-		m_subscribers.push_back(subscriber{++uniqueId, std::forward<Functor>(functor)});
-		subscription_ptr sub(&m_subscribers.back().id, [this](uint64_t* id){ unsubscribe(*id); });
-		return sub;
-	}
+	public:
+		using event_t          = EventType;
+		using subscription_ptr = std::shared_ptr< uint64_t >;
 
-	void queue_event(const EventType& et)
-	{
-		m_mutex.lock();
-		m_eventQueue.push_back(et);
-		m_mutex.unlock();
-	}
+		event_dispatcher() = default;
+		virtual ~event_dispatcher() = default;
 
-	void send_events()
-	{
-		for (const EventType& et : m_eventQueue)
-			for (subscriber& sub : m_subscribers)
-				sub.functor(et);
+		template< typename Functor >
+		[ [ nodiscard ] ] subscription_ptr subscribe( Functor&& functor )
+		{
+			static uint64_t uniqueId = 0;
+			m_subscribers.push_back( subscriber{ ++uniqueId, std::forward< Functor >( functor ) } );
+			subscription_ptr sub( &m_subscribers.back().id, [ this ]( uint64_t* id ) { unsubscribe( *id ); } );
+			return sub;
+		}
 
-		m_eventQueue.clear();
-	}
+		void queue_event( const EventType& et )
+		{
+			m_mutex.lock();
+			m_eventQueue.push_back( et );
+			m_mutex.unlock();
+		}
 
-private:
-	struct subscriber
-	{
-		uint64_t id;
-		std::function<void(const EventType&)> functor;
+		void send_events()
+		{
+			for( const EventType& et : m_eventQueue )
+				for( subscriber& sub : m_subscribers )
+					sub.functor( et );
+
+			m_eventQueue.clear();
+		}
+
+	private:
+		struct subscriber
+		{
+			uint64_t id;
+			std::function< void( const EventType& ) > functor;
+		};
+
+		void unsubscribe( uint64_t id )
+		{
+			auto it = std::find_if( m_subscribers.begin(), m_subscribers.end(), [ id ]( const subscriber& sub ) { return sub.id == id; } );
+			if( it == m_subscribers.end() )
+				return;
+
+			m_subscribers.erase( it );
+		}
+
+		std::list< subscriber >  m_subscribers;
+		std::vector< EventType > m_eventQueue;
+		std::mutex               m_mutex;
 	};
-
-	void unsubscribe(uint64_t id)
-	{
-		auto it = std::find_if(m_subscribers.begin(), m_subscribers.end(), [id](const subscriber& sub) { return sub.id == id; });
-		if (it == m_subscribers.end())
-			return;
-
-		m_subscribers.erase(it);
-	}
-
-	std::list<subscriber> m_subscribers;
-	std::vector<EventType> m_eventQueue;
-	std::mutex m_mutex;
-};
-
 }
