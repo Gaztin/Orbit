@@ -17,24 +17,33 @@
 
 #pragma once
 
-#include <memory>
+#include "orbit/core/application.h"
 
-#include "orbit/core/android_app.h"
-#include "orbit/core.h"
+#if defined( ORB_OS_WINDOWS )
 
-namespace orb
+#include <Windows.h>
+
+INT WINAPI WinMain( HINSTANCE, HINSTANCE, PSTR, INT )
 {
-	class application;
-
-	namespace platform
-	{
-
-	#if defined( ORB_OS_WINDOWS ) || defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS ) || defined( ORB_OS_IOS )
-		using argv_t = std::pair< int, char** >;
-	#elif defined( ORB_OS_ANDROID )
-		using argv_t = android_app*;
-	#endif
-
-		extern ORB_API_CORE void main( argv_t argv, std::shared_ptr< application >( *ctor )() );
-	}
+	orb::application_base::run_instance();
+	return 0;
 }
+
+#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS ) || defined( ORB_OS_IOS )
+
+int main( int, char*[] )
+{
+	orb::application_base::run_instance();
+	return 0;
+}
+
+#elif defined( ORB_OS_ANDROID )
+#  include "orbit/core/android_app.h"
+
+void android_main( android_app* app )
+{
+	orb::android_only::app = app;
+	orb::application_base::run_instance();
+}
+
+#endif

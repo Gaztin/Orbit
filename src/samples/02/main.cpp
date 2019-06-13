@@ -1,6 +1,7 @@
 #include <ctime>
 #include <map>
 
+#include <orbit/core/application.h>
 #include <orbit/core/log.h>
 #include <orbit/core/window.h>
 #include <orbit/core/utility.h>
@@ -111,38 +112,30 @@ void bench_vertex_buffer_create( orb::graphics_api api, size_t count, size_t bin
 	}
 }
 
-int main( int /*argc*/, char* /*argv*/[] )
+class benchmarking : public orb::application< benchmarking >
 {
-	prepare();
-
-	/* Window benchmarks. */
-	orb::log_info( "[__Window__]" );
-	bench_window_create( 5 );
-
-	/* Graphics benchmarks. */
-	for( orb::graphics_api api : {orb::graphics_api::OpenGL_4_1, orb::graphics_api::Direct3D_11} )
+public:
+	benchmarking()
 	{
-		orb::log_info( orb::format( "[__%s__]", apiNames.at( api ).c_str() ) );
-		bench_context_create( api, 10 );
-		bench_context_clear( api, 1000 );
-		bench_vertex_buffer_create( api, 1000, 100 );
+		prepare();
+
+		/* Window benchmarks. */
+		orb::log_info( "[__Window__]" );
+		bench_window_create( 5 );
+
+		/* Graphics benchmarks. */
+		for( orb::graphics_api api : {orb::graphics_api::OpenGL_4_1, orb::graphics_api::Direct3D_11} )
+		{
+			orb::log_info( orb::format( "[__%s__]", apiNames.at( api ).c_str() ) );
+			bench_context_create( api, 10 );
+			bench_context_clear( api, 1000 );
+			bench_vertex_buffer_create( api, 1000, 100 );
+		}
+
+	#if !defined( ORB_OS_ANDROID )
+		getc( stdin );
+	#endif
 	}
+};
 
-#if !defined( ORB_OS_ANDROID )
-	getc( stdin );
-#endif
-
-	return 0;
-}
-
-#if defined( ORB_OS_ANDROID )
-
-#  include <orbit/core/android_app.h>
-
-void android_main( android_app* app )
-{
-	orb::android_only::app = app;
-	main( 0, { } );
-}
-
-#endif
+#include <orbit/core/entry_point.h>

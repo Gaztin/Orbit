@@ -15,43 +15,56 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "main.h"
+#include "application.h"
 
-#include <UIKit/UIKit.h>
-
-#include "orbit/core/application.h"
-#include "orbit/core/log.h"
-#include "orbit/core/utility.h"
+#if defined( ORB_OS_IOS )
+#  include <UIKit/UIKit.h>
 
 @interface ORBAppDelegate : UIResponder< UIApplicationDelegate >
-@property ( atomic ) std::shared_ptr< orb::application > app;
+@property ( atomic ) std::shared_ptr< orb::application_base > app;
 @end
+#endif
 
 namespace orb
 {
-	namespace platform
-	{
-		static std::shared_ptr<application>(*Ctor)();
+	std::shared_ptr< void >( *application_base::s_initializer )() = nullptr;
+	std::shared_ptr< application_base > application_base::s_instance;
 
-		void main( platform::argv_t argv, std::shared_ptr< application >( *ctor )() )
+	void application_base::run_instance()
+	{
+		if( s_instance || !s_initializer )
+			return;
+
+		s_instance = std::static_pointer_cast< application_base >( s_initializer() );
+
+	#if defined( ORB_OS_IOS )
+
+		@autoreleasepool
 		{
-			Ctor = ctor;
-			@autoreleasepool
-			{
-				UIApplicationMain( argv.first, argv.second, nil, NSStringFromClass( [ ORBAppDelegate class ] ) );
-			}
+			UIApplicationMain( 0, nil, nil, NSStringFromClass( [ ORBAppDelegate class ] ) );
 		}
+
+	#else
+
+		while( *s_instance )
+		{
+			s_instance->frame();
+		}
+
+	#endif
+
 	}
 }
 
+#if defined( ORB_OS_IOS )
+#  include "orbit/core/log.h"
+
 @implementation ORBAppDelegate
 
-- ( BOOL )application:( UIApplication* )application didFinishLaunchingWithOptions:( NSDictionary* )launchOptions
+-( BOOL )application:( UIApplication* )application didFinishLaunchingWithOptions:( NSDictionary* )launchOptions
 {
-	( void )launchOptions;
-
 	orb::log_info( "didFinishLaunchingWithOptions()" );
-	_app = orb::platform::Ctor();
+	_app = application_base::s_instance;
 
 	CADisplayLink* displayLink = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( frame: ) ];
 	[ displayLink addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
@@ -59,47 +72,38 @@ namespace orb
 	return YES;
 }
 
-- ( void )applicationWillResignActive:( UIApplication* )application
+-( void )applicationWillResignActive:( UIApplication* )application
 {
-	( void )application;
-
 	orb::log_info( "applicationWillResignActive()" );
 }
 
-- ( void )applicationDidEnterBackground:( UIApplication* )application
+-( void )applicationDidEnterBackground:( UIApplication* )application
 {
-	( void )application;
-
 	orb::log_info( "applicationDidEnterBackground()" );
 }
 
-- ( void )applicationWillEnterForeground:( UIApplication* )application
+-( void )applicationWillEnterForeground:( UIApplication* )application
 {
-	( void )application;
-
 	orb::log_info( "applicationWillEnterForeground()" );
 }
 
-- ( void )applicationDidBecomeActive:( UIApplication* )application
+-( void )applicationDidBecomeActive:( UIApplication* )application
 {
-	( void )application;
-	
 	orb::log_info( "applicationDidBecomeActive()" );
 }
 
-- ( void )applicationWillTerminate:( UIApplication* )application
+-( void )applicationWillTerminate:( UIApplication* )application
 {
-	( void )application;
-
 	orb::log_info( "applicationWillTerminate()" );
-	_app.reset();
+	_app->reset();
 }
 
-- ( void )frame:( CADisplayLink* )displayLink
+-( void )frame:( CADisplayLink* )displayLink
 {
-	( void )displayLink;
-
 	_app->frame();
 }
 
 @end
+
+#endif
+

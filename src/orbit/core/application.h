@@ -16,31 +16,34 @@
  */
 
 #pragma once
+
+#include <memory>
 #include <type_traits>
 
-#include "orbit/core/platform/main.h"
+#include "orbit/core.h"
 
 namespace orb
 {
-	class application
+	class ORB_API_CORE application_base
 	{
 	public:
-		application() = default;
-		virtual ~application() = default;
+		application_base() = default;
+		virtual ~application_base() = default;
 
 		virtual void frame() { }
-		virtual operator bool() const { return true; };
+		virtual operator bool() const { return false; };
 
-		template<typename T,
-			typename = typename std::enable_if_t< std::is_base_of_v< application, T > > >
-		static void main( platform::argv_t argv )
-		{
-			platform::main( argv,
-				[]() -> std::shared_ptr< application >
-				{
-					return std::make_shared< T >();
-				}
-			);
-		}
+		static void run_instance();
+
+	protected:
+		static std::shared_ptr< void >( *s_initializer )();
+		static std::shared_ptr< application_base > s_instance;
+	};
+
+	template< typename Derived >
+	class application : private application_base
+	{
+	public:
+		static inline int s_init = [] { s_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 0; }();
 	};
 }

@@ -4,6 +4,7 @@
 #include <orbit/core/events/window_event.h>
 #include <orbit/core/application.h>
 #include <orbit/core/asset.h>
+#include <orbit/core/entry_point.h>
 #include <orbit/core/log.h>
 #include <orbit/core/utility.h>
 #include <orbit/core/window.h>
@@ -14,7 +15,7 @@
 #include <orbit/graphics/shader.h>
 #include <orbit/graphics/vertex_buffer.h>
 
-class sample_app : public orb::application
+class sample_app : public orb::application< sample_app >
 {
 public:
 	sample_app();
@@ -154,19 +155,3 @@ void sample_app::on_window_event( const orb::window_event& e )
 			break;
 	}
 }
-
-#if defined( ORB_OS_ANDROID )
-
-void android_main( android_app* app )
-{
-	orb::application::main< sample_app >( app );
-}
-
-#else
-
-int main( int argc, char* argv[] )
-{
-	orb::application::main< sample_app >( std::make_pair( argc, argv ) );
-}
-
-#endif
