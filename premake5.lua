@@ -38,6 +38,7 @@ local function base_config()
 	warnings          ("Extra")
 	rtti              ("Off")
 	exceptionhandling ("Off")
+	flags             {"MultiProcessorCompile"}
 	filter{"configurations:Debug"}
 	optimize          ("Off")
 	symbols           ("On")
