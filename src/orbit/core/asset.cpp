@@ -19,24 +19,103 @@
 
 #include <algorithm>
 
-#include "orbit/core/platform/asset_handle.h"
+#if defined( ORB_OS_WINDOWS )
+#include <Windows.h>
+#elif defined( ORB_OS_ANDROID )
+#include <android/asset_manager.h>
+#endif
 
 namespace orb
 {
-	asset::asset( const std::string& path )
+	asset::asset( std::string_view path )
 	{
-		platform::asset_handle_t ah = { };
-		ah = platform::open_asset( path );
-		if( !ah )
-			return;
 
-		const size_t sz = platform::get_asset_size( ah );
-		if( sz > 0 )
+	#if defined( ORB_OS_WINDOWS )
+
+		HANDLE handle = CreateFileA( path.data(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+		if( handle != INVALID_HANDLE_VALUE )
 		{
-			m_data.resize( sz );
-			platform::read_asset_data( ah, m_data.data(), m_data.size() );
+			do
+			{
+				LARGE_INTEGER fileSize;
+				if( GetFileSizeEx( handle, &fileSize ) == 0 )
+					break;
+
+				m_data.resize( static_cast< size_t >( fileSize.QuadPart ) );
+				ReadFile( handle, &m_data[ 0 ], m_data.size(), NULL, NULL );
+
+			} while( false );
+
+			CloseHandle( handle );
 		}
 
-		platform::close_asset( ah );
+	#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS )
+
+		int fd = open( path.data(), O_RDONLY );
+		if( fd >= 0 )
+		{
+			do
+			{
+				lseek( fd, 0, SEEK_SET );
+				const off_t len = lseek( fd, 0, SEEK_END );
+				lseek( fd, 0, SEEK_SET );
+				if( fileSize < 0 )
+					break;
+
+				m_data.resize( static_cast< size_t >( len ) );
+				read( fd, &m_data[ 0 ], m_data.size() );
+
+			} while( false );
+
+			close( fd );
+		}
+
+	#elif defined( ORB_OS_ANDROID )
+
+		AAsset* aAsset = AAssetManager_open( android_only::app->activity->assetManager, path.data(), AASSET_MODE_BUFFER );
+		if( aAsset != nullptr )
+		{
+			do
+			{
+				const off64_t len = AAsset_getLength64( aAsset );
+				if( len < 0 )
+					break;
+
+				m_data.resize( static_cast< size_t >( len ) );
+				AAsset_read( aAsset, &m_data[ 0 ], m_data.size() );
+
+			} while( false );
+
+			AAsset_close( aAsset );
+		}
+
+	#elif defined( ORB_OS_IOS )
+
+		NSString* nsPath         = [ NSString stringWithUTF8String : path.data() ];
+		NSString* nsBaseName     = [ nsPath stringByDeletingPathExtension ];
+		NSString* nsExtension    = [ nsPath pathExtension ];
+		NSString* nsResourcePath = [ [ NSBundle mainBundle ] pathForResource : resource ofType : type inDirectory : @"assets" ];
+
+		int fd = open( [ resPath UTF8String ], O_RDONLY );
+		if( fd >= 0 )
+		{
+			do
+			{
+				lseek( fd, 0, SEEK_SET );
+				const off_t len = lseek( fd, 0, SEEK_END );
+				lseek( fd, 0, SEEK_SET );
+				if( len < 0 )
+					break;
+
+				m_data.resize( static_cast< size_t >( len ) );
+				read( fd, &m_data[ 0 ], m_data.size() );
+
+			} while( false );
+
+			close( fd );
+		}
+
+	#endif
+
 	}
 }
