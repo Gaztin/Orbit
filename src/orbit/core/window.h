@@ -17,34 +17,38 @@
 
 #pragma once
 
-#include <string>
+#include <string_view>
 
 #include "orbit/core/event_dispatcher.h"
 #include "orbit/core/events/window_event.h"
-#include "orbit/core/platform/window_handle.h"
+#include "orbit/core/internal/window_impl.h"
 
 namespace orb
 {
 	class ORB_API_CORE window : public event_dispatcher< window_event >
 	{
 	public:
-		window( uint32_t width, uint32_t height );
+		window( uint32_t width, uint32_t height, window_impl_type implType = DefaultWindowImpl );
 
 		void poll_events();
-		void set_title( const std::string& title );
+		void set_title( std::string_view title );
 		void set_pos( uint32_t x, uint32_t y );
 		void set_size( uint32_t width, uint32_t height );
 		void show();
 		void hide();
-
 		void close() { m_open = false; }
 
 		operator bool() const { return m_open; }
 
-		const platform::window_handle& get_handle() const { return m_handle; }
+		window_impl_storage_t* get_storage_ptr() { return &m_storage; }
 
 	private:
-		platform::window_handle m_handle;
-		bool                    m_open;
+		window_impl_storage_t m_storage;
+		bool                  m_open;
+
+	#if ( __ORB_NUM_WINDOW_IMPLS > 1 )
+		window_impl_type    m_implType;
+	#endif
+
 	};
 }
