@@ -21,126 +21,120 @@
 
 #include "orbit/core.h"
 
-#if ( __has_include( <Windows.h> ) )
-#define __ORB_HAS_WINDOW_IMPL_WIN32 1
+#if defined( ORB_OS_WINDOWS )
+#  define __ORB_HAS_WINDOW_IMPL_WIN32 1
 #else
-#define __ORB_HAS_WINDOW_IMPL_WIN32 0
+#  define __ORB_HAS_WINDOW_IMPL_WIN32 0
 #endif
 
 #if ( __has_include( <X11/Xlib.h> ) )
-#define __ORB_HAS_WINDOW_IMPL_X11 1
+#  define __ORB_HAS_WINDOW_IMPL_X11 1
 #else
-#define __ORB_HAS_WINDOW_IMPL_X11 0
+#  define __ORB_HAS_WINDOW_IMPL_X11 0
 #endif
 
 #if ( __has_include( <wayland-client.h> ) )
-#define __ORB_HAS_WINDOW_IMPL_WAYLAND 1
+#  define __ORB_HAS_WINDOW_IMPL_WAYLAND 1
 #else
-#define __ORB_HAS_WINDOW_IMPL_WAYLAND 0
+#  define __ORB_HAS_WINDOW_IMPL_WAYLAND 0
 #endif
 
 #if ( __has_include( <Cocoa/Cocoa.h> ) )
-#define __ORB_HAS_WINDOW_IMPL_COCOA 1
+#  define __ORB_HAS_WINDOW_IMPL_COCOA 1
 #else
-#define __ORB_HAS_WINDOW_IMPL_COCOA 0
+#  define __ORB_HAS_WINDOW_IMPL_COCOA 0
 #endif
 
 #if defined( ORB_OS_ANDROID )
-#define __ORB_HAS_WINDOW_IMPL_ANDROID 1
+#  define __ORB_HAS_WINDOW_IMPL_ANDROID 1
 #else
-#define __ORB_HAS_WINDOW_IMPL_ANDROID 0
+#  define __ORB_HAS_WINDOW_IMPL_ANDROID 0
 #endif
 
 #if ( __has_include( <UIKit/UIKit.h> ) )
-#define __ORB_HAS_WINDOW_IMPL_UIKIT 1
+#  define __ORB_HAS_WINDOW_IMPL_UIKIT 1
 #else
-#define __ORB_HAS_WINDOW_IMPL_UIKIT 0
+#  define __ORB_HAS_WINDOW_IMPL_UIKIT 0
+#endif
+
+/* Necessary includes */
+#if __ORB_HAS_WINDOW_IMPL_WIN32
+#  include <Windows.h>
+#endif
+#if __ORB_HAS_WINDOW_IMPL_X11
+#  include <X11/Xlib.h>
+#endif
+#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+#  include <wayland-client.h>
+#endif
+#if( __ORB_HAS_WINDOW_IMPL_COCOA && defined( __OBJC__ ) )
+#  include <Cocoa/Cocoa.h>
+#endif
+#if __ORB_HAS_WINDOW_IMPL_ANDROID
+#  include <android/sensor.h>
 #endif
 
 namespace orb
 {
-	struct __window_impl_null
-	{
-	};
-
-#if __ORB_HAS_WINDOW_IMPL_WIN32
-#  include <Windows.h>
-	struct __window_impl_win32
-	{
-		HWND hwnd;
-	};
-#endif
-
-#if __ORB_HAS_WINDOW_IMPL_X11
-#  include <X11/Xlib.h>
-	struct __window_impl_x11
-	{
-		Display* display;
-		Window   window;
-	};
-#endif
-
-#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-#  include <wayland-client.h>
-	struct __window_impl_wayland
-	{
-		wl_surface* surface;
-	};
-#endif
-
-#if __ORB_HAS_WINDOW_IMPL_COCOA
-#  ifdef __OBJC__
-#    include <Cocoa/Cocoa.h>
-#  endif
-	struct __window_impl_cocoa
-	{
-		void* nsWindow;
-		void* delegate;
-	};
-#endif
-
-#if __ORB_HAS_WINDOW_IMPL_ANDROID
-#  include <android/sensor.h>
-	struct __window_impl_android
-	{
-		ASensorManager*    sensorManager;
-		const ASensor*     accelerometerSensor;
-		ASensorEventQueue* sensorEventQueue;
-	};
-#endif
-
-#if __ORB_HAS_WINDOW_IMPL_UIKIT
-	struct __window_impl_uikit
-	{
-		void* uiWindow;
-	};
-#endif
 
 #define __ORB_NUM_WINDOW_IMPLS ( __ORB_HAS_WINDOW_IMPL_WIN32 + __ORB_HAS_WINDOW_IMPL_X11     + \
                                  __ORB_HAS_WINDOW_IMPL_X11   + __ORB_HAS_WINDOW_IMPL_WAYLAND + \
                                  __ORB_HAS_WINDOW_IMPL_COCOA + __ORB_HAS_WINDOW_IMPL_ANDROID + \
                                  __ORB_HAS_WINDOW_IMPL_UIKIT )
 
-	using window_impl_storage_t = std::aligned_union_t< ( __ORB_NUM_WINDOW_IMPLS + 1 ), __window_impl_null
+#if( __ORB_NUM_WINDOW_IMPLS > 1 )
+#  define __ORB_STORAGE_CLASS_TYPE struct
+#else
+#  define __ORB_STORAGE_CLASS_TYPE union
+#endif
+
+	__ORB_STORAGE_CLASS_TYPE window_impl_storage
+	{
+		struct
+		{
+		} null;
+
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
-		, __window_impl_win32
+		struct
+		{
+			HWND hwnd;
+		} win32;
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_X11
-		, __window_impl_x11
+		struct
+		{
+			Display* display;
+			Window   window;
+		} x11;
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-		, __window_impl_wayland
+		struct
+		{
+			wl_surface* surface;
+		} wl;
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-		, __window_impl_cocoa
+		struct
+		{
+			void* nsWindow;
+			void* delegate;
+		} cocoa;
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-		, __window_impl_android
+		struct
+		{
+			ASensorManager*    sensorManager;
+			const ASensor*     accelerometerSensor;
+			ASensorEventQueue* sensorEventQueue;
+		} android;
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-		, __window_impl_uikit
+		struct
+		{
+			void* uiWindow;
+		} uikit;
 	#endif
-	>;
+	};
 
 	enum class window_impl_type
 	{

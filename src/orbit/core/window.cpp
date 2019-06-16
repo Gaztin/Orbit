@@ -29,7 +29,8 @@
 
 #if __ORB_HAS_WINDOW_IMPL_COCOA
 @interface ORBCocoaWindowDelegate : NSObject< NSWindowDelegate >
-@property orb::window* windowPtr;
+@property orb::window*              windowPtr;
+@property orb::window_impl_storage* storage;
 @end
 #endif
 
@@ -55,7 +56,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 			MAGIC_CASE( window_impl_type::Win32 )
 			{
-				auto             impl        = reinterpret_cast< __window_impl_win32* >( &m_storage );
+				auto             impl        = &( m_storage.win32 = { } );
 				constexpr LPCSTR ClassName   = "Orbit";
 				static ATOM      windowClass = [ & ]
 				{
@@ -131,7 +132,7 @@ namespace orb
 			MAGIC_CASE( window_impl_type::X11 )
 			{
 				/* Open display */
-				auto impl     = reinterpret_cast< __window_impl_x11* >( &m_storage );
+				auto impl     = &( m_storage.x11 = { } );
 				impl->display = XOpenDisplay( nullptr );
 
 				/* Create window */
@@ -155,6 +156,8 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
 			MAGIC_CASE( window_impl_type::Wayland )
 			{
+				m_storage.wl = { };
+
 				MAGIC_BREAK;
 			}
 	#endif
@@ -162,7 +165,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
 			MAGIC_CASE( window_impl_type::Cocoa )
 			{
-				auto               impl      = reinterpret_cast< __window_impl_cocoa* >( &m_storage );
+				auto               impl     = &( m_storage.cocoa = { } );
 				NSRect             frame     = NSMakeRect( 0.0f, 0.0f, width, height );
 				NSWindowStyleMask  styleMask = ( NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable );
 				NSBackingStoreType backing   = ( NSBackingStoreBuffered );
@@ -175,6 +178,7 @@ namespace orb
 				impl->delegate = [ WindowDelegate alloc ];
 				[ ( NSWindow* )impl->nsWindow setDelegate:( ORBCocoaWindowDelegate* )impl->delegate ];
 				[ ( ORBCocoaWindowDelegate* )impl->delegate setWindowPtr:this ];
+				[ ( ORBCocoaWindowDelegate* )impl->delegate setStorage:&m_storage ];
 
 				MAGIC_BREAK;
 			}
@@ -242,7 +246,7 @@ namespace orb
 
 				android_only::app->onInputEvent = onInput;
 
-				auto impl                 = reinterpret_cast< __window_impl_android* >( &m_storage );
+				auto impl                 = &( m_storage.android = { } );
 				impl->sensorManager       = ASensorManager_getInstance();
 				impl->accelerometerSensor = ASensorManager_getDefaultSensor( impl->sensorManager, ASENSOR_TYPE_ACCELEROMETER );
 				impl->sensorEventQueue    = ASensorManager_createEventQueue( impl->sensorManager, android_only::app->looper, LOOPER_ID_USER, nullptr, nullptr );
@@ -276,7 +280,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
 			MAGIC_CASE( window_impl_type::UiKit )
 			{
-				auto impl = reinterpret_cast< __window_impl_uikit* >( &m_storage );
+				auto impl = &( m_storage.uikit = { } );
 
 				/* Initialize window */
 				impl->uiWindow = [ ORBWindow alloc ];
@@ -303,9 +307,8 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 			MAGIC_CASE( window_impl_type::Win32 )
 			{
-				auto impl = reinterpret_cast< __window_impl_win32* >( &m_storage );
 				MSG  msg;
-				while( PeekMessageA( &msg, impl->hwnd, 0, 0, PM_REMOVE ) )
+				while( PeekMessageA( &msg, m_storage.win32.hwnd, 0, 0, PM_REMOVE ) )
 				{
 					TranslateMessage( &msg );
 					DispatchMessageA( &msg );
@@ -317,11 +320,10 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_X11
 			MAGIC_CASE( window_impl_type::X11 )
 			{
-				auto impl = reinterpret_cast< __window_impl_x11* >( &m_storage );
-				while( XPending( impl->display ) )
+				while( XPending( m_storage.x11.display ) )
 				{
 					XEvent xevent;
-					XNextEvent( impl->display, &xevent );
+					XNextEvent( m_storage.x11.display, &xevent );
 
 					switch( xevent.type )
 					{
@@ -391,11 +393,10 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
 			MAGIC_CASE( window_impl_type::Cocoa )
 			{
-				auto     impl    = reinterpret_cast< __window_impl_cocoa* >( &m_storage );
 				NSEvent* nsEvent;
-				while( ( nsEvent = [ ( const NSWindow* )impl->nsWindow nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
+				while( ( nsEvent = [ ( const NSWindow* )m_storage.cocoa.nsWindow nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
 				{
-					[ ( const NSWindow* )impl->nsWindow sendEvent:nsEvent ];
+					[ ( const NSWindow* )m_storage.cocoa.nsWindow sendEvent:nsEvent ];
 				}
 
 				MAGIC_BREAK;
@@ -435,8 +436,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 			MAGIC_CASE( window_impl_type::Win32 )
 			{
-				auto impl = reinterpret_cast< __window_impl_win32* >( &m_storage );
-				SetWindowTextA( impl->hwnd, title.data() );
+				SetWindowTextA( m_storage.win32.hwnd, title.data() );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -444,8 +444,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_X11
 			MAGIC_CASE( window_impl_type::X11 )
 			{
-				auto impl = reinterpret_cast< __window_impl_x11* >( &m_storage );
-				XStoreName( impl->display, impl->window, title.data() );
+				XStoreName( m_storage.x11.display, m_storage.x11.window, title.data() );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -460,9 +459,8 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
 			MAGIC_CASE( window_impl_type::Cocoa )
 			{
-				auto      impl    = reinterpret_cast< __window_impl_cocoa* >( &m_storage );
 				NSString* nsTitle = [ NSString stringWithUTF8String:title.data() ];
-				[ ( const NSWindow* )impl->nsWindow setTitle:nsTitle ];
+				[ ( const NSWindow* )m_storage.cocoa.nsWindow setTitle:nsTitle ];
 				[ nsTitle release ];
 
 				MAGIC_BREAK;
@@ -493,10 +491,9 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 			MAGIC_CASE( window_impl_type::Win32 )
 			{
-				auto impl = reinterpret_cast< __window_impl_win32* >( &m_storage );
 				RECT rect{ };
-				GetWindowRect( impl->hwnd, &rect );
-				MoveWindow( impl->hwnd, x, y, ( rect.right - rect.left ), ( rect.bottom - rect.top ), FALSE );
+				GetWindowRect( m_storage.win32.hwnd, &rect );
+				MoveWindow( m_storage.win32.hwnd, x, y, ( rect.right - rect.left ), ( rect.bottom - rect.top ), FALSE );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -504,8 +501,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_X11
 			MAGIC_CASE( window_impl_type::X11 )
 			{
-				auto impl = reinterpret_cast< __window_impl_x11* >( &m_storage );
-				XMoveWindow( impl->display, impl->window, x, y );
+				XMoveWindow( m_storage.x11.display, m_storage.x11.window, x, y );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -520,11 +516,10 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
 			MAGIC_CASE( window_impl_type::Cocoa )
 			{
-				auto   impl    = reinterpret_cast< __window_impl_cocoa* >( &m_storage );
-				NSRect frame   = [ ( const NSWindow* )impl->nsWindow frame ];
+				NSRect frame   = [ ( const NSWindow* )m_storage.cocoa.nsWindow frame ];
 				frame.origin.x = x;
 				frame.origin.y = y;
-				[ ( const NSWindow* )impl->nsWindow setFrame:frame display:YES ];
+				[ ( const NSWindow* )m_storage.cocoa.nsWindow setFrame:frame display:YES ];
 
 				MAGIC_BREAK;
 			}
@@ -553,10 +548,9 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 			MAGIC_CASE( window_impl_type::Win32 )
 			{
-				auto impl = reinterpret_cast< __window_impl_win32* >( &m_storage );
 				RECT rect{ };
-				GetWindowRect( impl->hwnd, &rect );
-				MoveWindow( impl->hwnd, rect.left, rect.top, static_cast< int >( width ), static_cast< int >( height ), FALSE );
+				GetWindowRect( m_storage.win32.hwnd, &rect );
+				MoveWindow( m_storage.win32.hwnd, rect.left, rect.top, static_cast< int >( width ), static_cast< int >( height ), FALSE );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -564,8 +558,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_X11
 			MAGIC_CASE( window_impl_type::X11 )
 			{
-				auto impl = reinterpret_cast< __window_impl_x11* >( &m_storage );
-				XResizeWindow( impl->display, impl->window, width, height );
+				XResizeWindow( m_storage.x11.display, m_storage.x11.window, width, height );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -580,11 +573,10 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
 			MAGIC_CASE( window_impl_type::Cocoa )
 			{
-				auto   impl       = reinterpret_cast< __window_impl_cocoa* >( &m_storage );
-				NSRect frame      = [ ( const NSWindow* )impl->nsWindow frame ];
+				NSRect frame      = [ ( const NSWindow* )m_storage.cocoa.nsWindow frame ];
 				frame.size.width  = width;
 				frame.size.height = height;
-				[ ( const NSWindow* )impl->nsWindow setFrame:frame display:YES ];
+				[ ( const NSWindow* )m_storage.cocoa.nsWindow setFrame:frame display:YES ];
 
 				MAGIC_BREAK;
 			}
@@ -613,8 +605,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 			MAGIC_CASE( window_impl_type::Win32 )
 			{
-				auto impl = reinterpret_cast< __window_impl_win32* >( &m_storage );
-				ShowWindow( impl->hwnd, SW_SHOW );
+				ShowWindow( m_storage.win32.hwnd, SW_SHOW );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -622,8 +613,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_X11
 			MAGIC_CASE( window_impl_type::X11 )
 			{
-				auto impl = reinterpret_cast< __window_impl_x11* >( &m_storage );
-				XMapWindow( impl->display, impl->window );
+				XMapWindow( m_storage.x11.display, m_storage.x11.window );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -638,8 +628,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
 			MAGIC_CASE( window_impl_type::Cocoa )
 			{
-				auto impl = reinterpret_cast< __window_impl_cocoa* >( &m_storage );
-				[ ( const NSWindow* )impl->nsWindow setIsVisible:YES ];
+				[ ( const NSWindow* )m_storage.cocoa.nsWindow setIsVisible:YES ];
 
 				MAGIC_BREAK;
 			}
@@ -656,8 +645,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
 			MAGIC_CASE( window_impl_type::UiKit )
 			{
-				auto impl = reinterpret_cast< __window_impl_uikit* >( &m_storage );
-				[ ( ORBUiKitWindow* )impl->uiWindow setHidden:NO ];
+				[ ( ORBUiKitWindow* )m_storage.uikit.uiWindow setHidden:NO ];
 
 				MAGIC_BREAK;
 			}
@@ -672,8 +660,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 			MAGIC_CASE( window_impl_type::Win32 )
 			{
-				auto impl = reinterpret_cast< __window_impl_win32* >( &m_storage );
-				ShowWindow( impl->hwnd, SW_HIDE );
+				ShowWindow( m_storage.win32.hwnd, SW_HIDE );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -681,8 +668,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_X11
 			MAGIC_CASE( window_impl_type::X11 )
 			{
-				auto impl = reinterpret_cast< __window_impl_x11* >( &m_storage );
-				XUnmapWindow( impl->display, impl->window );
+				XUnmapWindow( m_storage.x11.display, m_storage.x11.window );
 				MAGIC_BREAK;
 			}
 	#endif
@@ -697,8 +683,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
 			MAGIC_CASE( window_impl_type::Cocoa )
 			{
-				auto impl = reinterpret_cast< __window_impl_cocoa* >( &m_storage );
-				[ ( const NSWindow* )impl->nsWindow setIsVisible:NO ];
+				[ ( const NSWindow* )m_storage.cocoa.nsWindow setIsVisible:NO ];
 
 				MAGIC_BREAK;
 			}
@@ -715,8 +700,7 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
 			MAGIC_CASE( window_impl_type::UiKit )
 			{
-				auto impl = reinterpret_cast< __window_impl_uikit* >( &m_storage );
-				[ ( ORBUiKitWindow* )impl->uiWindow setHidden:YES ];
+				[ ( ORBUiKitWindow* )m_storage.uikit.uiWindow setHidden:YES ];
 
 				MAGIC_BREAK;
 			}
@@ -736,8 +720,7 @@ namespace orb
 
 -( void )windowDidMove:( NSNotification* )notification
 {
-	auto          impl  = reinterpret_cast< __window_impl_cocoa* >( _windowPtr->get_storage_ptr() );
-	const CGPoint point = ( ( const NSWindow* )impl->nsWindow ).frame.origin;
+	const CGPoint point = ( ( const NSWindow* )_storage.uikit.nsWindow ).frame.origin;
 
 	orb::window_event e{ };
 	e.type        = orb::window_event::Move;
