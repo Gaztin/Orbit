@@ -82,18 +82,13 @@ namespace orb
                                  __ORB_HAS_WINDOW_IMPL_COCOA + __ORB_HAS_WINDOW_IMPL_ANDROID + \
                                  __ORB_HAS_WINDOW_IMPL_UIKIT )
 
-#if( __ORB_NUM_WINDOW_IMPLS > 1 )
-#  define __ORB_WINDOW_STORAGE_CLASS_TYPE struct
-#else
-#  define __ORB_WINDOW_STORAGE_CLASS_TYPE union
-#endif
-
-	__ORB_WINDOW_STORAGE_CLASS_TYPE window_impl_storage
+	union window_impl_storage
 	{
+		window_impl_storage() : null{ } { }
+
 		struct
 		{
 		} null;
-
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 		struct
 		{
