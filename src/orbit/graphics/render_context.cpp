@@ -20,10 +20,9 @@
 #include <array>
 
 #include "orbit/core/log.h"
+#include "orbit/core/memory.h"
 #include "orbit/core/window.h"
 #include "orbit/core/utility.h"
-#include "orbit/graphics/platform/d3d11/render_context_d3d11.h"
-#include "orbit/graphics/platform/opengl/render_context_gl.h"
 
 #if( __ORB_NUM_RENDER_CONTEXT_IMPLS > 1 )
 #  define RENDER_CONTEXT_IMPL_SWITCH switch( m_implType )
@@ -45,6 +44,11 @@
 #  define WINDOW_IMPL_SWITCH( VAR )
 #  define WINDOW_IMPL_CASE( TYPE )
 #  define WINDOW_IMPL_BREAK
+#endif
+
+#if __ORB_HAS_WINDOW_IMPL_UIKIT
+@interface ORBGLKViewDelegate : UIResponder< GLKViewDelegate >
+@end
 #endif
 
 namespace orb
@@ -155,30 +159,252 @@ namespace orb
 				#if __ORB_HAS_WINDOW_IMPL_X11
 					WINDOW_IMPL_CASE( window_impl_type::X11 )
 					{
+						auto impl = &( m_storage.opengl.glx = { } );
+						impl->parentWindowImpl = parentWindow.get_impl_ptr();
+						impl->gc               = XCreateGC( impl->parentWindowImpl->display, impl->parentWindowImpl->window, 0, nullptr );
+						impl->glxContext       = [ & ]
+						{
+							/* Create render context */
+							{
+								int screen = DefaultScreen( impl->parentWindowImpl->display );
+								int attribs[] =
+								{
+									GLX_X_RENDERABLE,  True,
+									GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+									GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+									GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
+									GLX_RED_SIZE,      8,
+									GLX_GREEN_SIZE,    8,
+									GLX_BLUE_SIZE,     8,
+									GLX_ALPHA_SIZE,    8,
+									GLX_DEPTH_SIZE,    24,
+									GLX_STENCIL_SIZE,  8,
+									GLX_DOUBLEBUFFER,  True,
+									None
+								};
+
+								do
+								{
+									int major, minor;
+									if( !glXQueryVersion( impl->parentWindowImpl->display, &major, &minor ) )
+										break;
+									if( ( major < 1 ) || ( major == 1 && minor < 3 ) )
+										break;
+
+									using glXCreateContextAttribsARB_t = GLXContext( * )( Display* dpy, GLXFBConfig config, GLXContext shareContext, Bool direct, const int* attribList );
+									glXCreateContextAttribsARB_t glXCreateContextAttribsARB = nullptr;
+									glXCreateContextAttribsARB = reinterpret_cast< glXCreateContextAttribsARB_t >( glXGetProcAddressARB( reinterpret_cast< const GLubyte* >( "glXCreateContextAttribsARB" ) ) );
+									if( !glXCreateContextAttribsARB )
+										break;
+
+									int fbConfigCount = 0;
+									GLXFBConfig* fbConfigs = glXChooseFBConfig( impl->parentWindowImpl->display, screen, attribs, &fbConfigCount );
+									if( !fbConfigs )
+										break;
+									if( fbConfigCount == 0 )
+										break;
+
+									// Choose the best config
+									int bestFbConfigIdx = 0, bestSampleCount = 0;
+									for( int i = 0; i < fbConfigCount; ++i )
+									{
+										XVisualInfo* vi = glXGetVisualFromFBConfig( impl->parentWindowImpl->display, fbConfigs[ i ] );
+										if( vi )
+										{
+											int samples = 0, sampleCount = 0;
+											glXGetFBConfigAttrib( impl->parentWindowImpl->display, fbConfigs[ i ], GLX_SAMPLE_BUFFERS, &samples );
+											glXGetFBConfigAttrib( impl->parentWindowImpl->display, fbConfigs[ i ], GLX_SAMPLES, &sampleCount );
+
+											if( samples && sampleCount > bestSampleCount )
+											{
+												bestFbConfigIdx = i;
+												bestSampleCount = sampleCount;
+											}
+										}
+										XFree( vi );
+									}
+
+									GLXFBConfig bestFbConfig = fbConfigs[ bestFbConfigIdx ];
+
+									XFree( fbConfigs );
+
+									int contextAttribs[] =
+									{
+//										GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
+//										GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+										GLX_CONTEXT_FLAGS_ARB,         GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+										None
+									};
+
+									return glXCreateContextAttribsARB( impl->parentWindowImpl->display, bestFbConfig, 0, True, contextAttribs );
+
+								} while( false );
+
+								// If all else fails, use legacy method
+								XVisualInfo* visualInfo = glXChooseVisual( impl->display, screen, attribs );
+								return glXCreateContext( impl->display, visualInfo, nullptr, true );
+							}
+						}();
+
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
 				#if __ORB_HAS_WINDOW_IMPL_WAYLAND
 					WINDOW_IMPL_CASE( window_impl_type::Wayland )
 					{
+						auto impl = &( m_storage.opengl.wl = { } );
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
 				#if __ORB_HAS_WINDOW_IMPL_COCOA
 					WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 					{
+						auto impl = &( m_storage.opengl.cocoa = { } );
+
+						const NSOpenGLPixelFormatAttribute attribs[] =
+						{
+//							NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
+							NSOpenGLPFADoubleBuffer,  true,
+							NSOpenGLPFAColorSize,     24,
+							NSOpenGLPFADepthSize,     24,
+							0
+						};
+
+						NSWindow*            nsWindow    = parentWindow.get_impl_ptr()->cocoa.nsWindow;
+						NSOpenGLPixelFormat* pixelFormat = [ NSOpenGLPixelFormat alloc ];
+						[ pixelFormat initWithAttributes:attribs ];
+
+						impl->glView = [ NSOpenGLView alloc ];
+						[ ( NSOpenGLView* )glView initWithFrame:nsWindow.contentView.frame pixelFormat:pixelFormat ];
+						[ ( NSOpenGLView* )glView prepareOpenGL ];
+						[ nsWindow.contentView addSubview:glView ];
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
 				#if __ORB_HAS_WINDOW_IMPL_ANDROID
 					WINDOW_IMPL_CASE( window_impl_type::Android )
 					{
+						auto impl = &( m_storage.opengl.egl = { } );
+
+						/* Initialize display */
+						{
+							impl->eglDisplay = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+							eglInitialize( display, nullptr, nullptr );
+						}
+
+						/* Choose config */
+						{
+							EGLint configCount = 0;
+							if( !eglGetConfigs( display, nullptr, 0, &configCount ) )
+								return EGL_NO_CONFIG_KHR;
+
+							std::vector< EGLConfig > configs( static_cast< size_t >( configCount ) );
+							if( !eglGetConfigs( display, configs.data(), configs.size(), &configCount ) )
+								return EGL_NO_CONFIG_KHR;
+
+							const EGLint requiredConformant  = EGL_OPENGL_ES3_BIT_KHR;
+							const EGLint requiredSurfaceType = ( EGL_WINDOW_BIT | EGL_PBUFFER_BIT );
+
+							impl->eglConfig          = EGL_NO_CONFIG_KHR;
+							EGLint    bestRedSize    = -1;
+							EGLint    bestGreenSize  = -1;
+							EGLint    bestBlueSize   = -1;
+							EGLint    bestAlphaSize  = -1;
+							EGLint    bestBufferSize = -1;
+							EGLint    bestDepthSize  = -1;
+
+							for( const EGLConfig& config : configs )
+							{
+								EGLint conformant = 0;
+								eglGetConfigAttrib( display, config, EGL_CONFORMANT, &conformant );
+								if( ( conformant & requiredConformant ) == 0 )
+									continue;
+
+								EGLint surfaceType = 0;
+								eglGetConfigAttrib( display, config, EGL_SURFACE_TYPE, &surfaceType );
+								if( ( surfaceType & requiredSurfaceType ) == 0 )
+									continue;
+
+								EGLint redSize = 0;
+								eglGetConfigAttrib( display, config, EGL_RED_SIZE, &redSize );
+								if( redSize < bestRedSize )
+									continue;
+
+								EGLint greenSize = 0;
+								eglGetConfigAttrib( display, config, EGL_RED_SIZE, &greenSize );
+								if( greenSize < bestGreenSize )
+									continue;
+
+								EGLint blueSize = 0;
+								eglGetConfigAttrib( display, config, EGL_RED_SIZE, &blueSize );
+								if( blueSize < bestBlueSize )
+									continue;
+
+								EGLint alphaSize = 0;
+								eglGetConfigAttrib( display, config, EGL_RED_SIZE, &alphaSize );
+								if( alphaSize < bestAlphaSize )
+									continue;
+
+								EGLint bufferSize = 0;
+								eglGetConfigAttrib( display, config, EGL_BUFFER_SIZE, &bufferSize );
+								if( bufferSize < bestBufferSize )
+									continue;
+
+								EGLint depthSize = 0;
+								eglGetConfigAttrib( display, config, EGL_DEPTH_SIZE, &depthSize );
+								if( depthSize < bestDepthSize )
+									continue;
+
+								bestRedSize     = redSize;
+								bestGreenSize   = greenSize;
+								bestBlueSize    = blueSize;
+								bestAlphaSize   = alphaSize;
+								bestBufferSize  = bufferSize;
+								bestDepthSize   = depthSize;
+								impl->eglConfig = config;
+							}
+
+							EGLint visualId = 0;
+							eglGetConfigAttrib( impl->eglDisplay, impl->eglConfig, EGL_NATIVE_VISUAL_ID, &visualId );
+							ANativeWindow_setBuffersGeometry( android_only::app->window, 0, 0, visualId );
+						}
+
+						/* Create window surface */
+						impl->eglSurface = eglCreateWindowSurface( impl->eglDisplay, impl->eglConfig, android_only::app->window, nullptr );
+
+						/* Create context */
+						{
+							const EGLint attribs[] =
+							{
+//								EGL_CONTEXT_CLIENT_VERSION, 3,
+								EGL_NONE,
+							};
+
+							return eglCreateContext( impl->eglDisplay, impl->eglConfig, EGL_NO_CONTEXT, attribs );
+						}
+
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
 				#if __ORB_HAS_WINDOW_IMPL_UIKIT
 					WINDOW_IMPL_CASE( window_impl_type::UiKit )
 					{
+						auto impl = &( m_storage.opengl.glkit = { } );
+
+						UIWindow*           uiWindow = parentWindow.get_impl_ptr()->uikit.uiWindow;
+						ORBGLKViewDelegate* delegate = [ ORBGLKViewDelegate alloc ];
+						[ delegate init ];
+
+						impl->eaglContext = [ EAGLContext alloc ];
+						[ ( EAGLContext* )impl->eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES3 ];
+
+						impl->glkView = [ GLKView alloc ];
+						[ ( GLKView* )impl->glkView initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+						( ( GLKView* )impl->glkView ).context               = ( EAGLContext* )impl->eaglContext;
+						( ( GLKView* )impl->glkView ).delegate              = delegate;
+						( ( GLKView* )impl->glkView ).enableSetNeedsDisplay = NO;
+						[ uiWindow addSubview:( GLKView* )impl->glkView ];
+
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
@@ -395,16 +621,18 @@ namespace orb
 				#if __ORB_HAS_WINDOW_IMPL_X11
 					WINDOW_IMPL_CASE( window_impl_type::X11 )
 					{
-						auto impl = &m_storage.opengl.glx;
+						auto glx = &m_storage.opengl.glx;
 						if( CurrentContext == this )
-							do { } while( false );
+							glXMakeCurrent( glx->parentWindowImpl->display, None, nullptr );
+						glXDestroyContext( glx->parentWindowImpl->display, glx->glxContext );
+						XFreeGC( glx->parentWindowImpl->display, glx->gc );
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
 				#if __ORB_HAS_WINDOW_IMPL_WAYLAND
 					WINDOW_IMPL_CASE( window_impl_type::Wayland )
 					{
-						auto impl = &m_storage.opengl.wl;
+						auto wl = &m_storage.opengl.wl;
 						if( CurrentContext == this )
 							do { } while( false );
 						WINDOW_IMPL_BREAK;
@@ -413,27 +641,36 @@ namespace orb
 				#if __ORB_HAS_WINDOW_IMPL_COCOA
 					WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 					{
-						auto impl = &m_storage.opengl.cocoa;
+						auto cocoa = &m_storage.opengl.cocoa;
 						if( CurrentContext == this )
-							do { } while( false );
+							[ NSOpenGLContext clearCurrentContext ];
+						[ ( const NSOpenGLView* )cocoa->glView removeFromSuperview ];
+						[ ( const NSOpenGLView* )cocoa->glView dealloc ];
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
 				#if __ORB_HAS_WINDOW_IMPL_ANDROID
 					WINDOW_IMPL_CASE( window_impl_type::Android )
 					{
-						auto impl = &m_storage.opengl.egl;
+						auto egl = &m_storage.opengl.egl;
 						if( CurrentContext == this )
-							do { } while( false );
+							eglMakeCurrent( egl->eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
+						eglDestroyContext( egl->eglDisplay, egl->eglContext );
+						eglDestroySurface( egl->eglDisplay, egl->eglSurface );
+						eglTerminate( egl->eglDisplay );
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
 				#if __ORB_HAS_WINDOW_IMPL_UIKIT
 					WINDOW_IMPL_CASE( window_impl_type::UiKit )
 					{
-						auto impl = &m_storage.opengl.glkit;
+						auto glkit = &m_storage.opengl.glkit;
 						if( CurrentContext == this )
-							do { } while( false );
+							[ EAGLContext setCurrentContext:nullptr ];
+
+						[ ( GLKView* )glkit->glkView dealloc ];
+						[ ( EAGLContext* )glkit->eaglContext dealloc ];
+
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
@@ -487,18 +724,23 @@ namespace orb
 			#if __ORB_HAS_WINDOW_IMPL_COCOA
 				WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 				{
+					[ [ ( const NSOpenGLView* )impl->cocoa.glView openGLContext ] makeCurrentContext ];
 					WINDOW_IMPL_BREAK;
 				}
 			#endif
 			#if __ORB_HAS_WINDOW_IMPL_ANDROID
 				WINDOW_IMPL_CASE( window_impl_type::Android )
 				{
+					auto egl = &m_storage.opengl.egl;
+					eglMakeCurrent( egl->eglDisplay, egl->eglSurface, egl->eglSurface, egl->eglContext )
 					WINDOW_IMPL_BREAK;
 				}
 			#endif
 			#if __ORB_HAS_WINDOW_IMPL_UIKIT
 				WINDOW_IMPL_CASE( window_impl_type::UiKit )
 				{
+					auto glkit = &m_storage.opengl.glkit;
+					[ EAGLContext setCurrentContext:( EAGLContext* )glkit->eaglContext ];
 					WINDOW_IMPL_BREAK;
 				}
 			#endif
@@ -521,6 +763,30 @@ namespace orb
 		#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
 			RENDER_CONTEXT_IMPL_CASE( render_context_impl_type::OpenGL )
 			{
+				auto impl = &m_storage.opengl;
+
+				WINDOW_IMPL_SWITCH( impl->parentWindowImplType )
+				{
+				#if __ORB_HAS_WINDOW_IMPL_ANDROID
+					WINDOW_IMPL_CASE( window_impl_type::Android )
+					{
+						auto egl = &impl->egl;
+						eglMakeCurrent( egl->eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
+						if( egl->eglSurface != EGL_NO_SURFACE )
+							eglDestroySurface( egl->eglDisplay, egl->eglSurface );
+						egl->eglSurface = eglCreateWindowSurface( egl->eglDisplay, egl->eglConfig, android_only::app->window, nullptr );
+						WINDOW_IMPL_BREAK;
+					}
+				#endif
+				#if __ORB_HAS_WINDOW_IMPL_UIKIT
+					WINDOW_IMPL_CASE( window_impl_type::UiKit )
+					{
+						( ( GLKView* )impl->glkit.glkView ).layer.frame = CGRectMake( 0.f, 0.f, width, height );
+						WINDOW_IMPL_BREAK;
+					}
+				#endif
+				}
+
 				glViewport( 0, 0, width, height );
 				RENDER_CONTEXT_IMPL_BREAK;
 			}
@@ -619,6 +885,8 @@ namespace orb
 				#if __ORB_HAS_WINDOW_IMPL_X11
 					WINDOW_IMPL_CASE( window_impl_type::X11 )
 					{
+						auto parentWindowImpl = impl->glx.parentWindowImpl;
+						glXSwapBuffers( parentWindowImpl->display, parentWindowImpl->window );
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
@@ -631,18 +899,21 @@ namespace orb
 				#if __ORB_HAS_WINDOW_IMPL_COCOA
 					WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 					{
+						[ [ ( const NSOpenGLView* )impl->cocoa.glView openGLContext ] flushBuffer ];
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
 				#if __ORB_HAS_WINDOW_IMPL_ANDROID
 					WINDOW_IMPL_CASE( window_impl_type::Android )
 					{
+						eglSwapBuffers( impl->egl.eglDisplay, impl->egl.eglSurface );
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
 				#if __ORB_HAS_WINDOW_IMPL_UIKIT
 					WINDOW_IMPL_CASE( window_impl_type::UiKit )
 					{
+						[ ( GLKView* )impl->glkit.glkView display ];
 						WINDOW_IMPL_BREAK;
 					}
 				#endif
@@ -719,3 +990,16 @@ namespace orb
 		return CurrentContext;
 	}
 }
+
+#if __ORB_HAS_WINDOW_IMPL_UIKIT
+@implementation ORBGLKViewDelegate
+
+-( void )glkView:( nonnull GLKView* )view drawInRect:( CGRect )rect
+{
+	/* Unused parameters */
+	( void )view;
+	( void )rect;
+}
+
+@end
+#endif
