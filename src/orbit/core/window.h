@@ -45,7 +45,7 @@ namespace orb
 		bool                m_open;
 
 	#if ( __ORB_NUM_WINDOW_IMPLS > 1 )
-		window_impl_type m_implType;
+		const window_impl_type m_implType;
 	#endif
 
 	};

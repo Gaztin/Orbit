@@ -18,13 +18,13 @@
 #include "window.h"
 
 #if ( __ORB_NUM_WINDOW_IMPLS > 1 )
-#  define MAGIC_SWITCH switch( m_implType )
-#  define MAGIC_CASE( TYPE ) case TYPE:
-#  define MAGIC_BREAK break
+#  define WINDOW_IMPL_SWITCH switch( m_implType )
+#  define WINDOW_IMPL_CASE( TYPE ) case TYPE:
+#  define WINDOW_IMPL_BREAK break
 #else
-#  define MAGIC_SWITCH
-#  define MAGIC_CASE( TYPE )
-#  define MAGIC_BREAK
+#  define WINDOW_IMPL_SWITCH
+#  define WINDOW_IMPL_CASE( TYPE )
+#  define WINDOW_IMPL_BREAK
 #endif
 
 #if __ORB_HAS_WINDOW_IMPL_COCOA
@@ -51,10 +51,10 @@ namespace orb
 	{
 		( void )implType;
 
-		MAGIC_SWITCH
+		WINDOW_IMPL_SWITCH
 		{
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			MAGIC_CASE( window_impl_type::Win32 )
+			WINDOW_IMPL_CASE( window_impl_type::Win32 )
 			{
 				auto             impl        = &( m_storage.win32 = { } );
 				constexpr LPCSTR ClassName   = "Orbit";
@@ -124,12 +124,12 @@ namespace orb
 				/* Set user data */
 				SetWindowLongPtrA( impl->hwnd, GWLP_USERDATA, reinterpret_cast< LONG_PTR >( this ) );
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			MAGIC_CASE( window_impl_type::X11 )
+			WINDOW_IMPL_CASE( window_impl_type::X11 )
 			{
 				/* Open display */
 				auto impl     = &( m_storage.x11 = { } );
@@ -149,21 +149,21 @@ namespace orb
 				Atom closeAtom = XInternAtom( impl->display, "WM_DELETE_WINDOW", True );
 				XSetWMProtocols( impl->display, impl->window, &closeAtom, 1 );
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			MAGIC_CASE( window_impl_type::Wayland )
+			WINDOW_IMPL_CASE( window_impl_type::Wayland )
 			{
 				m_storage.wl = { };
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			MAGIC_CASE( window_impl_type::Cocoa )
+			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 			{
 				auto               impl     = &( m_storage.cocoa = { } );
 				NSRect             frame     = NSMakeRect( 0.0f, 0.0f, width, height );
@@ -180,12 +180,12 @@ namespace orb
 				[ ( ORBCocoaWindowDelegate* )impl->delegate setWindowPtr:this ];
 				[ ( ORBCocoaWindowDelegate* )impl->delegate setStorage:&m_storage ];
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			MAGIC_CASE( window_impl_type::Android )
+			WINDOW_IMPL_CASE( window_impl_type::Android )
 			{
 				auto appCmd = []( android_app* state, int cmd )
 				{
@@ -273,12 +273,12 @@ namespace orb
 				android_only::app->userData = this;
 				android_only::app->onAppCmd = appCmd;
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			MAGIC_CASE( window_impl_type::UiKit )
+			WINDOW_IMPL_CASE( window_impl_type::UiKit )
 			{
 				auto impl = &( m_storage.uikit = { } );
 
@@ -294,7 +294,7 @@ namespace orb
 				[ vc initWithNibName:nil bundle:nil ];
 				( ( ORBUiKitWindow* )impl->uiWindow ).rootViewController = vc;
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 		}
@@ -302,10 +302,10 @@ namespace orb
 
 	void window::poll_events()
 	{
-		MAGIC_SWITCH
+		WINDOW_IMPL_SWITCH
 		{
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			MAGIC_CASE( window_impl_type::Win32 )
+			WINDOW_IMPL_CASE( window_impl_type::Win32 )
 			{
 				MSG  msg;
 				while( PeekMessageA( &msg, m_storage.win32.hwnd, 0, 0, PM_REMOVE ) )
@@ -313,12 +313,12 @@ namespace orb
 					TranslateMessage( &msg );
 					DispatchMessageA( &msg );
 				}
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			MAGIC_CASE( window_impl_type::X11 )
+			WINDOW_IMPL_CASE( window_impl_type::X11 )
 			{
 				while( XPending( m_storage.x11.display ) )
 				{
@@ -379,19 +379,19 @@ namespace orb
 							break;
 					}
 				}
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			MAGIC_CASE( window_impl_type::Wayland )
+			WINDOW_IMPL_CASE( window_impl_type::Wayland )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			MAGIC_CASE( window_impl_type::Cocoa )
+			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 			{
 				NSEvent* nsEvent;
 				while( ( nsEvent = [ ( const NSWindow* )m_storage.cocoa.nsWindow nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
@@ -399,12 +399,12 @@ namespace orb
 					[ ( const NSWindow* )m_storage.cocoa.nsWindow sendEvent:nsEvent ];
 				}
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			MAGIC_CASE( window_impl_type::Android )
+			WINDOW_IMPL_CASE( window_impl_type::Android )
 			{
 				int                  events;
 				android_poll_source* source;
@@ -414,14 +414,14 @@ namespace orb
 						source->process( android_only::app, source );
 				}
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			MAGIC_CASE( window_impl_type::UiKit )
+			WINDOW_IMPL_CASE( window_impl_type::UiKit )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 		}
@@ -431,54 +431,54 @@ namespace orb
 
 	void window::set_title( std::string_view title )
 	{
-		MAGIC_SWITCH
+		WINDOW_IMPL_SWITCH
 		{
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			MAGIC_CASE( window_impl_type::Win32 )
+			WINDOW_IMPL_CASE( window_impl_type::Win32 )
 			{
 				SetWindowTextA( m_storage.win32.hwnd, title.data() );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			MAGIC_CASE( window_impl_type::X11 )
+			WINDOW_IMPL_CASE( window_impl_type::X11 )
 			{
 				XStoreName( m_storage.x11.display, m_storage.x11.window, title.data() );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			MAGIC_CASE( window_impl_type::Wayland )
+			WINDOW_IMPL_CASE( window_impl_type::Wayland )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			MAGIC_CASE( window_impl_type::Cocoa )
+			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 			{
 				NSString* nsTitle = [ NSString stringWithUTF8String:title.data() ];
 				[ ( const NSWindow* )m_storage.cocoa.nsWindow setTitle:nsTitle ];
 				[ nsTitle release ];
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			MAGIC_CASE( window_impl_type::Android )
+			WINDOW_IMPL_CASE( window_impl_type::Android )
 			{
 				// #TODO: Activity.setTitle
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			MAGIC_CASE( window_impl_type::UiKit )
+			WINDOW_IMPL_CASE( window_impl_type::UiKit )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 		}
@@ -486,56 +486,56 @@ namespace orb
 
 	void window::set_pos( uint32_t x, uint32_t y )
 	{
-		MAGIC_SWITCH
+		WINDOW_IMPL_SWITCH
 		{
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			MAGIC_CASE( window_impl_type::Win32 )
+			WINDOW_IMPL_CASE( window_impl_type::Win32 )
 			{
 				RECT rect{ };
 				GetWindowRect( m_storage.win32.hwnd, &rect );
 				MoveWindow( m_storage.win32.hwnd, x, y, ( rect.right - rect.left ), ( rect.bottom - rect.top ), FALSE );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			MAGIC_CASE( window_impl_type::X11 )
+			WINDOW_IMPL_CASE( window_impl_type::X11 )
 			{
 				XMoveWindow( m_storage.x11.display, m_storage.x11.window, x, y );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			MAGIC_CASE( window_impl_type::Wayland )
+			WINDOW_IMPL_CASE( window_impl_type::Wayland )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			MAGIC_CASE( window_impl_type::Cocoa )
+			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 			{
 				NSRect frame   = [ ( const NSWindow* )m_storage.cocoa.nsWindow frame ];
 				frame.origin.x = x;
 				frame.origin.y = y;
 				[ ( const NSWindow* )m_storage.cocoa.nsWindow setFrame:frame display:YES ];
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			MAGIC_CASE( window_impl_type::Android )
+			WINDOW_IMPL_CASE( window_impl_type::Android )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			MAGIC_CASE( window_impl_type::UiKit )
+			WINDOW_IMPL_CASE( window_impl_type::UiKit )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 		}
@@ -543,56 +543,56 @@ namespace orb
 
 	void window::set_size( uint32_t width, uint32_t height )
 	{
-		MAGIC_SWITCH
+		WINDOW_IMPL_SWITCH
 		{
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			MAGIC_CASE( window_impl_type::Win32 )
+			WINDOW_IMPL_CASE( window_impl_type::Win32 )
 			{
 				RECT rect{ };
 				GetWindowRect( m_storage.win32.hwnd, &rect );
 				MoveWindow( m_storage.win32.hwnd, rect.left, rect.top, static_cast< int >( width ), static_cast< int >( height ), FALSE );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			MAGIC_CASE( window_impl_type::X11 )
+			WINDOW_IMPL_CASE( window_impl_type::X11 )
 			{
 				XResizeWindow( m_storage.x11.display, m_storage.x11.window, width, height );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			MAGIC_CASE( window_impl_type::Wayland )
+			WINDOW_IMPL_CASE( window_impl_type::Wayland )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			MAGIC_CASE( window_impl_type::Cocoa )
+			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 			{
 				NSRect frame      = [ ( const NSWindow* )m_storage.cocoa.nsWindow frame ];
 				frame.size.width  = width;
 				frame.size.height = height;
 				[ ( const NSWindow* )m_storage.cocoa.nsWindow setFrame:frame display:YES ];
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			MAGIC_CASE( window_impl_type::Android )
+			WINDOW_IMPL_CASE( window_impl_type::Android )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			MAGIC_CASE( window_impl_type::UiKit )
+			WINDOW_IMPL_CASE( window_impl_type::UiKit )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 		}
@@ -600,54 +600,54 @@ namespace orb
 
 	void window::show()
 	{
-		MAGIC_SWITCH
+		WINDOW_IMPL_SWITCH
 		{
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			MAGIC_CASE( window_impl_type::Win32 )
+			WINDOW_IMPL_CASE( window_impl_type::Win32 )
 			{
 				ShowWindow( m_storage.win32.hwnd, SW_SHOW );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			MAGIC_CASE( window_impl_type::X11 )
+			WINDOW_IMPL_CASE( window_impl_type::X11 )
 			{
 				XMapWindow( m_storage.x11.display, m_storage.x11.window );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			MAGIC_CASE( window_impl_type::Wayland )
+			WINDOW_IMPL_CASE( window_impl_type::Wayland )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			MAGIC_CASE( window_impl_type::Cocoa )
+			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 			{
 				[ ( const NSWindow* )m_storage.cocoa.nsWindow setIsVisible:YES ];
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			MAGIC_CASE( window_impl_type::Android )
+			WINDOW_IMPL_CASE( window_impl_type::Android )
 			{
 				// #TODO: Activity.setVisible
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			MAGIC_CASE( window_impl_type::UiKit )
+			WINDOW_IMPL_CASE( window_impl_type::UiKit )
 			{
 				[ ( ORBUiKitWindow* )m_storage.uikit.uiWindow setHidden:NO ];
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 		}
@@ -655,54 +655,54 @@ namespace orb
 
 	void window::hide()
 	{
-		MAGIC_SWITCH
+		WINDOW_IMPL_SWITCH
 		{
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			MAGIC_CASE( window_impl_type::Win32 )
+			WINDOW_IMPL_CASE( window_impl_type::Win32 )
 			{
 				ShowWindow( m_storage.win32.hwnd, SW_HIDE );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			MAGIC_CASE( window_impl_type::X11 )
+			WINDOW_IMPL_CASE( window_impl_type::X11 )
 			{
 				XUnmapWindow( m_storage.x11.display, m_storage.x11.window );
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			MAGIC_CASE( window_impl_type::Wayland )
+			WINDOW_IMPL_CASE( window_impl_type::Wayland )
 			{
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			MAGIC_CASE( window_impl_type::Cocoa )
+			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
 			{
 				[ ( const NSWindow* )m_storage.cocoa.nsWindow setIsVisible:NO ];
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			MAGIC_CASE( window_impl_type::Android )
+			WINDOW_IMPL_CASE( window_impl_type::Android )
 			{
 				// #TODO: Activity.setVisible
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			MAGIC_CASE( window_impl_type::UiKit )
+			WINDOW_IMPL_CASE( window_impl_type::UiKit )
 			{
 				[ ( ORBUiKitWindow* )m_storage.uikit.uiWindow setHidden:YES ];
 
-				MAGIC_BREAK;
+				WINDOW_IMPL_BREAK;
 			}
 	#endif
 		}
