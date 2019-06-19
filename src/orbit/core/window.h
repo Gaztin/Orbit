@@ -40,6 +40,9 @@ namespace orb
 
 		operator bool() const { return m_open; }
 
+		window_impl_type     get_impl_type ( void ) const;
+		window_impl_storage* get_impl_ptr  ( void ) { return &m_storage; }
+
 	private:
 		window_impl_storage m_storage;
 		bool                m_open;

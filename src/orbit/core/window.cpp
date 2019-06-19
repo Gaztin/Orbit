@@ -707,6 +707,35 @@ namespace orb
 	#endif
 		}
 	}
+
+	window_impl_type window::get_impl_type() const
+	{
+	#if( __ORB_NUM_WINDOW_IMPLS > 1 )
+
+		return m_implType;
+
+	#else
+
+		{
+		#if __ORB_HAS_WINDOW_IMPL_WIN32
+			return window_impl_type::Win32;
+		#elif __ORB_HAS_WINDOW_IMPL_X11
+			return window_impl_type::X11;
+		#elif __ORB_HAS_WINDOW_IMPL_WAYLAND
+			return window_impl_type::Wayland;
+		#elif __ORB_HAS_WINDOW_IMPL_COCOA
+			return window_impl_type::Cocoa;
+		#elif __ORB_HAS_WINDOW_IMPL_ANDROID
+			return window_impl_type::Android;
+		#elif __ORB_HAS_WINDOW_IMPL_UIKIT
+			return window_impl_type::UiKit;
+		#else
+			return window_impl_type::Null;
+		#endif
+		}
+
+	#endif
+	}
 }
 
 #if __ORB_HAS_WINDOW_IMPL_COCOA
