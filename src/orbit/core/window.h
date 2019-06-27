@@ -28,7 +28,7 @@ namespace orb
 	class ORB_API_CORE window : public event_dispatcher< window_event >
 	{
 	public:
-		window( uint32_t width, uint32_t height, window_impl_type implType = DefaultWindowImpl );
+		window( uint32_t width, uint32_t height, window_impl_type implType = kDefaultWindowImpl );
 
 		void poll_events();
 		void set_title( std::string_view title );

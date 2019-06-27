@@ -752,7 +752,7 @@ namespace orb
 			template< char... Chars >
 			struct proc_literal_traits< proc_literal_t< Chars... > >
 			{
-				static constexpr char ProcName[ sizeof...( Chars ) + 1 ] = { Chars..., '\0' };
+				static constexpr char kProcName[ sizeof...( Chars ) + 1 ] = { Chars..., '\0' };
 			};
 
 			template< typename ProcLiteral, typename Func >
@@ -763,7 +763,7 @@ namespace orb
 			{
 			public:
 				function()
-					: m_ptr( platform::get_proc_address( proc_literal_traits< ProcLiteral >::ProcName ) )
+					: m_ptr( platform::get_proc_address( proc_literal_traits< ProcLiteral >::kProcName ) )
 				{
 				}
 
@@ -793,7 +793,7 @@ namespace orb
 			{
 			public:
 				function()
-					: m_ptr( platform::get_proc_address( proc_literal_traits< ProcLiteral >::ProcName ) )
+					: m_ptr( platform::get_proc_address( proc_literal_traits< ProcLiteral >::kProcName ) )
 				{
 				}
 

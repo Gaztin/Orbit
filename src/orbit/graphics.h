@@ -69,28 +69,28 @@ namespace orb
 	template< typename T >
 	struct index_format_traits
 	{
-		static constexpr bool         Enabled = false;
-		static constexpr index_format Format  = static_cast< index_format >( 0 );
+		static constexpr bool         kEnabled = false;
+		static constexpr index_format kFormat  = static_cast< index_format >( 0 );
 	};
 
 	template<>
 	struct index_format_traits< uint8_t >
 	{
-		static constexpr bool Enabled = true;
-		static constexpr index_format Format = index_format::Byte;
+		static constexpr bool         kEnabled = true;
+		static constexpr index_format kFormat  = index_format::Byte;
 	};
 
 	template<>
 	struct index_format_traits< uint16_t >
 	{
-		static constexpr bool Enabled = true;
-		static constexpr index_format Format = index_format::Word;
+		static constexpr bool         kEnabled = true;
+		static constexpr index_format kFormat  = index_format::Word;
 	};
 
 	template<>
 	struct index_format_traits< uint32_t >
 	{
-		static constexpr bool         Enabled = true;
-		static constexpr index_format Format  = index_format::DoubleWord;
+		static constexpr bool         kEnabled = true;
+		static constexpr index_format kFormat  = index_format::DoubleWord;
 	};
 }

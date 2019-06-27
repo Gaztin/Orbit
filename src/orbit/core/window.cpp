@@ -53,9 +53,9 @@ namespace orb
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 			case window_impl_type::Win32:
 			{
-				auto             impl        = std::addressof( m_impl.emplace< __window_impl_win32 >() );
-				constexpr LPCSTR ClassName   = "Orbit";
-				static ATOM      windowClass = [ & ]
+				auto             impl         = std::addressof( m_impl.emplace< __window_impl_win32 >() );
+				constexpr LPCSTR kClassName   = "Orbit";
+				static ATOM      windowClass  = [ & ]
 				{
 					auto wndproc = []( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 					{
@@ -137,10 +137,10 @@ namespace orb
 				Window                  rootWindow = XRootWindow( impl->display, screen );
 				int                     depth      = DefaultDepth( impl->display, screen );
 				Visual*                 visual     = DefaultVisual( impl->display, screen );
-				constexpr unsigned long ValueMask  = ( CWBackPixel | CWEventMask );
+				constexpr unsigned long kValueMask = ( CWBackPixel | CWEventMask );
 				XSetWindowAttributes    attribs    = { };
 				attribs.event_mask                 = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask );
-				impl->window = XCreateWindow( impl->display, rootWindow, 0, 0, width, height, 0, depth, InputOutput, visual, ValueMask, &attribs );
+				impl->window = XCreateWindow( impl->display, rootWindow, 0, 0, width, height, 0, depth, InputOutput, visual, kValueMask, &attribs );
 
 				/* Allow us to capture the window close event */
 				Atom closeAtom = XInternAtom( impl->display, "WM_DELETE_WINDOW", True );

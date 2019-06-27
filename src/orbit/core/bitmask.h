@@ -18,12 +18,12 @@
 #pragma once
 #include <type_traits>
 
-#define ORB_ENABLE_BITMASKING( ENUM )          \
-    template<>                                 \
-    struct enable_bit_masking< ENUM >          \
-    {                                          \
-        static constexpr bool Enable = true;   \
-    }                                          \
+#define ORB_ENABLE_BITMASKING( ENUM )           \
+    template<>                                  \
+    struct enable_bit_masking< ENUM >           \
+    {                                           \
+        static constexpr bool kEnable = true;   \
+    }                                           \
 
 namespace orb
 {
@@ -34,7 +34,7 @@ namespace orb
 	};
 
 	template< typename E >
-	constexpr bool enable_bit_masking_v = enable_bit_masking< E >::Enable;
+	constexpr bool enable_bit_masking_v = enable_bit_masking< E >::kEnable;
 
 	template< typename E >
 	typename std::enable_if_t< enable_bit_masking_v< E >, bool > operator!( E rhs )

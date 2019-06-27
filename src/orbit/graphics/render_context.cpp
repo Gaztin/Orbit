@@ -476,12 +476,12 @@ namespace orb
 
 				/* Create the swap chain */
 				{
-					constexpr UINT deviceFlags = 0
+					constexpr UINT kDeviceFlags = 0
 					#if !defined( NDEBUG )
 						| D3D11_CREATE_DEVICE_DEBUG
 					#endif
 						;
-					constexpr std::array featureLevels =
+					constexpr std::array kFeatureLevels =
 					{
 						D3D_FEATURE_LEVEL_11_1,
 						D3D_FEATURE_LEVEL_11_0,
@@ -507,7 +507,7 @@ namespace orb
 					desc.Windowed               = true;
 					desc.SwapEffect             = DXGI_SWAP_EFFECT_DISCARD;
 
-					D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, deviceFlags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &desc, &impl->swapChain, NULL, NULL, NULL );
+					D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, kDeviceFlags, kFeatureLevels.data(), kFeatureLevels.size(), D3D11_SDK_VERSION, &desc, &impl->swapChain, NULL, NULL, NULL );
 				}
 
 				/* Get the device */

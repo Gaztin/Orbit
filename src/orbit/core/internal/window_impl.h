@@ -167,7 +167,7 @@ namespace orb
 	#endif
 	>;
 
-	constexpr window_impl_type DefaultWindowImpl =
+	constexpr window_impl_type kDefaultWindowImpl =
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
 		window_impl_type::Win32;
 	#elif __ORB_HAS_WINDOW_IMPL_WAYLAND
