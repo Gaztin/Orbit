@@ -18,6 +18,7 @@
 #pragma once
 
 #include <type_traits>
+#include <variant>
 
 #include "orbit/core.h"
 
@@ -80,56 +81,68 @@ namespace orb
 #define __ORB_NUM_WINDOW_IMPLS ( __ORB_HAS_WINDOW_IMPL_WIN32   + __ORB_HAS_WINDOW_IMPL_X11   + \
                                  __ORB_HAS_WINDOW_IMPL_WAYLAND + __ORB_HAS_WINDOW_IMPL_COCOA + \
                                  __ORB_HAS_WINDOW_IMPL_ANDROID + __ORB_HAS_WINDOW_IMPL_UIKIT )
-                                 __ORB_HAS_WINDOW_IMPL_UIKIT )
 
-	union window_impl_storage
+#if __ORB_HAS_WINDOW_IMPL_WIN32
+	struct __window_impl_win32
 	{
-		window_impl_storage() : null{ } { }
+		HWND hwnd;
+	};
+#endif
+#if __ORB_HAS_WINDOW_IMPL_X11
+	struct __window_impl_x11
+	{
+		Display* display;
+		Window   window;
+	};
+#endif
+#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+	struct __window_impl_wayland
+	{
+		wl_surface* surface;
+	};
+#endif
+#if __ORB_HAS_WINDOW_IMPL_COCOA
+	struct __window_impl_cocoa
+	{
+		void* nsWindow;
+		void* delegate;
+	};
+#endif
+#if __ORB_HAS_WINDOW_IMPL_ANDROID
+	struct __window_impl_android
+	{
+		ASensorManager*    sensorManager;
+		const ASensor*     accelerometerSensor;
+		ASensorEventQueue* sensorEventQueue;
+	};
+#endif
+#if __ORB_HAS_WINDOW_IMPL_UIKIT
+	struct __window_impl_uikit
+	{
+		void* uiWindow;
+	};
+#endif
 
-		struct
-		{
-		} null;
+	using window_impl = ::std::variant< ::std::monostate
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
-		struct
-		{
-			HWND hwnd;
-		} win32;
+		, __window_impl_win32
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_X11
-		struct
-		{
-			Display* display;
-			Window   window;
-		} x11;
+		, __window_impl_x11
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-		struct
-		{
-			wl_surface* surface;
-		} wl;
+		, __window_impl_wayland
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-		struct
-		{
-			void* nsWindow;
-			void* delegate;
-		} cocoa;
+		, __window_impl_cocoa
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-		struct
-		{
-			ASensorManager*    sensorManager;
-			const ASensor*     accelerometerSensor;
-			ASensorEventQueue* sensorEventQueue;
-		} android;
+		, __window_impl_android
 	#endif
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-		struct
-		{
-			void* uiWindow;
-		} uikit;
+		, __window_impl_uikit
 	#endif
-	};
+	>;
 
 	enum class window_impl_type
 	{
@@ -155,18 +168,18 @@ namespace orb
 	};
 
 	constexpr window_impl_type DefaultWindowImpl =
-	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-		window_impl_type::UiKit;
-	#elif __ORB_HAS_WINDOW_IMPL_ANDROID
-		window_impl_type::Android;
-	#elif __ORB_HAS_WINDOW_IMPL_COCOA
-		window_impl_type::Cocoa;
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+		window_impl_type::Win32;
 	#elif __ORB_HAS_WINDOW_IMPL_WAYLAND
 		window_impl_type::Wayland;
 	#elif __ORB_HAS_WINDOW_IMPL_X11
 		window_impl_type::X11;
-	#elif __ORB_HAS_WINDOW_IMPL_WIN32
-		window_impl_type::Win32;
+	#elif __ORB_HAS_WINDOW_IMPL_COCOA
+		window_impl_type::Cocoa;
+	#elif __ORB_HAS_WINDOW_IMPL_ANDROID
+		window_impl_type::Android;
+	#elif __ORB_HAS_WINDOW_IMPL_UIKIT
+		window_impl_type::UiKit;
 	#else
 		window_impl_type::Null;
 	#endif

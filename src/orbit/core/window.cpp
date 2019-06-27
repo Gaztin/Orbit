@@ -17,20 +17,12 @@
 
 #include "window.h"
 
-#if ( __ORB_NUM_WINDOW_IMPLS > 1 )
-#  define WINDOW_IMPL_SWITCH switch( m_implType )
-#  define WINDOW_IMPL_CASE( TYPE ) case TYPE:
-#  define WINDOW_IMPL_BREAK break
-#else
-#  define WINDOW_IMPL_SWITCH
-#  define WINDOW_IMPL_CASE( TYPE )
-#  define WINDOW_IMPL_BREAK
-#endif
+#include "orbit/core/utility.h"
 
 #if __ORB_HAS_WINDOW_IMPL_COCOA
 @interface ORBCocoaWindowDelegate : NSObject< NSWindowDelegate >
-@property orb::window*              windowPtr;
-@property orb::window_impl_storage* storage;
+@property orb::window*      windowPtr;
+@property orb::window_impl* impl;
 @end
 #endif
 
@@ -42,21 +34,26 @@
 
 namespace orb
 {
-	window::window( uint32_t width, uint32_t height, window_impl_type implType )
-		: m_storage{ }
-		, m_open( true )
-	#if ( __ORB_NUM_WINDOW_IMPLS > 1 )
-		, m_implType( implType )
-	#endif
-	{
-		( void )implType;
+	template< typename T >
+	constexpr auto window_impl_index_v = unique_index_v< T, window_impl >;
 
-		WINDOW_IMPL_SWITCH
+	window::window( uint32_t width, uint32_t height, window_impl_type implType )
+		: m_impl{ }
+		, m_open( true )
+	{
+		switch( implType )
 		{
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			WINDOW_IMPL_CASE( window_impl_type::Win32 )
+			default:
 			{
-				auto             impl        = &( m_storage.win32 = { } );
+				( void )width;
+				( void )height;
+				break;
+			}
+
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+			case window_impl_type::Win32:
+			{
+				auto             impl        = std::addressof( m_impl.emplace< __window_impl_win32 >() );
 				constexpr LPCSTR ClassName   = "Orbit";
 				static ATOM      windowClass = [ & ]
 				{
@@ -124,15 +121,15 @@ namespace orb
 				/* Set user data */
 				SetWindowLongPtrA( impl->hwnd, GWLP_USERDATA, reinterpret_cast< LONG_PTR >( this ) );
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			WINDOW_IMPL_CASE( window_impl_type::X11 )
+			case window_impl_type::X11:
 			{
 				/* Open display */
-				auto impl     = &( m_storage.x11 = { } );
+				auto impl     = std::addressof( m_impl.emplace< __window_impl_x11 >() );
 				impl->display = XOpenDisplay( nullptr );
 
 				/* Create window */
@@ -149,23 +146,23 @@ namespace orb
 				Atom closeAtom = XInternAtom( impl->display, "WM_DELETE_WINDOW", True );
 				XSetWMProtocols( impl->display, impl->window, &closeAtom, 1 );
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			WINDOW_IMPL_CASE( window_impl_type::Wayland )
+			case window_impl_type::Wayland:
 			{
-				m_storage.wl = { };
+				m_impl.emplace< __window_impl_wayland >()
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
+			case window_impl_type::Cocoa:
 			{
-				auto               impl     = &( m_storage.cocoa = { } );
+				auto               impl      = std::addressof( m_impl.emplace< __window_impl_cocoa >() );
 				NSRect             frame     = NSMakeRect( 0.0f, 0.0f, width, height );
 				NSWindowStyleMask  styleMask = ( NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable );
 				NSBackingStoreType backing   = ( NSBackingStoreBuffered );
@@ -178,14 +175,14 @@ namespace orb
 				impl->delegate = [ WindowDelegate alloc ];
 				[ ( NSWindow* )impl->nsWindow setDelegate:( ORBCocoaWindowDelegate* )impl->delegate ];
 				[ ( ORBCocoaWindowDelegate* )impl->delegate setWindowPtr:this ];
-				[ ( ORBCocoaWindowDelegate* )impl->delegate setStorage:&m_storage ];
+				[ ( ORBCocoaWindowDelegate* )impl->delegate setImpl:&m_impl ];
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			WINDOW_IMPL_CASE( window_impl_type::Android )
+			case window_impl_type::Android:
 			{
 				auto appCmd = []( android_app* state, int cmd )
 				{
@@ -246,7 +243,7 @@ namespace orb
 
 				android_only::app->onInputEvent = onInput;
 
-				auto impl                 = &( m_storage.android = { } );
+				auto impl                 = std::addressof( m_impl.emplace< __window_impl_android >() );
 				impl->sensorManager       = ASensorManager_getInstance();
 				impl->accelerometerSensor = ASensorManager_getDefaultSensor( impl->sensorManager, ASENSOR_TYPE_ACCELEROMETER );
 				impl->sensorEventQueue    = ASensorManager_createEventQueue( impl->sensorManager, android_only::app->looper, LOOPER_ID_USER, nullptr, nullptr );
@@ -273,14 +270,14 @@ namespace orb
 				android_only::app->userData = this;
 				android_only::app->onAppCmd = appCmd;
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			WINDOW_IMPL_CASE( window_impl_type::UiKit )
+			case window_impl_type::UiKit:
 			{
-				auto impl = &( m_storage.uikit = { } );
+				auto impl = std::addressof( m_impl.emplace< __window_impl_uikit >() );
 
 				/* Initialize window */
 				impl->uiWindow = [ ORBWindow alloc ];
@@ -294,7 +291,7 @@ namespace orb
 				[ vc initWithNibName:nil bundle:nil ];
 				( ( ORBUiKitWindow* )impl->uiWindow ).rootViewController = vc;
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 		}
@@ -302,28 +299,37 @@ namespace orb
 
 	void window::poll_events()
 	{
-		WINDOW_IMPL_SWITCH
+		switch( m_impl.index() )
 		{
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			WINDOW_IMPL_CASE( window_impl_type::Win32 )
+			default:
 			{
-				MSG  msg;
-				while( PeekMessageA( &msg, m_storage.win32.hwnd, 0, 0, PM_REMOVE ) )
+				break;
+			}
+
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+			case ( window_impl_index_v< __window_impl_win32 > ):
+			{
+				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
+
+				MSG msg;
+				while( PeekMessageA( &msg, impl->hwnd, 0, 0, PM_REMOVE ) )
 				{
 					TranslateMessage( &msg );
 					DispatchMessageA( &msg );
 				}
-				WINDOW_IMPL_BREAK;
+
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			WINDOW_IMPL_CASE( window_impl_type::X11 )
+			case ( window_impl_index_v< __window_impl_x11 > ):
 			{
-				while( XPending( m_storage.x11.display ) )
+				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
+				while( XPending( impl->display ) )
 				{
 					XEvent xevent;
-					XNextEvent( m_storage.x11.display, &xevent );
+					XNextEvent( impl->display, &xevent );
 
 					switch( xevent.type )
 					{
@@ -379,32 +385,33 @@ namespace orb
 							break;
 					}
 				}
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
-	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			WINDOW_IMPL_CASE( window_impl_type::Wayland )
-			{
-				WINDOW_IMPL_BREAK;
-			}
-	#endif
+//	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+//			case ( window_impl_index_v< __window_impl_wayland > ):
+//			{
+//				break;
+//			}
+//	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
+			case ( window_impl_index_v< __window_impl_cocoa > ):
 			{
+				auto     impl = std::get_if< __window_impl_cocoa >( &m_impl );
 				NSEvent* nsEvent;
-				while( ( nsEvent = [ ( const NSWindow* )m_storage.cocoa.nsWindow nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
+				while( ( nsEvent = [ ( const NSWindow* )impl->nsWindow nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
 				{
-					[ ( const NSWindow* )m_storage.cocoa.nsWindow sendEvent:nsEvent ];
+					[ ( const NSWindow* )impl->nsWindow sendEvent:nsEvent ];
 				}
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			WINDOW_IMPL_CASE( window_impl_type::Android )
+			case ( window_impl_index_v< __window_impl_android > ):
 			{
 				int                  events;
 				android_poll_source* source;
@@ -414,14 +421,14 @@ namespace orb
 						source->process( android_only::app, source );
 				}
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			WINDOW_IMPL_CASE( window_impl_type::UiKit )
+			case ( window_impl_index_v< __window_impl_uikit > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 		}
@@ -431,111 +438,130 @@ namespace orb
 
 	void window::set_title( std::string_view title )
 	{
-		WINDOW_IMPL_SWITCH
+		switch( m_impl.index() )
 		{
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			WINDOW_IMPL_CASE( window_impl_type::Win32 )
+			default:
 			{
-				SetWindowTextA( m_storage.win32.hwnd, title.data() );
-				WINDOW_IMPL_BREAK;
+				( void )title;
+				break;
+			}
+
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+			case ( window_impl_index_v< __window_impl_win32 > ):
+			{
+				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
+				SetWindowTextA( impl->hwnd, title.data() );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			WINDOW_IMPL_CASE( window_impl_type::X11 )
+			case ( window_impl_index_v< __window_impl_x11 > ):
 			{
-				XStoreName( m_storage.x11.display, m_storage.x11.window, title.data() );
-				WINDOW_IMPL_BREAK;
+				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
+				XStoreName( impl->display, impl->window, title.data() );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			WINDOW_IMPL_CASE( window_impl_type::Wayland )
+			case ( window_impl_index_v< __window_impl_wayland > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
+			case ( window_impl_index_v< __window_impl_cocoa > ):
 			{
+				auto      impl    = std::get_if< __window_impl_cocoa >( &m_impl );
 				NSString* nsTitle = [ NSString stringWithUTF8String:title.data() ];
-				[ ( const NSWindow* )m_storage.cocoa.nsWindow setTitle:nsTitle ];
+				[ ( const NSWindow* )impl->nsWindow setTitle:nsTitle ];
 				[ nsTitle release ];
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
-	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			WINDOW_IMPL_CASE( window_impl_type::Android )
-			{
-				// #TODO: Activity.setTitle
-				WINDOW_IMPL_BREAK;
-			}
-	#endif
+//	#if __ORB_HAS_WINDOW_IMPL_ANDROID
+//			case ( window_impl_index_v< __window_impl_android > ):
+//			{
+//				// #TODO: Activity.setTitle
+//				break;
+//			}
+//	#endif
 
-	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			WINDOW_IMPL_CASE( window_impl_type::UiKit )
-			{
-				WINDOW_IMPL_BREAK;
-			}
-	#endif
+//	#if __ORB_HAS_WINDOW_IMPL_UIKIT
+//			case ( window_impl_index_v< __window_impl_uikit > ):
+//			{
+//				break;
+//			}
+//	#endif
 		}
 	}
 
 	void window::set_pos( uint32_t x, uint32_t y )
 	{
-		WINDOW_IMPL_SWITCH
+		switch( m_impl.index() )
 		{
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			WINDOW_IMPL_CASE( window_impl_type::Win32 )
+			default:
 			{
+				( void )x;
+				( void )y;
+				break;
+			}
+
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+			case ( window_impl_index_v< __window_impl_win32 > ):
+			{
+				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
 				RECT rect{ };
-				GetWindowRect( m_storage.win32.hwnd, &rect );
-				MoveWindow( m_storage.win32.hwnd, x, y, ( rect.right - rect.left ), ( rect.bottom - rect.top ), FALSE );
-				WINDOW_IMPL_BREAK;
+				GetWindowRect( impl->hwnd, &rect );
+				MoveWindow( impl->hwnd, x, y, ( rect.right - rect.left ), ( rect.bottom - rect.top ), FALSE );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			WINDOW_IMPL_CASE( window_impl_type::X11 )
+			case ( window_impl_index_v< __window_impl_x11 > ):
 			{
-				XMoveWindow( m_storage.x11.display, m_storage.x11.window, x, y );
-				WINDOW_IMPL_BREAK;
+				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
+				XMoveWindow( impl->display, impl->window, x, y );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			WINDOW_IMPL_CASE( window_impl_type::Wayland )
+			case ( window_impl_index_v< __window_impl_wayland > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
+			case ( window_impl_index_v< __window_impl_cocoa > ):
 			{
-				NSRect frame   = [ ( const NSWindow* )m_storage.cocoa.nsWindow frame ];
+				auto   impl    = std::get_if< __window_impl_cocoa >( &m_impl );
+				NSRect frame   = [ ( const NSWindow* )impl->nsWindow frame ];
 				frame.origin.x = x;
 				frame.origin.y = y;
-				[ ( const NSWindow* )m_storage.cocoa.nsWindow setFrame:frame display:YES ];
+				[ ( const NSWindow* )impl->nsWindow setFrame:frame display:YES ];
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			WINDOW_IMPL_CASE( window_impl_type::Android )
+			case ( window_impl_index_v< __window_impl_android > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			WINDOW_IMPL_CASE( window_impl_type::UiKit )
+			case ( window_impl_index_v< __window_impl_uikit > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 		}
@@ -543,56 +569,66 @@ namespace orb
 
 	void window::set_size( uint32_t width, uint32_t height )
 	{
-		WINDOW_IMPL_SWITCH
+		switch( m_impl.index() )
 		{
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			WINDOW_IMPL_CASE( window_impl_type::Win32 )
+			default:
 			{
+				( void )width;
+				( void )height;
+				break;
+			}
+
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+			case ( window_impl_index_v< __window_impl_win32 > ):
+			{
+				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
 				RECT rect{ };
-				GetWindowRect( m_storage.win32.hwnd, &rect );
-				MoveWindow( m_storage.win32.hwnd, rect.left, rect.top, static_cast< int >( width ), static_cast< int >( height ), FALSE );
-				WINDOW_IMPL_BREAK;
+				GetWindowRect( impl->hwnd, &rect );
+				MoveWindow( impl->hwnd, rect.left, rect.top, static_cast< int >( width ), static_cast< int >( height ), FALSE );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			WINDOW_IMPL_CASE( window_impl_type::X11 )
+			case ( window_impl_index_v< __window_impl_x11 > ):
 			{
-				XResizeWindow( m_storage.x11.display, m_storage.x11.window, width, height );
-				WINDOW_IMPL_BREAK;
+				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
+				XResizeWindow( impl->display, impl->window, width, height );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			WINDOW_IMPL_CASE( window_impl_type::Wayland )
+			case ( window_impl_index_v< __window_impl_wayland > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
+			case ( window_impl_index_v< __window_impl_cocoa > ):
 			{
-				NSRect frame      = [ ( const NSWindow* )m_storage.cocoa.nsWindow frame ];
+				auto   impl       = std::get_if< __window_impl_cocoa >( &m_impl );
+				NSRect frame      = [ ( const NSWindow* )impl->nsWindow frame ];
 				frame.size.width  = width;
 				frame.size.height = height;
-				[ ( const NSWindow* )m_storage.cocoa.nsWindow setFrame:frame display:YES ];
+				[ ( const NSWindow* )impl->nsWindow setFrame:frame display:YES ];
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			WINDOW_IMPL_CASE( window_impl_type::Android )
+			case ( window_impl_index_v< __window_impl_android > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			WINDOW_IMPL_CASE( window_impl_type::UiKit )
+			case ( window_impl_index_v< __window_impl_uikit > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 		}
@@ -600,54 +636,63 @@ namespace orb
 
 	void window::show()
 	{
-		WINDOW_IMPL_SWITCH
+		switch( m_impl.index() )
 		{
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			WINDOW_IMPL_CASE( window_impl_type::Win32 )
+			default:
 			{
-				ShowWindow( m_storage.win32.hwnd, SW_SHOW );
-				WINDOW_IMPL_BREAK;
+				break;
+			}
+
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+			case ( window_impl_index_v< __window_impl_win32 > ):
+			{
+				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
+				ShowWindow( impl->hwnd, SW_SHOW );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			WINDOW_IMPL_CASE( window_impl_type::X11 )
+			case ( window_impl_index_v< __window_impl_x11 > ):
 			{
-				XMapWindow( m_storage.x11.display, m_storage.x11.window );
-				WINDOW_IMPL_BREAK;
+				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
+				XMapWindow( impl->display, impl->window );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			WINDOW_IMPL_CASE( window_impl_type::Wayland )
+			case ( window_impl_index_v< __window_impl_wayland > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
+			case ( window_impl_index_v< __window_impl_cocoa > ):
 			{
-				[ ( const NSWindow* )m_storage.cocoa.nsWindow setIsVisible:YES ];
+				auto impl = std::get_if< __window_impl_cocoa >( &m_impl );
+				[ ( const NSWindow* )impl->nsWindow setIsVisible:YES ];
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			WINDOW_IMPL_CASE( window_impl_type::Android )
+			case ( window_impl_index_v< __window_impl_android > ):
 			{
 				// #TODO: Activity.setVisible
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			WINDOW_IMPL_CASE( window_impl_type::UiKit )
+			case ( window_impl_index_v< __window_impl_uikit > ):
 			{
-				[ ( ORBUiKitWindow* )m_storage.uikit.uiWindow setHidden:NO ];
+				auto impl = std::get_if< __window_impl_uikit >( &m_impl );
+				[ ( ORBUiKitWindow* )impl->uiWindow setHidden:NO ];
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 		}
@@ -655,86 +700,66 @@ namespace orb
 
 	void window::hide()
 	{
-		WINDOW_IMPL_SWITCH
+		switch( m_impl.index() )
 		{
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
-			WINDOW_IMPL_CASE( window_impl_type::Win32 )
+			default:
 			{
-				ShowWindow( m_storage.win32.hwnd, SW_HIDE );
-				WINDOW_IMPL_BREAK;
+				break;
+			}
+
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+			case ( window_impl_index_v< __window_impl_win32 > ):
+			{
+				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
+				ShowWindow( impl->hwnd, SW_HIDE );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_X11
-			WINDOW_IMPL_CASE( window_impl_type::X11 )
+			case ( window_impl_index_v< __window_impl_x11 > ):
 			{
-				XUnmapWindow( m_storage.x11.display, m_storage.x11.window );
-				WINDOW_IMPL_BREAK;
+				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
+				XUnmapWindow( impl->display, impl->window );
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			WINDOW_IMPL_CASE( window_impl_type::Wayland )
+			case ( window_impl_index_v< __window_impl_wayland > ):
 			{
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_COCOA
-			WINDOW_IMPL_CASE( window_impl_type::Cocoa )
+			case ( window_impl_index_v< __window_impl_cocoa > ):
 			{
-				[ ( const NSWindow* )m_storage.cocoa.nsWindow setIsVisible:NO ];
+				auto impl = std::get_if< __window_impl_cocoa >( &m_impl );
+				[ ( const NSWindow* )impl->nsWindow setIsVisible:NO ];
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			WINDOW_IMPL_CASE( window_impl_type::Android )
+			case ( window_impl_index_v< __window_impl_android > ):
 			{
 				// #TODO: Activity.setVisible
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 
 	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			WINDOW_IMPL_CASE( window_impl_type::UiKit )
+			case ( window_impl_index_v< __window_impl_uikit > ):
 			{
-				[ ( ORBUiKitWindow* )m_storage.uikit.uiWindow setHidden:YES ];
+				auto impl = std::get_if< __window_impl_uikit >( &m_impl );
+				[ ( ORBUiKitWindow* )impl->uiWindow setHidden:YES ];
 
-				WINDOW_IMPL_BREAK;
+				break;
 			}
 	#endif
 		}
-	}
-
-	window_impl_type window::get_impl_type() const
-	{
-	#if( __ORB_NUM_WINDOW_IMPLS > 1 )
-
-		return m_implType;
-
-	#else
-
-		{
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
-			return window_impl_type::Win32;
-		#elif __ORB_HAS_WINDOW_IMPL_X11
-			return window_impl_type::X11;
-		#elif __ORB_HAS_WINDOW_IMPL_WAYLAND
-			return window_impl_type::Wayland;
-		#elif __ORB_HAS_WINDOW_IMPL_COCOA
-			return window_impl_type::Cocoa;
-		#elif __ORB_HAS_WINDOW_IMPL_ANDROID
-			return window_impl_type::Android;
-		#elif __ORB_HAS_WINDOW_IMPL_UIKIT
-			return window_impl_type::UiKit;
-		#else
-			return window_impl_type::Null;
-		#endif
-		}
-
-	#endif
 	}
 }
 
@@ -749,7 +774,8 @@ namespace orb
 
 -( void )windowDidMove:( NSNotification* )notification
 {
-	const CGPoint point = ( ( const NSWindow* )_storage.uikit.nsWindow ).frame.origin;
+	auto          impl  = std::get_if< __window_impl_cocoa >( _impl );
+	const CGPoint point = ( ( const NSWindow* )impl->nsWindow ).frame.origin;
 
 	orb::window_event e{ };
 	e.type        = orb::window_event::Move;
