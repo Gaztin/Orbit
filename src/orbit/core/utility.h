@@ -20,6 +20,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "orbit/core.h"
 
@@ -41,6 +42,7 @@ namespace orb
 	}
 
 	/* Integer sequences by courtesy of https://stackoverflow.com/a/16387374 */
+
 	template< size_t... Is >
 	struct seq { };
 
@@ -49,6 +51,22 @@ namespace orb
 
 	template< size_t... Is >
 	struct gen_seq< 0, Is... > : seq< Is... > { };
+
+	/* Get type index within variant. Courtesy of https://stackoverflow.com/a/52303687 */
+
+	template< typename >
+	struct tag { };
+
+	template< typename T, typename Variant >
+	struct unique_index;
+
+	template< typename T, typename... Ts >
+	struct unique_index< T, std::variant< Ts... > >
+		: std::integral_constant< size_t, std::variant< tag< Ts >... >( tag< T >() ).index() >
+	{ };
+
+	template< typename T, typename... Ts >
+	constexpr auto unique_index_v = unique_index< T, Ts... >::value;
 
 	template< typename... Args >
 	std::string format( const char* fmt, Args... args )
