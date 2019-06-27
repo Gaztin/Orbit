@@ -77,9 +77,9 @@
 namespace orb
 {
 
-#define __ORB_NUM_WINDOW_IMPLS ( __ORB_HAS_WINDOW_IMPL_WIN32 + __ORB_HAS_WINDOW_IMPL_X11     + \
-                                 __ORB_HAS_WINDOW_IMPL_X11   + __ORB_HAS_WINDOW_IMPL_WAYLAND + \
-                                 __ORB_HAS_WINDOW_IMPL_COCOA + __ORB_HAS_WINDOW_IMPL_ANDROID + \
+#define __ORB_NUM_WINDOW_IMPLS ( __ORB_HAS_WINDOW_IMPL_WIN32   + __ORB_HAS_WINDOW_IMPL_X11   + \
+                                 __ORB_HAS_WINDOW_IMPL_WAYLAND + __ORB_HAS_WINDOW_IMPL_COCOA + \
+                                 __ORB_HAS_WINDOW_IMPL_ANDROID + __ORB_HAS_WINDOW_IMPL_UIKIT )
                                  __ORB_HAS_WINDOW_IMPL_UIKIT )
 
 	union window_impl_storage
