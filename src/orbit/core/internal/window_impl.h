@@ -82,6 +82,29 @@ namespace orb
                                  __ORB_HAS_WINDOW_IMPL_WAYLAND + __ORB_HAS_WINDOW_IMPL_COCOA + \
                                  __ORB_HAS_WINDOW_IMPL_ANDROID + __ORB_HAS_WINDOW_IMPL_UIKIT )
 
+	enum class window_impl_type
+	{
+		Null = 0,
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+		Win32,
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_X11
+		X11,
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		Wayland,
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_COCOA
+		Cocoa,
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		Android,
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		UiKit,
+	#endif
+	};
+
 #if __ORB_HAS_WINDOW_IMPL_WIN32
 	struct __window_impl_win32
 	{
@@ -143,29 +166,6 @@ namespace orb
 		, __window_impl_uikit
 	#endif
 	>;
-
-	enum class window_impl_type
-	{
-		Null = 0,
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
-		Win32,
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_X11
-		X11,
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-		Wayland,
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_COCOA
-		Cocoa,
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_ANDROID
-		Android,
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_UIKIT
-		UiKit,
-	#endif
-	};
 
 	constexpr window_impl_type DefaultWindowImpl =
 	#if __ORB_HAS_WINDOW_IMPL_WIN32
