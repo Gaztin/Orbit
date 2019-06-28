@@ -297,6 +297,73 @@ namespace orb
 		}
 	}
 
+	window::~window()
+	{
+		switch( m_impl.index() )
+		{
+			default:
+			{
+				break;
+			}
+
+		#if __ORB_HAS_WINDOW_IMPL_WIN32
+			case( window_impl_index_v< __window_impl_win32 > ):
+			{
+				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
+				DestroyWindow( impl->hwnd );
+				break;
+			}
+		#endif
+
+		#if __ORB_HAS_WINDOW_IMPL_X11
+			case( window_impl_index_v< __window_impl_x11 > ):
+			{
+				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
+				XDestroyWindow( impl->display, impl->window );
+				XCloseDisplay( impl->display );
+				break;
+			}
+		#endif
+
+		#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+//			case( window_impl_index_v< __window_impl_wayland > ):
+//			{
+//				break;
+//			}
+		#endif
+
+		#if __ORB_HAS_WINDOW_IMPL_COCOA
+			case( window_impl_index_v< __window_impl_cocoa > ):
+			{
+				auto impl = std::get_if< __window_impl_cocoa >( &m_impl );
+				[ ( NSWindow* )impl->nsWindow close ];
+				[ ( ORBCocoaWindowDelegate* )impl->delegate dealloc ];
+				[ ( NSWindow* )impl->nsWindow dealloc ];
+				break;
+			}
+		#endif
+
+		#if __ORB_HAS_WINDOW_IMPL_ANDROID
+			case( window_impl_index_v< __window_impl_android > ):
+			{
+				ASensorManager_destroyEventQueue( impl->sensorManager, impl->sensorEventQueue );
+				android_only::app->userData = nullptr;
+				android_only::app->onAppCmd = nullptr;
+				break;
+			}
+		#endif
+
+		#if __ORB_HAS_WINDOW_IMPL_UIKIT
+			case( window_impl_index_v< __window_impl_uikit > ):
+			{
+				auto impl = std::get_if< __window_impl_uikit >( &m_impl );
+				[ ( ORBUiKitWindow* )impl->uiWindow dealloc ];
+				break;
+			}
+		#endif
+		}
+	}
+
 	void window::poll_events()
 	{
 		switch( m_impl.index() )
