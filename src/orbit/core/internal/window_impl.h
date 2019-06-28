@@ -147,40 +147,40 @@ namespace orb
 #endif
 
 	using window_impl = ::std::variant< ::std::monostate
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
+#if __ORB_HAS_WINDOW_IMPL_WIN32
 		, __window_impl_win32
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_X11
+#endif
+#if __ORB_HAS_WINDOW_IMPL_X11
 		, __window_impl_x11
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+#endif
+#if __ORB_HAS_WINDOW_IMPL_WAYLAND
 		, __window_impl_wayland
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_COCOA
+#endif
+#if __ORB_HAS_WINDOW_IMPL_COCOA
 		, __window_impl_cocoa
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_ANDROID
+#endif
+#if __ORB_HAS_WINDOW_IMPL_ANDROID
 		, __window_impl_android
-	#endif
-	#if __ORB_HAS_WINDOW_IMPL_UIKIT
+#endif
+#if __ORB_HAS_WINDOW_IMPL_UIKIT
 		, __window_impl_uikit
-	#endif
+#endif
 	>;
 
 	constexpr window_impl_type kDefaultWindowImpl =
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
+#if __ORB_HAS_WINDOW_IMPL_WIN32
 		window_impl_type::Win32;
-	#elif __ORB_HAS_WINDOW_IMPL_WAYLAND
+#elif __ORB_HAS_WINDOW_IMPL_WAYLAND
 		window_impl_type::Wayland;
-	#elif __ORB_HAS_WINDOW_IMPL_X11
+#elif __ORB_HAS_WINDOW_IMPL_X11
 		window_impl_type::X11;
-	#elif __ORB_HAS_WINDOW_IMPL_COCOA
+#elif __ORB_HAS_WINDOW_IMPL_COCOA
 		window_impl_type::Cocoa;
-	#elif __ORB_HAS_WINDOW_IMPL_ANDROID
+#elif __ORB_HAS_WINDOW_IMPL_ANDROID
 		window_impl_type::Android;
-	#elif __ORB_HAS_WINDOW_IMPL_UIKIT
+#elif __ORB_HAS_WINDOW_IMPL_UIKIT
 		window_impl_type::UiKit;
-	#else
+#else
 		window_impl_type::Null;
-	#endif
+#endif
 }
