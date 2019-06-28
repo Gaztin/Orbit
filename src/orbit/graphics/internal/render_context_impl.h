@@ -19,8 +19,10 @@
 
 #include <optional>
 #include <type_traits>
+#include <variant>
 
 #include "orbit/core/internal/window_impl.h"
+#include "orbit/core/memory.h"
 #include "orbit/core/color.h"
 #include "orbit/graphics/platform/opengl/gl.h"
 #include "orbit/graphics.h"
@@ -54,100 +56,110 @@ namespace orb
 		D3D11,
 	#endif
 	};
-
-	union render_context_impl_storage
+	
+#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+	struct __render_context_impl_opengl
 	{
-		render_context_impl_storage()
-			: null{ }
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+		struct __impl_win32
 		{
-		}
-
-		struct
+			window_impl* parentWindowImpl;
+			HDC          deviceContext;
+			HGLRC        renderContext;
+		};
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_X11
+		struct __impl_x11
 		{
-		} null;
-	#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
-		union opengl_t
+			window_impl_storage* parentWindowImpl;
+			GC                   gc;
+			GLXContext           glxContext;
+		};
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		struct __impl_wayland
 		{
-			opengl_t() : null{ } { }
-
-			window_impl_type               parentWindowImplType;
-			std::optional< gl::functions > functions;
-
-			struct
-			{
-			} null;
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
-			struct
-			{
-				window_impl_storage* parentWindowImpl;
-				HDC                  deviceContext;
-				HGLRC                renderContext;
-			} wgl;
-		#elif __ORB_HAS_WINDOW_IMPL_X11
-			struct
-			{
-				window_impl_storage* parentWindowImpl;
-				GC                   gc;
-				GLXContext           glxContext;
-			} glx;
-		#elif __ORB_HAS_WINDOW_IMPL_WAYLAND
-			struct
-			{
-			} wl;
-		#elif __ORB_HAS_WINDOW_IMPL_COCOA
-			struct
-			{
-				void* glView;
-			} cocoa;
-		#elif __ORB_HAS_WINDOW_IMPL_ANDROID
-			struct
-			{
-				EGLDisplay eglDisplay;
-				EGLConfig  eglConfig;
-				EGLSurface eglSurface;
-				EGLContext eglContext;
-			} egl;
-		#elif __ORB_HAS_WINDOW_IMPL_UIKIT
-			struct
-			{
-				void* eaglContext;
-				void* glkView;
-			} glkit;
-		#endif
-		} opengl;
+		};
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_COCOA
+		struct __impl_cocoa
+		{
+			void* glView;
+		};
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		struct __impl_android
+		{
+			EGLDisplay eglDisplay;
+			EGLConfig  eglConfig;
+			EGLSurface eglSurface;
+			EGLContext eglContext;
+		};
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		struct __impl_uikit
+		{
+			void* eaglContext;
+			void* glkView;
+		};
 	#endif
 
-	#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
-		struct
-		{
-//			com_ptr< IDXGISwapChain >          swapChain;
-//			com_ptr< ID3D11Device >            device;
-//			com_ptr< ID3D11DeviceContext >     deviceContext;
-//			com_ptr< ID3D11RenderTargetView >  renderTargetView;
-//			com_ptr< ID3D11Texture2D >         depthStencilBuffer;
-//			com_ptr< ID3D11DepthStencilState > depthStencilState;
-//			com_ptr< ID3D11DepthStencilView >  depthStencilView;
-//			com_ptr< ID3D11RasterizerState >   rasterizerState;
-//			color                              clearColor;
-			IDXGISwapChain*          swapChain;
-			ID3D11Device*            device;
-			ID3D11DeviceContext*     deviceContext;
-			ID3D11RenderTargetView*  renderTargetView;
-			ID3D11Texture2D*         depthStencilBuffer;
-			ID3D11DepthStencilState* depthStencilState;
-			ID3D11DepthStencilView*  depthStencilView;
-			ID3D11RasterizerState*   rasterizerState;
-			color                    clearColor;
-		} d3d11;
+		using __impl = std::variant< std::monostate
+	#if __ORB_HAS_WINDOW_IMPL_WIN32
+		, __impl_win32
 	#endif
+	#if __ORB_HAS_WINDOW_IMPL_X11
+		, __impl_x11
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		, __impl_wayland
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_COCOA
+		, __impl_cocoa
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		, __impl_android
+	#endif
+	#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		, __impl_uikit
+	#endif
+		>;
+
+		std::optional< gl::functions > functions;
+		__impl                         impl;
 	};
+#endif
 
-	constexpr render_context_impl_type DefaultRenderContextImpl =
-	#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+	struct __render_context_impl_d3d11
+	{
+		com_ptr< IDXGISwapChain >          swapChain;
+		com_ptr< ID3D11Device >            device;
+		com_ptr< ID3D11DeviceContext >     deviceContext;
+		com_ptr< ID3D11RenderTargetView >  renderTargetView;
+		com_ptr< ID3D11Texture2D >         depthStencilBuffer;
+		com_ptr< ID3D11DepthStencilState > depthStencilState;
+		com_ptr< ID3D11DepthStencilView >  depthStencilView;
+		com_ptr< ID3D11RasterizerState >   rasterizerState;
+		color                              clearColor;
+	};
+#endif
+
+	using render_context_impl = std::variant< std::monostate
+#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+		, __render_context_impl_opengl
+#endif
+#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+		, __render_context_impl_d3d11
+#endif
+	>;
+
+	constexpr render_context_impl_type kDefaultRenderContextImpl =
+#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
 		render_context_impl_type::D3D11;
-	#elif __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+#elif __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
 		render_context_impl_type::OpenGL;
-	#else
+#else
 		render_context_impl_type::Null;
-	#endif
+#endif
 }

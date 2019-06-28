@@ -25,7 +25,7 @@ namespace orb
 	class ORB_API_GRAPHICS render_context
 	{
 	public:
-		render_context( window& parentWindow, render_context_impl_type type = DefaultRenderContextImpl );
+		render_context( window& parentWindow, render_context_impl_type implType = kDefaultRenderContextImpl );
 		~render_context();
 
 		bool make_current();
@@ -37,12 +37,8 @@ namespace orb
 		static render_context* get_current();
 
 	private:
-		render_context_impl_storage m_storage;
-		window::subscription_ptr    m_resizeSubscription;
-
-	#if ( __ORB_NUM_RENDER_CONTEXT_IMPLS > 1 )
-		const render_context_impl_type m_implType;
-	#endif
+		render_context_impl      m_impl;
+		window::subscription_ptr m_resizeSubscription;
 
 	};
 }
