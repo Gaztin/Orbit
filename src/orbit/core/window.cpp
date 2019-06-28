@@ -19,14 +19,14 @@
 
 #include "orbit/core/utility.h"
 
-#if __ORB_HAS_WINDOW_IMPL_COCOA
+#if __ORB_HAS_WINDOW_API_COCOA
 @interface ORBCocoaWindowDelegate : NSObject< NSWindowDelegate >
 @property orb::window*      windowPtr;
 @property orb::window_impl* impl;
 @end
 #endif
 
-#if __ORB_HAS_WINDOW_IMPL_UIKIT
+#if __ORB_HAS_WINDOW_API_UIKIT
 @interface ORBUiKitWindow : UIWindow
 @property orb::window* windowPtr;
 @end
@@ -37,11 +37,11 @@ namespace orb
 	template< typename T >
 	constexpr auto window_impl_index_v = unique_index_v< T, window_impl >;
 
-	window::window( uint32_t width, uint32_t height, window_impl_type implType )
+	window::window( uint32_t width, uint32_t height, window_api api )
 		: m_impl{ }
 		, m_open( true )
 	{
-		switch( implType )
+		switch( api )
 		{
 			default:
 			{
@@ -50,8 +50,8 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
-			case window_impl_type::Win32:
+		#if __ORB_HAS_WINDOW_API_WIN32
+			case window_api::Win32:
 			{
 				auto             impl         = std::addressof( m_impl.emplace< __window_impl_win32 >() );
 				constexpr LPCSTR kClassName   = "Orbit";
@@ -125,8 +125,8 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_X11
-			case window_impl_type::X11:
+		#if __ORB_HAS_WINDOW_API_X11
+			case window_api::X11:
 			{
 				/* Open display */
 				auto impl     = std::addressof( m_impl.emplace< __window_impl_x11 >() );
@@ -150,8 +150,8 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_WAYLAND
-			case window_impl_type::Wayland:
+		#if __ORB_HAS_WINDOW_API_WAYLAND
+			case window_api::Wayland:
 			{
 				m_impl.emplace< __window_impl_wayland >();
 
@@ -159,8 +159,8 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_COCOA
-			case window_impl_type::Cocoa:
+		#if __ORB_HAS_WINDOW_API_COCOA
+			case window_api::Cocoa:
 			{
 				auto               impl      = std::addressof( m_impl.emplace< __window_impl_cocoa >() );
 				NSRect             frame     = NSMakeRect( 0.0f, 0.0f, width, height );
@@ -181,8 +181,8 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_ANDROID
-			case window_impl_type::Android:
+		#if __ORB_HAS_WINDOW_API_ANDROID
+			case window_api::Android:
 			{
 				auto appCmd = []( android_app* state, int cmd )
 				{
@@ -274,8 +274,8 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_UIKIT
-			case window_impl_type::UiKit:
+		#if __ORB_HAS_WINDOW_API_UIKIT
+			case window_api::UiKit:
 			{
 				auto impl = std::addressof( m_impl.emplace< __window_impl_uikit >() );
 
@@ -306,7 +306,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
+		#if __ORB_HAS_WINDOW_API_WIN32
 			case( window_impl_index_v< __window_impl_win32 > ):
 			{
 				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
@@ -315,7 +315,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_X11
+		#if __ORB_HAS_WINDOW_API_X11
 			case( window_impl_index_v< __window_impl_x11 > ):
 			{
 				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
@@ -325,14 +325,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		#if __ORB_HAS_WINDOW_API_WAYLAND
 //			case( window_impl_index_v< __window_impl_wayland > ):
 //			{
 //				break;
 //			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_COCOA
+		#if __ORB_HAS_WINDOW_API_COCOA
 			case( window_impl_index_v< __window_impl_cocoa > ):
 			{
 				auto impl = std::get_if< __window_impl_cocoa >( &m_impl );
@@ -343,7 +343,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		#if __ORB_HAS_WINDOW_API_ANDROID
 			case( window_impl_index_v< __window_impl_android > ):
 			{
 				ASensorManager_destroyEventQueue( impl->sensorManager, impl->sensorEventQueue );
@@ -353,7 +353,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		#if __ORB_HAS_WINDOW_API_UIKIT
 			case( window_impl_index_v< __window_impl_uikit > ):
 			{
 				auto impl = std::get_if< __window_impl_uikit >( &m_impl );
@@ -373,7 +373,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
+		#if __ORB_HAS_WINDOW_API_WIN32
 			case( window_impl_index_v< __window_impl_win32 > ):
 			{
 				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
@@ -389,7 +389,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_X11
+		#if __ORB_HAS_WINDOW_API_X11
 			case( window_impl_index_v< __window_impl_x11 > ):
 			{
 				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
@@ -456,14 +456,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		#if __ORB_HAS_WINDOW_API_WAYLAND
 //			case( window_impl_index_v< __window_impl_wayland > ):
 //			{
 //				break;
 //			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_COCOA
+		#if __ORB_HAS_WINDOW_API_COCOA
 			case( window_impl_index_v< __window_impl_cocoa > ):
 			{
 				auto     impl = std::get_if< __window_impl_cocoa >( &m_impl );
@@ -477,7 +477,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		#if __ORB_HAS_WINDOW_API_ANDROID
 			case( window_impl_index_v< __window_impl_android > ):
 			{
 				int                  events;
@@ -492,7 +492,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		#if __ORB_HAS_WINDOW_API_UIKIT
 //			case( window_impl_index_v< __window_impl_uikit > ):
 //			{
 //				break;
@@ -513,7 +513,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
+		#if __ORB_HAS_WINDOW_API_WIN32
 			case( window_impl_index_v< __window_impl_win32 > ):
 			{
 				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
@@ -522,7 +522,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_X11
+		#if __ORB_HAS_WINDOW_API_X11
 			case( window_impl_index_v< __window_impl_x11 > ):
 			{
 				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
@@ -531,14 +531,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		#if __ORB_HAS_WINDOW_API_WAYLAND
 			case( window_impl_index_v< __window_impl_wayland > ):
 			{
 				break;
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_COCOA
+		#if __ORB_HAS_WINDOW_API_COCOA
 			case( window_impl_index_v< __window_impl_cocoa > ):
 			{
 				auto      impl    = std::get_if< __window_impl_cocoa >( &m_impl );
@@ -550,7 +550,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		#if __ORB_HAS_WINDOW_API_ANDROID
 //			case( window_impl_index_v< __window_impl_android > ):
 //			{
 //				// #TODO: Activity.setTitle
@@ -558,7 +558,7 @@ namespace orb
 //			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		#if __ORB_HAS_WINDOW_API_UIKIT
 //			case( window_impl_index_v< __window_impl_uikit > ):
 //			{
 //				break;
@@ -578,7 +578,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
+		#if __ORB_HAS_WINDOW_API_WIN32
 			case( window_impl_index_v< __window_impl_win32 > ):
 			{
 				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
@@ -589,7 +589,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_X11
+		#if __ORB_HAS_WINDOW_API_X11
 			case( window_impl_index_v< __window_impl_x11 > ):
 			{
 				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
@@ -598,14 +598,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		#if __ORB_HAS_WINDOW_API_WAYLAND
 //			case( window_impl_index_v< __window_impl_wayland > ):
 //			{
 //				break;
 //			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_COCOA
+		#if __ORB_HAS_WINDOW_API_COCOA
 			case( window_impl_index_v< __window_impl_cocoa > ):
 			{
 				auto   impl    = std::get_if< __window_impl_cocoa >( &m_impl );
@@ -618,14 +618,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		#if __ORB_HAS_WINDOW_API_ANDROID
 			case( window_impl_index_v< __window_impl_android > ):
 			{
 				break;
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		#if __ORB_HAS_WINDOW_API_UIKIT
 			case( window_impl_index_v< __window_impl_uikit > ):
 			{
 				break;
@@ -645,7 +645,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
+		#if __ORB_HAS_WINDOW_API_WIN32
 			case( window_impl_index_v< __window_impl_win32 > ):
 			{
 				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
@@ -656,7 +656,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_X11
+		#if __ORB_HAS_WINDOW_API_X11
 			case( window_impl_index_v< __window_impl_x11 > ):
 			{
 				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
@@ -665,14 +665,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		#if __ORB_HAS_WINDOW_API_WAYLAND
 			case( window_impl_index_v< __window_impl_wayland > ):
 			{
 				break;
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_COCOA
+		#if __ORB_HAS_WINDOW_API_COCOA
 			case( window_impl_index_v< __window_impl_cocoa > ):
 			{
 				auto   impl       = std::get_if< __window_impl_cocoa >( &m_impl );
@@ -685,14 +685,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		#if __ORB_HAS_WINDOW_API_ANDROID
 //			case( window_impl_index_v< __window_impl_android > ):
 //			{
 //				break;
 //			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		#if __ORB_HAS_WINDOW_API_UIKIT
 //			case( window_impl_index_v< __window_impl_uikit > ):
 //			{
 //				break;
@@ -710,7 +710,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
+		#if __ORB_HAS_WINDOW_API_WIN32
 			case( window_impl_index_v< __window_impl_win32 > ):
 			{
 				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
@@ -719,7 +719,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_X11
+		#if __ORB_HAS_WINDOW_API_X11
 			case( window_impl_index_v< __window_impl_x11 > ):
 			{
 				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
@@ -728,14 +728,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		#if __ORB_HAS_WINDOW_API_WAYLAND
 //			case( window_impl_index_v< __window_impl_wayland > ):
 //			{
 //				break;
 //			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_COCOA
+		#if __ORB_HAS_WINDOW_API_COCOA
 			case( window_impl_index_v< __window_impl_cocoa > ):
 			{
 				auto impl = std::get_if< __window_impl_cocoa >( &m_impl );
@@ -745,7 +745,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		#if __ORB_HAS_WINDOW_API_ANDROID
 			case( window_impl_index_v< __window_impl_android > ):
 			{
 				// #TODO: Activity.setVisible
@@ -753,7 +753,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		#if __ORB_HAS_WINDOW_API_UIKIT
 			case( window_impl_index_v< __window_impl_uikit > ):
 			{
 				auto impl = std::get_if< __window_impl_uikit >( &m_impl );
@@ -774,7 +774,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_WINDOW_IMPL_WIN32
+		#if __ORB_HAS_WINDOW_API_WIN32
 			case( window_impl_index_v< __window_impl_win32 > ):
 			{
 				auto impl = std::get_if< __window_impl_win32 >( &m_impl );
@@ -783,7 +783,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_X11
+		#if __ORB_HAS_WINDOW_API_X11
 			case( window_impl_index_v< __window_impl_x11 > ):
 			{
 				auto impl = std::get_if< __window_impl_x11 >( &m_impl );
@@ -792,14 +792,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+		#if __ORB_HAS_WINDOW_API_WAYLAND
 //			case( window_impl_index_v< __window_impl_wayland > ):
 //			{
 //				break;
 //			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_COCOA
+		#if __ORB_HAS_WINDOW_API_COCOA
 			case( window_impl_index_v< __window_impl_cocoa > ):
 			{
 				auto impl = std::get_if< __window_impl_cocoa >( &m_impl );
@@ -808,14 +808,14 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_ANDROID
+		#if __ORB_HAS_WINDOW_API_ANDROID
 //			case( window_impl_index_v< __window_impl_android > ):
 //			{
 //				break;
 //			}
 		#endif
 
-		#if __ORB_HAS_WINDOW_IMPL_UIKIT
+		#if __ORB_HAS_WINDOW_API_UIKIT
 			case( window_impl_index_v< __window_impl_uikit > ):
 			{
 				auto impl = std::get_if< __window_impl_uikit >( &m_impl );
@@ -827,7 +827,7 @@ namespace orb
 	}
 }
 
-#if __ORB_HAS_WINDOW_IMPL_COCOA
+#if __ORB_HAS_WINDOW_API_COCOA
 
 @implementation ORBCocoaWindowDelegate
 
@@ -891,7 +891,7 @@ namespace orb
 
 #endif
 
-#if __ORB_HAS_WINDOW_IMPL_UIKIT
+#if __ORB_HAS_WINDOW_API_UIKIT
 
 @implementation ORBUiKitWindow
 

@@ -24,7 +24,7 @@
 #include "orbit/core/window.h"
 #include "orbit/core/utility.h"
 
-#if __ORB_HAS_WINDOW_IMPL_UIKIT
+#if __ORB_HAS_WINDOW_API_UIKIT
 @interface ORBGLKViewDelegate : UIResponder< GLKViewDelegate >
 @end
 #endif
@@ -39,20 +39,20 @@ namespace orb
 	template< typename T >
 	constexpr auto render_context_impl_index_v = unique_index_v< T, render_context_impl >;
 
-#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+#if __ORB_HAS_GRAPHICS_API_D3D11
 	constexpr DXGI_FORMAT kBackBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM;
 	constexpr DXGI_FORMAT kDepthBufferFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 #endif
-#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+#if __ORB_HAS_GRAPHICS_API_OPENGL
 	template< typename T >
 	constexpr auto opengl_render_context_impl_index_v = unique_index_v< T, __render_context_impl_opengl::__impl >;
 #endif
 
-	render_context::render_context( window& parentWindow, render_context_impl_type implType )
+	render_context::render_context( window& parentWindow, graphics_api api )
 		: m_impl{ }
 		, m_resizeSubscription{ }
 	{
-		switch( implType )
+		switch( api )
 		{
 			default:
 			{
@@ -60,8 +60,8 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
-			case render_context_impl_type::OpenGL:
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
+			case graphics_api::OpenGL:
 			{
 				auto parentWindowImpl = parentWindow.get_impl_ptr();
 				auto impl             = std::addressof( m_impl.emplace< __render_context_impl_opengl >() );
@@ -69,7 +69,7 @@ namespace orb
 				{
 					default: break;
 
-				#if __ORB_HAS_WINDOW_IMPL_WIN32
+				#if __ORB_HAS_WINDOW_API_WIN32
 					case( window_impl_index_v< __window_impl_win32 > ):
 					{
 						auto implGl = std::addressof( impl->impl.emplace< __render_context_impl_opengl::__impl_win32 >() );
@@ -152,7 +152,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_X11
+				#if __ORB_HAS_WINDOW_API_X11
 					case( window_impl_index_v< __window_impl_x11 > ):
 					{
 						auto implGl = std::addressof( impl->impl.emplace< __render_context_impl_opengl::__impl_x11 >() );
@@ -247,7 +247,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+				#if __ORB_HAS_WINDOW_API_WAYLAND
 					case( window_impl_index_v< __window_impl_wayland > ):
 					{
 						auto implGl = std::addressof( impl->impl.emplace< __render_context_impl_opengl::__impl_wayland >() );
@@ -255,7 +255,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_COCOA
+				#if __ORB_HAS_WINDOW_API_COCOA
 					case( window_impl_index_v< __window_impl_cocoa > ):
 					{
 						auto implGl = std::addressof( impl->impl.emplace< __render_context_impl_opengl::__impl_cocoa >() );
@@ -281,7 +281,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_ANDROID
+				#if __ORB_HAS_WINDOW_API_ANDROID
 					case( window_impl_index_v< __window_impl_android > ):
 					{
 						auto implGl = std::addressof( impl->impl.emplace< __render_context_impl_opengl::__impl_android >() );
@@ -387,7 +387,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_UIKIT
+				#if __ORB_HAS_WINDOW_API_UIKIT
 					case( window_impl_index_v< __window_impl_uikit > ):
 					{
 						auto implGl = std::addressof( impl->impl.emplace< __render_context_impl_opengl::__impl_uikit >() );
@@ -420,8 +420,8 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
-			case render_context_impl_type::D3D11:
+		#if __ORB_HAS_GRAPHICS_API_D3D11
+			case graphics_api::D3D11:
 			{
 				/* Win32 is the only supported window type for Direct3D 11 */
 				if( parentWindow.get_impl_ptr()->index() != window_impl_index_v< __window_impl_win32 > )
@@ -626,7 +626,7 @@ namespace orb
 		{
 			default: break;
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
 			case( render_context_impl_index_v< __render_context_impl_opengl > ):
 			{
 				[[ maybe_unused ]] auto impl = std::get_if< __render_context_impl_opengl >( &m_impl );
@@ -635,7 +635,7 @@ namespace orb
 				{
 					default: break;
 
-				#if __ORB_HAS_WINDOW_IMPL_WIN32
+				#if __ORB_HAS_WINDOW_API_WIN32
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_win32 > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_win32 >( &impl->impl );
@@ -647,7 +647,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_X11
+				#if __ORB_HAS_WINDOW_API_X11
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_x11 > ):
 					{
 						auto implGl  = std::get_if< __render_context_impl_opengl::__impl_x11 >( &impl->impl );
@@ -660,7 +660,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+				#if __ORB_HAS_WINDOW_API_WAYLAND
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_wayland > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_wayland >( &impl->impl );
@@ -670,7 +670,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_COCOA
+				#if __ORB_HAS_WINDOW_API_COCOA
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_cocoa > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_cocoa >( &impl->impl );
@@ -682,7 +682,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_ANDROID
+				#if __ORB_HAS_WINDOW_API_ANDROID
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_android > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_android >( &impl->impl );
@@ -695,7 +695,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_UIKIT
+				#if __ORB_HAS_WINDOW_API_UIKIT
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_uikit > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_uikit >( &impl->impl );
@@ -712,7 +712,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+		#if __ORB_HAS_GRAPHICS_API_D3D11
 //			case( render_context_impl_index_v< __render_context_impl_d3d11 > ):
 //			{
 //				break;
@@ -728,7 +728,7 @@ namespace orb
 
 	bool render_context::make_current()
 	{
-	#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+	#if __ORB_HAS_GRAPHICS_API_OPENGL
 		if( m_impl.index() == render_context_impl_index_v< __render_context_impl_opengl > )
 		{
 			auto impl = std::get_if< __render_context_impl_opengl >( &m_impl );
@@ -736,7 +736,7 @@ namespace orb
 			{
 				default: break;
 
-			#if __ORB_HAS_WINDOW_IMPL_WIN32
+			#if __ORB_HAS_WINDOW_API_WIN32
 				case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_win32 > ):
 				{
 					auto implGl = std::get_if< __render_context_impl_opengl::__impl_win32 >( &impl->impl );
@@ -746,7 +746,7 @@ namespace orb
 				}
 			#endif
 
-			#if __ORB_HAS_WINDOW_IMPL_X11
+			#if __ORB_HAS_WINDOW_API_X11
 				case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_x11 > ):
 				{
 					auto implGl  = std::get_if< __render_context_impl_opengl::__impl_x11 >( &impl->impl );
@@ -757,14 +757,14 @@ namespace orb
 				}
 			#endif
 
-			#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+			#if __ORB_HAS_WINDOW_API_WAYLAND
 //				case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_wayland > ):
 //				{
 //					break;
 //				}
 			#endif
 
-			#if __ORB_HAS_WINDOW_IMPL_COCOA
+			#if __ORB_HAS_WINDOW_API_COCOA
 				case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_cocoa > ):
 				{
 					auto implGl = std::get_if< __render_context_impl_opengl::__impl_cocoa >( &impl->impl );
@@ -773,7 +773,7 @@ namespace orb
 				}
 			#endif
 
-			#if __ORB_HAS_WINDOW_IMPL_ANDROID
+			#if __ORB_HAS_WINDOW_API_ANDROID
 				case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_android > ):
 				{
 					auto implGl = std::get_if< __render_context_impl_opengl::__impl_android >( &impl->impl );
@@ -782,7 +782,7 @@ namespace orb
 				}
 			#endif
 
-			#if __ORB_HAS_WINDOW_IMPL_UIKIT
+			#if __ORB_HAS_WINDOW_API_UIKIT
 				case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_uikit > ):
 				{
 					auto implGl = std::get_if< __render_context_impl_opengl::__impl_uikit >( &impl->impl );
@@ -813,7 +813,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
 			case( render_context_impl_index_v< __render_context_impl_opengl > ):
 			{
 				auto impl = std::get_if< __render_context_impl_opengl >( &m_impl );
@@ -823,7 +823,7 @@ namespace orb
 					case( opengl_render_context_impl_index_v< std::monostate > ):
 						break;
 
-				#if __ORB_HAS_WINDOW_IMPL_ANDROID
+				#if __ORB_HAS_WINDOW_API_ANDROID
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_android > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_android >( &impl->impl );
@@ -835,7 +835,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_UIKIT
+				#if __ORB_HAS_WINDOW_API_UIKIT
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_uikit > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_uikit >( &impl->impl );
@@ -851,7 +851,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+		#if __ORB_HAS_GRAPHICS_API_D3D11
 			case( render_context_impl_index_v< __render_context_impl_d3d11 > ):
 			{
 				auto impl = std::get_if< __render_context_impl_d3d11 >( &m_impl );
@@ -934,7 +934,7 @@ namespace orb
 		{
 			default: break;
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
 			case( render_context_impl_index_v< __render_context_impl_opengl > ):
 			{
 				auto impl = std::get_if< __render_context_impl_opengl >( &m_impl );
@@ -943,7 +943,7 @@ namespace orb
 				{
 					default: break;
 
-				#if __ORB_HAS_WINDOW_IMPL_WIN32
+				#if __ORB_HAS_WINDOW_API_WIN32
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_win32 > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_win32 >( &impl->impl );
@@ -952,7 +952,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_X11
+				#if __ORB_HAS_WINDOW_API_X11
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_x11 > ):
 					{
 						auto implGl  = std::get_if< __render_context_impl_opengl::__impl_x11 >( &impl->impl );
@@ -962,14 +962,14 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+				#if __ORB_HAS_WINDOW_API_WAYLAND
 //					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_wayland > ):
 //					{
 //						break;
 //					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_COCOA
+				#if __ORB_HAS_WINDOW_API_COCOA
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_cocoa > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_cocoa >( &impl->impl );
@@ -978,7 +978,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_ANDROID
+				#if __ORB_HAS_WINDOW_API_ANDROID
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_android > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_android >( &impl->impl );
@@ -987,7 +987,7 @@ namespace orb
 					}
 				#endif
 
-				#if __ORB_HAS_WINDOW_IMPL_UIKIT
+				#if __ORB_HAS_WINDOW_API_UIKIT
 					case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_uikit > ):
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_uikit >( &impl->impl );
@@ -1001,7 +1001,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+		#if __ORB_HAS_GRAPHICS_API_D3D11
 			case( render_context_impl_index_v< __render_context_impl_d3d11 > ):
 			{
 				auto impl = std::get_if< __render_context_impl_d3d11 >( &m_impl );
@@ -1022,7 +1022,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
 			case( render_context_impl_index_v< __render_context_impl_opengl > ):
 			{
 				GLbitfield glmask = 0;
@@ -1033,7 +1033,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+		#if __ORB_HAS_GRAPHICS_API_D3D11
 			case( render_context_impl_index_v< __render_context_impl_d3d11 > ):
 			{
 				auto impl = std::get_if< __render_context_impl_d3d11 >( &m_impl );
@@ -1059,7 +1059,7 @@ namespace orb
 				break;
 			}
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
 			case( render_context_impl_index_v< __render_context_impl_opengl > ):
 			{
 				glClearColor( r, g, b, 1.0f );
@@ -1067,7 +1067,7 @@ namespace orb
 			}
 		#endif
 
-		#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+		#if __ORB_HAS_GRAPHICS_API_D3D11
 			case( render_context_impl_index_v< __render_context_impl_d3d11 > ):
 			{
 				auto impl = std::get_if< __render_context_impl_d3d11 >( &m_impl );
@@ -1087,7 +1087,7 @@ namespace orb
 	}
 }
 
-#if __ORB_HAS_WINDOW_IMPL_UIKIT
+#if __ORB_HAS_WINDOW_API_UIKIT
 @implementation ORBGLKViewDelegate
 
 -( void )glkView:( nonnull GLKView* )view drawInRect:( CGRect )rect

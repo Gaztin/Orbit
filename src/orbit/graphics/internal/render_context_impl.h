@@ -24,43 +24,16 @@
 #include "orbit/core/internal/window_impl.h"
 #include "orbit/core/memory.h"
 #include "orbit/core/color.h"
+#include "orbit/graphics/internal/graphics_api.h"
 #include "orbit/graphics/platform/opengl/gl.h"
 #include "orbit/graphics.h"
 
-/* Assume that OpenGL is always available */
-#define __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL 1
-
-#if __has_include( <d3d11.h> )
-#  define __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11 1
-#else
-#  define __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11 0
-#endif
-
-#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
-#  include <d3d11.h>
-#endif
-
 namespace orb
 {
-
-#define __ORB_NUM_RENDER_CONTEXT_IMPLS ( __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL + \
-                                         __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11 )
-
-	enum class render_context_impl_type
-	{
-		Null = 0,
-	#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
-		OpenGL,
-	#endif
-	#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
-		D3D11,
-	#endif
-	};
-	
-#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+#if __ORB_HAS_GRAPHICS_API_OPENGL
 	struct __render_context_impl_opengl
 	{
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
+	#if __ORB_HAS_WINDOW_API_WIN32
 		struct __impl_win32
 		{
 			window_impl* parentWindowImpl;
@@ -68,7 +41,7 @@ namespace orb
 			HGLRC        renderContext;
 		};
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_X11
+	#if __ORB_HAS_WINDOW_API_X11
 		struct __impl_x11
 		{
 			window_impl_storage* parentWindowImpl;
@@ -76,18 +49,18 @@ namespace orb
 			GLXContext           glxContext;
 		};
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+	#if __ORB_HAS_WINDOW_API_WAYLAND
 		struct __impl_wayland
 		{
 		};
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_COCOA
+	#if __ORB_HAS_WINDOW_API_COCOA
 		struct __impl_cocoa
 		{
 			void* glView;
 		};
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_ANDROID
+	#if __ORB_HAS_WINDOW_API_ANDROID
 		struct __impl_android
 		{
 			EGLDisplay eglDisplay;
@@ -96,7 +69,7 @@ namespace orb
 			EGLContext eglContext;
 		};
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_UIKIT
+	#if __ORB_HAS_WINDOW_API_UIKIT
 		struct __impl_uikit
 		{
 			void* eaglContext;
@@ -105,22 +78,22 @@ namespace orb
 	#endif
 
 		using __impl = std::variant< std::monostate
-	#if __ORB_HAS_WINDOW_IMPL_WIN32
+	#if __ORB_HAS_WINDOW_API_WIN32
 		, __impl_win32
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_X11
+	#if __ORB_HAS_WINDOW_API_X11
 		, __impl_x11
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_WAYLAND
+	#if __ORB_HAS_WINDOW_API_WAYLAND
 		, __impl_wayland
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_COCOA
+	#if __ORB_HAS_WINDOW_API_COCOA
 		, __impl_cocoa
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_ANDROID
+	#if __ORB_HAS_WINDOW_API_ANDROID
 		, __impl_android
 	#endif
-	#if __ORB_HAS_WINDOW_IMPL_UIKIT
+	#if __ORB_HAS_WINDOW_API_UIKIT
 		, __impl_uikit
 	#endif
 		>;
@@ -130,7 +103,7 @@ namespace orb
 	};
 #endif
 
-#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+#if __ORB_HAS_GRAPHICS_API_D3D11
 	struct __render_context_impl_d3d11
 	{
 		com_ptr< IDXGISwapChain >          swapChain;
@@ -146,20 +119,12 @@ namespace orb
 #endif
 
 	using render_context_impl = std::variant< std::monostate
-#if __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
+#if __ORB_HAS_GRAPHICS_API_OPENGL
 		, __render_context_impl_opengl
 #endif
-#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
+#if __ORB_HAS_GRAPHICS_API_D3D11
 		, __render_context_impl_d3d11
 #endif
 	>;
 
-	constexpr render_context_impl_type kDefaultRenderContextImpl =
-#if __ORB_HAS_RENDER_CONTEXT_IMPL_D3D11
-		render_context_impl_type::D3D11;
-#elif __ORB_HAS_RENDER_CONTEXT_IMPL_OPENGL
-		render_context_impl_type::OpenGL;
-#else
-		render_context_impl_type::Null;
-#endif
 }

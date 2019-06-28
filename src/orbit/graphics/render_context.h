@@ -25,7 +25,7 @@ namespace orb
 	class ORB_API_GRAPHICS render_context
 	{
 	public:
-		render_context( window& parentWindow, render_context_impl_type implType = kDefaultRenderContextImpl );
+		render_context( window& parentWindow, graphics_api api = kDefaultGraphicsApi );
 		~render_context();
 
 		bool make_current();
