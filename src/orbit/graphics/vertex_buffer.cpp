@@ -43,12 +43,12 @@ namespace orb
 			case( render_context_impl_index_v< __render_context_impl_opengl > ):
 			{
 				auto  impl      = std::addressof( m_impl.emplace< __vertex_buffer_impl_opengl >() );
-				auto& functions = std::get_if< __render_context_impl_opengl >( currentContextImpl )->functions;
+				auto& functions = std::get_if< __render_context_impl_opengl >( currentContextImpl )->functions.value();
 
-				functions->gen_buffers( 1, &impl->id );
-				functions->bind_buffer( gl::buffer_target::Array, impl->id );
-				functions->buffer_data( gl::buffer_target::Array, totalSize, data, orb::gl::buffer_usage::StaticDraw );
-				functions->bind_buffer( gl::buffer_target::Array, 0 );
+				functions.gen_buffers( 1, &impl->id );
+				functions.bind_buffer( gl::buffer_target::Array, impl->id );
+				functions.buffer_data( gl::buffer_target::Array, totalSize, data, orb::gl::buffer_usage::StaticDraw );
+				functions.bind_buffer( gl::buffer_target::Array, 0 );
 
 				break;
 			}
@@ -95,9 +95,9 @@ namespace orb
 			case( vertex_buffer_impl_index_v< __vertex_buffer_impl_opengl > ):
 			{
 				auto  impl      = std::get_if< __vertex_buffer_impl_opengl >( &m_impl );
-				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions;
+				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
 
-				functions->delete_buffers( 1, &impl->id );
+				functions.delete_buffers( 1, &impl->id );
 
 				break;
 			}
@@ -124,9 +124,9 @@ namespace orb
 			case( vertex_buffer_impl_index_v< __vertex_buffer_impl_opengl > ):
 			{
 				auto  impl      = std::get_if< __vertex_buffer_impl_opengl >( &m_impl );
-				auto& functions = std::get_if< __render_context_impl_opengl >( currentContextImpl )->functions;
+				auto& functions = std::get_if< __render_context_impl_opengl >( currentContextImpl )->functions.value();
 
-				functions->bind_buffer( gl::buffer_target::Array, impl->id );
+				functions.bind_buffer( gl::buffer_target::Array, impl->id );
 
 				break;
 			}
