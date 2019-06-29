@@ -34,6 +34,8 @@ namespace orb
 		void clear( buffer_mask mask );
 		void set_clear_color( float r, float g, float b );
 
+		render_context_impl* get_impl_ptr() { return &m_impl; }
+
 		static render_context* get_current();
 
 	private:
