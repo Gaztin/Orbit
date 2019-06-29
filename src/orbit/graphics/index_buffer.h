@@ -17,10 +17,9 @@
 
 #pragma once
 
-#include <memory>
 #include <type_traits>
 
-#include "orbit/graphics/platform/buffer_base.h"
+#include "orbit/graphics/internal/index_buffer_impl.h"
 
 namespace orb
 {
@@ -36,14 +35,16 @@ namespace orb
 		{
 		}
 
+		~index_buffer();
+
 		void bind();
 
 		index_format get_format() const { return m_format; }
 		size_t       get_count()  const { return m_count; }
 
 	private:
-		std::unique_ptr< platform::buffer_base > m_base;
-		index_format                             m_format;
-		size_t                                   m_count;
+		index_buffer_impl m_impl;
+		index_format      m_format;
+		size_t            m_count;
 	};
 }
