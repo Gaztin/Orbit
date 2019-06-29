@@ -137,7 +137,7 @@ namespace orb
 				auto  impl      = std::get_if< __index_buffer_impl_opengl >( &m_impl );
 				auto& functions = std::get_if< __render_context_impl_opengl >( currentContextImpl )->functions;
 
-				functions->bind_buffer( gl::buffer_target::Array, impl->id );
+				functions->bind_buffer( gl::buffer_target::ElementArray, impl->id );
 
 				break;
 			}
