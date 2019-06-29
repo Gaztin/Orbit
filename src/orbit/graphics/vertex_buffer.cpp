@@ -32,7 +32,8 @@ namespace orb
 		: m_impl{ }
 		, m_count( count )
 	{
-		auto currentContextImpl = render_context::get_current()->get_impl_ptr();
+		auto         currentContextImpl = render_context::get_current()->get_impl_ptr();
+		const size_t totalSize          = ( count * stride );
 
 		switch( currentContextImpl->index() )
 		{
@@ -46,7 +47,7 @@ namespace orb
 
 				functions->gen_buffers( 1, &impl->id );
 				functions->bind_buffer( gl::buffer_target::Array, impl->id );
-				functions->buffer_data( gl::buffer_target::Array, ( count * stride ), data, orb::gl::buffer_usage::StaticDraw );
+				functions->buffer_data( gl::buffer_target::Array, totalSize, data, orb::gl::buffer_usage::StaticDraw );
 				functions->bind_buffer( gl::buffer_target::Array, 0 );
 
 				break;
@@ -60,7 +61,7 @@ namespace orb
 				ID3D11Device& device = *( std::get_if< __render_context_impl_d3d11 >( currentContextImpl )->device );
 
 				D3D11_BUFFER_DESC desc{ };
-				desc.ByteWidth = static_cast< UINT >( ( ( count * stride ) + 0xf ) & ~0xf ); /* Align by 16 bytes */
+				desc.ByteWidth = static_cast< UINT >( ( totalSize + 0xf ) & ~0xf ); /* Align by 16 bytes */
 				desc.Usage     = D3D11_USAGE_DEFAULT;
 				desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
