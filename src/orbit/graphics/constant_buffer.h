@@ -21,8 +21,7 @@
 #include <tuple>
 
 #include "orbit/core/utility.h"
-#include "orbit/graphics/platform/constant_buffer_base.h"
-#include "orbit/graphics/shader_constant.h"
+#include "orbit/graphics/internal/constant_buffer_impl.h"
 
 namespace orb
 {
@@ -36,6 +35,8 @@ namespace orb
 			: constant_buffer( ( 0 + ... + sizeof( Types ) ) )
 		{
 		}
+
+		~constant_buffer();
 
 		void bind   ( shader_type type, uint32_t slot );
 		void update ( size_t location, const void* data, size_t size );
@@ -57,6 +58,7 @@ namespace orb
 			( void )l;
 		}
 
-		std::unique_ptr< platform::constant_buffer_base > m_base;
+		constant_buffer_impl m_impl;
+
 	};
 }
