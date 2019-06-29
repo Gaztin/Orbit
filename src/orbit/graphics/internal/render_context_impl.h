@@ -24,6 +24,7 @@
 #include "orbit/core/internal/window_impl.h"
 #include "orbit/core/memory.h"
 #include "orbit/core/color.h"
+#include "orbit/core/version.h"
 #include "orbit/graphics/internal/graphics_api.h"
 #include "orbit/graphics/platform/opengl/gl.h"
 #include "orbit/graphics.h"
@@ -33,6 +34,8 @@ namespace orb
 #if __ORB_HAS_GRAPHICS_API_OPENGL
 	struct __render_context_impl_opengl
 	{
+		version version;
+
 	#if __ORB_HAS_WINDOW_API_WIN32
 		struct __impl_win32
 		{

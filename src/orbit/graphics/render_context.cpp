@@ -412,9 +412,12 @@ namespace orb
 
 				/* Load functions */
 				make_current();
-				//impl->functions = std::make_optional< gl::functions >();
 				impl->functions.emplace();
-				log_info( format( "GL_VERSION: %s", reinterpret_cast< const char* >( glGetString( GL_VERSION ) ) ) );
+
+				const GLubyte* glVersion = glGetString( GL_VERSION );
+				impl->version = version( glVersion[ 0 ], glVersion[ 1 ] );
+
+				log_info( format( "OpenGL version: %d.%d", impl->version.get_major(), impl->version.get_minor() ) );
 
 				break;
 			}
