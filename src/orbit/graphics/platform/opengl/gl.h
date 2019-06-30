@@ -922,8 +922,6 @@ namespace orb
 			function< proc_literal_t< 'g', 'l', 'G', 'e', 'n', 'V', 'e', 'r', 't', 'e', 'x', 'A', 'r', 'r', 'a', 'y', 's' >,                  void( GLsizei n, GLuint* arrays )> gen_vertex_arrays;
 			function< proc_literal_t< 'g', 'l', 'I', 's', 'V', 'e', 'r', 't', 'e', 'x', 'A', 'r', 'r', 'a', 'y' >,                            GLboolean( GLuint array )> is_vertex_array;
 		};
-
-		extern ORB_API_GRAPHICS functions& get_current_functions();
 	}
 }
 

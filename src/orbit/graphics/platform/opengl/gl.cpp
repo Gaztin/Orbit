@@ -100,29 +100,5 @@ namespace orb
 				orb::log_error( format( "Unknown error: %d", err ) );
 			}
 		}
-
-		functions& get_current_functions()
-		{
-			thread_local gl::functions defaultFunctions;
-
-			render_context* ctx = render_context::get_current();
-			if( !ctx )
-				return defaultFunctions;
-
-			switch( ctx->get_api() )
-			{
-				case graphics_api::OpenGL_2_0:
-				case graphics_api::OpenGL_3_2:
-				case graphics_api::OpenGL_4_1:
-				case graphics_api::OpenGL_ES_2:
-				case graphics_api::OpenGL_ES_3:
-					return static_cast< orb::platform::render_context_gl* >( &ctx->get_base() )->get_functions();
-
-				case graphics_api::Direct3D_11:
-					return defaultFunctions;
-			}
-
-			return defaultFunctions;
-		}
 	}
 }
