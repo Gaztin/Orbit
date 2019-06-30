@@ -137,11 +137,11 @@ namespace orb
 									0
 								};
 
-								wglCreateContextAttribsARB( implGl->deviceContext, nullptr, contextAttributes );
+								implGl->renderContext = wglCreateContextAttribsARB( implGl->deviceContext, nullptr, contextAttributes );
 							}
 							else
 							{
-								wglCreateContext( implGl->deviceContext );
+								implGl->renderContext = wglCreateContext( implGl->deviceContext );
 							}
 						}
 
