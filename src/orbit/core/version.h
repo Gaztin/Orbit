@@ -39,6 +39,13 @@ namespace orb
 		constexpr bool operator<= ( const version& v ) const { return ( *this == v || *this < v ); }
 		constexpr bool operator>= ( const version& v ) const { return ( *this == v || *this > v ); }
 
+		constexpr operator uint32_t() const
+		{
+			return ( static_cast< uint32_t >( m_major ) << 24 ) |
+			       ( static_cast< uint32_t >( m_minor ) << 16 ) |
+			       ( static_cast< uint32_t >( m_patch ) );
+		}
+
 	private:
 		uint8_t  m_major;
 		uint8_t  m_minor;
