@@ -624,6 +624,11 @@ namespace orb
 					this->resize( e.data.resize.w, e.data.resize.h );
 			}
 		);
+
+		if( CurrentContext == nullptr )
+		{
+			make_current();
+		}
 	}
 
 	render_context::~render_context()
