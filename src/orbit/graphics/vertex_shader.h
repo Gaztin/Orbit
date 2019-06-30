@@ -17,25 +17,19 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
-
-#include "orbit/graphics/platform/shader_base.h"
+#include "orbit/graphics/internal/vertex_shader_impl.h"
 
 namespace orb
 {
 	class asset;
 
-	class ORB_API_GRAPHICS shader
+	class ORB_API_GRAPHICS vertex_shader
 	{
 	public:
-		shader( shader_type t, const asset& ast );
-
-		shader_type get_type() const { return m_base->get_type(); }
-
-		const platform::shader_base& get_base() const { return *m_base; }
+		explicit vertex_shader( const asset& asset );
 
 	private:
-		std::unique_ptr< platform::shader_base > m_base;
+		vertex_shader_impl m_impl;
+
 	};
 }
