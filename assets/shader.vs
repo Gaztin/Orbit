@@ -1,7 +1,7 @@
 #if defined(ORB_GLSL)
 
 ORB_CONSTANTS_BEGIN(Constants)
-ORB_CONSTANT(float, diffuse)
+	ORB_CONSTANT(float, diffuse);
 ORB_CONSTANTS_END
 
 ORB_ATTRIBUTE vec4 a_position;
