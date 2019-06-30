@@ -337,6 +337,9 @@ namespace orb
 				auto implVert = std::get_if< __vertex_shader_impl_d3d11 >( vert.get_impl_ptr() );
 				auto implFrag = std::get_if< __fragment_shader_impl_d3d11 >( frag.get_impl_ptr() );
 
+				impl->vertexData.reset( implVert->vertexData.get() );
+				impl->vertexData->AddRef();
+
 				impl->vertexShader.reset( implVert->vertexShader.get() );
 				impl->vertexShader->AddRef();
 
