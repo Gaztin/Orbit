@@ -40,7 +40,7 @@ namespace orb
 #if __ORB_HAS_GRAPHICS_API_D3D11
 	struct __vertex_shader_impl_d3d11
 	{
-		com_ptr< ID3DBlob >           blob;
+		com_ptr< ID3DBlob >           vertexData;
 		com_ptr< ID3D11VertexShader > vertexShader;
 	};
 #endif
