@@ -418,7 +418,7 @@ namespace orb
 				impl->embedded = ( glVersion[ 0 ] == u'E' && glVersion[ 1 ] == u'S' );
 				if( impl->embedded )
 					glVersion += 3;
-				impl->version = version( glVersion[ 0 ], glVersion[ 1 ] );
+				impl->version = version( glVersion[ 0 ] - u'0', glVersion[ 2 ] - u'0', glVersion[ 4 ] - u'0' );
 
 				log_info( format( "OpenGL version: %s %d.%d", impl->embedded ? "ES" : "", impl->version.get_major(), impl->version.get_minor() ) );
 
