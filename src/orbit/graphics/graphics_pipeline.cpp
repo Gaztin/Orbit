@@ -378,7 +378,7 @@ namespace orb
 			}
 			case( graphics_pipeline_impl_index_v< __graphics_pipeline_impl_opengl_3_0 > ):
 			{
-				auto impl = std::get_if< __graphics_pipeline_impl_opengl_2_0 >( &m_impl );
+				auto impl = std::get_if< __graphics_pipeline_impl_opengl_3_0 >( &m_impl );
 
 				impl->layout.assign( layout );
 
