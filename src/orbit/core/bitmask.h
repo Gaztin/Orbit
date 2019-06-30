@@ -30,7 +30,7 @@ namespace orb
 	template< typename E >
 	struct enable_bit_masking
 	{
-		static constexpr bool Enable = false;
+		static constexpr bool kEnable = false;
 	};
 
 	template< typename E >
