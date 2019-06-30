@@ -879,8 +879,6 @@ namespace orb
 
 				/* Recreate render target */
 				{
-					impl->renderTargetView->Release();
-
 					ID3D11Texture2D* backBuffer;
 					impl->swapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &backBuffer ) );
 					ID3D11RenderTargetView* renderTargetView;
