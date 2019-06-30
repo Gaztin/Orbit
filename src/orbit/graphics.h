@@ -73,6 +73,12 @@ namespace orb
 		static constexpr index_format kFormat  = static_cast< index_format >( 0 );
 	};
 
+	template< typename T >
+	constexpr auto is_index_format_v = index_format_traits< T >::kEnabled;
+
+	template< typename T >
+	constexpr auto index_format_v = index_format_traits< T >::kFormat;
+
 	template<>
 	struct index_format_traits< uint8_t >
 	{

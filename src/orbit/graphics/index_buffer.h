@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <initializer_list>
 #include <type_traits>
 
 #include "orbit/graphics/internal/index_buffer_impl.h"
@@ -29,9 +30,9 @@ namespace orb
 		index_buffer( index_format fmt, const void* data, size_t count );
 
 		template< typename T,
-			typename = typename std::enable_if_t< index_format_traits< T >::Enabled > >
+			typename = typename std::enable_if_t< is_index_format_v< T > > >
 		index_buffer( std::initializer_list< T > indices )
-			: index_buffer( index_format_traits< T >::Format, indices.begin(), indices.size() )
+			: index_buffer( index_format_v< T >, indices.begin(), indices.size() )
 		{
 		}
 
