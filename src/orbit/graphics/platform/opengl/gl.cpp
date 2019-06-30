@@ -22,7 +22,6 @@
 
 #include "orbit/core/log.h"
 #include "orbit/core/utility.h"
-#include "orbit/graphics/platform/opengl/render_context_gl.h"
 #include "orbit/graphics/render_context.h"
 
 #if defined( ORB_OS_LINUX )
