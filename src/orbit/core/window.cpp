@@ -54,7 +54,7 @@ namespace orb
 			case window_api::Win32:
 			{
 				auto             impl         = std::addressof( m_impl.emplace< __window_impl_win32 >() );
-				constexpr LPCSTR kClassName   = "Orbit";
+				constexpr LPCSTR kClassName   = "OrbitWindow";
 				static ATOM      windowClass  = [ & ]
 				{
 					auto wndproc = []( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
