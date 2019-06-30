@@ -26,19 +26,20 @@
 #include <orbit/core/utility.h>
 #include <orbit/core/window.h>
 #include <orbit/graphics/constant_buffer.h>
+#include <orbit/graphics/fragment_shader.h>
 #include <orbit/graphics/graphics_pipeline.h>
 #include <orbit/graphics/index_buffer.h>
 #include <orbit/graphics/render_context.h>
-#include <orbit/graphics/shader.h>
 #include <orbit/graphics/vertex_buffer.h>
+#include <orbit/graphics/vertex_shader.h>
 
-class sample_app : public orb::application< sample_app >
+class sample_app final : public orb::application< sample_app >
 {
 public:
 	sample_app();
 
-	void frame() final override;
-	operator bool() const final override { return !!m_window; }
+	void frame();
+	bool is_running() { return !!m_window; }
 
 	static void on_window_event( const orb::window_event& e );
 
@@ -46,8 +47,8 @@ private:
 	orb::window                   m_window;
 	orb::window::subscription_ptr m_windowSubscription;
 	orb::render_context           m_renderContext;
-	orb::shader                   m_vertexShader;
-	orb::shader                   m_fragmentShader;
+	orb::vertex_shader            m_vertexShader;
+	orb::fragment_shader          m_fragmentShader;
 	orb::vertex_buffer            m_triangleVertexBuffer;
 	orb::index_buffer             m_triangleIndexBuffer;
 	orb::constant_buffer          m_triangleConstantBuffer;
@@ -89,9 +90,9 @@ std::tuple triangleConstants = std::make_tuple
 sample_app::sample_app()
 	: m_window( 800, 600 )
 	, m_windowSubscription( m_window.subscribe( &sample_app::on_window_event ) )
-	, m_renderContext( m_window, orb::get_system_default_graphics_api() )
-	, m_vertexShader( orb::shader_type::Vertex, orb::asset( "shader.vs" ) )
-	, m_fragmentShader( orb::shader_type::Fragment, orb::asset( "shader.fs" ) )
+	, m_renderContext( m_window, orb::graphics_api::OpenGL )
+	, m_vertexShader( orb::asset( "shader.vs" ) )
+	, m_fragmentShader( orb::asset( "shader.fs" ) )
 	, m_triangleVertexBuffer( triangleVertices )
 	, m_triangleIndexBuffer( triangleIndices )
 	, m_triangleConstantBuffer( triangleConstants )
@@ -101,8 +102,7 @@ sample_app::sample_app()
 	m_window.show();
 	m_renderContext.set_clear_color( 0.0f, 0.0f, 0.5f );
 
-	m_mainPipeline.add_shader( m_vertexShader );
-	m_mainPipeline.add_shader( m_fragmentShader );
+	m_mainPipeline.set_shaders( m_vertexShader, m_fragmentShader );
 	m_mainPipeline.describe_vertex_layout( vertexLayout );
 
 	/* Load text asset and log its contents */
