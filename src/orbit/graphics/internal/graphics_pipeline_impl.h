@@ -22,7 +22,6 @@
 
 #include "orbit/core/memory.h"
 #include "orbit/graphics/internal/graphics_api.h"
-#include "orbit/graphics/platform/opengl/vertex_array_object_gl.h"
 #include "orbit/graphics/vertex_layout.h"
 
 #if __ORB_HAS_GRAPHICS_API_OPENGL
