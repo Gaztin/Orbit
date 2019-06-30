@@ -35,7 +35,11 @@ namespace orb
 		if( s_instance || !s_initializer )
 			return;
 
-		s_instance = std::static_pointer_cast< application_base >( s_initializer() );
+		/* Initialize application instance */
+		{
+			auto ptr = ( s_initializer() );
+			s_instance.swap( reinterpret_cast< std::shared_ptr< application_base >& >( ptr ) );
+		}
 
 	#if defined( ORB_OS_IOS )
 
@@ -46,7 +50,7 @@ namespace orb
 
 	#else
 
-		while( *s_instance )
+		while( s_instance->is_running() )
 		{
 			s_instance->frame();
 		}

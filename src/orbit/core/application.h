@@ -31,7 +31,7 @@ namespace orb
 		virtual ~application_base() = default;
 
 		virtual void frame() { }
-		virtual operator bool() const { return false; };
+		virtual bool is_running() = 0;
 
 		static void run_instance();
 
