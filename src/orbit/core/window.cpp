@@ -207,7 +207,7 @@ namespace orb
 
 						case APP_CMD_GAINED_FOCUS:
 						{
-							auto impl = reinterpret_cast< __window_impl_android* >( w->get_package_ptr() );
+							auto impl = std::get_if< __window_impl_android >( w->get_impl_ptr() );
 							ASensorEventQueue_enableSensor( impl->sensorEventQueue, impl->accelerometerSensor );
 							ASensorEventQueue_setEventRate( impl->sensorEventQueue, impl->accelerometerSensor, ( 1000 * 1000 / 60 ) );
 							w->queue_event( { window_event::Focus } );
@@ -216,9 +216,9 @@ namespace orb
 
 						case APP_CMD_LOST_FOCUS:
 						{
-							auto impl = reinterpret_cast< __window_impl_android* >( w->get_package_ptr() );
+							auto impl = std::get_if< __window_impl_android >( w->get_impl_ptr() );
 							ASensorEventQueue_disableSensor( impl->sensorEventQueue, impl->accelerometerSensor );
-							wnd.queue_event( { window_event::Defocus } );
+							w->queue_event( { window_event::Defocus } );
 							break;
 						}
 
@@ -347,6 +347,7 @@ namespace orb
 		#if __ORB_HAS_WINDOW_API_ANDROID
 			case( window_impl_index_v< __window_impl_android > ):
 			{
+				auto impl = std::get_if< __window_impl_android >( &m_impl );
 				ASensorManager_destroyEventQueue( impl->sensorManager, impl->sensorEventQueue );
 				android_only::app->userData = nullptr;
 				android_only::app->onAppCmd = nullptr;

@@ -294,23 +294,24 @@ namespace orb
 						/* Initialize display */
 						{
 							implGl->eglDisplay = eglGetDisplay( EGL_DEFAULT_DISPLAY );
-							eglInitialize( display, nullptr, nullptr );
+							eglInitialize( implGl->eglDisplay, nullptr, nullptr );
 						}
 
 						/* Choose config */
+						implGl->eglConfig = EGL_NO_CONFIG_KHR;
+						do
 						{
 							EGLint configCount = 0;
-							if( !eglGetConfigs( display, nullptr, 0, &configCount ) )
-								return EGL_NO_CONFIG_KHR;
+							if( !eglGetConfigs( implGl->eglDisplay, nullptr, 0, &configCount ) )
+								break;
 
 							std::vector< EGLConfig > configs( static_cast< size_t >( configCount ) );
-							if( !eglGetConfigs( display, configs.data(), configs.size(), &configCount ) )
-								return EGL_NO_CONFIG_KHR;
+							if( !eglGetConfigs( implGl->eglDisplay, configs.data(), configs.size(), &configCount ) )
+								break;
 
 							const EGLint requiredConformant  = EGL_OPENGL_ES3_BIT_KHR;
 							const EGLint requiredSurfaceType = ( EGL_WINDOW_BIT | EGL_PBUFFER_BIT );
 
-							implGl->eglConfig        = EGL_NO_CONFIG_KHR;
 							EGLint    bestRedSize    = -1;
 							EGLint    bestGreenSize  = -1;
 							EGLint    bestBlueSize   = -1;
@@ -321,42 +322,42 @@ namespace orb
 							for( const EGLConfig& config : configs )
 							{
 								EGLint conformant = 0;
-								eglGetConfigAttrib( display, config, EGL_CONFORMANT, &conformant );
+								eglGetConfigAttrib( implGl->eglDisplay, config, EGL_CONFORMANT, &conformant );
 								if( ( conformant & requiredConformant ) == 0 )
 									continue;
 
 								EGLint surfaceType = 0;
-								eglGetConfigAttrib( display, config, EGL_SURFACE_TYPE, &surfaceType );
+								eglGetConfigAttrib( implGl->eglDisplay, config, EGL_SURFACE_TYPE, &surfaceType );
 								if( ( surfaceType & requiredSurfaceType ) == 0 )
 									continue;
 
 								EGLint redSize = 0;
-								eglGetConfigAttrib( display, config, EGL_RED_SIZE, &redSize );
+								eglGetConfigAttrib( implGl->eglDisplay, config, EGL_RED_SIZE, &redSize );
 								if( redSize < bestRedSize )
 									continue;
 
 								EGLint greenSize = 0;
-								eglGetConfigAttrib( display, config, EGL_RED_SIZE, &greenSize );
+								eglGetConfigAttrib( implGl->eglDisplay, config, EGL_RED_SIZE, &greenSize );
 								if( greenSize < bestGreenSize )
 									continue;
 
 								EGLint blueSize = 0;
-								eglGetConfigAttrib( display, config, EGL_RED_SIZE, &blueSize );
+								eglGetConfigAttrib( implGl->eglDisplay, config, EGL_RED_SIZE, &blueSize );
 								if( blueSize < bestBlueSize )
 									continue;
 
 								EGLint alphaSize = 0;
-								eglGetConfigAttrib( display, config, EGL_RED_SIZE, &alphaSize );
+								eglGetConfigAttrib( implGl->eglDisplay, config, EGL_RED_SIZE, &alphaSize );
 								if( alphaSize < bestAlphaSize )
 									continue;
 
 								EGLint bufferSize = 0;
-								eglGetConfigAttrib( display, config, EGL_BUFFER_SIZE, &bufferSize );
+								eglGetConfigAttrib( implGl->eglDisplay, config, EGL_BUFFER_SIZE, &bufferSize );
 								if( bufferSize < bestBufferSize )
 									continue;
 
 								EGLint depthSize = 0;
-								eglGetConfigAttrib( display, config, EGL_DEPTH_SIZE, &depthSize );
+								eglGetConfigAttrib( implGl->eglDisplay, config, EGL_DEPTH_SIZE, &depthSize );
 								if( depthSize < bestDepthSize )
 									continue;
 
@@ -372,7 +373,7 @@ namespace orb
 							EGLint visualId = 0;
 							eglGetConfigAttrib( implGl->eglDisplay, implGl->eglConfig, EGL_NATIVE_VISUAL_ID, &visualId );
 							ANativeWindow_setBuffersGeometry( android_only::app->window, 0, 0, visualId );
-						}
+						} while( false );
 
 						/* Create window surface */
 						implGl->eglSurface = eglCreateWindowSurface( implGl->eglDisplay, implGl->eglConfig, android_only::app->window, nullptr );
@@ -385,7 +386,7 @@ namespace orb
 								EGL_NONE,
 							};
 
-							return eglCreateContext( implGl->eglDisplay, implGl->eglConfig, EGL_NO_CONTEXT, attribs );
+							implGl->eglContext = eglCreateContext( implGl->eglDisplay, implGl->eglConfig, EGL_NO_CONTEXT, attribs );
 						}
 
 						break;
@@ -793,7 +794,7 @@ namespace orb
 				case( opengl_render_context_impl_index_v< __render_context_impl_opengl::__impl_android > ):
 				{
 					auto implGl = std::get_if< __render_context_impl_opengl::__impl_android >( &impl->impl );
-					eglMakeCurrent( implGl->eglDisplay, implGl->eglSurface, implGl->eglSurface, implGl->eglContext )
+					eglMakeCurrent( implGl->eglDisplay, implGl->eglSurface, implGl->eglSurface, implGl->eglContext );
 					break;
 				}
 			#endif
@@ -844,7 +845,7 @@ namespace orb
 					{
 						auto implGl = std::get_if< __render_context_impl_opengl::__impl_android >( &impl->impl );
 						eglMakeCurrent( implGl->eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
-						if( egl->eglSurface != EGL_NO_SURFACE )
+						if( implGl->eglSurface != EGL_NO_SURFACE )
 							eglDestroySurface( implGl->eglDisplay, implGl->eglSurface );
 						implGl->eglSurface = eglCreateWindowSurface( implGl->eglDisplay, implGl->eglConfig, android_only::app->window, nullptr );
 						break;
