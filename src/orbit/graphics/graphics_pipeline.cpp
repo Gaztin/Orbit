@@ -169,6 +169,7 @@ namespace orb
 				auto  impl      = std::get_if< __graphics_pipeline_impl_opengl_3_0 >( &m_impl );
 				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
 
+				functions.bind_vertex_array( impl->vao );
 				functions.use_program( impl->shaderProgram );
 
 				const uint8_t* ptr = nullptr;
