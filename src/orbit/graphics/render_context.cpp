@@ -871,6 +871,16 @@ namespace orb
 				impl->deviceContext->ClearState();
 				impl->deviceContext->Flush();
 
+				D3D11_TEXTURE2D_DESC depthStencilBufferDesc{ };
+				impl->depthStencilBuffer->GetDesc( &depthStencilBufferDesc );
+
+				D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{ };
+				impl->depthStencilView->GetDesc( &depthStencilViewDesc );
+
+				impl->renderTargetView.reset();
+				impl->depthStencilBuffer.reset();
+				impl->depthStencilView.reset();
+
 				DXGI_SWAP_CHAIN_DESC swapChainDesc{ };
 				impl->swapChain->GetDesc( &swapChainDesc );
 				swapChainDesc.BufferDesc.Width  = width;
@@ -889,25 +899,20 @@ namespace orb
 
 				/* Recreate depth stencil */
 				{
-					D3D11_TEXTURE2D_DESC bufferDesc{ };
-					impl->depthStencilBuffer->GetDesc( &bufferDesc );
-					bufferDesc.Width  = width;
-					bufferDesc.Height = height;
+					depthStencilBufferDesc.Width  = width;
+					depthStencilBufferDesc.Height = height;
 
 					ID3D11Texture2D* depthStencilBuffer;
-					impl->device->CreateTexture2D( &bufferDesc, NULL, &depthStencilBuffer );
+					impl->device->CreateTexture2D( &depthStencilBufferDesc, NULL, &depthStencilBuffer );
 					impl->depthStencilBuffer.reset( depthStencilBuffer );
 
-					D3D11_DEPTH_STENCIL_VIEW_DESC viewDesc{ };
-					impl->depthStencilView->GetDesc( &viewDesc );
-
 					ID3D11DepthStencilView* depthStencilView;
-					impl->device->CreateDepthStencilView( depthStencilBuffer, &viewDesc, &depthStencilView );
-					ID3D11RenderTargetView* renderTargetViews[] = { impl->renderTargetView.get() };
-					impl->deviceContext->OMSetRenderTargets( 1, renderTargetViews, depthStencilView );
+					impl->device->CreateDepthStencilView( depthStencilBuffer, &depthStencilViewDesc, &depthStencilView );
 					impl->depthStencilView.reset( depthStencilView );
 				}
 
+				ID3D11RenderTargetView* renderTargetViews[] = { impl->renderTargetView.get() };
+				impl->deviceContext->OMSetRenderTargets( 1, renderTargetViews, impl->depthStencilView.get() );
 				impl->deviceContext->OMSetDepthStencilState( impl->depthStencilState.get(), 0 );
 				impl->deviceContext->RSSetState( impl->rasterizerState.get() );
 				impl->deviceContext->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
