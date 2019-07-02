@@ -775,13 +775,12 @@ namespace orb
 					using ptr_t = void( ORB_GL_CALL* )( Args... );
 
 					// Reset error code to 0
-					GLenum err = glGetError();
+					while( glGetError() != GL_NO_ERROR )
+					{ }
 
 					reinterpret_cast< ptr_t >( m_ptr )( args... );
 
-					err = glGetError();
-					if( err != GL_NO_ERROR )
-						orb::gl::handle_error( err );
+					orb::gl::handle_error( glGetError() );
 				}
 
 			private:
