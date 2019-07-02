@@ -55,8 +55,8 @@ namespace orb
 
 					switch( implCtx->version )
 					{
-						default:
 						case version( 2 ): versionString = "#version 100\n";    break;
+						default:
 						case version( 3 ): versionString = "#version 300\n";    break;
 //						case version( 3 ): versionString = "#version 300 es\n"; break;
 					}
@@ -65,7 +65,6 @@ namespace orb
 				{
 					switch( implCtx->version )
 					{
-						default:
 						case version( 2, 0 ):  versionString = "#version 110\n"; break;
 						case version( 2, 1 ):  versionString = "#version 120\n"; break;
 						case version( 3, 0 ):  versionString = "#version 130\n"; break;
@@ -75,6 +74,7 @@ namespace orb
 						case version( 4, 0 ):  versionString = "#version 400\n"; break;
 						case version( 4, 1 ):  versionString = "#version 410\n"; break;
 						case version( 4, 2 ):  versionString = "#version 420\n"; break;
+						default:
 						case version( 4, 3 ):  versionString = "#version 430\n"; break;
 					}
 				}
