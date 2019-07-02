@@ -27,6 +27,7 @@ namespace orb
 	{
 	public:
 		explicit vertex_shader( const asset& asset );
+		~vertex_shader();
 
 		vertex_shader_impl*       get_impl_ptr()       { return &m_impl; }
 		const vertex_shader_impl* get_impl_ptr() const { return &m_impl; }

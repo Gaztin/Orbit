@@ -27,6 +27,7 @@ namespace orb
 	{
 	public:
 		explicit fragment_shader( const asset& asset );
+		~fragment_shader();
 
 		fragment_shader_impl*       get_impl_ptr()       { return &m_impl; }
 		const fragment_shader_impl* get_impl_ptr() const { return &m_impl; }

@@ -171,4 +171,30 @@ namespace orb
 		#endif
 		}
 	}
+
+	fragment_shader::~fragment_shader()
+	{
+		switch( m_impl.index() )
+		{
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
+			case( fragment_shader_impl_index_v< __fragment_shader_impl_opengl > ):
+			{
+				auto  impl      = std::get_if< __fragment_shader_impl_opengl >( &m_impl );
+				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
+
+				functions.delete_shader( impl->id );
+
+				break;
+			}
+		#endif
+
+		#if __ORB_HAS_GRAPHICS_API_D3D11
+			case( fragment_shader_impl_index_v< __fragment_shader_impl_d3d11 > ):
+			{
+			#error Clean up D3D11 pixel shader
+				break;
+			}
+		#endif
+		}
+	}
 }
