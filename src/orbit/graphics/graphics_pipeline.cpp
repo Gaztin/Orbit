@@ -488,9 +488,9 @@ namespace orb
 				switch( ib.get_format() )
 				{
 					default:
-					case index_format::Byte:       indexType = gl::index_type::Byte;
-					case index_format::Word:       indexType = gl::index_type::Short;
-					case index_format::DoubleWord: indexType = gl::index_type::Int;
+					case index_format::Byte:       indexType = gl::index_type::Byte;  break;
+					case index_format::Word:       indexType = gl::index_type::Short; break;
+					case index_format::DoubleWord: indexType = gl::index_type::Int;   break;
 				}
 
 				functions.draw_elements( gl::draw_mode::Triangles, static_cast< GLsizei >( ib.get_count() ), indexType, nullptr );
