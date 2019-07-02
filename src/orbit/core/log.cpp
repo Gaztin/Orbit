@@ -27,10 +27,26 @@ namespace orb
 {
 	static void log_info_internal( const char* msg )
 	{
-	#if defined( ORB_OS_ANDROID )
+	#if defined( ORB_OS_WINDOWS )
+
+		if( IsDebuggerPresent() )
+		{
+			OutputDebugStringA( msg );
+			OutputDebugStringA( "\n" );
+		}
+		else
+		{
+			printf( "%s\n", msg );
+		}
+
+	#elif defined( ORB_OS_ANDROID )
+
 		__android_log_write( ANDROID_LOG_INFO, "Orbit", msg );
+
 	#else
+
 		printf( "%s\n", msg );
+
 	#endif
 	}
 
@@ -38,13 +54,21 @@ namespace orb
 	{
 	#if defined( ORB_OS_WINDOWS )
 
-		HANDLE                     h = GetStdHandle( STD_OUTPUT_HANDLE );
-		CONSOLE_SCREEN_BUFFER_INFO oldBufferInfo;
+		if( IsDebuggerPresent() )
+		{
+			OutputDebugStringA( msg );
+			OutputDebugStringA( "\n" );
+		}
+		else
+		{
+			HANDLE                     h = GetStdHandle( STD_OUTPUT_HANDLE );
+			CONSOLE_SCREEN_BUFFER_INFO oldBufferInfo;
 
-		GetConsoleScreenBufferInfo( h, &oldBufferInfo );
-		SetConsoleTextAttribute( h, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN );
-		printf( "%s\n", msg );
-		SetConsoleTextAttribute( h, oldBufferInfo.wAttributes );
+			GetConsoleScreenBufferInfo( h, &oldBufferInfo );
+			SetConsoleTextAttribute( h, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN );
+			printf( "%s\n", msg );
+			SetConsoleTextAttribute( h, oldBufferInfo.wAttributes );
+		}
 
 	#elif defined( ORB_OS_ANDROID )
 
@@ -61,13 +85,21 @@ namespace orb
 	{
 	#if defined( ORB_OS_WINDOWS )
 
-		HANDLE                     h = GetStdHandle( STD_OUTPUT_HANDLE );
-		CONSOLE_SCREEN_BUFFER_INFO oldBufferInfo;
+		if( IsDebuggerPresent() )
+		{
+			OutputDebugStringA( msg );
+			OutputDebugStringA( "\n" );
+		}
+		else
+		{
+			HANDLE                     h = GetStdHandle( STD_OUTPUT_HANDLE );
+			CONSOLE_SCREEN_BUFFER_INFO oldBufferInfo;
 
-		GetConsoleScreenBufferInfo( h, &oldBufferInfo );
-		SetConsoleTextAttribute( h, FOREGROUND_INTENSITY | FOREGROUND_RED );
-		printf( "%s\n", msg );
-		SetConsoleTextAttribute( h, oldBufferInfo.wAttributes );
+			GetConsoleScreenBufferInfo( h, &oldBufferInfo );
+			SetConsoleTextAttribute( h, FOREGROUND_INTENSITY | FOREGROUND_RED );
+			printf( "%s\n", msg );
+			SetConsoleTextAttribute( h, oldBufferInfo.wAttributes );
+		}
 
 	#elif defined( ORB_OS_ANDROID )
 
