@@ -16,9 +16,9 @@
 */
 
 #pragma once
-#if defined( ORB_OS_ANDROID )
-
 #include "orbit/core.h"
+
+#if defined( ORB_OS_ANDROID )
 
 #include <android_native_app_glue.h>
 

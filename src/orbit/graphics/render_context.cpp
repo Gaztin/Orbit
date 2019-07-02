@@ -19,10 +19,15 @@
 
 #include <array>
 
+#include "orbit/core/android_app.h"
 #include "orbit/core/log.h"
 #include "orbit/core/memory.h"
 #include "orbit/core/window.h"
 #include "orbit/core/utility.h"
+
+#if defined( ORB_OS_ANDROID )
+  #include <android/native_window.h>
+#endif
 
 #if __ORB_HAS_WINDOW_API_UIKIT
 @interface ORBGLKViewDelegate : UIResponder< GLKViewDelegate >

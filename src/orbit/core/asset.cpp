@@ -19,6 +19,8 @@
 
 #include <algorithm>
 
+#include "orbit/core/android_app.h"
+
 #if defined( ORB_OS_WINDOWS )
 #include <Windows.h>
 #elif defined( ORB_OS_ANDROID )

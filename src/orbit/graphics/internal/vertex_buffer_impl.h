@@ -21,12 +21,7 @@
 
 #include "orbit/core/memory.h"
 #include "orbit/graphics/internal/graphics_api.h"
-
-#if __ORB_HAS_GRAPHICS_API_OPENGL
-  #if defined( ORB_OS_WINDOWS )
-    #include <gl/GL.h>
-  #endif
-#endif
+#include "orbit/graphics/platform/opengl/gl.h"
 
 namespace orb
 {

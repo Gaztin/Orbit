@@ -17,6 +17,7 @@
 
 #include "window.h"
 
+#include "orbit/core/android_app.h"
 #include "orbit/core/utility.h"
 
 #if __ORB_HAS_WINDOW_API_COCOA
