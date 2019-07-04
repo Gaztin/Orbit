@@ -36,10 +36,7 @@ namespace orb
 			return;
 
 		/* Initialize application instance */
-		{
-			auto ptr = ( s_initializer() );
-			s_instance.swap( reinterpret_cast< std::shared_ptr< application_base >& >( ptr ) );
-		}
+		s_instance = std::static_pointer_cast< application_base >( s_initializer() );
 
 	#if defined( ORB_OS_IOS )
 
