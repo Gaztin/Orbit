@@ -382,7 +382,7 @@ namespace orb
 						{
 							const EGLint attribs[] =
 							{
-//								EGL_CONTEXT_CLIENT_VERSION, 3,
+								EGL_CONTEXT_CLIENT_VERSION, 3,
 								EGL_NONE,
 							};
 
