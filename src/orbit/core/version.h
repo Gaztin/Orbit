@@ -24,31 +24,26 @@ namespace orb
 	class version
 	{
 	public:
-		constexpr version()                                               : m_major( 0 ), m_minor( 0 ), m_patch( 0 ) { }
-		constexpr explicit version( uint8_t major )                       : m_major( major ), m_minor( 0 ), m_patch( 0 ) { }
-		constexpr version( uint8_t major, uint8_t minor )                 : m_major( major ), m_minor( minor ), m_patch( 0 ) { }
-		constexpr version( uint8_t major, uint8_t minor, uint16_t patch ) : m_major( major ), m_minor( minor ), m_patch( patch ) { }
+		constexpr version()                                               : major( 0 ), minor( 0 ), patch( 0 ) { }
+		constexpr explicit version( uint8_t major )                       : major( major ), minor( 0 ), patch( 0 ) { }
+		constexpr version( uint8_t major, uint8_t minor )                 : major( major ), minor( minor ), patch( 0 ) { }
+		constexpr version( uint8_t major, uint8_t minor, uint16_t patch ) : major( major ), minor( minor ), patch( patch ) { }
 
-		uint8_t  get_major() const { return m_major; }
-		uint8_t  get_minor() const { return m_minor; }
-		uint16_t get_patch() const { return m_patch; }
-
-		constexpr bool operator== ( const version& v ) const { return ( m_major == v.m_major && m_minor == v.m_minor && m_patch == v.m_patch ); }
-		constexpr bool operator<  ( const version& v ) const { return ( m_major < v.m_major || ( m_major == v.m_major && ( m_minor < v.m_minor || ( m_minor == v.m_minor && ( m_patch < v.m_patch ) ) ) ) ); }
-		constexpr bool operator>  ( const version& v ) const { return ( m_major > v.m_major || ( m_major == v.m_major && ( m_minor > v.m_minor || ( m_minor == v.m_minor && ( m_patch > v.m_patch ) ) ) ) ); }
+		constexpr bool operator== ( const version& v ) const { return ( major == v.major && minor == v.minor && patch == v.patch ); }
+		constexpr bool operator<  ( const version& v ) const { return ( major < v.major || ( major == v.major && ( minor < v.minor || ( minor == v.minor && ( patch < v.patch ) ) ) ) ); }
+		constexpr bool operator>  ( const version& v ) const { return ( major > v.major || ( major == v.major && ( minor > v.minor || ( minor == v.minor && ( patch > v.patch ) ) ) ) ); }
 		constexpr bool operator<= ( const version& v ) const { return ( *this == v || *this < v ); }
 		constexpr bool operator>= ( const version& v ) const { return ( *this == v || *this > v ); }
 
 		constexpr operator uint32_t() const
 		{
-			return ( static_cast< uint32_t >( m_major ) << 24 ) |
-			       ( static_cast< uint32_t >( m_minor ) << 16 ) |
-			       ( static_cast< uint32_t >( m_patch ) );
+			return ( static_cast< uint32_t >( major ) << 24 ) |
+			       ( static_cast< uint32_t >( minor ) << 16 ) |
+			       ( static_cast< uint32_t >( patch ) );
 		}
 
-	private:
-		uint8_t  m_major;
-		uint8_t  m_minor;
-		uint16_t m_patch;
+		uint8_t  major;
+		uint8_t  minor;
+		uint16_t patch;
 	};
 }
