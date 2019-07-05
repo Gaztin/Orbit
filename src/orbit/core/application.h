@@ -22,6 +22,11 @@
 
 #include "orbit/core.h"
 
+#define ORB_APP_DECL( APP_TYPE )                                                                 \
+    class APP_TYPE; /* Forward declaration */                                                    \
+    volatile int __orb__app_initializer_eval = orb::application< APP_TYPE >::__initializer_eval; \
+    class APP_TYPE final : public ::orb::application< APP_TYPE >
+
 namespace orb
 {
 	class ORB_API_CORE application_base
@@ -44,6 +49,6 @@ namespace orb
 	class application : private application_base
 	{
 	public:
-		static inline int s_init = [] { s_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 0; }();
+		static inline volatile auto __initializer_eval = [] { s_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 1; }();
 	};
 }

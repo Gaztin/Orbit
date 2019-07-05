@@ -33,7 +33,7 @@
 #include <orbit/graphics/vertex_buffer.h>
 #include <orbit/graphics/vertex_shader.h>
 
-class sample_app final : public orb::application< sample_app >
+ORB_APP_DECL( sample_app )
 {
 public:
 	sample_app();
