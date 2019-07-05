@@ -53,30 +53,22 @@ namespace orb
 				{
 					precisionString = "precision highp float;\n";
 
-					switch( implCtx->version )
-					{
-						case version( 2 ): versionString = "#version 100\n";    break;
-						default:
-						case version( 3 ): versionString = "#version 300\n";    break;
-//						case version( 3 ): versionString = "#version 300 es\n"; break;
-					}
+					/**/ if( implCtx->version >= version( 3, 2 ) ) versionString = "#version 320 es\n";
+					else if( implCtx->version >= version( 3, 0 ) ) versionString = "#version 300\n";
+					else                                           versionString = "#version 100\n";
 				}
 				else
 				{
-					switch( implCtx->version )
-					{
-						case version( 2, 0 ):  versionString = "#version 110\n"; break;
-						case version( 2, 1 ):  versionString = "#version 120\n"; break;
-						case version( 3, 0 ):  versionString = "#version 130\n"; break;
-						case version( 3, 1 ):  versionString = "#version 140\n"; break;
-						case version( 3, 2 ):  versionString = "#version 150\n"; break;
-						case version( 3, 3 ):  versionString = "#version 330\n"; break;
-						case version( 4, 0 ):  versionString = "#version 400\n"; break;
-						case version( 4, 1 ):  versionString = "#version 410\n"; break;
-						case version( 4, 2 ):  versionString = "#version 420\n"; break;
-						default:
-						case version( 4, 3 ):  versionString = "#version 430\n"; break;
-					}
+					/**/ if( implCtx->version >= version( 4, 3 ) ) versionString = "#version 430\n";
+					else if( implCtx->version >= version( 4, 2 ) ) versionString = "#version 420\n";
+					else if( implCtx->version >= version( 4, 1 ) ) versionString = "#version 410\n";
+					else if( implCtx->version >= version( 4, 0 ) ) versionString = "#version 400\n";
+					else if( implCtx->version >= version( 3, 3 ) ) versionString = "#version 330\n";
+					else if( implCtx->version >= version( 3, 2 ) ) versionString = "#version 150\n";
+					else if( implCtx->version >= version( 3, 1 ) ) versionString = "#version 140\n";
+					else if( implCtx->version >= version( 3, 0 ) ) versionString = "#version 130\n";
+					else if( implCtx->version >= version( 2, 1 ) ) versionString = "#version 120\n";
+					else                                           versionString = "#version 110\n";
 				}
 
 				/* GLES 3 or GL 3.1+ supports uniform buffer objects */
@@ -109,6 +101,7 @@ namespace orb
 					glslDefineString.data(),
 					constantsMacrosString.data(),
 					varyingString.data(),
+					precisionString.data(),
 					attributeString.data(),
 					reinterpret_cast< const GLchar* >( data.data() ),
 				};
@@ -118,6 +111,7 @@ namespace orb
 					static_cast< GLint >( glslDefineString.size() ),
 					static_cast< GLint >( constantsMacrosString.size() ),
 					static_cast< GLint >( varyingString.size() ),
+					static_cast< GLint >( precisionString.size() ),
 					static_cast< GLint >( attributeString.size() ),
 					static_cast< GLint >( data.size() ),
 				};
