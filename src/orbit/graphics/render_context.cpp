@@ -420,13 +420,55 @@ namespace orb
 				make_current();
 				impl->functions.emplace();
 
-				const GLubyte* glVersion = glGetString( GL_VERSION );
-				impl->embedded = ( glVersion[ 0 ] == u'E' && glVersion[ 1 ] == u'S' );
-				if( impl->embedded )
-					glVersion += 3;
-				impl->version = version( glVersion[ 0 ] - u'0', glVersion[ 2 ] - u'0', glVersion[ 4 ] - u'0' );
+				auto glVersion = reinterpret_cast< const char* >( glGetString( GL_VERSION ) );
+				auto checkDigit = [ & ]( version* out )
+				{
+					/* String begins with version number */
+					if( isdigit( glVersion[ 0 ] ) )
+					{
+						uint32_t v[ 2 ]{ };
+						sscanf( glVersion, "%u.%u", &v[ 0 ], &v[ 1 ] );
+						out->major = static_cast< uint8_t >( v[ 0 ] );
+						out->minor = static_cast< uint8_t >( v[ 1 ] );
+						return true;
+					}
 
-				log_info( format( "OpenGL version: %s %d.%d", impl->embedded ? "ES" : "", impl->version.get_major(), impl->version.get_minor() ) );
+					return false;
+				};
+				auto parseVersion = [ & ]
+				{
+					version v;
+					if( checkDigit( &v ) )
+						return v;
+
+					/* OpenGL ... */
+					if( strncmp( glVersion, "OpenGL", 6 ) != 0 )
+						return version( 0 );
+					if( checkDigit( &v ) )
+						return v;
+
+					/* OpenGL ES ... */
+					glVersion += 7;
+					if( strncmp( glVersion, "ES", 2 ) != 0 )
+						return version( 0 );
+					impl->embedded = true;
+					glVersion += 3;
+					if( checkDigit( &v ) )
+						return v;
+
+					/* OpenGL ES-CM ... */
+					glVersion -= 1;
+					if( strncmp( glVersion, "-CM", 3 ) != 0 )
+						return version( 0 );
+					glVersion += 4;
+					if( checkDigit( &v ) )
+						return v;
+
+					return version( 0 );
+				};
+
+				impl->version = parseVersion();
+				log_info( format( "OpenGL version: %s %d.%d", impl->embedded ? "ES" : "", impl->version.major, impl->version.minor ) );
 
 				break;
 			}
