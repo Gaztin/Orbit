@@ -19,6 +19,14 @@
 
 #include <cstdint>
 
+/* See https://stackoverflow.com/a/22253389 */
+#ifdef major
+#  undef major
+#endif
+#ifdef minor
+#  undef minor
+#endif
+
 namespace orb
 {
 	class version
