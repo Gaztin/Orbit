@@ -119,7 +119,7 @@ local function decl_module(name)
 		"src/orbit/" .. lo .. "/**.cpp",
 		"src/orbit/" .. lo .. "/**.h",
 	}
-	filter{"system:macosx or ios", "files:*"} language("ObjCpp") filter{}
+	filter{"system:macosx or ios", "files:**"} language("ObjCpp") filter{}
 	filter_system_files()
 	group()
 	table.insert(modules, name)
