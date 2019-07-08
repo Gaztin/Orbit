@@ -267,7 +267,7 @@ namespace orb
 
 						const NSOpenGLPixelFormatAttribute attribs[] =
 						{
-//							NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
+							NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
 							NSOpenGLPFADoubleBuffer,  true,
 							NSOpenGLPFAColorSize,     24,
 							NSOpenGLPFADepthSize,     24,
