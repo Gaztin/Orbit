@@ -279,9 +279,9 @@ namespace orb
 						[ pixelFormat initWithAttributes:attribs ];
 
 						implGl->glView = [ NSOpenGLView alloc ];
-						[ ( NSOpenGLView* )glView initWithFrame:nsWindow.contentView.frame pixelFormat:pixelFormat ];
-						[ ( NSOpenGLView* )glView prepareOpenGL ];
-						[ nsWindow.contentView addSubview:glView ];
+						[ ( NSOpenGLView* )implGl->glView initWithFrame:nsWindow.contentView.frame pixelFormat:pixelFormat ];
+						[ ( NSOpenGLView* )implGl->glView prepareOpenGL ];
+						[ nsWindow.contentView addSubview:( NSOpenGLView* )implGl->glView ];
 						break;
 					}
 				#endif

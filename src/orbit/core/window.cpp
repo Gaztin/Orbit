@@ -840,7 +840,7 @@ namespace orb
 
 -( void )windowDidMove:( NSNotification* )notification
 {
-	auto          impl  = std::get_if< __window_impl_cocoa >( _impl );
+	auto          impl  = std::get_if< orb::__window_impl_cocoa >( _impl );
 	const CGPoint point = ( ( const NSWindow* )impl->nsWindow ).frame.origin;
 
 	orb::window_event e{ };

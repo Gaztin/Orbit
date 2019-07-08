@@ -61,7 +61,7 @@ namespace orb
 				lseek( fd, 0, SEEK_SET );
 				const off_t len = lseek( fd, 0, SEEK_END );
 				lseek( fd, 0, SEEK_SET );
-				if( fileSize < 0 )
+				if( len < 0 )
 					break;
 
 				m_data.resize( static_cast< size_t >( len ) );
