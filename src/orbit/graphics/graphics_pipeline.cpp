@@ -45,7 +45,7 @@ namespace orb
 				auto  implCtx   = std::get_if< __render_context_impl_opengl >( currentContextImpl );
 				auto& functions = implCtx->functions.value();
 
-				if( implCtx->version < version( 3, 0 ) )
+				if( implCtx->glVersion < version( 3, 0 ) )
 				{
 					auto impl           = std::addressof( m_impl.emplace< __graphics_pipeline_impl_opengl_2_0 >() );
 					impl->stride        = 0;

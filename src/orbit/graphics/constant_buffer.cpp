@@ -41,7 +41,7 @@ namespace orb
 			case( render_context_impl_index_v< __render_context_impl_opengl > ):
 			{
 				auto implCtx = std::get_if< __render_context_impl_opengl >( currentContextImpl );
-				if( implCtx->version < version( 3, 1 ) )
+				if( implCtx->glVersion < version( 3, 1 ) )
 				{
 					m_impl.emplace< __constant_buffer_impl_opengl_2_0 >();
 				}

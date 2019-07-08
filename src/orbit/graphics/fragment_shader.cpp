@@ -53,41 +53,43 @@ namespace orb
 				{
 					precisionString = "precision highp float;\n";
 
-					/**/ if( implCtx->version >= version( 3, 2 ) ) versionString = "#version 320 es\n";
-					else if( implCtx->version >= version( 3, 0 ) ) versionString = "#version 300\n";
-					else                                           versionString = "#version 100\n";
+					/**/ if( implCtx->glVersion >= version( 3, 2 ) ) versionString = "#version 320 es\n";
+					else if( implCtx->glVersion >= version( 3, 0 ) ) versionString = "#version 300\n";
+					else                                             versionString = "#version 100\n";
 				}
 				else
 				{
-					/**/ if( implCtx->version >= version( 4, 3 ) ) versionString = "#version 430\n";
-					else if( implCtx->version >= version( 4, 2 ) ) versionString = "#version 420\n";
-					else if( implCtx->version >= version( 4, 1 ) ) versionString = "#version 410\n";
-					else if( implCtx->version >= version( 4, 0 ) ) versionString = "#version 400\n";
-					else if( implCtx->version >= version( 3, 3 ) ) versionString = "#version 330\n";
-					else if( implCtx->version >= version( 3, 2 ) ) versionString = "#version 150\n";
-					else if( implCtx->version >= version( 3, 1 ) ) versionString = "#version 140\n";
-					else if( implCtx->version >= version( 3, 0 ) ) versionString = "#version 130\n";
-					else if( implCtx->version >= version( 2, 1 ) ) versionString = "#version 120\n";
-					else                                           versionString = "#version 110\n";
+					precisionString = "";
+					
+					/**/ if( implCtx->glVersion >= version( 4, 3 ) ) versionString = "#version 430\n";
+					else if( implCtx->glVersion >= version( 4, 2 ) ) versionString = "#version 420\n";
+					else if( implCtx->glVersion >= version( 4, 1 ) ) versionString = "#version 410\n";
+					else if( implCtx->glVersion >= version( 4, 0 ) ) versionString = "#version 400\n";
+					else if( implCtx->glVersion >= version( 3, 3 ) ) versionString = "#version 330\n";
+					else if( implCtx->glVersion >= version( 3, 2 ) ) versionString = "#version 150\n";
+					else if( implCtx->glVersion >= version( 3, 1 ) ) versionString = "#version 140\n";
+					else if( implCtx->glVersion >= version( 3, 0 ) ) versionString = "#version 130\n";
+					else if( implCtx->glVersion >= version( 2, 1 ) ) versionString = "#version 120\n";
+					else                                             versionString = "#version 110\n";
 				}
 
 				/* GLES 3 or GL 3.1+ supports uniform buffer objects */
 				std::string_view constantsMacrosString;
-				if( ( implCtx->embedded && implCtx->version >= version( 3 ) ) || ( implCtx->version >= version( 3, 1 ) ) )
+				if( ( implCtx->embedded && implCtx->glVersion >= version( 3 ) ) || ( implCtx->glVersion >= version( 3, 1 ) ) )
 					constantsMacrosString = "#define ORB_CONSTANTS_BEGIN(X) layout (std140) uniform X {\n#define ORB_CONSTANTS_END };\n#define ORB_CONSTANT(T, N) T N\n";
 				else
 					constantsMacrosString = "#define ORB_CONSTANTS_BEGIN(X)\n#define ORB_CONSTANTS_END\n#define ORB_CONSTANT(T, N) uniform T N\n";
 
 				/* 'varying' and 'attribute' was replaced with 'in' and 'out' in GLES 3 and GL 3.3 */
 				std::string_view varyingString;
-				if( ( implCtx->embedded && implCtx->version >= version( 3 ) ) || ( implCtx->version >= version( 3, 3 ) ) )
+				if( ( implCtx->embedded && implCtx->glVersion >= version( 3 ) ) || ( implCtx->glVersion >= version( 3, 3 ) ) )
 					varyingString = "#define ORB_VARYING in\n";
 				else
 					varyingString = "#define ORB_VARYING varying\n";
 
 				/* 'gl_FragColor' was deprecated in GLES 3 and GL 3.0 and replaced with output variables */
 				std::string_view outColorString;
-				if( ( implCtx->embedded && implCtx->version >= version( 3 ) ) || ( implCtx->version >= version( 3, 0 ) ) )
+				if( ( implCtx->embedded && implCtx->glVersion >= version( 3 ) ) || ( implCtx->glVersion >= version( 3, 3 ) ) )
 					outColorString = "out vec4 _orb_outColor;\n#define ORB_SET_OUT_COLOR(X) _orb_outColor = X\n";
 				else
 					outColorString = "#define ORB_SET_OUT_COLOR(X) gl_FragColor = X\n";

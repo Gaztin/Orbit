@@ -35,7 +35,7 @@ namespace orb
 	struct __render_context_impl_opengl
 	{
 		bool    embedded;
-		version version;
+		version glVersion;
 
 	#if __ORB_HAS_WINDOW_API_WIN32
 		struct __impl_win32
