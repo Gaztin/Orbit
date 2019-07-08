@@ -18,6 +18,7 @@
 #include "render_context.h"
 
 #include <array>
+#include <cstring>
 
 #include "orbit/core/android_app.h"
 #include "orbit/core/log.h"
@@ -160,14 +161,15 @@ namespace orb
 				#if __ORB_HAS_WINDOW_API_X11
 					case( window_impl_index_v< __window_impl_x11 > ):
 					{
-						auto implGl = std::addressof( impl->impl.emplace< __render_context_impl_opengl::__impl_x11 >() );
+						auto implGl  = std::addressof( impl->impl.emplace< __render_context_impl_opengl::__impl_x11 >() );
+						auto implX11 = std::get_if< __window_impl_x11 >( parentWindowImpl );
 						implGl->parentWindowImpl = parentWindowImpl;
-						implGl->gc               = XCreateGC( implGl->parentWindowImpl->display, implGl->parentWindowImpl->window, 0, nullptr );
+						implGl->gc               = XCreateGC( implX11->display, implX11->window, 0, nullptr );
 						implGl->glxContext       = [ & ]
 						{
 							/* Create render context */
 							{
-								int screen = DefaultScreen( implGl->parentWindowImpl->display );
+								int screen = DefaultScreen( implX11->display );
 								int attribs[] =
 								{
 									GLX_X_RENDERABLE,  True,
@@ -187,7 +189,7 @@ namespace orb
 								do
 								{
 									int major, minor;
-									if( !glXQueryVersion( implGl->parentWindowImpl->display, &major, &minor ) )
+									if( !glXQueryVersion( implX11->display, &major, &minor ) )
 										break;
 									if( ( major < 1 ) || ( major == 1 && minor < 3 ) )
 										break;
@@ -199,7 +201,7 @@ namespace orb
 										break;
 
 									int fbConfigCount = 0;
-									GLXFBConfig* fbConfigs = glXChooseFBConfig( implGl->parentWindowImpl->display, screen, attribs, &fbConfigCount );
+									GLXFBConfig* fbConfigs = glXChooseFBConfig( implX11->display, screen, attribs, &fbConfigCount );
 									if( !fbConfigs )
 										break;
 									if( fbConfigCount == 0 )
@@ -209,12 +211,12 @@ namespace orb
 									int bestFbConfigIdx = 0, bestSampleCount = 0;
 									for( int i = 0; i < fbConfigCount; ++i )
 									{
-										XVisualInfo* vi = glXGetVisualFromFBConfig( implGl->parentWindowImpl->display, fbConfigs[ i ] );
+										XVisualInfo* vi = glXGetVisualFromFBConfig( implX11->display, fbConfigs[ i ] );
 										if( vi )
 										{
 											int samples = 0, sampleCount = 0;
-											glXGetFBConfigAttrib( implGl->parentWindowImpl->display, fbConfigs[ i ], GLX_SAMPLE_BUFFERS, &samples );
-											glXGetFBConfigAttrib( implGl->parentWindowImpl->display, fbConfigs[ i ], GLX_SAMPLES, &sampleCount );
+											glXGetFBConfigAttrib( implX11->display, fbConfigs[ i ], GLX_SAMPLE_BUFFERS, &samples );
+											glXGetFBConfigAttrib( implX11->display, fbConfigs[ i ], GLX_SAMPLES, &sampleCount );
 
 											if( samples && sampleCount > bestSampleCount )
 											{
@@ -237,12 +239,11 @@ namespace orb
 										None
 									};
 
-									return glXCreateContextAttribsARB( implGl->parentWindowImpl->display, bestFbConfig, 0, True, contextAttribs );
+									return glXCreateContextAttribsARB( implX11->display, bestFbConfig, 0, True, contextAttribs );
 
 								} while( false );
 
 								// If all else fails, use legacy method
-								auto implX11 = std::get_if< __window_impl_x11 >( implGl->parentWindowImpl );
 								XVisualInfo* visualInfo = glXChooseVisual( implX11->display, screen, attribs );
 								return glXCreateContext( implX11->display, visualInfo, nullptr, true );
 							}
@@ -442,14 +443,14 @@ namespace orb
 						return v;
 
 					/* OpenGL ... */
-					if( strncmp( glVersion, "OpenGL", 6 ) != 0 )
+					if( std::strncmp( glVersion, "OpenGL", 6 ) != 0 )
 						return version( 0 );
 					if( checkDigit( &v ) )
 						return v;
 
 					/* OpenGL ES ... */
 					glVersion += 7;
-					if( strncmp( glVersion, "ES", 2 ) != 0 )
+					if( std::strncmp( glVersion, "ES", 2 ) != 0 )
 						return version( 0 );
 					impl->embedded = true;
 					glVersion += 3;
@@ -458,7 +459,7 @@ namespace orb
 
 					/* OpenGL ES-CM ... */
 					glVersion -= 1;
-					if( strncmp( glVersion, "-CM", 3 ) != 0 )
+					if( std::strncmp( glVersion, "-CM", 3 ) != 0 )
 						return version( 0 );
 					glVersion += 4;
 					if( checkDigit( &v ) )
@@ -467,8 +468,8 @@ namespace orb
 					return version( 0 );
 				};
 
-				impl->version = parseVersion();
-				log_info( format( "OpenGL version: %s %d.%d", impl->embedded ? "ES" : "", impl->version.major, impl->version.minor ) );
+				impl->glVersion = parseVersion();
+				log_info( format( "OpenGL version: %s %d.%d", impl->embedded ? "ES" : "", impl->glVersion.major, impl->glVersion.minor ) );
 
 				break;
 			}

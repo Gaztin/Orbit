@@ -21,6 +21,8 @@
 #include "orbit/core/version.h"
 #include "orbit/graphics/render_context.h"
 
+#include <cstring>
+
 namespace orb
 {
 	template< typename T >

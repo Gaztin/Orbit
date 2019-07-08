@@ -48,9 +48,9 @@ namespace orb
 	#if __ORB_HAS_WINDOW_API_X11
 		struct __impl_x11
 		{
-			window_impl_storage* parentWindowImpl;
-			GC                   gc;
-			GLXContext           glxContext;
+			window_impl* parentWindowImpl;
+			GC           gc;
+			GLXContext   glxContext;
 		};
 	#endif
 	#if __ORB_HAS_WINDOW_API_WAYLAND

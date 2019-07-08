@@ -73,7 +73,7 @@ namespace orb
 			#if defined( ORB_OS_WINDOWS )
 				return static_cast< void* >( wglGetProcAddress( name.data() ) );
 			#elif defined( ORB_OS_LINUX )
-				return static_cast< void* >( glXGetProcAddress( reinterpret_cast< const GLubyte* >( name.data() ) ) );
+				return reinterpret_cast< void* >( glXGetProcAddress( reinterpret_cast< const GLubyte* >( name.data() ) ) );
 			#elif defined( ORB_OS_MACOS )
 				static void* lib = dlopen( "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_LAZY );
 				return dlsym( lib, name.data() );
