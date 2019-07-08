@@ -152,7 +152,7 @@ namespace orb
 		}
 	}
 
-	void constant_buffer::bind( shader_type type, uint32_t slot )
+	void constant_buffer::bind( [[maybe_unused]] shader_type type, uint32_t slot )
 	{
 		switch( m_impl.index() )
 		{
