@@ -732,7 +732,7 @@ namespace orb
 			extern ORB_API_GRAPHICS void* get_proc_address( std::string_view name );
 		}
 
-		extern ORB_API_GRAPHICS void handle_error( GLenum err );
+		extern ORB_API_GRAPHICS void handle_error( GLenum err, const char* func );
 
 
 	#if defined( ORB_OS_WINDOWS )
@@ -780,7 +780,7 @@ namespace orb
 
 					reinterpret_cast< ptr_t >( m_ptr )( args... );
 
-					orb::gl::handle_error( glGetError() );
+					orb::gl::handle_error( glGetError(), proc_literal_traits< ProcLiteral >::kProcName );
 				}
 
 			private:
@@ -804,11 +804,12 @@ namespace orb
 					using ptr_t = R( ORB_GL_CALL* )( Args... );
 
 					// Reset error code to 0
-					glGetError();
+					while( glGetError() != GL_NO_ERROR )
+					{ }
 
 					R res = reinterpret_cast< ptr_t >( m_ptr )( args... );
 
-					orb::gl::handle_error( glGetError() );
+					orb::gl::handle_error( glGetError(), proc_literal_traits< ProcLiteral >::kProcName );
 
 					return res;
 				}

@@ -85,20 +85,24 @@ namespace orb
 			}
 		}
 
-		void handle_error( GLenum err )
+		void handle_error( GLenum err, const char* func )
 		{
 			if( err == GL_NO_ERROR )
 				return;
 
+			/* Build error string */
 			auto it = ErrorCodes.find( err );
+			std::string errorString;
 			if( it != ErrorCodes.end() )
-			{
-				orb::log_error( it->second );
-			}
+				errorString = it->second;
 			else
-			{
-				orb::log_error( format( "Unknown error: %d", err ) );
-			}
+				errorString = orb::format( "Unknown error: %d", err );
+
+			/* Log error */
+			if( func )
+				orb::log_error( orb::format( "%s - %s", func, errorString.c_str() ) );
+			else
+				orb::log_error( orb::format( "%s", errorString.c_str() ) );
 		}
 	}
 }
