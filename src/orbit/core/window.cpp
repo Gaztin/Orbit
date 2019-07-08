@@ -834,12 +834,12 @@ namespace orb
 
 @implementation ORBCocoaWindowDelegate
 
--( void )windowWillClose:( NSNotification* )notification
+-( void )windowWillClose:( NSNotification* ) __unused notification
 {
 	_windowPtr->close();
 }
 
--( void )windowDidMove:( NSNotification* )notification
+-( void )windowDidMove:( NSNotification* ) __unused notification
 {
 	auto          impl  = std::get_if< orb::__window_impl_cocoa >( _impl );
 	const CGPoint point = ( ( const NSWindow* )impl->nsWindow ).frame.origin;
@@ -851,7 +851,7 @@ namespace orb
 	_windowPtr->queue_event( e );
 }
 
--( NSSize )windowWillResize:( NSWindow* )sender toSize:( NSSize )frameSize
+-( NSSize )windowWillResize:( NSWindow* ) __unused sender toSize:( NSSize ) frameSize
 {
 	orb::window_event e{ };
 	e.type          = orb::window_event::Resize;
@@ -862,28 +862,28 @@ namespace orb
 	return frameSize;
 }
 
--( void )windowDidMiniaturize:( NSNotification* )notification
+-( void )windowDidMiniaturize:( NSNotification* ) __unused notification
 {
 	orb::window_event e{ };
 	e.type = orb::window_event::Suspend;
 	_windowPtr->queue_event( e );
 }
 
--( void )windowDidDeminiaturize:( NSNotification* )notification
+-( void )windowDidDeminiaturize:( NSNotification* ) __unused notification
 {
 	orb::window_event e{ };
 	e.type = orb::window_event::Restore;
 	_windowPtr->queue_event( e );
 }
 
--( void )windowDidBecomeMain:( NSNotification* )notification
+-( void )windowDidBecomeMain:( NSNotification* ) __unused notification
 {
 	orb::window_event e{ };
 	e.type = orb::window_event::Focus;
 	_windowPtr->queue_event( e );
 }
 
--( void )windowDidResignMain:( NSNotification* )notification
+-( void )windowDidResignMain:( NSNotification* ) __unused notification
 {
 	orb::window_event e{ };
 	e.type = orb::window_event::Defocus;
