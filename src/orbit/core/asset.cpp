@@ -22,9 +22,12 @@
 #include "orbit/core/android_app.h"
 
 #if defined( ORB_OS_WINDOWS )
-#include <Windows.h>
+#  include <Windows.h>
+#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS )
+#  include <fcntl.h>
+#  include <unistd.h>
 #elif defined( ORB_OS_ANDROID )
-#include <android/asset_manager.h>
+#  include <android/asset_manager.h>
 #endif
 
 namespace orb
