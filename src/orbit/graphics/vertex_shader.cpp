@@ -48,7 +48,7 @@ namespace orb
 				impl->id        = functions.create_shader( gl::shader_type::Vertex );
 
 				std::string_view versionString;
-				std::string_view precisionString = "";
+				std::string_view precisionString;
 				if( implCtx->embedded )
 				{
 					precisionString = "precision highp float;\n";
