@@ -183,14 +183,6 @@ namespace orb
 				break;
 			}
 		#endif
-
-		#if __ORB_HAS_GRAPHICS_API_D3D11
-			case( fragment_shader_impl_index_v< __fragment_shader_impl_d3d11 > ):
-				{
-				#error Clean up D3D11 pixel shader
-					break;
-				}
-		#endif
 		}
 	}
 }
