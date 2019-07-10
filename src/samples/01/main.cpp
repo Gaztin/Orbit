@@ -89,8 +89,10 @@ const std::initializer_list< uint16_t > triangleIndices =
 
 std::tuple triangleConstants = std::make_tuple
 (
-	1.0f
+	orb::mat4{ }
 );
+
+orb::mat4 projectionMatrix( 0.f );
 
 sample_app::sample_app()
 	: m_window( 800, 600 )
@@ -121,32 +123,24 @@ sample_app::sample_app()
 void sample_app::frame()
 {
 	m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
-	const float diffuse = 0.5f + ( 0.5f * sin( m_time * static_cast< float >( M_PI ) ) );
 
-	std::get< 0 >( triangleConstants ) = diffuse;
-
-	m_window.poll_events();
-	m_renderContext.clear( orb::buffer_mask::Color | orb::buffer_mask::Depth );
-
-	// Math testing
+	/* Calculate model-view-projection matrix */
 	{
 		using namespace orb::math_literals;
 		using namespace orb::unit_literals::metric;
 
-		const orb::vec3 right( 1m, 0m, 0m );
-		const orb::vec3 up( 0m, 1m, 0m );
-		const orb::vec3 forward = right.cross_product( up );
+		orb::mat4 view;
+		view.translate( orb::vec3( 0m, 0m, -5m ) );
 
-		const orb::mat4 m1 = {
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			4.0f, 0.0f, 0.0f, 1.0f,
-		};
+		orb::mat4 model;
+		model.rotate( orb::vec3( 0pi, 1pi * m_time, 0pi ) );
 
-		orb::mat4 m2 = m1 * m1;
-		m2.translate( orb::vec3( 0m, 2m, 0m ) );
+		auto& [ mvp ] = triangleConstants;
+		mvp = model * view * projectionMatrix;
 	}
+
+	m_window.poll_events();
+	m_renderContext.clear( orb::buffer_mask::Color | orb::buffer_mask::Depth );
 
 	m_triangleVertexBuffer.bind();
 	m_mainPipeline.bind();
@@ -166,8 +160,26 @@ void sample_app::on_window_event( const orb::window_event& e )
 	switch( e.type )
 	{
 		case orb::window_event::Resize:
+		{
 			orb::log_info( orb::format( "Resized: (%d, %d)", e.data.resize.w, e.data.resize.h ) );
+
+			/* Update projection matrix */
+			{
+				constexpr float fov      = 60.0f * orb::Pi / 180.f;
+				constexpr float fovHalf  = fov * 0.5f;
+				const float     aspect   = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
+				constexpr float farClip  = 100.f;
+				constexpr float nearClip = 0.1f;
+
+				projectionMatrix[ 0 ]  = ( 1.0f / ( aspect * fovHalf ) );
+				projectionMatrix[ 5 ]  = ( 1.0f / fovHalf );
+				projectionMatrix[ 10 ] = ( farClip / ( farClip - nearClip ) );
+				projectionMatrix[ 11 ] = -1.0f;
+				projectionMatrix[ 14 ] = ( ( farClip * nearClip ) / ( farClip - nearClip ) );
+			}
+
 			break;
+		}
 
 		case orb::window_event::Move:
 			orb::log_info( orb::format( "Moved: (%d, %d)", e.data.move.x, e.data.move.y ) );
