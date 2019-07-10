@@ -39,7 +39,7 @@ namespace orb
 
 	#else
 
-		if( s_instance || !__application_initializer )
+		if( __application_instance || !__application_initializer )
 			return;
 
 		/* Initialize application instance */
