@@ -36,6 +36,9 @@ namespace orb
 		mat4  operator*  ( const mat4& rhs ) const;
 		mat4& operator*= ( const mat4& rhs );
 
+		float&       operator[]( size_t i )       { return m_elements[ i ]; }
+		const float& operator[]( size_t i ) const { return m_elements[ i ]; }
+
 	private:
 
 		std::array< float, 16 > m_elements;
