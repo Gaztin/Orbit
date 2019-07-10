@@ -18,26 +18,18 @@
 #include "application.h"
 
 #if defined( ORB_OS_IOS )
-#  include <UIKit/UIKit.h>
-
+  #include <UIKit/UIKit.h>
 @interface ORBAppDelegate : UIResponder< UIApplicationDelegate >
-@property ( atomic ) std::shared_ptr< orb::application_base > app;
 @end
 #endif
 
 namespace orb
 {
-	std::shared_ptr< void >( *application_base::s_initializer )() = nullptr;
-	std::shared_ptr< application_base > application_base::s_instance;
+	std::shared_ptr< void >( *__application_initializer )() = nullptr;
+	std::shared_ptr< application_base > __application_instance;
 
 	void application_base::run_instance()
 	{
-		if( s_instance || !s_initializer )
-			return;
-
-		/* Initialize application instance */
-		s_instance = std::static_pointer_cast< application_base >( s_initializer() );
-
 	#if defined( ORB_OS_IOS )
 
 		@autoreleasepool
@@ -47,9 +39,15 @@ namespace orb
 
 	#else
 
-		while( s_instance->is_running() )
+		if( s_instance || !__application_initializer )
+			return;
+
+		/* Initialize application instance */
+		__application_instance = std::static_pointer_cast< application_base >( __application_initializer() );
+
+		while( __application_instance->is_running() )
 		{
-			s_instance->frame();
+			__application_instance->frame();
 		}
 
 	#endif
@@ -62,10 +60,12 @@ namespace orb
 
 @implementation ORBAppDelegate
 
--( BOOL )application:( UIApplication* )application didFinishLaunchingWithOptions:( NSDictionary* )launchOptions
+-( BOOL )application:( UIApplication* )__unused application didFinishLaunchingWithOptions:( NSDictionary* )__unused launchOptions
 {
 	orb::log_info( "didFinishLaunchingWithOptions()" );
-	_app = application_base::s_instance;
+
+	if( orb::__application_initializer && !orb::__application_instance )
+		orb::__application_instance = std::static_pointer_cast< orb::application_base >( orb::__application_initializer() );
 
 	CADisplayLink* displayLink = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( frame: ) ];
 	[ displayLink addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
@@ -73,35 +73,36 @@ namespace orb
 	return YES;
 }
 
--( void )applicationWillResignActive:( UIApplication* )application
+-( void )applicationWillResignActive:( UIApplication* )__unused application
 {
 	orb::log_info( "applicationWillResignActive()" );
 }
 
--( void )applicationDidEnterBackground:( UIApplication* )application
+-( void )applicationDidEnterBackground:( UIApplication* )__unused application
 {
 	orb::log_info( "applicationDidEnterBackground()" );
 }
 
--( void )applicationWillEnterForeground:( UIApplication* )application
+-( void )applicationWillEnterForeground:( UIApplication* )__unused application
 {
 	orb::log_info( "applicationWillEnterForeground()" );
 }
 
--( void )applicationDidBecomeActive:( UIApplication* )application
+-( void )applicationDidBecomeActive:( UIApplication* )__unused application
 {
 	orb::log_info( "applicationDidBecomeActive()" );
 }
 
--( void )applicationWillTerminate:( UIApplication* )application
+-( void )applicationWillTerminate:( UIApplication* )__unused application
 {
 	orb::log_info( "applicationWillTerminate()" );
-	_app->reset();
+	orb::__application_instance.reset();
 }
 
--( void )frame:( CADisplayLink* )displayLink
+-( void )frame:( CADisplayLink* )__unused displayLink
 {
-	_app->frame();
+	if( orb::__application_instance )
+		orb::__application_instance->frame();
 }
 
 @end

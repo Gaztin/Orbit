@@ -39,16 +39,15 @@ namespace orb
 		virtual bool is_running() = 0;
 
 		static void run_instance();
-
-	protected:
-		static std::shared_ptr< void >( *s_initializer )();
-		static std::shared_ptr< application_base > s_instance;
 	};
+
+	extern ORB_API_CORE std::shared_ptr< void >( *__application_initializer )();
+	extern ORB_API_CORE std::shared_ptr< application_base > __application_instance;
 
 	template< typename Derived >
 	class application : private application_base
 	{
 	public:
-		static inline volatile auto __initializer_eval = [] { s_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 1; }();
+		static inline volatile auto __initializer_eval = [] { __application_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 1; }();
 	};
 }
