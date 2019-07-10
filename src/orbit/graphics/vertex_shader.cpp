@@ -20,6 +20,7 @@
 #include "orbit/core/asset.h"
 #include "orbit/core/log.h"
 #include "orbit/core/utility.h"
+#include "orbit/graphics/platform/opengl/glsl.h"
 #include "orbit/graphics/render_context.h"
 
 #if __ORB_HAS_GRAPHICS_API_D3D11
@@ -49,76 +50,37 @@ namespace orb
 				auto& functions = implCtx->functions.value();
 				impl->id        = functions.create_shader( gl::shader_type::Vertex );
 
-				std::string_view versionString;
-				std::string_view precisionString;
-				if( implCtx->embedded )
-				{
-					precisionString = "precision highp float;\n";
-
-					/**/ if( implCtx->glVersion >= version( 3, 2 ) ) versionString = "#version 320 es\n";
-					else if( implCtx->glVersion >= version( 3, 0 ) ) versionString = "#version 300 es\n";
-					else                                             versionString = "#version 100\n";
-				}
-				else
-				{
-					precisionString = "";
-					
-					/**/ if( implCtx->glVersion >= version( 4, 3 ) ) versionString = "#version 430\n";
-					else if( implCtx->glVersion >= version( 4, 2 ) ) versionString = "#version 420\n";
-					else if( implCtx->glVersion >= version( 4, 1 ) ) versionString = "#version 410\n";
-					else if( implCtx->glVersion >= version( 4, 0 ) ) versionString = "#version 400\n";
-					else if( implCtx->glVersion >= version( 3, 3 ) ) versionString = "#version 330\n";
-					else if( implCtx->glVersion >= version( 3, 2 ) ) versionString = "#version 150\n";
-					else if( implCtx->glVersion >= version( 3, 1 ) ) versionString = "#version 140\n";
-					else if( implCtx->glVersion >= version( 3, 0 ) ) versionString = "#version 130\n";
-					else if( implCtx->glVersion >= version( 2, 1 ) ) versionString = "#version 120\n";
-					else                                             versionString = "#version 110\n";
-				}
-
-				/* GLES 3 or GL 3.1+ supports uniform buffer objects */
-				std::string_view constantsMacrosString;
-				if( ( implCtx->embedded && implCtx->glVersion >= version( 3 ) ) || ( implCtx->glVersion >= version( 3, 1 ) ) )
-					constantsMacrosString = "#define ORB_CONSTANTS_BEGIN(X) layout (std140) uniform X {\n#define ORB_CONSTANTS_END };\n#define ORB_CONSTANT(T, N) T N\n";
-				else
-					constantsMacrosString = "#define ORB_CONSTANTS_BEGIN(X)\n#define ORB_CONSTANTS_END\n#define ORB_CONSTANT(T, N) uniform T N\n";
-
-				/* 'varying' and 'attribute' was replaced with 'in' and 'out' in GLES 3 and GL 3.3 */
-				std::string_view varyingString;
-				std::string_view attributeString;
-				if( ( implCtx->embedded && implCtx->glVersion >= version( 3 ) ) || ( implCtx->glVersion >= version( 3, 3 ) ) )
-				{
-					varyingString   = "#define ORB_VARYING out\n";
-					attributeString = "#define ORB_ATTRIBUTE in\n";
-				}
-				else
-				{
-					varyingString   = "#define ORB_VARYING varying\n";
-					attributeString = "#define ORB_ATTRIBUTE attribute\n";
-				}
-
-				const std::string_view glslDefineString = "#define ORB_GLSL 1\n";
-				const auto&            data             = ast.get_data();
+				const std::string_view versionDirectiveString = glsl::get_version_directive( implCtx->glVersion, implCtx->embedded );
+				const std::string_view glslDefineString       = glsl::get_glsl_define();
+				const std::string_view precisionString        = glsl::get_precision( implCtx->embedded );
+				const std::string_view constantsMacrosString  = glsl::get_constants_macros( implCtx->glVersion, implCtx->embedded );
+				const std::string_view varyingMacroString     = glsl::get_varying_macro( implCtx->glVersion, implCtx->embedded, shader_type::Vertex );
+				const std::string_view attributeMacroString   = glsl::get_attribute_macro( implCtx->glVersion, implCtx->embedded, shader_type::Vertex );
+				const auto&            shaderData             = ast.get_data();
 
 				const GLchar* sources[] =
 				{
-					versionString.data(),
+					versionDirectiveString.data(),
 					glslDefineString.data(),
 					constantsMacrosString.data(),
-					varyingString.data(),
 					precisionString.data(),
-					attributeString.data(),
-					reinterpret_cast< const GLchar* >( data.data() ),
+					varyingMacroString.data(),
+					attributeMacroString.data(),
+					reinterpret_cast< const GLchar* >( shaderData.data() ),
 				};
+
 				const GLint lengths[] =
 				{
-					static_cast< GLint >( versionString.size() ),
+					static_cast< GLint >( versionDirectiveString.size() ),
 					static_cast< GLint >( glslDefineString.size() ),
 					static_cast< GLint >( constantsMacrosString.size() ),
-					static_cast< GLint >( varyingString.size() ),
 					static_cast< GLint >( precisionString.size() ),
-					static_cast< GLint >( attributeString.size() ),
-					static_cast< GLint >( data.size() ),
+					static_cast< GLint >( varyingMacroString.size() ),
+					static_cast< GLint >( attributeMacroString.size() ),
+					static_cast< GLint >( shaderData.size() ),
 				};
+
+				static_assert( count_of( sources ) == count_of( lengths ) );
 
 				functions.shader_source( impl->id, static_cast< GLsizei >( count_of( sources ) ), sources, lengths );
 				functions.compile_shader( impl->id );
