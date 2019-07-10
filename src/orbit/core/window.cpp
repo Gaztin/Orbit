@@ -21,7 +21,7 @@
 #include "orbit/core/utility.h"
 
 #if __ORB_HAS_WINDOW_API_COCOA
-  #include <AppKit/AppKit.h>
+#  include <AppKit/AppKit.h>
 @interface ORBCocoaWindowDelegate : NSObject< NSWindowDelegate >
 @property orb::window*      windowPtr;
 @property orb::window_impl* impl;
@@ -29,7 +29,7 @@
 #endif
 
 #if __ORB_HAS_WINDOW_API_UIKIT
-  #include <UIKit/UIKit.h>
+#  include <UIKit/UIKit.h>
 @interface ORBUiKitWindow : UIWindow
 @property orb::window* windowPtr;
 @end

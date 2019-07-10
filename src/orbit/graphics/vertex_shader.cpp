@@ -23,7 +23,7 @@
 #include "orbit/graphics/render_context.h"
 
 #if __ORB_HAS_GRAPHICS_API_D3D11
-  #include <d3dcompiler.h>
+#  include <d3dcompiler.h>
 #endif
 
 namespace orb

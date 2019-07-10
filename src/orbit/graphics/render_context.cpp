@@ -27,11 +27,11 @@
 #include "orbit/core/utility.h"
 
 #if defined( ORB_OS_ANDROID )
-  #include <android/native_window.h>
+#  include <android/native_window.h>
 #endif
 
 #if __ORB_HAS_WINDOW_API_UIKIT
-  #include <GLKit/GLKit.h>
+#  include <GLKit/GLKit.h>
 @interface ORBGLKViewDelegate : UIResponder< GLKViewDelegate >
 @end
 #endif

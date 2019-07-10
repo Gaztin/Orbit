@@ -18,7 +18,7 @@
 #include "application.h"
 
 #if defined( ORB_OS_IOS )
-  #include <UIKit/UIKit.h>
+#  include <UIKit/UIKit.h>
 @interface ORBAppDelegate : UIResponder< UIApplicationDelegate >
 @end
 #endif
