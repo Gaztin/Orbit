@@ -22,10 +22,11 @@
 
 namespace orb
 {
-	mat4::mat4()
+	mat4::mat4( float diagonal )
+		: m_elements{ }
 	{
 		for( size_t i = 0; i < 16; i += 5 )
-			m_elements[ i ] = 1.f;
+			m_elements[ i ] = diagonal;
 	}
 
 	mat4::mat4( std::initializer_list< float > elements )

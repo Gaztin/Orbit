@@ -27,7 +27,7 @@ namespace orb
 	class ORB_API_MATH mat4
 	{
 	public:
-		mat4();
+		explicit mat4( float diagonal = 1.f );
 		mat4( std::initializer_list< float > elements );
 
 		void translate( const vec3& t );
