@@ -49,7 +49,7 @@ namespace orb
 					break;
 
 				m_data.resize( static_cast< size_t >( fileSize.QuadPart ) );
-				ReadFile( handle, &m_data[ 0 ], m_data.size(), NULL, NULL );
+				ReadFile( handle, &m_data[ 0 ], static_cast< DWORD >( m_data.size() ), NULL, NULL );
 
 			} while( false );
 

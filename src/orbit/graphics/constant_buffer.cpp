@@ -114,7 +114,7 @@ namespace orb
 			{
 				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
 
-				functions.uniform1f( location, *reinterpret_cast< const GLfloat* >( data ) );
+				functions.uniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
 
 				break;
 			}

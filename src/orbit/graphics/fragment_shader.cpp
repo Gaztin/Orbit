@@ -39,6 +39,8 @@ namespace orb
 		auto currentContextImpl = render_context::get_current()->get_impl_ptr();
 		switch( currentContextImpl->index() )
 		{
+			default: break;
+
 		#if __ORB_HAS_GRAPHICS_API_OPENGL
 			case( render_context_impl_index_v< __render_context_impl_opengl > ):
 			{
@@ -118,7 +120,7 @@ namespace orb
 					static_cast< GLint >( data.size() ),
 				};
 
-				functions.shader_source( impl->id, count_of( sources ), sources, lengths );
+				functions.shader_source( impl->id, static_cast< GLsizei >( count_of( sources ) ), sources, lengths );
 				functions.compile_shader( impl->id );
 
 				GLint loglen = 0;
@@ -172,6 +174,8 @@ namespace orb
 	{
 		switch( m_impl.index() )
 		{
+			default: break;
+
 		#if __ORB_HAS_GRAPHICS_API_OPENGL
 			case( fragment_shader_impl_index_v< __fragment_shader_impl_opengl > ):
 			{

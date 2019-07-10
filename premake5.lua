@@ -119,6 +119,7 @@ local function decl_module(name)
 		"src/orbit/" .. lo .. "/**.cpp",
 		"src/orbit/" .. lo .. "/**.h",
 	}
+	filter{"toolset:msc"} defines{"_CRT_SECURE_NO_WARNINGS"} filter{}
 	filter{"system:macosx or ios", "files:**"} language("ObjCpp") filter{}
 	filter_system_files()
 	group()

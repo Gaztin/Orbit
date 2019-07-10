@@ -566,7 +566,7 @@ namespace orb
 					desc.SwapEffect             = DXGI_SWAP_EFFECT_DISCARD;
 
 					IDXGISwapChain* swapChain;
-					D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, kDeviceFlags, kFeatureLevels.data(), kFeatureLevels.size(), D3D11_SDK_VERSION, &desc, &swapChain, NULL, NULL, NULL );
+					D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, kDeviceFlags, kFeatureLevels.data(), static_cast< UINT >( kFeatureLevels.size() ), D3D11_SDK_VERSION, &desc, &swapChain, NULL, NULL, NULL );
 					impl->swapChain.reset( swapChain );
 				}
 
