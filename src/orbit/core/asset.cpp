@@ -99,9 +99,9 @@ namespace orb
 		NSString* nsPath         = [ NSString stringWithUTF8String : path.data() ];
 		NSString* nsBaseName     = [ nsPath stringByDeletingPathExtension ];
 		NSString* nsExtension    = [ nsPath pathExtension ];
-		NSString* nsResourcePath = [ [ NSBundle mainBundle ] pathForResource : resource ofType : type inDirectory : @"assets" ];
+		NSString* nsResourcePath = [ [ NSBundle mainBundle ] pathForResource:nsBaseName ofType:nsExtension inDirectory:@"assets" ];
 
-		int fd = open( [ resPath UTF8String ], O_RDONLY );
+		int fd = open( [ nsResourcePath UTF8String ], O_RDONLY );
 		if( fd >= 0 )
 		{
 			do

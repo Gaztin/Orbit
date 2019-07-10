@@ -404,7 +404,7 @@ namespace orb
 						[ delegate init ];
 
 						implGl->eaglContext = [ EAGLContext alloc ];
-						[ ( EAGLContext* )impl->eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES3 ];
+						[ ( EAGLContext* )implGl->eaglContext initWithAPI:kEAGLRenderingAPIOpenGLES3 ];
 
 						implGl->glkView = [ GLKView alloc ];
 						[ ( GLKView* )implGl->glkView initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];

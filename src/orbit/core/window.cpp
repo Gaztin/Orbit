@@ -282,7 +282,7 @@ namespace orb
 				auto impl = std::addressof( m_impl.emplace< __window_impl_uikit >() );
 
 				/* Initialize window */
-				impl->uiWindow = [ ORBWindow alloc ];
+				impl->uiWindow = [ ORBUiKitWindow alloc ];
 				[ ( ORBUiKitWindow* )impl->uiWindow initWithFrame:[ [ UIScreen mainScreen ]bounds ] ];
 				( ( ORBUiKitWindow* )impl->uiWindow ).backgroundColor = [ UIColor whiteColor ];
 				[ ( ORBUiKitWindow* )impl->uiWindow makeKeyAndVisible];
