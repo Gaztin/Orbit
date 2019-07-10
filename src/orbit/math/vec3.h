@@ -20,41 +20,41 @@
 
 namespace orb
 {
-
-class vec3 : public vec_base<3, vec3>
-{
-public:
-	vec3() = default;
-
-	explicit vec3(float scalar)
-		: vec_base(scalar)
+	class vec3 final : public vec_base< 3, vec3 >
 	{
-	}
+	public:
+		vec3()
+			: x( 0.f )
+			, y( 0.f )
+			, z( 0.f )
+		{
+		}
 
-	vec3(float x, float y, float z)
-		: vec_base(x, y, z)
-	{
-	}
+		explicit vec3( float scalar )
+			: x( scalar )
+			, y( scalar )
+			, z( scalar )
+		{
+		}
 
-	vec3 cross_product(const vec3& v) const
-	{
-		return vec3(
-			(m_elements[1] * v.m_elements[2]) - (m_elements[2] * v.m_elements[1]),
-			(m_elements[2] * v.m_elements[0]) - (m_elements[0] * v.m_elements[2]),
-			(m_elements[0] * v.m_elements[1]) - (m_elements[1] * v.m_elements[0]));
-	}
+		vec3( float x, float y, float z )
+			: x( x )
+			, y( y )
+			, z( z )
+		{
+		}
 
-	float&       get_x()        { return m_elements[0]; }
-	const float& get_x() const  { return m_elements[0]; }
-	void         set_x(float x) { m_elements[0] = x; }
+		vec3 cross_product( const vec3& v ) const
+		{
+			return vec3( ( y * v.z ) - ( z * v.y ),
+			             ( z * v.x ) - ( x * v.z ),
+			             ( x * v.y ) - ( y * v.x )
+			);
+		}
 
-	float&       get_y()        { return m_elements[1]; }
-	const float& get_y() const  { return m_elements[1]; }
-	void         set_y(float y) { m_elements[1] = y; }
+		float x;
+		float y;
+		float z;
 
-	float&       get_z()        { return m_elements[2]; }
-	const float& get_z() const  { return m_elements[2]; }
-	void         set_z(float z) { m_elements[2] = z; }
-};
-
+	};
 }

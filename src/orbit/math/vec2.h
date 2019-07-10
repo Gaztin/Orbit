@@ -20,29 +20,29 @@
 
 namespace orb
 {
-
-class vec2 : public vec_base<2, vec2>
-{
-public:
-	vec2() = default;
-
-	explicit vec2(float scalar)
-		: vec_base(scalar)
+	class vec2 final : public vec_base< 2, vec2 >
 	{
-	}
+	public:
+		vec2()
+			: x( 0.f )
+			, y( 0.f )
+		{
+		}
 
-	vec2(float x, float y)
-		: vec_base(x, y)
-	{
-	}
+		explicit vec2( float scalar )
+			: x( scalar )
+			, y( scalar )
+		{
+		}
 
-	float&       get_x()        { return m_elements[0]; }
-	const float& get_x() const  { return m_elements[0]; }
-	void         set_x(float x) { m_elements[0] = x; }
+		vec2( float x, float y )
+			: x( x )
+			, y( y )
+		{
+		}
 
-	float&       get_y()        { return m_elements[1]; }
-	const float& get_y() const  { return m_elements[1]; }
-	void         set_y(float y) { m_elements[1] = y; }
-};
+		float x;
+		float y;
 
+	};
 }

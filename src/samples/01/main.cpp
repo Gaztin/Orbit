@@ -63,7 +63,7 @@ private:
 
 struct vertex
 {
-	orb::vec4 pos;
+	orb::vec4  pos;
 	orb::color color;
 };
 
@@ -75,10 +75,10 @@ const orb::vertex_layout vertexLayout =
 
 const std::initializer_list< vertex > triangleVertices =
 {
-	{ orb::vec4(-0.5f, -0.5f, 0.0f, 1.0f),   orb::color(0.0f, 0.0f, 1.0f, 1.0f) },
-	{ orb::vec4(-0.5f,  0.5f, 0.0f, 1.0f),   orb::color(1.0f, 0.0f, 0.0f, 1.0f) },
-	{ orb::vec4( 0.5f, -0.5f, 0.0f, 1.0f),   orb::color(0.0f, 0.0f, 0.0f, 1.0f) },
-	{ orb::vec4( 0.5f,  0.5f, 0.0f, 1.0f),   orb::color(0.0f, 1.0f, 0.0f, 1.0f) },
+	{ orb::vec4( -0.5f, -0.5f, 0.0f, 1.0f ),   orb::color( 0.0f, 0.0f, 1.0f, 1.0f ) },
+	{ orb::vec4( -0.5f,  0.5f, 0.0f, 1.0f ),   orb::color( 1.0f, 0.0f, 0.0f, 1.0f ) },
+	{ orb::vec4(  0.5f, -0.5f, 0.0f, 1.0f ),   orb::color( 0.0f, 0.0f, 0.0f, 1.0f ) },
+	{ orb::vec4(  0.5f,  0.5f, 0.0f, 1.0f ),   orb::color( 0.0f, 1.0f, 0.0f, 1.0f ) },
 };
 
 const std::initializer_list< uint16_t > triangleIndices =
@@ -133,9 +133,9 @@ void sample_app::frame()
 		using namespace orb::math_literals;
 		using namespace orb::unit_literals::metric;
 
-		const orb::vec3 right(1m, 0m, 0m);
-		const orb::vec3 up(0m, 1m, 0m);
-		const orb::vec3 forward = right.cross_product(up);
+		const orb::vec3 right( 1m, 0m, 0m );
+		const orb::vec3 up( 0m, 1m, 0m );
+		const orb::vec3 forward = right.cross_product( up );
 
 		const orb::mat4 m1 = {
 			1.0f, 0.0f, 0.0f, 0.0f,
@@ -145,7 +145,7 @@ void sample_app::frame()
 		};
 
 		orb::mat4 m2 = m1 * m1;
-		m2.translate(orb::vec3(0m, 2m, 0m));
+		m2.translate( orb::vec3( 0m, 2m, 0m ) );
 	}
 
 	m_triangleVertexBuffer.bind();

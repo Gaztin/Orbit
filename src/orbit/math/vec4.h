@@ -20,37 +20,37 @@
 
 namespace orb
 {
-
-class vec4 : public vec_base<4, vec4>
-{
-public:
-	vec4() = default;
-
-	explicit vec4(float scalar)
-		: vec_base(scalar)
+	class vec4 final : public vec_base< 4, vec4 >
 	{
-	}
+	public:
+		vec4()
+			: x( 0.f )
+			, y( 0.f )
+			, z( 0.f )
+			, w( 0.f )
+		{
+		}
 
-	vec4(float x, float y, float z, float w)
-		: vec_base(x, y, z, w)
-	{
-	}
+		explicit vec4( float scalar )
+			: x( scalar )
+			, y( scalar )
+			, z( scalar )
+			, w( scalar )
+		{
+		}
 
-	float&       get_x()        { return m_elements[0]; }
-	const float& get_x() const  { return m_elements[0]; }
-	void         set_x(float x) { m_elements[0] = x; }
+		vec4( float x, float y, float z, float w )
+			: x( x )
+			, y( y )
+			, z( z )
+			, w( w )
+		{
+		}
 
-	float&       get_y()        { return m_elements[1]; }
-	const float& get_y() const  { return m_elements[1]; }
-	void         set_y(float y) { m_elements[1] = y; }
+		float x;
+		float y;
+		float z;
+		float w;
 
-	float&       get_z()        { return m_elements[2]; }
-	const float& get_z() const  { return m_elements[2]; }
-	void         set_z(float z) { m_elements[2] = z; }
-
-	float&       get_w()        { return m_elements[3]; }
-	const float& get_w() const  { return m_elements[3]; }
-	void         set_w(float w) { m_elements[3] = w; }
-};
-
+	};
 }

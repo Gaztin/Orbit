@@ -22,67 +22,65 @@
 
 namespace orb
 {
-
-mat4::mat4()
-	: m_elements{}
-{
-	for (size_t i = 0; i < 16; i += 5)
-		m_elements[i] = 1.f;
-}
-
-mat4::mat4(std::initializer_list<float> elements)
-{
-	const size_t size = std::min(16u, elements.size());
-	for (size_t i = 0; i < size; ++i)
+	mat4::mat4()
 	{
-		m_elements[i] = *(elements.begin() + i);
+		for( size_t i = 0; i < 16; i += 5 )
+			m_elements[ i ] = 1.f;
 	}
-}
 
-void mat4::translate(const vec3& t)
-{
-	const vec4 t4(t[0], t[1], t[2], 1.f);
-	for (size_t i = 0; i < 4; ++i)
-		m_elements[3 * 4 + i] = vec4(m_elements[0 * 4 + i], m_elements[1 * 4 + i], m_elements[2 * 4 + i], m_elements[3 * 4 + i]).dot_product(t4);
-}
+	mat4::mat4( std::initializer_list< float > elements )
+	{
+		const size_t size = std::min( 16u, elements.size() );
+		for( size_t i = 0; i < size; ++i )
+		{
+			m_elements[ i ] = *( elements.begin() + i );
+		}
+	}
 
-void mat4::rotate(const vec3& r)
-{
-	const float sinx = sinf(r.get_x());
-	const float cosx = cosf(r.get_x());
-	const float siny = sinf(r.get_y());
-	const float cosy = cosf(r.get_y());
-	const float sinz = sinf(r.get_z());
-	const float cosz = cosf(r.get_z());
+	void mat4::translate( const vec3& t )
+	{
+		const vec4 t4( t[ 0 ], t[ 1 ], t[ 2 ], 1.f );
+		for( size_t i = 0; i < 4; ++i )
+			m_elements[ 3 * 4 + i ] = vec4( m_elements[ 0 * 4 + i ], m_elements[ 1 * 4 + i ], m_elements[ 2 * 4 + i ], m_elements[ 3 * 4 + i ] ).dot_product( t4 );
+	}
 
-	*this *= {
-		(cosy * cosz), sinz,          siny,          0.f,
-		sinz,          (cosx * cosz), sinx,          0.f,
-		siny,          (0.f - sinx),  (cosx * cosy), 0.f,
-		0.f,           0.f,           0.f,           1.f,
-	};
-}
+	void mat4::rotate( const vec3& r )
+	{
+		const float sinx = sinf( r.x );
+		const float cosx = cosf( r.x );
+		const float siny = sinf( r.y );
+		const float cosy = cosf( r.y );
+		const float sinz = sinf( r.z );
+		const float cosz = cosf( r.z );
 
-mat4 mat4::operator*(const mat4& rhs) const
-{
-	return (mat4(*this) *= rhs);
-}
+		*this *= {
+			( cosy * cosz ), sinz, siny, 0.f,
+			sinz, ( cosx* cosz ), sinx, 0.f,
+			siny, ( 0.f - sinx ), ( cosx * cosy ), 0.f,
+			0.f, 0.f, 0.f, 1.f,
+		};
+	}
 
-mat4& mat4::operator*=(const mat4& rhs)
-{
-	std::array<vec4, 4> columns;
-	for (size_t i = 0; i < 4; ++i)
-		columns[i] = vec4(m_elements[i * 4 + 0], m_elements[i * 4 + 1], m_elements[i * 4 + 2], m_elements[i * 4 + 3]);
+	mat4 mat4::operator*( const mat4& rhs ) const
+	{
+		return ( mat4( *this ) *= rhs );
+	}
 
-	std::array<vec4, 4> rows;
-	for (size_t i = 0; i < 4; ++i)
-		rows[i] = vec4(rhs.m_elements[0 * 4 + i], rhs.m_elements[1 * 4 + i], rhs.m_elements[2 * 4 + i], rhs.m_elements[3 * 4 + i]);
+	mat4& mat4::operator*=( const mat4& rhs )
+	{
+		std::array<vec4, 4> columns;
+		for( size_t i = 0; i < 4; ++i )
+			columns[ i ] = vec4( m_elements[ i * 4 + 0 ], m_elements[ i * 4 + 1 ], m_elements[ i * 4 + 2 ], m_elements[ i * 4 + 3 ] );
 
-	for (size_t row = 0; row < 4; ++row)
-		for (size_t col = 0; col < 4; ++col)
-			m_elements[row * 4 + col] = columns[row].dot_product(rows[col]);
+		std::array<vec4, 4> rows;
+		for( size_t i = 0; i < 4; ++i )
+			rows[ i ] = vec4( rhs.m_elements[ 0 * 4 + i ], rhs.m_elements[ 1 * 4 + i ], rhs.m_elements[ 2 * 4 + i ], rhs.m_elements[ 3 * 4 + i ] );
 
-	return *this;
-}
+		for( size_t row = 0; row < 4; ++row )
+			for( size_t col = 0; col < 4; ++col )
+				m_elements[ row * 4 + col ] = columns[ row ].dot_product( rows[ col ] );
+
+		return *this;
+	}
 
 }

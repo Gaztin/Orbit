@@ -23,96 +23,69 @@
 namespace orb
 {
 
-template<size_t Size, typename Derived>
-class vec_base
-{
-	using elements_t = std::array<float, Size>;
-
-public:
-
-	float dot_product(const vec_base& v) const
+	template< size_t Size, typename Derived >
+	class vec_base
 	{
-		float d = 0.f;
-		for (size_t i = 0; i < Size; ++i)
-			d += (m_elements[i] * v.m_elements[i]);
-		return d;
-	}
+		using elements_t = std::array< float, Size >;
 
-	float dot_product() const { return dot_product(*this); }
+	public:
 
-	vec_base& operator=(const vec_base& other)
-	{
-		for (size_t i = 0; i < Size; ++i)
-			m_elements[i] = other.m_elements[i];
-		return *this;
-	}
+		float dot_product( const vec_base& v ) const
+		{
+			float d = 0.f;
+			for( size_t i = 0; i < Size; ++i )
+				d += ( ( *this )[ i ] * v[ i ] );
+			return d;
+		}
 
-	Derived operator+(const vec_base& v) const
-	{
-		Derived v;
-		for (size_t i = 0; i < m_elements.size(); ++i)
-			v[i] = m_elements[i] + v.m_elements[i];
-		return v;
-	}
+		float dot_product() const { return dot_product( *this ); }
 
-	Derived operator-(const vec_base& v) const
-	{
-		Derived v;
-		for (size_t i = 0; i < m_elements.size(); ++i)
-			v[i] = m_elements[i] - v.m_elements[i];
-		return v;
-	}
+		vec_base& operator=( const vec_base& other )
+		{
+			for( size_t i = 0; i < Size; ++i )
+				( *this )[ i ] = other[ i ];
+			return *this;
+		}
 
-	Derived operator*(float scalar) const
-	{
-		Derived v;
-		for (size_t i = 0; i < m_elements.size(); ++i)
-			v[i] = m_elements[i] * scalar;
-		return v;
-	}
+		Derived operator+( const vec_base& v ) const
+		{
+			Derived v;
+			for( size_t i = 0; i < Size; ++i )
+				v[ i ] = ( *this )[ i ] + v[ i ];
+			return v;
+		}
 
-	Derived operator/(float scalar) const
-	{
-		Derived v;
-		for (size_t i = 0; i < m_elements.size(); ++i)
-			v[i] = m_elements[i] / scalar;
-		return v;
-	}
+		Derived operator-( const vec_base& v ) const
+		{
+			Derived v;
+			for( size_t i = 0; i < Size; ++i )
+				v[ i ] = ( *this )[ i ] - v[ i ];
+			return v;
+		}
 
-	float&       operator[](size_t i)       { return m_elements[i]; }
-	const float& operator[](size_t i) const { return m_elements[i]; }
+		Derived operator*( float scalar ) const
+		{
+			Derived v;
+			for( size_t i = 0; i < Size; ++i )
+				v[ i ] = ( *this )[ i ] * scalar;
+			return v;
+		}
 
-protected:
-	vec_base()
-		: m_elements{}
-	{
-	}
+		Derived operator/( float scalar ) const
+		{
+			Derived v;
+			for( size_t i = 0; i < m_elements.size(); ++i )
+				v[ i ] = m_elements[ i ] / scalar;
+			return v;
+		}
 
-	vec_base(const vec_base& v)
-		: m_elements(v.m_elements)
-	{
-	}
+		float*       begin ( void )       { return &( reinterpret_cast< float*       >( this )[ 0 ] ); }
+		const float* begin ( void ) const { return &( reinterpret_cast< const float* >( this )[ 0 ] ); }
+		float*       end   ( void )       { return &( reinterpret_cast< float*       >( this )[ Size ] ); }
+		const float* end   ( void ) const { return &( reinterpret_cast< const float* >( this )[ Size ] ); }
 
-	vec_base(vec_base&& v)
-		: m_elements(std::move(v.m_elements))
-	{
-	}
+		float&       operator[]( size_t i )       { return ( reinterpret_cast< float*       >( this )[ i ] ); }
+		const float& operator[]( size_t i ) const { return ( reinterpret_cast< const float* >( this )[ i ] ); }
 
-	explicit vec_base(float scalar)
-	{
-		for (float& e : m_elements)
-			e = scalar;
-	}
-
-	template<typename... Elements>
-	explicit vec_base(Elements... elements)
-		: m_elements({elements...})
-	{
-	}
-
-	virtual ~vec_base() = default;
-
-	elements_t m_elements;
-};
-
+	};
 }

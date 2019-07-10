@@ -22,23 +22,23 @@
 
 namespace orb
 {
+	class vec3;
 
-class vec3;
+	class ORB_API_MATH mat4
+	{
+	public:
+		mat4();
+		mat4( std::initializer_list< float > elements );
 
-class ORB_API_MATH mat4
-{
-public:
-	mat4();
-	mat4(std::initializer_list<float> elements);
+		void translate( const vec3& t );
+		void rotate( const vec3& r );
 
-	void translate(const vec3& t);
-	void rotate(const vec3& r);
+		mat4  operator*  ( const mat4& rhs ) const;
+		mat4& operator*= ( const mat4& rhs );
 
-	mat4  operator*  (const mat4& rhs) const;
-	mat4& operator*= (const mat4& rhs);
+	private:
 
-private:
-	std::array<float, 16> m_elements;
-};
+		std::array< float, 16 > m_elements;
 
+	};
 }
