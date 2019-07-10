@@ -28,6 +28,8 @@
 #  include <unistd.h>
 #elif defined( ORB_OS_ANDROID )
 #  include <android/asset_manager.h>
+#elif defined( ORB_OS_IOS )
+#  include <Foundation/Foundation.h>
 #endif
 
 namespace orb

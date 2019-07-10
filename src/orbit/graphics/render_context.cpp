@@ -31,6 +31,7 @@
 #endif
 
 #if __ORB_HAS_WINDOW_API_UIKIT
+  #include <GLKit/GLKit.h>
 @interface ORBGLKViewDelegate : UIResponder< GLKViewDelegate >
 @end
 #endif
