@@ -54,7 +54,7 @@ namespace orb
 					precisionString = "precision highp float;\n";
 
 					/**/ if( implCtx->glVersion >= version( 3, 2 ) ) versionString = "#version 320 es\n";
-					else if( implCtx->glVersion >= version( 3, 0 ) ) versionString = "#version 300\n";
+					else if( implCtx->glVersion >= version( 3, 0 ) ) versionString = "#version 300 es\n";
 					else                                             versionString = "#version 100\n";
 				}
 				else
