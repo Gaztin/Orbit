@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,43 +16,31 @@
 */
 
 #pragma once
-#include <stdint.h>
+
+#include <cstdint>
 
 #include "orbit/core.h"
 
-#if defined(None)
-#pragma push_macro("None")
-#undef None
-#define UNDEFINED_None
-#endif
-
 namespace orb
 {
-
-struct ORB_API_CORE window_event
-{
-	enum
+	struct ORB_API_CORE window_event
 	{
-		None = 0,
-		Move,
-		Resize,
-		Defocus,
-		Focus,
-		Suspend,
-		Restore,
-		Close,
-	} type;
+		enum
+		{
+			Unknown = 0,
+			Move,
+			Resize,
+			Defocus,
+			Focus,
+			Suspend,
+			Restore,
+			Close,
+		} type;
 
-	union
-	{
-		struct { int x, y; } move;
-		struct { uint32_t w, h; } resize;
-	} data;
-};
-
+		union
+		{
+			struct { int x, y; } move;
+			struct { uint32_t w, h; } resize;
+		} data;
+	};
 }
-
-#if defined(UNDEFINED_None)
-#pragma pop_macro("None")
-#undef UNDEFINED_None
-#endif

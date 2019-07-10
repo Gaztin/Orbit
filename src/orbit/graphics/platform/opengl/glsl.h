@@ -17,24 +17,21 @@
 
 #pragma once
 
-#include <string>
-
+#include "orbit/core/version.h"
 #include "orbit/graphics.h"
+
+#include <string_view>
 
 namespace orb
 {
-	enum class shader_constant_type
+	namespace glsl
 	{
-		Float,
-		Vec2,
-		Vec3,
-		Vec4,
-		Mat4,
-	};
-
-	struct ORB_API_GRAPHICS shader_constant
-	{
-		std::string          name;
-		shader_constant_type type;
-	};
+		extern ORB_API_GRAPHICS std::string_view get_version_directive ( const version& glVersion, bool embedded );
+		extern ORB_API_GRAPHICS std::string_view get_glsl_define       ( void );
+		extern ORB_API_GRAPHICS std::string_view get_precision         ( bool embedded );
+		extern ORB_API_GRAPHICS std::string_view get_constants_macros  ( const version& glVersion, bool embedded );
+		extern ORB_API_GRAPHICS std::string_view get_varying_macro     ( const version& glVersion, bool embedded, shader_type type );
+		extern ORB_API_GRAPHICS std::string_view get_attribute_macro   ( const version& glVersion, bool embedded, shader_type type );
+		extern ORB_API_GRAPHICS std::string_view get_out_color_macro   ( const version& glVersion, bool embedded );
+	}
 }

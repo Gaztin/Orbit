@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,6 +16,7 @@
 */
 
 #pragma once
+
 #include <initializer_list>
 #include <string>
 
@@ -23,21 +24,19 @@
 
 namespace orb
 {
-
-struct vertex_component
-{
-	enum type_t
+	struct vertex_component
 	{
-		Float,
-		Vec2,
-		Vec3,
-		Vec4,
+		enum type_t
+		{
+			Float,
+			Vec2,
+			Vec3,
+			Vec4,
+		};
+
+		std::string semanticName;
+		type_t      type;
 	};
 
-	std::string semanticName;
-	type_t type;
-};
-
-using vertex_layout = std::initializer_list<vertex_component>;
-
+	using vertex_layout = std::initializer_list< vertex_component >;
 }

@@ -16,23 +16,22 @@
 */
 
 #pragma once
+
 #include "orbit/graphics.h"
 
 namespace orb
 {
-namespace gl
-{
+	namespace gl
+	{
+		enum class version
+		{
+			v2_0,
+			v3_2,
+			v4_1,
+			vES_2,
+			vES_3,
+		};
 
-enum class version
-{
-	v2_0,
-	v3_2,
-	v4_1,
-	vES_2,
-	vES_3,
-};
-
-extern ORB_API_GRAPHICS version get_system_default_opengl_version();
-
-}
+		extern ORB_API_GRAPHICS version get_system_default_opengl_version();
+	}
 }

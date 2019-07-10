@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,36 +16,36 @@
 */
 
 #pragma once
-#include <string>
+
+#include <string_view>
 
 #include "orbit/core/event_dispatcher.h"
 #include "orbit/core/events/window_event.h"
-#include "orbit/core/platform/window_handle.h"
+#include "orbit/core/internal/window_impl.h"
 
 namespace orb
 {
+	class ORB_API_CORE window : public event_dispatcher< window_event >
+	{
+	public:
+		window( uint32_t width, uint32_t height, window_api api = kDefaultWindowApi );
+		~window();
 
-class ORB_API_CORE window : public event_dispatcher<window_event>
-{
-public:
-	window(uint32_t width, uint32_t height);
+		void poll_events();
+		void set_title( std::string_view title );
+		void set_pos( uint32_t x, uint32_t y );
+		void set_size( uint32_t width, uint32_t height );
+		void show();
+		void hide();
+		void close() { m_open = false; }
 
-	void poll_events();
-	void set_title(const std::string& title);
-	void set_pos(uint32_t x, uint32_t y);
-	void set_size(uint32_t width, uint32_t height);
-	void show();
-	void hide();
+		operator bool() const { return m_open; }
 
-	void close() { m_open = false; }
+		window_impl* get_impl_ptr() { return &m_impl; }
 
-	operator bool() const { return m_open; }
+	private:
+		window_impl m_impl;
+		bool        m_open;
 
-	const platform::window_handle& get_handle() const { return m_handle; }
-
-private:
-	platform::window_handle m_handle;
-	bool m_open;
-};
-
+	};
 }

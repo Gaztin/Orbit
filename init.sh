@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PREMAKE_VERSION="5.0.0-alpha13"
+PREMAKE_VERSION="5.0.0-alpha14"
 PREMAKE_LOCATION="."
 os=$(uname -s)
 arch=$(uname -m)

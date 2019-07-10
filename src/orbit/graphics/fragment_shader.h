@@ -17,24 +17,23 @@
 
 #pragma once
 
-#include <stdlib.h>
-
-#include "orbit/core.h"
+#include "orbit/graphics/internal/fragment_shader_impl.h"
 
 namespace orb
 {
-	class ORB_API_CORE color
+	class asset;
+
+	class ORB_API_GRAPHICS fragment_shader
 	{
 	public:
-		color();
-		color( float r, float g, float b, float a = 1.0f );
+		explicit fragment_shader( const asset& asset );
+		~fragment_shader();
 
-		float&       operator[]( size_t i )       { return ( &r )[ i ]; }
-		const float& operator[]( size_t i ) const { return ( &r )[ i ]; }
+		fragment_shader_impl*       get_impl_ptr()       { return &m_impl; }
+		const fragment_shader_impl* get_impl_ptr() const { return &m_impl; }
 
-		float r;
-		float g;
-		float b;
-		float a;
+	private:
+		fragment_shader_impl m_impl;
+
 	};
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,77 +16,67 @@
 */
 
 #pragma once
+
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "orbit/core.h"
 
 namespace orb
 {
+	template< typename T >
+	struct false_type : std::false_type { };
 
-template<typename T>
-struct false_type : std::false_type { };
+	template< typename T >
+	struct in_place_type { };
 
-template<typename T>
-struct in_place_type { };
+	template< typename T >
+	constexpr in_place_type< T > in_place_type_v{ };
 
-template<typename T>
-constexpr in_place_type<T> in_place_type_v { };
+	template< typename T, size_t c >
+	constexpr size_t count_of( T( & )[ c ] )
+	{
+		return c;
+	}
 
-template<typename T, size_t c>
-constexpr size_t count_of(T(&)[c])
-{
-	return c;
-}
+	/* Integer sequences by courtesy of https://stackoverflow.com/a/16387374 */
 
-/* Integer sequences by courtesy of https://stackoverflow.com/a/16387374 */
-template<size_t... Is>
-struct seq { };
+	template< size_t... Is >
+	struct seq { };
 
-template<size_t N, size_t... Is>
-struct gen_seq : gen_seq<(N - 1), (N - 1), Is...> { };
+	template< size_t N, size_t... Is >
+	struct gen_seq : gen_seq< ( N - 1 ), ( N - 1 ), Is... > { };
 
-template<size_t... Is>
-struct gen_seq<0, Is...> : seq<Is...> { };
+	template< size_t... Is >
+	struct gen_seq< 0, Is... > : seq< Is... > { };
 
-template<typename Dst, typename Src>
-Dst cast(Src src)
-{
-	/* Can implicitly convert. */
-	if constexpr (std::is_convertible<Src, Dst>::value)
-		return static_cast<Dst>(src);
+	/* Get type index within variant. Courtesy of https://stackoverflow.com/a/52303687 */
 
-	/* Can implicitly convert if const qualifier is removed from both. */
-	else if constexpr (std::is_convertible<typename std::remove_const<Src>::type, typename std::remove_const<Dst>::type>::value)
-		return const_cast<Dst>(src);
+	template< typename >
+	struct tag { };
 
-	/* Both are pointers. */
-	else if constexpr (std::is_pointer<Src>::value && std::is_pointer<Dst>::value)
-		return reinterpret_cast<Dst>(src);
+	template< typename T, typename Variant >
+	struct unique_index;
 
-	/* Both are references. */
-	else if constexpr (std::is_reference<Src>::value && std::is_reference<Dst>::value)
-		return reinterpret_cast<Dst>(src);
+	template< typename T, typename... Ts >
+	struct unique_index< T, std::variant< Ts... > >
+		: std::integral_constant< size_t, std::variant< tag< Ts >... >( tag< T >() ).index() >
+	{ };
 
-	/* Sizes match. */
-	else if constexpr (sizeof(Src) == sizeof(Dst))
-		return reinterpret_cast<Dst>(src);
+	template< typename T, typename... Ts >
+	constexpr auto unique_index_v = unique_index< T, Ts... >::value;
 
-	/* Invalid cast. */
-	else static_assert(false_type<Src>::value, "Invalid cast");
-}
+	template< typename... Args >
+	std::string format( const char* fmt, Args... args )
+	{
+		const int len = snprintf( nullptr, 0, fmt, args... );
+		if( len < 0 )
+			return std::string( fmt );
 
-template<typename... Args>
-std::string format(const char* fmt, Args... args)
-{
-	const int len = snprintf(nullptr, 0, fmt, args...);
-	if (len < 0)
-		return std::string(fmt);
-
-	std::string res(len, '\0');
-	snprintf(&res[0], len + 1, fmt, args...);
-	return res;
-}
-
+		std::string res( len, '\0' );
+		snprintf( &res[ 0 ], len + 1, fmt, args... );
+		return res;
+	}
 }

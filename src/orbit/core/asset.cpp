@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -19,26 +19,110 @@
 
 #include <algorithm>
 
-#include "orbit/core/platform/asset_handle.h"
+#include "orbit/core/android_app.h"
+
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS )
+#  include <fcntl.h>
+#  include <unistd.h>
+#elif defined( ORB_OS_ANDROID )
+#  include <android/asset_manager.h>
+#elif defined( ORB_OS_IOS )
+#  include <Foundation/Foundation.h>
+#endif
 
 namespace orb
 {
-
-asset::asset(const std::string& path)
-{
-	platform::asset_handle ah{};
-	ah = platform::open_asset(path);
-	if (!ah)
-		return;
-
-	const size_t sz = platform::get_asset_size(ah);
-	if (sz > 0)
+	asset::asset( std::string_view path )
 	{
-		m_data.resize(sz);
-		platform::read_asset_data(ah, m_data.data(), m_data.size());
+
+	#if defined( ORB_OS_WINDOWS )
+
+		HANDLE handle = CreateFileA( path.data(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+		if( handle != INVALID_HANDLE_VALUE )
+		{
+			do
+			{
+				LARGE_INTEGER fileSize;
+				if( GetFileSizeEx( handle, &fileSize ) == 0 )
+					break;
+
+				m_data.resize( static_cast< size_t >( fileSize.QuadPart ) );
+				ReadFile( handle, &m_data[ 0 ], static_cast< DWORD >( m_data.size() ), NULL, NULL );
+
+			} while( false );
+
+			CloseHandle( handle );
+		}
+
+	#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS )
+
+		int fd = open( path.data(), O_RDONLY );
+		if( fd >= 0 )
+		{
+			do
+			{
+				lseek( fd, 0, SEEK_SET );
+				const off_t len = lseek( fd, 0, SEEK_END );
+				lseek( fd, 0, SEEK_SET );
+				if( len < 0 )
+					break;
+
+				m_data.resize( static_cast< size_t >( len ) );
+				read( fd, &m_data[ 0 ], m_data.size() );
+
+			} while( false );
+
+			close( fd );
+		}
+
+	#elif defined( ORB_OS_ANDROID )
+
+		AAsset* aAsset = AAssetManager_open( android_only::app->activity->assetManager, path.data(), AASSET_MODE_BUFFER );
+		if( aAsset != nullptr )
+		{
+			do
+			{
+				const off64_t len = AAsset_getLength64( aAsset );
+				if( len < 0 )
+					break;
+
+				m_data.resize( static_cast< size_t >( len ) );
+				AAsset_read( aAsset, &m_data[ 0 ], m_data.size() );
+
+			} while( false );
+
+			AAsset_close( aAsset );
+		}
+
+	#elif defined( ORB_OS_IOS )
+
+		NSString* nsPath         = [ NSString stringWithUTF8String : path.data() ];
+		NSString* nsBaseName     = [ nsPath stringByDeletingPathExtension ];
+		NSString* nsExtension    = [ nsPath pathExtension ];
+		NSString* nsResourcePath = [ [ NSBundle mainBundle ] pathForResource:nsBaseName ofType:nsExtension inDirectory:@"assets" ];
+
+		int fd = open( [ nsResourcePath UTF8String ], O_RDONLY );
+		if( fd >= 0 )
+		{
+			do
+			{
+				lseek( fd, 0, SEEK_SET );
+				const off_t len = lseek( fd, 0, SEEK_END );
+				lseek( fd, 0, SEEK_SET );
+				if( len < 0 )
+					break;
+
+				m_data.resize( static_cast< size_t >( len ) );
+				read( fd, &m_data[ 0 ], m_data.size() );
+
+			} while( false );
+
+			close( fd );
+		}
+
+	#endif
+
 	}
-
-	platform::close_asset(ah);
-}
-
 }

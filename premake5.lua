@@ -1,5 +1,8 @@
 OUTDIR = "build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/"
 
+-- Allow Objective C++ files on macOS and iOS
+premake.api.addAllowed("language", "ObjCpp")
+
 if _TARGET_OS == "macosx" then
 	newoption {
 		trigger = "ios",
@@ -12,14 +15,6 @@ end
 
 local function get_arch()
 	return io.popen("uname -m", "r"):read("*l")
-end
-
-local function get_app_kind()
-	if (_TARGET_OS == "ios") then
-		return "WindowedApp"
-	else
-		return "ConsoleApp"
-	end
 end
 
 local function get_platforms()
@@ -43,6 +38,7 @@ local function base_config()
 	warnings          ("Extra")
 	rtti              ("Off")
 	exceptionhandling ("Off")
+	flags             {"MultiProcessorCompile"}
 	filter{"configurations:Debug"}
 	optimize          ("Off")
 	symbols           ("On")
@@ -123,7 +119,8 @@ local function decl_module(name)
 		"src/orbit/" .. lo .. "/**.cpp",
 		"src/orbit/" .. lo .. "/**.h",
 	}
-	filter{"system:macosx or ios"} files{"src/orbit/" .. lo .. "/**.mm"} filter{}
+	filter{"toolset:msc"} defines{"_CRT_SECURE_NO_WARNINGS"} filter{}
+	filter{"system:macosx or ios", "files:**"} language("ObjCpp") filter{}
 	filter_system_files()
 	group()
 	table.insert(modules, name)
@@ -134,7 +131,7 @@ local function decl_sample(name)
 	local id = string.format("%02d", sample_index)
 	group("Samples")
 	project (id .. "." .. name)
-	kind    (get_app_kind())
+	kind    ("WindowedApp")
 	links   (modules)
 	xcodebuildresources("assets")
 	base_config()
@@ -175,4 +172,3 @@ decl_module("Graphics")
 decl_sample("Base")
   filter{"system:windows"}
     defines{"_USE_MATH_DEFINES"}
-decl_sample("Benchmarking")

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -17,47 +17,135 @@
 
 #include "vertex_buffer.h"
 
-#include <assert.h>
-
+#include "orbit/core/utility.h"
 #include "orbit/graphics/render_context.h"
-#include "platform/d3d11/vertex_buffer_d3d11.h"
-#include "platform/opengl/buffer_gl.h"
 
 namespace orb
 {
+	template< typename T >
+	constexpr auto render_context_impl_index_v = unique_index_v< T, render_context_impl >;
 
-static std::unique_ptr<platform::buffer_base> init_base(const void* data, size_t count, size_t stride)
-{
-	switch (render_context::get_current()->get_api())
+	template< typename T >
+	constexpr auto vertex_buffer_impl_index_v = unique_index_v< T, vertex_buffer_impl >;
+
+	vertex_buffer::vertex_buffer( const void* data, size_t count, size_t stride )
+		: m_impl{ }
+		, m_count( count )
 	{
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL_2_0:
-		case graphics_api::OpenGL_3_2:
-		case graphics_api::OpenGL_4_1:
-		case graphics_api::OpenGL_ES_2:
-		case graphics_api::OpenGL_ES_3:
-			return std::make_unique<platform::buffer_gl<gl::buffer_target::Array>>(data, count * stride);
-#endif
+		auto         currentContextImpl = render_context::get_current()->get_impl_ptr();
+		const size_t totalSize          = ( count * stride );
 
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::Direct3D_11:
-			return std::make_unique<platform::vertex_buffer_d3d11>(data, count, stride);
-#endif
+		switch( currentContextImpl->index() )
+		{
+			default: break;
 
-		default:
-			return nullptr;
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
+			case( render_context_impl_index_v< __render_context_impl_opengl > ):
+			{
+				auto  impl      = std::addressof( m_impl.emplace< __vertex_buffer_impl_opengl >() );
+				auto& functions = std::get_if< __render_context_impl_opengl >( currentContextImpl )->functions.value();
+
+				functions.gen_buffers( 1, &impl->id );
+				functions.bind_buffer( gl::buffer_target::Array, impl->id );
+				functions.buffer_data( gl::buffer_target::Array, totalSize, data, orb::gl::buffer_usage::StaticDraw );
+				functions.bind_buffer( gl::buffer_target::Array, 0 );
+
+				break;
+			}
+		#endif
+
+		#if __ORB_HAS_GRAPHICS_API_D3D11
+			case( render_context_impl_index_v< __render_context_impl_d3d11 > ):
+			{
+				auto          impl   = std::addressof( m_impl.emplace< __vertex_buffer_impl_d3d11 >() );
+				ID3D11Device& device = *( std::get_if< __render_context_impl_d3d11 >( currentContextImpl )->device );
+
+				D3D11_BUFFER_DESC desc{ };
+				desc.ByteWidth = static_cast< UINT >( ( totalSize + 0xf ) & ~0xf ); /* Align by 16 bytes */
+				desc.Usage     = D3D11_USAGE_DEFAULT;
+				desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+				ID3D11Buffer* buffer;
+				if( data )
+				{
+					D3D11_SUBRESOURCE_DATA initialData{ };
+					initialData.pSysMem = data;
+					device.CreateBuffer( &desc, &initialData, &buffer );
+				}
+				else
+				{
+					device.CreateBuffer( &desc, nullptr, &buffer );
+				}
+				impl->buffer.reset( buffer );
+				impl->stride = static_cast< UINT >( stride );
+
+				break;
+			}
+		#endif
+		}
 	}
-}
 
-vertex_buffer::vertex_buffer(const void* data, size_t count, size_t stride)
-	: m_base(init_base(data, count, stride))
-	, m_count(count)
-{
-}
+	vertex_buffer::~vertex_buffer()
+	{
+		switch( m_impl.index() )
+		{
+			default: break;
 
-void vertex_buffer::bind()
-{
-	m_base->bind();
-}
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
+			case( vertex_buffer_impl_index_v< __vertex_buffer_impl_opengl > ):
+			{
+				auto  impl      = std::get_if< __vertex_buffer_impl_opengl >( &m_impl );
+				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
 
+				functions.delete_buffers( 1, &impl->id );
+
+				break;
+			}
+		#endif
+
+		#if __ORB_HAS_GRAPHICS_API_D3D11
+//			case( vertex_buffer_impl_index_v< __vertex_buffer_impl_d3d11 > ):
+//			{
+//				break;
+//			}
+		#endif
+		}
+	}
+
+	void vertex_buffer::bind()
+	{
+		auto currentContextImpl = render_context::get_current()->get_impl_ptr();
+
+		switch( m_impl.index() )
+		{
+			default: break;
+
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
+			case( vertex_buffer_impl_index_v< __vertex_buffer_impl_opengl > ):
+			{
+				auto  impl      = std::get_if< __vertex_buffer_impl_opengl >( &m_impl );
+				auto& functions = std::get_if< __render_context_impl_opengl >( currentContextImpl )->functions.value();
+
+				functions.bind_buffer( gl::buffer_target::Array, impl->id );
+
+				break;
+			}
+		#endif
+
+		#if __ORB_HAS_GRAPHICS_API_D3D11
+			case( vertex_buffer_impl_index_v< __vertex_buffer_impl_d3d11 > ):
+			{
+				auto                 impl          = std::get_if< __vertex_buffer_impl_d3d11 >( &m_impl );
+				ID3D11DeviceContext& deviceContext = *( std::get_if< __render_context_impl_d3d11 >( currentContextImpl )->deviceContext );
+				ID3D11Buffer*        buffers[]     = { impl->buffer.get() };
+				const UINT           strides[]     = { impl->stride };
+				const UINT           offsets[]     = { 0 };
+
+				deviceContext.IASetVertexBuffers( 0, 1, buffers, strides, offsets );
+
+				break;
+			}
+		#endif
+		}
+	}
 }

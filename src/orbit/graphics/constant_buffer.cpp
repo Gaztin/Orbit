@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander http://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -17,52 +17,177 @@
 
 #include "constant_buffer.h"
 
-#include "orbit/graphics/platform/d3d11/constant_buffer_d3d11.h"
-#include "orbit/graphics/platform/opengl/constant_buffer_gl_2_0.h"
-#include "orbit/graphics/platform/opengl/constant_buffer_gl_3_2.h"
+#include "orbit/core/utility.h"
+#include "orbit/core/version.h"
 #include "orbit/graphics/render_context.h"
+
+#include <cstring>
 
 namespace orb
 {
+	template< typename T >
+	constexpr auto render_context_impl_index_v = unique_index_v< T, render_context_impl >;
+	
+	template< typename T >
+	constexpr auto constant_buffer_impl_index_v = unique_index_v< T, constant_buffer_impl >;
 
-static std::unique_ptr<platform::constant_buffer_base> init_base(size_t size)
-{
-	switch (render_context::get_current()->get_api())
+	constant_buffer::constant_buffer( size_t size )
 	{
-#if defined(ORB_HAS_OPENGL)
-		case graphics_api::OpenGL_2_0:
-		case graphics_api::OpenGL_ES_2:
-			return std::make_unique<platform::constant_buffer_gl_2_0>();
+		auto currentContextImpl = render_context::get_current()->get_impl_ptr();
 
-		case graphics_api::OpenGL_3_2:
-		case graphics_api::OpenGL_4_1:
-		case graphics_api::OpenGL_ES_3:
-			return std::make_unique<platform::constant_buffer_gl_3_2>(size);
-#endif
+		switch( currentContextImpl->index() )
+		{
+			default: break;
 
-#if defined(ORB_HAS_D3D11)
-		case graphics_api::Direct3D_11:
-			return std::make_unique<platform::constant_buffer_d3d11>(size);
-#endif
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
+			case( render_context_impl_index_v< __render_context_impl_opengl > ):
+			{
+				auto implCtx = std::get_if< __render_context_impl_opengl >( currentContextImpl );
+				if( ( implCtx->embedded && implCtx->glVersion < version( 3 ) ) || ( !implCtx->embedded && implCtx->glVersion < version( 3, 1 ) ) )
+				{
+					m_impl.emplace< __constant_buffer_impl_opengl_2_0 >();
+				}
+				else
+				{
+					auto  impl      = std::addressof( m_impl.emplace< __constant_buffer_impl_opengl_3_1 >() );
+					auto& functions = implCtx->functions.value();
 
-		default:
-			return nullptr;
+					functions.gen_buffers( 1, &impl->id );
+					functions.bind_buffer( gl::buffer_target::Uniform, impl->id );
+					functions.buffer_data( gl::buffer_target::Uniform, size, nullptr, orb::gl::buffer_usage::StreamDraw );
+					functions.bind_buffer( gl::buffer_target::Uniform, 0 );
+				}
+				break;
+			}
+		#endif
+
+		#if __ORB_HAS_GRAPHICS_API_D3D11
+			case( render_context_impl_index_v< __render_context_impl_d3d11 > ):
+			{
+				auto          impl   = std::addressof( m_impl.emplace< __constant_buffer_impl_d3d11 >() );
+				ID3D11Device& device = *( std::get_if< __render_context_impl_d3d11 >( currentContextImpl )->device );
+
+				D3D11_BUFFER_DESC desc{ };
+				desc.ByteWidth      = static_cast< UINT >( ( size + 0xf ) & ~0xf ); /* Align by 16 bytes */
+				desc.Usage          = D3D11_USAGE_DYNAMIC;
+				desc.BindFlags      = D3D11_BIND_CONSTANT_BUFFER;
+				desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+				ID3D11Buffer* buffer;
+				device.CreateBuffer( &desc, nullptr, &buffer );
+				impl->buffer.reset( buffer );
+
+				break;
+			}
+		#endif
+		}
 	}
-}
 
-constant_buffer::constant_buffer(size_t size)
-	: m_base(init_base(size))
-{
-}
+	constant_buffer::~constant_buffer()
+	{
+		switch( m_impl.index() )
+		{
+			default: break;
 
-void constant_buffer::update(size_t location, const void* data, size_t size)
-{
-	m_base->update(location, data, size);
-}
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
+			case( constant_buffer_impl_index_v< __constant_buffer_impl_opengl_3_1 > ):
+			{
+				auto  impl      = std::get_if< __constant_buffer_impl_opengl_3_1 >( &m_impl );
+				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
 
-void constant_buffer::bind(shader_type type, uint32_t slot)
-{
-	m_base->bind(type, slot);
-}
+				functions.delete_buffers( 1, &impl->id );
 
+				break;
+			}
+		#endif
+		}
+	}
+
+	void constant_buffer::update( size_t location, const void* data, size_t size )
+	{
+		switch( m_impl.index() )
+		{
+			default: break;
+
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
+			case( constant_buffer_impl_index_v< __constant_buffer_impl_opengl_2_0 > ):
+			{
+				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
+
+				functions.uniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
+
+				break;
+			}
+			case( constant_buffer_impl_index_v< __constant_buffer_impl_opengl_3_1 > ):
+			{
+				auto  impl      = std::get_if< __constant_buffer_impl_opengl_3_1 >( &m_impl );
+				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
+
+				functions.bind_buffer( gl::buffer_target::Uniform, impl->id );
+				void* dst = functions.map_buffer_range( gl::buffer_target::Uniform, 0, size, gl::map_access::WriteBit );
+				std::memcpy( dst, data, size );
+				functions.unmap_buffer( gl::buffer_target::Uniform );
+				functions.bind_buffer( gl::buffer_target::Uniform, 0 );
+
+				break;
+			}
+		#endif
+			
+		#if __ORB_HAS_GRAPHICS_API_D3D11
+			case( constant_buffer_impl_index_v< __constant_buffer_impl_d3d11 > ):
+			{
+				auto                 impl          = std::get_if< __constant_buffer_impl_d3d11 >( &m_impl );
+				ID3D11DeviceContext& deviceContext = *std::get_if< __render_context_impl_d3d11 >( render_context::get_current()->get_impl_ptr() )->deviceContext;
+
+				D3D11_MAPPED_SUBRESOURCE subresource;
+				if( deviceContext.Map( impl->buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
+				{
+					std::memcpy( subresource.pData, data, size );
+					deviceContext.Unmap( impl->buffer.get(), 0 );
+				}
+
+				break;
+			}
+		#endif
+		}
+	}
+
+	void constant_buffer::bind( [[maybe_unused]] shader_type type, uint32_t slot )
+	{
+		switch( m_impl.index() )
+		{
+			default: break;
+
+		#if __ORB_HAS_GRAPHICS_API_OPENGL
+			case( constant_buffer_impl_index_v< __constant_buffer_impl_opengl_3_1 > ):
+			{
+				auto  impl      = std::get_if< __constant_buffer_impl_opengl_3_1 >( &m_impl );
+				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
+
+				functions.bind_buffer( gl::buffer_target::Uniform, impl->id );
+				functions.bind_buffer_base( gl::buffer_target::Uniform, slot, impl->id );
+
+				break;
+			}
+		#endif
+			
+		#if __ORB_HAS_GRAPHICS_API_D3D11
+			case( constant_buffer_impl_index_v< __constant_buffer_impl_d3d11 > ):
+			{
+				auto                 impl          = std::get_if< __constant_buffer_impl_d3d11 >( &m_impl );
+				ID3D11DeviceContext& deviceContext = *std::get_if< __render_context_impl_d3d11 >( render_context::get_current()->get_impl_ptr() )->deviceContext;
+				ID3D11Buffer*        buffers[]     = { impl->buffer.get() };
+
+				switch( type )
+				{
+					default: break;
+					case shader_type::Vertex:   deviceContext.VSSetConstantBuffers( slot, 1, buffers ); break;
+					case shader_type::Fragment: deviceContext.PSSetConstantBuffers( slot, 1, buffers ); break;
+				}
+
+				break;
+			}
+		#endif
+		}
+	}
 }

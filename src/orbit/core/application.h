@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander http://gaztin.com/
+ * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,28 +16,38 @@
  */
 
 #pragma once
+
+#include <memory>
 #include <type_traits>
 
-#include "orbit/core/platform/main.h"
+#include "orbit/core.h"
+
+#define ORB_APP_DECL( APP_TYPE )                                                                 \
+    class APP_TYPE; /* Forward declaration */                                                    \
+    volatile int __orb__app_initializer_eval = orb::application< APP_TYPE >::__initializer_eval; \
+    class APP_TYPE final : public ::orb::application< APP_TYPE >
 
 namespace orb
 {
-
-class application
-{
-public:
-	application() = default;
-	virtual ~application() = default;
-
-	virtual void frame() {}
-	virtual operator bool() const { return true; };
-
-	template<typename T,
-		typename = typename std::enable_if_t<std::is_base_of_v<application, T>>>
-	static void main(platform::argv_t argv)
+	class ORB_API_CORE application_base
 	{
-		platform::main(argv, []() -> std::shared_ptr<application> { return std::make_shared<T>(); });
-	}
-};
+	public:
+		application_base() = default;
+		virtual ~application_base() = default;
 
+		virtual void frame() { }
+		virtual bool is_running() = 0;
+
+		static void run_instance();
+	};
+
+	extern ORB_API_CORE std::shared_ptr< void >( *__application_initializer )();
+	extern ORB_API_CORE std::shared_ptr< application_base > __application_instance;
+
+	template< typename Derived >
+	class application : private application_base
+	{
+	public:
+		static inline volatile auto __initializer_eval = [] { __application_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 1; }();
+	};
 }
