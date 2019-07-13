@@ -423,6 +423,10 @@ namespace orb
 				make_current();
 				impl->functions.emplace();
 
+				glEnable( GL_CULL_FACE );
+				glEnable( GL_DEPTH_TEST );
+				glCullFace( GL_BACK );
+
 				auto glVersion = reinterpret_cast< const char* >( glGetString( GL_VERSION ) );
 				auto checkDigit = [ & ]( version* out )
 				{
