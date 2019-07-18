@@ -9,11 +9,16 @@ build/*/
 build/android/mobile/build/
 build/android/wear/build/
 
+*.gradle
 *.iml
 *.sln
 *.xcworkspace
 *.workspace
 
+gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
+gradlew
+gradlew.bat
 local.properties
 Makefile
 premake5.exe
