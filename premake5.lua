@@ -1,7 +1,14 @@
+require "third_party/premake-android-studio/android_studio"
+
 OUTDIR = "build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/"
 
 -- Allow Objective C++ files on macOS and iOS
 premake.api.addAllowed("language", "ObjCpp")
+-- Set system to android
+if _ACTION == "android-studio" then
+	_TARGET_OS = "android"
+	system("android")
+end
 
 if _TARGET_OS == "macosx" then
 	newoption {
@@ -20,7 +27,9 @@ end
 local function get_platforms()
 
 	-- Add x86 target for x64 Windows builds
-	if os.host() == "windows" and get_arch() == "x86_64" then
+	if _ACTION == "android-studio" then
+		return { }
+	elseif os.host() == "windows" and get_arch() == "x86_64" then
 		return { "x64", "x86" }
 	else
 		return { get_arch() }
@@ -53,6 +62,8 @@ local function base_config()
 	toolset           ("gcc")
 	filter{"system:linux"}
 	debugenvs         {"LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../%{OUTDIR}"}
+	filter{"system:android"}
+	androidabis       {"armeabi-v7a", "arm64-v8a", "x86", "x86_64"}
 	filter{}
 end
 
@@ -108,10 +119,10 @@ local function decl_module(name)
 	local lo = name:lower()
 	local up = name:upper()
 	group("Engine")
-	project (name)
-	kind    ("SharedLib")
-	defines {"ORB_BUILD", "ORB_BUILD_" .. up}
-	links   (modules)
+	project   (name)
+	kind      ("SharedLib")
+	defines   {"ORB_BUILD", "ORB_BUILD_" .. up}
+	dependson (modules)
 	base_config()
 	files {
 		"src/orbit.h",
@@ -121,6 +132,8 @@ local function decl_module(name)
 	}
 	filter{"toolset:msc"} defines{"_CRT_SECURE_NO_WARNINGS"} filter{}
 	filter{"system:macosx or ios", "files:**"} language("ObjCpp") filter{}
+	filter{"action:android-studio"} removefiles{"**.h"} filter{}
+	filter{"action:android-studio"} includedirs{"${ANDROID_NDK}/sources/android/native_app_glue/"} filter{}
 	filter_system_files()
 	group()
 	table.insert(modules, name)
@@ -136,11 +149,14 @@ local function decl_sample(name)
 	xcodebuildresources("assets")
 	base_config()
 	files {
-		"src/samples/" .. id .. "/**.cpp",
-		"src/samples/" .. id .. "/**.h",
+		"src/samples/" .. id .. "/*.cpp",
+		"src/samples/" .. id .. "/*.h",
 	}
 	filter{"system:linux"} linkoptions{"-Wl,-rpath=\\$$ORIGIN"}
 	filter{"system:ios"} files{"res/Info.plist", "assets"} filter{}
+	filter{"system:android"} files{"src/samples/" .. id .. "/android/**", "res/**"} filter{}
+	filter{"system:android"} assetdirs{"assets/"} filter{}
+	filter{"action:android-studio"} removefiles{"**.h"} filter{}
 	filter_system_files()
 	group()
 	sample_index = sample_index + 1
@@ -149,11 +165,14 @@ end
 workspace      ("Orbit")
 platforms      (get_platforms())
 configurations {"Debug", "Release"}
+gradleversion  ("com.android.tools.build:gradle:3.1.4")
 
 -- Engine modules
 decl_module("Core")
   filter{"system:macosx"}
     links{"Cocoa.framework"}
+  filter{"system:android"}
+    links{"log", "android"}
   filter{"system:ios"}
     links{"UIKit.framework", "QuartzCore.framework"}
 decl_module("Graphics")
@@ -164,6 +183,8 @@ decl_module("Graphics")
   filter{"system:macosx"}
     links{"Cocoa.framework", "OpenGL.framework"}
     defines{"GL_SILENCE_DEPRECATION"}
+  filter{"system:android"}
+    links{"android", "EGL", "GLESv1_CM", "GLESv2"}
   filter{"system:ios"}
     links{"UIKit.framework", "GLKit.framework", "OpenGLES.framework"}
     defines{"GLES_SILENCE_DEPRECATION"}
