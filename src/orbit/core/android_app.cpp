@@ -17,6 +17,8 @@
 
 #include "android_app.h"
 
+#include <android_native_app_glue.h>
+
 namespace orb
 {
 	namespace android_only

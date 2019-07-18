@@ -28,6 +28,7 @@
 
 #if defined( ORB_OS_ANDROID )
 #  include <android/native_window.h>
+#  include <android_native_app_glue.h>
 #endif
 
 #if __ORB_HAS_WINDOW_API_UIKIT

@@ -20,7 +20,7 @@
 
 #if defined( ORB_OS_ANDROID )
 
-#include <android_native_app_glue.h>
+struct android_app;
 
 namespace orb
 {
