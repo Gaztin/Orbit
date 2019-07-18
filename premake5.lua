@@ -64,6 +64,7 @@ local function base_config()
 	debugenvs         {"LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../%{OUTDIR}"}
 	filter{"system:android"}
 	androidabis       {"armeabi-v7a", "arm64-v8a", "x86", "x86_64"}
+	buildoptions      {"-Wfatal-errors"}
 	filter{}
 end
 
