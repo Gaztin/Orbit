@@ -6,6 +6,6 @@ public class MainActivity extends NativeActivity
 {
 	static
 	{
-		System.loadLibrary("orb01");
+		System.loadLibrary("01.Base");
 	}
 }

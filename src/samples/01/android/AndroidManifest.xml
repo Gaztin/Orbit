@@ -22,7 +22,7 @@
 
             <meta-data
                 android:name="android.app.lib_name"
-                android:value="orb01" />
+                android:value="01.Base" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
