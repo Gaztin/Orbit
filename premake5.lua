@@ -1,6 +1,8 @@
 require "third_party/premake-android-studio/android_studio"
 
 OUTDIR = "build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/"
+ANDROID_NDK = "${ANDROID_NDK}"
+ANDROID_NATIVE_APP_GLUE_DIR = ANDROID_NDK .. "/sources/android/native_app_glue"
 
 -- Allow Objective C++ files on macOS and iOS
 premake.api.addAllowed("language", "ObjCpp")
@@ -133,8 +135,8 @@ local function decl_module(name)
 	}
 	filter{"toolset:msc"} defines{"_CRT_SECURE_NO_WARNINGS"} filter{}
 	filter{"system:macosx or ios", "files:**"} language("ObjCpp") filter{}
+	filter{"system:android"} includedirs{ANDROID_NATIVE_APP_GLUE_DIR} filter{}
 	filter{"action:android-studio"} removefiles{"**.h"} filter{}
-	filter{"action:android-studio"} includedirs{"${ANDROID_NDK}/sources/android/native_app_glue/"} filter{}
 	filter_system_files()
 	group()
 	table.insert(modules, name)
