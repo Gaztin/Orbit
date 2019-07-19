@@ -136,7 +136,7 @@ local function decl_module(name)
 	project   (name)
 	kind      ("SharedLib")
 	defines   {"ORB_BUILD", "ORB_BUILD_" .. up}
-	dependson (modules)
+	links     (modules)
 	base_config()
 	files {
 		"src/orbit.h",
