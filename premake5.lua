@@ -157,7 +157,7 @@ local function decl_sample(name)
 	}
 	filter{"system:linux"} linkoptions{"-Wl,-rpath=\\$$ORIGIN"}
 	filter{"system:ios"} files{"res/Info.plist", "assets"} filter{}
-	filter{"system:android"} files{"src/samples/" .. id .. "/android/**", "res/**"} filter{}
+	filter{"system:android"} files{"src/samples/" .. id .. "/android/**", "res/**", ANDROID_NATIVE_APP_GLUE_DIR .. "/android_native_app_glue.c"} filter{}
 	filter{"system:android"} assetdirs{"assets/"} filter{}
 	filter{"action:android-studio"} removefiles{"**.h"} filter{}
 	filter_system_files()
