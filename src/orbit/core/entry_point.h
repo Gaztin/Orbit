@@ -40,7 +40,7 @@ int main( int, char*[] )
 #elif defined( ORB_OS_ANDROID )
 #  include "orbit/core/android_app.h"
 
-void android_main( android_app* app )
+extern "C" void android_main( android_app* app )
 {
 	orb::android_only::app = app;
 	orb::application_base::run_instance();
