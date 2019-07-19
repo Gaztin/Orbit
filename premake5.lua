@@ -6,6 +6,17 @@ ANDROID_NATIVE_APP_GLUE_DIR = ANDROID_NDK .. "/sources/android/native_app_glue"
 
 -- Allow Objective C++ files on macOS and iOS
 premake.api.addAllowed("language", "ObjCpp")
+
+premake.field.override("file", "store", function(base, f, current, value)
+	-- '${ANDROID_NDK}' is not resolved until it is passed into the build environment.
+	-- Which means that the file doesn't exist as far as premake knows.
+	if value:startswith(ANDROID_NDK) then
+		return value
+	else
+		return base(f, current, value)
+	end
+end)
+
 -- Set system to android
 if _ACTION == "android-studio" then
 	_TARGET_OS = "android"
