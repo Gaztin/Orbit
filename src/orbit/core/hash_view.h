@@ -42,14 +42,14 @@ namespace orb
 	private:
 
 		/* FNV-1a hash function as per http://isthe.com/chongo/tech/comp/fnv/ */
-		template< typename HashTraits = hash_traits_FNV_1a< sizeof( ValueType ) > >
 		constexpr ValueType hash( std::string_view str )
 		{
-			ValueType val = HashTraits::OffsetBasis;
+			using hash_traits = hash_traits_FNV_1a< sizeof( ValueType ) >;
+			ValueType val = hash_traits::OffsetBasis;
 			for( size_t i = 0; i < str.length(); ++i )
 			{
 				val ^= static_cast< ValueType >( str[ i ] );
-				val *= HashTraits::Prime;
+				val *= hash_traits::Prime;
 			}
 			return val;
 		}
