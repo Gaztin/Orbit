@@ -51,6 +51,9 @@ namespace orb
 
 	template< size_t... Is >
 	struct gen_seq< 0, Is... > : seq< Is... > { };
+	
+	template< size_t N, size_t... Is >
+	constexpr gen_seq< N, Is... > gen_seq_v{ };
 
 	/* Get type index within variant. Courtesy of https://stackoverflow.com/a/52303687 */
 
