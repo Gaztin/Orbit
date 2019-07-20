@@ -31,30 +31,33 @@ namespace orb
 		constant_buffer( size_t size );
 
 		template< typename... Types >
-		constant_buffer( const std::tuple< Types... >& )
+		constant_buffer( const std::tuple< Types... >& constants )
 			: constant_buffer( ( 0 + ... + sizeof( Types ) ) )
 		{
+			update( constants );
 		}
 
 		~constant_buffer();
 
 		void bind   ( shader_type type, uint32_t slot );
-		void update ( size_t location, const void* data, size_t size );
+		void update ( void* dst, size_t location, const void* data, size_t size );
 
 		template< typename... Types >
 		void update( const std::tuple< Types... >& constants )
 		{
-			if constexpr( sizeof...( Types ) > 0 )
-				update_sequencial( constants, gen_seq< sizeof...( Types ) >() );
-			else
-				update( 0, nullptr, 0 );
+			void* dst = update_begin( ( sizeof( Types ) + ... ) );
+			update_sequencial( dst, constants, gen_seq_v< sizeof...( Types ) > );
+			update_end();
 		}
 
 	private:
+		void* update_begin( size_t size );
+		void update_end();
+
 		template< typename Tup, size_t... Is >
-		void update_sequencial( Tup&& tup, seq< Is... > )
+		void update_sequencial( void* dst, const Tup& tup, seq< Is... > )
 		{
-			auto l = { ( update( Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
+			auto l = { ( update( reinterpret_cast< uint8_t* >( dst ) + std::distance( &std::get< 0 >( tup ), &std::get< Is >( tup ) ), Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
 			( void )l;
 		}
 
