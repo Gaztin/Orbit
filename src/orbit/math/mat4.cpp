@@ -31,7 +31,7 @@ namespace orb
 
 	mat4::mat4( std::initializer_list< float > elements )
 	{
-		const size_t size = std::min( 16u, elements.size() );
+		const size_t size = std::min( static_cast< size_t >( 16u ), elements.size() );
 		for( size_t i = 0; i < size; ++i )
 		{
 			m_elements[ i ] = *( elements.begin() + i );
