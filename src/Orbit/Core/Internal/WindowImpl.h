@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,73 +16,72 @@
  */
 
 #pragma once
-
 #include <type_traits>
 #include <variant>
 
-#include "orbit/core/internal/window_api.h"
+#include "Orbit/Core/Internal/WindowAPI.h"
 
-namespace orb
+namespace Orbit
 {
-#if __ORB_HAS_WINDOW_API_WIN32
-	struct __window_impl_win32
+#if _ORB_HAS_WINDOW_API_WIN32
+	struct _WindowImplWin32
 	{
 		HWND hwnd;
 	};
 #endif
-#if __ORB_HAS_WINDOW_API_X11
-	struct __window_impl_x11
+#if _ORB_HAS_WINDOW_API_X11
+	struct _WindowImplX11
 	{
 		Display* display;
 		Window   window;
 	};
 #endif
-#if __ORB_HAS_WINDOW_API_WAYLAND
-	struct __window_impl_wayland
+#if _ORB_HAS_WINDOW_API_WAYLAND
+	struct _WindowImplWayland
 	{
 		wl_surface* surface;
 	};
 #endif
-#if __ORB_HAS_WINDOW_API_COCOA
-	struct __window_impl_cocoa
+#if _ORB_HAS_WINDOW_API_COCOA
+	struct _WindowImplCocoa
 	{
-		void* nsWindow;
+		void* ns_window;
 		void* delegate;
 	};
 #endif
-#if __ORB_HAS_WINDOW_API_ANDROID
-	struct __window_impl_android
+#if _ORB_HAS_WINDOW_API_ANDROID
+	struct _WindowImplAndroid
 	{
-		ASensorManager*    sensorManager;
-		const ASensor*     accelerometerSensor;
-		ASensorEventQueue* sensorEventQueue;
+		ASensorManager*    sensor_manager;
+		const ASensor*     accelerometer_sensor;
+		ASensorEventQueue* sensor_event_queue;
 	};
 #endif
-#if __ORB_HAS_WINDOW_API_UIKIT
-	struct __window_impl_uikit
+#if _ORB_HAS_WINDOW_API_UIKIT
+	struct _WindowImplUIKit
 	{
-		void* uiWindow;
+		void* ui_window;
 	};
 #endif
 
-	using window_impl = ::std::variant< ::std::monostate
-#if __ORB_HAS_WINDOW_API_WIN32
-		, __window_impl_win32
+	using WindowImpl = ::std::variant< ::std::monostate
+#if _ORB_HAS_WINDOW_API_WIN32
+		, _WindowImplWin32
 #endif
-#if __ORB_HAS_WINDOW_API_X11
-		, __window_impl_x11
+#if _ORB_HAS_WINDOW_API_X11
+		, _WindowImplX11
 #endif
-#if __ORB_HAS_WINDOW_API_WAYLAND
-		, __window_impl_wayland
+#if _ORB_HAS_WINDOW_API_WAYLAND
+		, _WindowImplWayland
 #endif
-#if __ORB_HAS_WINDOW_API_COCOA
-		, __window_impl_cocoa
+#if _ORB_HAS_WINDOW_API_COCOA
+		, _WindowImplCocoa
 #endif
-#if __ORB_HAS_WINDOW_API_ANDROID
-		, __window_impl_android
+#if _ORB_HAS_WINDOW_API_ANDROID
+		, _WindowImplAndroid
 #endif
-#if __ORB_HAS_WINDOW_API_UIKIT
-		, __window_impl_uikit
+#if _ORB_HAS_WINDOW_API_UIKIT
+		, _WindowImplUIKit
 #endif
 	>;
 

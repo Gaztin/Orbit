@@ -18,57 +18,57 @@
 #include <cmath>
 #include <ctime>
 
-#include <orbit/core/events/window_event.h>
-#include <orbit/core/application.h>
-#include <orbit/core/asset.h>
-#include <orbit/core/entry_point.h>
-#include <orbit/core/log.h>
-#include <orbit/core/utility.h>
-#include <orbit/core/window.h>
-#include <orbit/graphics/constant_buffer.h>
-#include <orbit/graphics/fragment_shader.h>
-#include <orbit/graphics/graphics_pipeline.h>
-#include <orbit/graphics/index_buffer.h>
-#include <orbit/graphics/render_context.h>
-#include <orbit/graphics/vertex_buffer.h>
-#include <orbit/graphics/vertex_shader.h>
+#include <Orbit/Core/Events/WindowEvent.h>
+#include <Orbit/Core/Application.h>
+#include <Orbit/Core/Asset.h>
+#include <Orbit/Core/EntryPoint.h>
+#include <Orbit/Core/Log.h>
+#include <Orbit/Core/Utility.h>
+#include <Orbit/Core/Window.h>
+#include <Orbit/Graphics/ConstantBuffer.h>
+#include <Orbit/Graphics/FragmentShader.h>
+#include <Orbit/Graphics/GraphicsPipeline.h>
+#include <Orbit/Graphics/IndexBuffer.h>
+#include <Orbit/Graphics/RenderContext.h>
+#include <Orbit/Graphics/VertexBuffer.h>
+#include <Orbit/Graphics/VertexShader.h>
 
-ORB_APP_DECL( sample_app )
+ORB_APP_DECL( SampleApp )
 {
 public:
-	sample_app();
+	SampleApp();
 
-	void frame();
-	bool is_running() { return !!m_window; }
+	void OnFrame() override;
+	bool IsRunning() override { return !!m_window; }
 
-	static void on_window_event( const orb::window_event& e );
+	static void OnWindowEvent( const Orbit::WindowEvent& e );
 
 private:
-	orb::window                   m_window;
-	orb::window::subscription_ptr m_windowSubscription;
-	orb::render_context           m_renderContext;
-	orb::vertex_shader            m_vertexShader;
-	orb::fragment_shader          m_fragmentShader;
-	orb::vertex_buffer            m_triangleVertexBuffer;
-	orb::index_buffer             m_triangleIndexBuffer;
-	orb::constant_buffer          m_triangleConstantBuffer;
-	orb::graphics_pipeline        m_mainPipeline;
-	float                         m_time;
+	Orbit::Window                  m_window;
+	Orbit::Window::SubscriptionPtr m_window_subscription;
+	Orbit::RenderContext           m_render_context;
+	Orbit::VertexShader            m_vertex_shader;
+	Orbit::FragmentShader          m_fragment_shader;
+	Orbit::VertexBuffer            m_triangle_vertex_buffer;
+	Orbit::IndexBuffer             m_triangle_index_buffer;
+	Orbit::ConstantBuffer          m_triangle_constant_buffer;
+	Orbit::GraphicsPipeline        m_main_pipeline;
+	float                          m_time;
 };
 
-struct vertex
+struct Vertex
 {
 	float x, y, z, w;
 	float r, g, b, a;
 };
 
-const orb::vertex_layout vertexLayout =
+const Orbit::VertexLayout vertex_layout
 {
-	{ "POSITION", orb::vertex_component::Vec4 },
-	{ "COLOR",    orb::vertex_component::Vec4 },
+	{ "POSITION", Orbit::VertexComponent::Vec4 },
+	{ "COLOR",    Orbit::VertexComponent::Vec4 },
 };
 
-const std::initializer_list< vertex > triangleVertices =
+const std::initializer_list< Vertex > triangle_vertices
 {
 	{ -0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
 	{ -0.5f,  0.5f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f, 1.0f },
@@ -76,96 +76,93 @@ const std::initializer_list< vertex > triangleVertices =
 	{  0.5f,  0.5f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f, 1.0f },
 };
 
-const std::initializer_list< uint16_t > triangleIndices =
+const std::initializer_list< uint16_t > triangle_indices
 {
 	0, 1, 2,
 	3, 2, 1,
 };
 
-std::tuple triangleConstants = std::make_tuple
-(
-	1.0f
-);
+std::tuple triangle_constants = std::make_tuple( 1.0f );
 
-sample_app::sample_app()
+SampleApp::SampleApp()
 	: m_window( 800, 600 )
-	, m_windowSubscription( m_window.subscribe( &sample_app::on_window_event ) )
-	, m_renderContext( m_window, orb::graphics_api::OpenGL )
-	, m_vertexShader( orb::asset( "shader.vs" ) )
-	, m_fragmentShader( orb::asset( "shader.fs" ) )
-	, m_triangleVertexBuffer( triangleVertices )
-	, m_triangleIndexBuffer( triangleIndices )
-	, m_triangleConstantBuffer( triangleConstants )
+	, m_window_subscription( m_window.subscribe( &SampleApp::OnWindowEvent ) )
+	, m_render_context( m_window, Orbit::GraphicsAPI::OpenGL )
+	, m_vertex_shader( Orbit::Asset( "shader.vs" ) )
+	, m_fragment_shader( Orbit::Asset( "shader.fs" ) )
+	, m_triangle_vertex_buffer( triangle_vertices )
+	, m_triangle_index_buffer( triangle_indices )
+	, m_triangle_constant_buffer( triangle_constants )
 	, m_time( 0.0f )
 {
-	m_window.set_title( "Orbit sample #01" );
-	m_window.show();
-	m_renderContext.set_clear_color( 0.0f, 0.0f, 0.5f );
+	m_window.SetTitle( "Orbit sample #01" );
+	m_window.Show();
+	m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
 
-	m_mainPipeline.set_shaders( m_vertexShader, m_fragmentShader );
-	m_mainPipeline.describe_vertex_layout( vertexLayout );
+	m_main_pipeline.SetShaders( m_vertex_shader, m_fragment_shader );
+	m_main_pipeline.DescribeVertexLayout( vertex_layout );
 
 	/* Load text asset and log its contents */
 	{
-		orb::asset testAsset( "text.txt" );
-		const auto& txt = testAsset.get_data();
-		orb::log_info( std::string( reinterpret_cast< const char* >( txt.data() ), txt.size() ) );
+		Orbit::Asset test_asset( "text.txt" );
+		const auto& txt = test_asset.GetData();
+		Orbit::LogInfo( std::string( reinterpret_cast< const char* >( txt.data() ), txt.size() ) );
 	}
 }
 
-void sample_app::frame()
+void SampleApp::OnFrame()
 {
 	m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
 	const float diffuse = 0.5f + ( 0.5f * sin( m_time * static_cast< float >( M_PI ) ) );
 
-	std::get< 0 >( triangleConstants ) = diffuse;
+	std::get< 0 >( triangle_constants ) = diffuse;
 
-	m_window.poll_events();
-	m_renderContext.clear( orb::buffer_mask::Color | orb::buffer_mask::Depth );
+	m_window.PollEvents();
+	m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
-	m_triangleVertexBuffer.bind();
-	m_mainPipeline.bind();
+	m_triangle_vertex_buffer.Bind();
+	m_main_pipeline.Bind();
 	{
-		m_triangleIndexBuffer.bind();
-		m_triangleConstantBuffer.bind( orb::shader_type::Vertex, 0 );
-		m_triangleConstantBuffer.update( triangleConstants );
-		m_mainPipeline.draw( m_triangleIndexBuffer );
+		m_triangle_index_buffer.Bind();
+		m_triangle_constant_buffer.Bind( Orbit::ShaderType::Vertex, 0 );
+		m_triangle_constant_buffer.Update( triangle_constants );
+		m_main_pipeline.Draw( m_triangle_index_buffer );
 	}
-	m_mainPipeline.unbind();
+	m_main_pipeline.Unbind();
 
-	m_renderContext.swap_buffers();
+	m_render_context.SwapBuffers();
 }
 
-void sample_app::on_window_event( const orb::window_event& e )
+void SampleApp::OnWindowEvent( const Orbit::WindowEvent& e )
 {
 	switch( e.type )
 	{
-		case orb::window_event::Resize:
-			orb::log_info( orb::format( "Resized: (%d, %d)", e.data.resize.w, e.data.resize.h ) );
+		case Orbit::WindowEvent::Resize:
+			Orbit::LogInfo( Orbit::Format( "Resized: (%d, %d)", e.data.resize.w, e.data.resize.h ) );
 			break;
 
-		case orb::window_event::Move:
-			orb::log_info( orb::format( "Moved: (%d, %d)", e.data.move.x, e.data.move.y ) );
+		case Orbit::WindowEvent::Move:
+			Orbit::LogInfo( Orbit::Format( "Moved: (%d, %d)", e.data.move.x, e.data.move.y ) );
 			break;
 
-		case orb::window_event::Defocus:
-			orb::log_info( "Defocus" );
+		case Orbit::WindowEvent::Defocus:
+			Orbit::LogInfo( "Defocus" );
 			break;
 
-		case orb::window_event::Focus:
-			orb::log_info( "Focus" );
+		case Orbit::WindowEvent::Focus:
+			Orbit::LogInfo( "Focus" );
 			break;
 
-		case orb::window_event::Suspend:
-			orb::log_info( "Suspend" );
+		case Orbit::WindowEvent::Suspend:
+			Orbit::LogInfo( "Suspend" );
 			break;
 
-		case orb::window_event::Restore:
-			orb::log_info( "Restore" );
+		case Orbit::WindowEvent::Restore:
+			Orbit::LogInfo( "Restore" );
 			break;
 
-		case orb::window_event::Close:
-			orb::log_info( "Close" );
+		case Orbit::WindowEvent::Close:
+			Orbit::LogInfo( "Close" );
 			break;
 
 		default:

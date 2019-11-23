@@ -1,169 +1,169 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
-*
-* This software is provided 'as-is', without any express or implied warranty. In no event will
-* the authors be held liable for any damages arising from the use of this software.
-*
-* Permission is granted to anyone to use this software for any purpose, including commercial
-* applications, and to alter it and redistribute it freely, subject to the following restrictions:
-*
-* 1. The origin of this software must not be misrepresented; you must not claim that you wrote the
-*    original software. If you use this software in a product, an acknowledgment in the product
-*    documentation would be appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be misrepresented as
-*    being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-*/
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ *
+ * This software is provided 'as-is', without any express or implied warranty. In no event will
+ * the authors be held liable for any damages arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose, including commercial
+ * applications, and to alter it and redistribute it freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not claim that you wrote the
+ *    original software. If you use this software in a product, an acknowledgment in the product
+ *    documentation would be appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be misrepresented as
+ *    being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ */
 
-#include "index_buffer.h"
+#include "IndexBuffer.h"
 
-#include "orbit/core/utility.h"
-#include "orbit/graphics/render_context.h"
+#include "Orbit/Core/Utility.h"
+#include "Orbit/Graphics/RenderContext.h"
 
-namespace orb
-{
-	template< typename T >
-	constexpr auto render_context_impl_index_v = unique_index_v< T, render_context_impl >;
+ORB_NAMESPACE_BEGIN
+
+template< typename T >
+constexpr auto render_context_impl_index_v = unique_index_v< T, RenderContextImpl >;
 	
-	template< typename T >
-	constexpr auto index_buffer_impl_index_v = unique_index_v< T, index_buffer_impl >;
+template< typename T >
+constexpr auto index_buffer_impl_index_v = unique_index_v< T, IndexBufferImpl >;
 
-	static size_t get_format_size( index_format fmt )
+static size_t GetFormatSize( IndexFormat format )
+{
+	switch( format )
 	{
-		switch( fmt )
-		{
-			case orb::index_format::Byte:       return 1;
-			case orb::index_format::Word:       return 2;
-			case orb::index_format::DoubleWord: return 4;
-			default:                            return 0;
-		}
-	}
-
-	index_buffer::index_buffer( index_format fmt, const void* data, size_t count )
-		: m_impl{ }
-		, m_format( fmt )
-		, m_count( count )
-	{
-		auto         currentContextImpl = render_context::get_current()->get_impl_ptr();
-		const size_t totalSize          = ( count * get_format_size( fmt ) );
-
-		switch( currentContextImpl->index() )
-		{
-			default: break;
-
-		#if __ORB_HAS_GRAPHICS_API_OPENGL
-			case( render_context_impl_index_v< __render_context_impl_opengl > ):
-			{
-				auto  impl      = std::addressof( m_impl.emplace< __index_buffer_impl_opengl >() );
-				auto& functions = std::get_if< __render_context_impl_opengl >( currentContextImpl )->functions.value();
-
-				functions.gen_buffers( 1, &impl->id );
-				functions.bind_buffer( gl::buffer_target::ElementArray, impl->id );
-				functions.buffer_data( gl::buffer_target::ElementArray, totalSize, data, orb::gl::buffer_usage::StaticDraw );
-				functions.bind_buffer( gl::buffer_target::ElementArray, 0 );
-
-				break;
-			}
-		#endif
-
-		#if __ORB_HAS_GRAPHICS_API_D3D11
-			case( render_context_impl_index_v< __render_context_impl_d3d11 > ):
-			{
-				auto          impl   = std::addressof( m_impl.emplace< __index_buffer_impl_d3d11 >() );
-				ID3D11Device& device = *( std::get_if< __render_context_impl_d3d11 >( currentContextImpl )->device );
-
-				D3D11_BUFFER_DESC desc{ };
-				desc.ByteWidth = static_cast< UINT >( ( totalSize + 0xf ) & ~0xf ); /* Align by 16 bytes */
-				desc.Usage     = D3D11_USAGE_DEFAULT;
-				desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-
-				ID3D11Buffer* buffer;
-				if( data )
-				{
-					D3D11_SUBRESOURCE_DATA initialData{ };
-					initialData.pSysMem = data;
-					device.CreateBuffer( &desc, &initialData, &buffer );
-				}
-				else
-				{
-					device.CreateBuffer( &desc, nullptr, &buffer );
-				}
-				impl->buffer.reset( buffer );
-
-				break;
-			}
-		#endif
-		}
-	}
-
-	index_buffer::~index_buffer()
-	{
-		switch( m_impl.index() )
-		{
-			default: break;
-
-		#if __ORB_HAS_GRAPHICS_API_OPENGL
-			case( index_buffer_impl_index_v< __index_buffer_impl_opengl > ):
-			{
-				auto  impl      = std::get_if< __index_buffer_impl_opengl >( &m_impl );
-				auto& functions = std::get_if< __render_context_impl_opengl >( render_context::get_current()->get_impl_ptr() )->functions.value();
-
-				functions.delete_buffers( 1, &impl->id );
-
-				break;
-			}
-		#endif
-
-		#if __ORB_HAS_GRAPHICS_API_D3D11
-//			case( index_buffer_impl_index_v< __index_buffer_impl_d3d11 > ):
-//			{
-//				break;
-//			}
-		#endif
-		}
-	}
-
-	void index_buffer::bind()
-	{
-		auto currentContextImpl = render_context::get_current()->get_impl_ptr();
-
-		switch( m_impl.index() )
-		{
-			default: break;
-
-		#if __ORB_HAS_GRAPHICS_API_OPENGL
-			case( index_buffer_impl_index_v< __index_buffer_impl_opengl > ):
-			{
-				auto  impl      = std::get_if< __index_buffer_impl_opengl >( &m_impl );
-				auto& functions = std::get_if< __render_context_impl_opengl >( currentContextImpl )->functions.value();
-
-				functions.bind_buffer( gl::buffer_target::ElementArray, impl->id );
-
-				break;
-			}
-		#endif
-
-		#if __ORB_HAS_GRAPHICS_API_D3D11
-			case( index_buffer_impl_index_v< __index_buffer_impl_d3d11 > ):
-			{
-				auto                 impl          = std::get_if< __index_buffer_impl_d3d11 >( &m_impl );
-				ID3D11DeviceContext& deviceContext = *( std::get_if< __render_context_impl_d3d11 >( currentContextImpl )->deviceContext );
-
-				/* Translate format to DXGI_FORMAT */
-				DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
-				switch( m_format )
-				{
-					default:                                                      break;
-					case index_format::Byte:       format = DXGI_FORMAT_R8_UINT;  break;
-					case index_format::Word:       format = DXGI_FORMAT_R16_UINT; break;
-					case index_format::DoubleWord: format = DXGI_FORMAT_R32_UINT; break;
-				}
-
-				deviceContext.IASetIndexBuffer( impl->buffer.get(), format, 0 );
-
-				break;
-			}
-		#endif
-		}
+		case IndexFormat::Byte:       return 1;
+		case IndexFormat::Word:       return 2;
+		case IndexFormat::DoubleWord: return 4;
+		default:                      return 0;
 	}
 }
+
+IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
+	: m_impl   { }
+	, m_format { format }
+	, m_count  { count }
+{
+	auto         context_impl_ptr = RenderContext::GetCurrent()->GetImplPtr();
+	const size_t total_size       = ( count * GetFormatSize( format ) );
+
+	switch( context_impl_ptr->index() )
+	{
+		default: break;
+
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		case( render_context_impl_index_v< _RenderContextImplOpenGL > ):
+		{
+			auto impl         = std::addressof( m_impl.emplace< _IndexBufferImplOpenGL >() );
+			auto context_impl = std::get_if< _RenderContextImplOpenGL >( context_impl_ptr );
+
+			context_impl->functions->gen_buffers( 1, &impl->id );
+			context_impl->functions->bind_buffer( OpenGL::BufferTarget::ElementArray, impl->id );
+			context_impl->functions->buffer_data( OpenGL::BufferTarget::ElementArray, total_size, data, OpenGL::BufferUsage::StaticDraw );
+			context_impl->functions->bind_buffer( OpenGL::BufferTarget::ElementArray, 0 );
+
+			break;
+		}
+	#endif
+
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		case( render_context_impl_index_v< _RenderContextImplD3D11 > ):
+		{
+			auto impl         = std::addressof( m_impl.emplace< _IndexBufferImplD3D11 >() );
+			auto context_impl = std::get_if< _RenderContextImplD3D11 >( context_impl_ptr );
+
+			D3D11_BUFFER_DESC desc { };
+			desc.ByteWidth = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
+			desc.Usage     = D3D11_USAGE_DEFAULT;
+			desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+			ID3D11Buffer* buffer;
+			if( data )
+			{
+				D3D11_SUBRESOURCE_DATA initial_data { };
+				initial_data.pSysMem = data;
+				context_impl->device->CreateBuffer( &desc, &initial_data, &buffer );
+			}
+			else
+			{
+				context_impl->device->CreateBuffer( &desc, nullptr, &buffer );
+			}
+
+			impl->buffer.reset( buffer );
+
+			break;
+		}
+	#endif
+	}
+}
+
+IndexBuffer::~IndexBuffer()
+{
+	switch( m_impl.index() )
+	{
+		default: break;
+
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		case( index_buffer_impl_index_v< _IndexBufferImplOpenGL > ):
+		{
+			auto impl         = std::get_if< _IndexBufferImplOpenGL >( &m_impl );
+			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
+
+			context_impl->functions->delete_buffers( 1, &impl->id );
+
+			break;
+		}
+	#endif
+
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		case( index_buffer_impl_index_v< _IndexBufferImplD3D11 > ):
+		{
+			break;
+		}
+	#endif
+	}
+}
+
+void IndexBuffer::Bind()
+{
+	switch( m_impl.index() )
+	{
+		default: break;
+
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		case( index_buffer_impl_index_v< _IndexBufferImplOpenGL > ):
+		{
+			auto impl         = std::get_if< _IndexBufferImplOpenGL >( &m_impl );
+			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
+
+			context_impl->functions->bind_buffer( OpenGL::BufferTarget::ElementArray, impl->id );
+
+			break;
+		}
+	#endif
+
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		case( index_buffer_impl_index_v< _IndexBufferImplD3D11 > ):
+		{
+			auto impl         = std::get_if< _IndexBufferImplD3D11 >( &m_impl );
+			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
+
+			/* Translate format to DXGI_FORMAT */
+			DXGI_FORMAT format;
+			switch( m_format )
+			{
+				default:                      { format = DXGI_FORMAT_UNKNOWN;  } break;
+				case IndexFormat::Byte:       { format = DXGI_FORMAT_R8_UINT;  } break;
+				case IndexFormat::Word:       { format = DXGI_FORMAT_R16_UINT; } break;
+				case IndexFormat::DoubleWord: { format = DXGI_FORMAT_R32_UINT; } break;
+			}
+
+			context_impl->device_context->IASetIndexBuffer( impl->buffer.get(), format, 0 );
+
+			break;
+		}
+	#endif
+	}
+}
+
+ORB_NAMESPACE_END

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,51 +16,50 @@
  */
 
 #pragma once
-
 #include <variant>
 #include <vector>
 
-#include "orbit/core/memory.h"
-#include "orbit/graphics/internal/graphics_api.h"
-#include "orbit/graphics/platform/opengl/gl.h"
-#include "orbit/graphics/vertex_layout.h"
+#include "Orbit/Core/Memory.h"
+#include "Orbit/Graphics/Internal/GraphicsAPI.h"
+#include "Orbit/Graphics/Platform/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/VertexLayout.h"
 
-namespace orb
+ORB_NAMESPACE_BEGIN
+
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+struct _GraphicsPipelineImplOpenGL20
 {
-#if __ORB_HAS_GRAPHICS_API_OPENGL
-	struct __graphics_pipeline_impl_opengl_2_0
-	{
-		std::vector< vertex_component > layout;
-		GLsizei                         stride;
-		GLuint                          shaderProgram;
-	};
-	struct __graphics_pipeline_impl_opengl_3_0
-	{
-		std::vector< vertex_component > layout;
-		GLsizei                         stride;
-		GLuint                          shaderProgram;
-		GLuint                          vao;
-	};
+	std::vector< VertexComponent > layout;
+	GLsizei                        stride;
+	GLuint                         shader_program;
+};
+struct _GraphicsPipelineImplOpenGL30
+{
+	std::vector< VertexComponent > layout;
+	GLsizei                        stride;
+	GLuint                         shader_program;
+	GLuint                         vao;
+};
 #endif
 
-#if __ORB_HAS_GRAPHICS_API_D3D11
-	struct __graphics_pipeline_impl_d3d11
-	{
-		com_ptr< ID3DBlob >           vertexData;
-		com_ptr< ID3D11VertexShader > vertexShader;
-		com_ptr< ID3D11PixelShader >  pixelShader;
-		com_ptr< ID3D11InputLayout >  inputLayout;
-	};
+#if _ORB_HAS_GRAPHICS_API_D3D11
+struct _GraphicsPipelineImplD3D11
+{
+	ComPtr< ID3DBlob >           vertex_data;
+	ComPtr< ID3D11VertexShader > vertex_shader;
+	ComPtr< ID3D11PixelShader >  pixel_shader;
+	ComPtr< ID3D11InputLayout >  input_layout;
+};
 #endif
 
-	using graphics_pipeline_impl = std::variant< std::monostate
-#if __ORB_HAS_GRAPHICS_API_OPENGL
-		, __graphics_pipeline_impl_opengl_2_0
-		, __graphics_pipeline_impl_opengl_3_0
+using GraphicsPipelineImpl = std::variant< std::monostate
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+	, _GraphicsPipelineImplOpenGL20
+	, _GraphicsPipelineImplOpenGL30
 #endif
-#if __ORB_HAS_GRAPHICS_API_D3D11
-		, __graphics_pipeline_impl_d3d11
+#if _ORB_HAS_GRAPHICS_API_D3D11
+	, _GraphicsPipelineImplD3D11
 #endif
-	>;
+>;
 
-}
+ORB_NAMESPACE_END

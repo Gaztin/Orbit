@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,106 +16,105 @@
  */
 
 #pragma once
-
-#include "orbit/core.h"
+#include "Orbit/Core.h"
 
 #if defined( ORB_OS_WINDOWS )
-#  define __ORB_HAS_WINDOW_API_WIN32 1
+#  define _ORB_HAS_WINDOW_API_WIN32 1
 #else
-#  define __ORB_HAS_WINDOW_API_WIN32 0
+#  define _ORB_HAS_WINDOW_API_WIN32 0
 #endif
 
 #if ( __has_include( <X11/Xlib.h> ) )
-#  define __ORB_HAS_WINDOW_API_X11 1
+#  define _ORB_HAS_WINDOW_API_X11 1
 #else
-#  define __ORB_HAS_WINDOW_API_X11 0
+#  define _ORB_HAS_WINDOW_API_X11 0
 #endif
 
 #if ( __has_include( <wayland-client.h> ) )
-#  define __ORB_HAS_WINDOW_API_WAYLAND 1
+#  define _ORB_HAS_WINDOW_API_WAYLAND 1
 #else
-#  define __ORB_HAS_WINDOW_API_WAYLAND 0
+#  define _ORB_HAS_WINDOW_API_WAYLAND 0
 #endif
 
 #if ( __has_include( <Cocoa/Cocoa.h> ) )
-#  define __ORB_HAS_WINDOW_API_COCOA 1
+#  define _ORB_HAS_WINDOW_API_COCOA 1
 #else
-#  define __ORB_HAS_WINDOW_API_COCOA 0
+#  define _ORB_HAS_WINDOW_API_COCOA 0
 #endif
 
 #if defined( ORB_OS_ANDROID )
-#  define __ORB_HAS_WINDOW_API_ANDROID 1
+#  define _ORB_HAS_WINDOW_API_ANDROID 1
 #else
-#  define __ORB_HAS_WINDOW_API_ANDROID 0
+#  define _ORB_HAS_WINDOW_API_ANDROID 0
 #endif
 
 #if ( __has_include( <UIKit/UIKit.h> ) )
-#  define __ORB_HAS_WINDOW_API_UIKIT 1
+#  define _ORB_HAS_WINDOW_API_UIKIT 1
 #else
-#  define __ORB_HAS_WINDOW_API_UIKIT 0
+#  define _ORB_HAS_WINDOW_API_UIKIT 0
 #endif
 
 /* Necessary includes */
-#if __ORB_HAS_WINDOW_API_WIN32
+#if _ORB_HAS_WINDOW_API_WIN32
 #  include <Windows.h>
 #endif
-#if __ORB_HAS_WINDOW_API_X11
+#if _ORB_HAS_WINDOW_API_X11
 #  include <X11/Xlib.h>
 #endif
-#if __ORB_HAS_WINDOW_API_WAYLAND
+#if _ORB_HAS_WINDOW_API_WAYLAND
 #  include <wayland-client.h>
 #endif
-#if( __ORB_HAS_WINDOW_API_COCOA && defined( __OBJC__ ) )
+#if( _ORB_HAS_WINDOW_API_COCOA && defined( __OBJC__ ) )
 #  include <Cocoa/Cocoa.h>
 #endif
-#if __ORB_HAS_WINDOW_API_ANDROID
+#if _ORB_HAS_WINDOW_API_ANDROID
 #  include <android/sensor.h>
 #endif
 
-namespace orb
+namespace Orbit
 {
 
-#define __ORB_NUM_WINDOW_APIS ( __ORB_HAS_WINDOW_API_WIN32   + __ORB_HAS_WINDOW_API_X11   + \
-                                __ORB_HAS_WINDOW_API_WAYLAND + __ORB_HAS_WINDOW_API_COCOA + \
-                                __ORB_HAS_WINDOW_API_ANDROID + __ORB_HAS_WINDOW_API_UIKIT )
+#define __ORB_NUM_WINDOW_APIS ( _ORB_HAS_WINDOW_API_WIN32   + _ORB_HAS_WINDOW_API_X11   + \
+                                _ORB_HAS_WINDOW_API_WAYLAND + _ORB_HAS_WINDOW_API_COCOA + \
+                                _ORB_HAS_WINDOW_API_ANDROID + _ORB_HAS_WINDOW_API_UIKIT )
 
-	enum class window_api
+	enum class WindowAPI
 	{
 		Null = 0,
-	#if __ORB_HAS_WINDOW_API_WIN32
+	#if _ORB_HAS_WINDOW_API_WIN32
 		Win32,
 	#endif
-	#if __ORB_HAS_WINDOW_API_X11
+	#if _ORB_HAS_WINDOW_API_X11
 		X11,
 	#endif
-	#if __ORB_HAS_WINDOW_API_WAYLAND
+	#if _ORB_HAS_WINDOW_API_WAYLAND
 		Wayland,
 	#endif
-	#if __ORB_HAS_WINDOW_API_COCOA
+	#if _ORB_HAS_WINDOW_API_COCOA
 		Cocoa,
 	#endif
-	#if __ORB_HAS_WINDOW_API_ANDROID
+	#if _ORB_HAS_WINDOW_API_ANDROID
 		Android,
 	#endif
-	#if __ORB_HAS_WINDOW_API_UIKIT
+	#if _ORB_HAS_WINDOW_API_UIKIT
 		UiKit,
 	#endif
 	};
 
-	constexpr window_api kDefaultWindowApi =
-#if __ORB_HAS_WINDOW_API_WIN32
-		window_api::Win32;
-#elif __ORB_HAS_WINDOW_API_WAYLAND
-		window_api::Wayland;
-#elif __ORB_HAS_WINDOW_API_X11
-		window_api::X11;
-#elif __ORB_HAS_WINDOW_API_COCOA
-		window_api::Cocoa;
-#elif __ORB_HAS_WINDOW_API_ANDROID
-		window_api::Android;
-#elif __ORB_HAS_WINDOW_API_UIKIT
-		window_api::UiKit;
+	constexpr WindowAPI kDefaultWindowApi =
+#if _ORB_HAS_WINDOW_API_WIN32
+		WindowAPI::Win32;
+#elif _ORB_HAS_WINDOW_API_WAYLAND
+		WindowAPI::Wayland;
+#elif _ORB_HAS_WINDOW_API_X11
+		WindowAPI::X11;
+#elif _ORB_HAS_WINDOW_API_COCOA
+		WindowAPI::Cocoa;
+#elif _ORB_HAS_WINDOW_API_ANDROID
+		WindowAPI::Android;
+#elif _ORB_HAS_WINDOW_API_UIKIT
+		WindowAPI::UiKit;
 #else
-		window_api::Null;
+		WindowAPI::Null;
 #endif
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,36 +16,35 @@
  */
 
 #pragma once
-
 #include <variant>
 
-#include "orbit/core/memory.h"
-#include "orbit/graphics/internal/graphics_api.h"
-#include "orbit/graphics/platform/opengl/gl.h"
+#include "Orbit/Core/Memory.h"
+#include "Orbit/Graphics/Internal/GraphicsAPI.h"
+#include "Orbit/Graphics/Platform/OpenGL/OpenGL.h"
 
-namespace orb
+ORB_NAMESPACE_BEGIN
+
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+struct _IndexBufferImplOpenGL
 {
-#if __ORB_HAS_GRAPHICS_API_OPENGL
-	struct __index_buffer_impl_opengl
-	{
-		GLuint id;
-	};
+	GLuint id;
+};
 #endif
 
-#if __ORB_HAS_GRAPHICS_API_D3D11
-	struct __index_buffer_impl_d3d11
-	{
-		com_ptr< ID3D11Buffer > buffer;
-	};
+#if _ORB_HAS_GRAPHICS_API_D3D11
+struct _IndexBufferImplD3D11
+{
+	ComPtr< ID3D11Buffer > buffer;
+};
 #endif
 
-	using index_buffer_impl = std::variant< std::monostate
-#if __ORB_HAS_GRAPHICS_API_OPENGL
-		, __index_buffer_impl_opengl
+using IndexBufferImpl = std::variant< std::monostate
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+	, _IndexBufferImplOpenGL
 #endif
-#if __ORB_HAS_GRAPHICS_API_D3D11
-		, __index_buffer_impl_d3d11
+#if _ORB_HAS_GRAPHICS_API_D3D11
+	, _IndexBufferImplD3D11
 #endif
-	>;
+>;
 
-}
+ORB_NAMESPACE_END

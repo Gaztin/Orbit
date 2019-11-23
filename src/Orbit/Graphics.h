@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
+* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
 * 
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,11 +16,10 @@
 */
 
 #pragma once
-
 #include <cstdint>
 
-#include "orbit/core/bitmask.h"
-#include "orbit.h"
+#include "Orbit/Core/Bitmask.h"
+#include "Orbit.h"
 
 #if defined( ORB_BUILD_GRAPHICS )
 #  define ORB_API_GRAPHICS ORB_DLL_EXPORT
@@ -42,61 +41,62 @@
 #  define ORB_HAS_OPENGL
 #endif
 
+ORB_NAMESPACE_BEGIN
+
 /* Enumerators */
 
-namespace orb
+enum class BufferMask
 {
-	enum class buffer_mask
-	{
-		Color = 0x1,
-		Depth = 0x2,
-	};
-	ORB_ENABLE_BITMASKING( buffer_mask );
+	Color = 0x1,
+	Depth = 0x2,
+};
+ORB_ENABLE_BITMASKING( BufferMask );
 
-	enum class shader_type
-	{
-		Vertex,
-		Fragment,
-	};
+enum class ShaderType
+{
+	Vertex,
+	Fragment,
+};
 
-	enum class index_format
-	{
-		Byte,
-		Word,
-		DoubleWord,
-	};
+enum class IndexFormat
+{
+	Byte,
+	Word,
+	DoubleWord,
+};
 
-	template< typename T >
-	struct index_format_traits
-	{
-		static constexpr bool         kEnabled = false;
-		static constexpr index_format kFormat  = static_cast< index_format >( 0 );
-	};
+template< typename T >
+struct IndexFormatTraits
+{
+	static constexpr bool        kEnabled = false;
+	static constexpr IndexFormat kFormat  = static_cast< IndexFormat >( 0 );
+};
 
-	template< typename T >
-	constexpr auto is_index_format_v = index_format_traits< T >::kEnabled;
+template< typename T >
+constexpr auto is_index_format_v = IndexFormatTraits< T >::kEnabled;
 
-	template< typename T >
-	constexpr auto index_format_v = index_format_traits< T >::kFormat;
+template< typename T >
+constexpr auto index_format_v = IndexFormatTraits< T >::kFormat;
 
-	template<>
-	struct index_format_traits< uint8_t >
-	{
-		static constexpr bool         kEnabled = true;
-		static constexpr index_format kFormat  = index_format::Byte;
-	};
+template<>
+struct IndexFormatTraits< uint8_t >
+{
+	static constexpr bool        kEnabled = true;
+	static constexpr IndexFormat kFormat  = IndexFormat::Byte;
+};
 
-	template<>
-	struct index_format_traits< uint16_t >
-	{
-		static constexpr bool         kEnabled = true;
-		static constexpr index_format kFormat  = index_format::Word;
-	};
+template<>
+struct IndexFormatTraits< uint16_t >
+{
+	static constexpr bool        kEnabled = true;
+	static constexpr IndexFormat kFormat  = IndexFormat::Word;
+};
 
-	template<>
-	struct index_format_traits< uint32_t >
-	{
-		static constexpr bool         kEnabled = true;
-		static constexpr index_format kFormat  = index_format::DoubleWord;
-	};
-}
+template<>
+struct IndexFormatTraits< uint32_t >
+{
+	static constexpr bool        kEnabled = true;
+	static constexpr IndexFormat kFormat  = IndexFormat::DoubleWord;
+};
+
+ORB_NAMESPACE_END

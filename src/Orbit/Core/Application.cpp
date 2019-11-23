@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -15,94 +15,94 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "application.h"
+#include "Application.h"
 
 #if defined( ORB_OS_IOS )
 #  include <UIKit/UIKit.h>
-@interface ORBAppDelegate : UIResponder< UIApplicationDelegate >
+@interface OrbitApplicationDelegate : UIResponder< UIApplicationDelegate >
 @end
 #endif
 
-namespace orb
+ORB_NAMESPACE_BEGIN
+
+std::shared_ptr< void >( *_application_initializer )() = nullptr;
+std::shared_ptr< ApplicationBase > _application_instance;
+
+void ApplicationBase::RunInstance()
 {
-	std::shared_ptr< void >( *__application_initializer )() = nullptr;
-	std::shared_ptr< application_base > __application_instance;
+#if defined( ORB_OS_IOS )
 
-	void application_base::run_instance()
+	@autoreleasepool
 	{
-	#if defined( ORB_OS_IOS )
-
-		@autoreleasepool
-		{
-			UIApplicationMain( 0, nil, nil, NSStringFromClass( [ ORBAppDelegate class ] ) );
-		}
-
-	#else
-
-		if( __application_instance || !__application_initializer )
-			return;
-
-		/* Initialize application instance */
-		__application_instance = std::static_pointer_cast< application_base >( __application_initializer() );
-
-		while( __application_instance->is_running() )
-		{
-			__application_instance->frame();
-		}
-
-	#endif
-
+		UIApplicationMain( 0, nil, nil, NSStringFromClass( [ OrbitApplicationDelegate class ] ) );
 	}
+
+#else
+
+	if( _application_instance || !_application_initializer )
+		return;
+
+	/* Initialize application instance */
+	_application_instance = std::static_pointer_cast< ApplicationBase >( _application_initializer() );
+
+	while( _application_instance->IsRunning() )
+	{
+		_application_instance->OnFrame();
+	}
+
+#endif
 }
 
-#if defined( ORB_OS_IOS )
-#  include "orbit/core/log.h"
+ORB_NAMESPACE_END
 
-@implementation ORBAppDelegate
+#if defined( ORB_OS_IOS )
+#  include "Orbit/Core/Log.h"
+
+@implementation OrbitApplicationDelegate
 
 -( BOOL )application:( UIApplication* )__unused application didFinishLaunchingWithOptions:( NSDictionary* )__unused launchOptions
 {
-	orb::log_info( "didFinishLaunchingWithOptions()" );
+	ORB_NAMESPACE log_info( "didFinishLaunchingWithOptions()" );
 
-	if( orb::__application_initializer && !orb::__application_instance )
-		orb::__application_instance = std::static_pointer_cast< orb::application_base >( orb::__application_initializer() );
+	if( ORB_NAMESPACE _application_initializer && !ORB_NAMESPACE _application_instance )
+		ORB_NAMESPACE _application_instance = std::static_pointer_cast< ORB_NAMESPACE ApplicationBase >( ORB_NAMESPACE _application_initializer() );
 
-	CADisplayLink* displayLink = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( frame: ) ];
-	[ displayLink addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
+	CADisplayLink* display_link = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( frame: ) ];
+	[ display_link addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
 
 	return YES;
 }
 
 -( void )applicationWillResignActive:( UIApplication* )__unused application
 {
-	orb::log_info( "applicationWillResignActive()" );
+	ORB_NAMESPACE log_info( "applicationWillResignActive()" );
 }
 
 -( void )applicationDidEnterBackground:( UIApplication* )__unused application
 {
-	orb::log_info( "applicationDidEnterBackground()" );
+	ORB_NAMESPACE log_info( "applicationDidEnterBackground()" );
 }
 
 -( void )applicationWillEnterForeground:( UIApplication* )__unused application
 {
-	orb::log_info( "applicationWillEnterForeground()" );
+	ORB_NAMESPACE log_info( "applicationWillEnterForeground()" );
 }
 
 -( void )applicationDidBecomeActive:( UIApplication* )__unused application
 {
-	orb::log_info( "applicationDidBecomeActive()" );
+	ORB_NAMESPACE log_info( "applicationDidBecomeActive()" );
 }
 
 -( void )applicationWillTerminate:( UIApplication* )__unused application
 {
-	orb::log_info( "applicationWillTerminate()" );
-	orb::__application_instance.reset();
+	ORB_NAMESPACE log_info( "applicationWillTerminate()" );
+	ORB_NAMESPACE _application_instance.reset();
 }
 
 -( void )frame:( CADisplayLink* )__unused displayLink
 {
-	if( orb::__application_instance )
-		orb::__application_instance->frame();
+	if( ORB_NAMESPACE _application_instance )
+		ORB_NAMESPACE _application_instance->OnFrame();
 }
 
 @end

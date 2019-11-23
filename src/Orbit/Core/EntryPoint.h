@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,16 +16,14 @@
  */
 
 #pragma once
-
-#include "orbit/core/application.h"
+#include "Orbit/Core/Application.h"
 
 #if defined( ORB_OS_WINDOWS )
-
-#include <Windows.h>
+#  include <Windows.h>
 
 INT WINAPI WinMain( HINSTANCE, HINSTANCE, PSTR, INT )
 {
-	orb::application_base::run_instance();
+	ORB_NAMESPACE ApplicationBase::RunInstance();
 	return 0;
 }
 
@@ -33,17 +31,17 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, PSTR, INT )
 
 int main( int, char*[] )
 {
-	orb::application_base::run_instance();
+	ORB_NAMESPACE ApplicationBase::RunInstance();
 	return 0;
 }
 
 #elif defined( ORB_OS_ANDROID )
-#  include "orbit/core/android_app.h"
+#  include "orbit/Core/AndroidApp.h"
 
 extern "C" void android_main( android_app* app )
 {
-	orb::android_only::app = app;
-	orb::application_base::run_instance();
+	ORB_NAMESPACE AndroidOnly::app = app;
+	ORB_NAMESPACE ApplicationBase::RunInstance();
 }
 
 #endif

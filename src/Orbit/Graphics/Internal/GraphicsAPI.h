@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,46 +16,44 @@
  */
 
 #pragma once
-
-#include "orbit/graphics.h"
+#include "Orbit/Graphics.h"
 
 /* Assume that OpenGL is always available */
-#define __ORB_HAS_GRAPHICS_API_OPENGL 1
+#define _ORB_HAS_GRAPHICS_API_OPENGL 1
 
 #if __has_include( <d3d11.h> )
-#  define __ORB_HAS_GRAPHICS_API_D3D11 1
+#  define _ORB_HAS_GRAPHICS_API_D3D11 1
 #else
-#  define __ORB_HAS_GRAPHICS_API_D3D11 0
+#  define _ORB_HAS_GRAPHICS_API_D3D11 0
 #endif
 
-#if __ORB_HAS_GRAPHICS_API_D3D11
+#if _ORB_HAS_GRAPHICS_API_D3D11
 #  include <d3d11.h>
 #endif
 
-namespace orb
+ORB_NAMESPACE_BEGIN
+
+#define _ORB_NUM_GRAPHICS_APIS ( _ORB_HAS_GRAPHICS_API_OPENGL + \
+                                 _ORB_HAS_GRAPHICS_API_D3D11 )
+
+enum class GraphicsAPI
 {
+	Null = 0,
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+	OpenGL,
+#endif
+#if _ORB_HAS_GRAPHICS_API_D3D11
+	D3D11,
+#endif
+};
 
-#define __ORB_NUM_GRAPHICS_APIS ( __ORB_HAS_GRAPHICS_API_OPENGL + \
-                                  __ORB_HAS_GRAPHICS_API_D3D11 )
-
-	enum class graphics_api
-	{
-		Null = 0,
-	#if __ORB_HAS_GRAPHICS_API_OPENGL
-		OpenGL,
-	#endif
-	#if __ORB_HAS_GRAPHICS_API_D3D11
-		D3D11,
-	#endif
-	};
-
-	constexpr graphics_api kDefaultGraphicsApi =
-#if __ORB_HAS_GRAPHICS_API_D3D11
-		graphics_api::D3D11;
-#elif __ORB_HAS_GRAPHICS_API_OPENGL
-		graphics_api::OpenGL;
+constexpr GraphicsAPI kDefaultGraphicsApi =
+#if _ORB_HAS_GRAPHICS_API_D3D11
+	GraphicsAPI::D3D11;
+#elif _ORB_HAS_GRAPHICS_API_OPENGL
+	GraphicsAPI::OpenGL;
 #else
-		graphics_api::Null;
+	GraphicsAPI::Null;
 #endif
 
-}
+ORB_NAMESPACE_END

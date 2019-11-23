@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,38 +16,41 @@
  */
 
 #pragma once
-
 #include <memory>
 #include <type_traits>
 
-#include "orbit/core.h"
+#include "Orbit/Core.h"
 
-#define ORB_APP_DECL( APP_TYPE )                                                                 \
-    class APP_TYPE; /* Forward declaration */                                                    \
-    volatile int __orb__app_initializer_eval = orb::application< APP_TYPE >::__initializer_eval; \
-    class APP_TYPE final : public ::orb::application< APP_TYPE >
+#define ORB_APP_DECL( APP_TYPE )                                                                       \
+    class APP_TYPE; /* Forward declaration */                                                          \
+    volatile int _orb_app_initializer_eval = ORB_NAMESPACE Application< APP_TYPE >::_initializer_eval; \
+    class APP_TYPE final : public ORB_NAMESPACE Application< APP_TYPE >
 
-namespace orb
+ORB_NAMESPACE_BEGIN
+
+class ORB_API_CORE ApplicationBase
 {
-	class ORB_API_CORE application_base
-	{
-	public:
-		application_base() = default;
-		virtual ~application_base() = default;
+public:
+	ApplicationBase() = default;
+	virtual ~ApplicationBase() = default;
 
-		virtual void frame() { }
-		virtual bool is_running() = 0;
+	virtual void OnFrame() { }
+	virtual bool IsRunning() = 0;
 
-		static void run_instance();
-	};
+	static void RunInstance();
+};
 
-	extern ORB_API_CORE std::shared_ptr< void >( *__application_initializer )();
-	extern ORB_API_CORE std::shared_ptr< application_base > __application_instance;
+extern ORB_API_CORE std::shared_ptr< void >( *_application_initializer )();
+extern ORB_API_CORE std::shared_ptr< ApplicationBase > _application_instance;
 
-	template< typename Derived >
-	class application : private application_base
-	{
-	public:
-		static inline volatile auto __initializer_eval = [] { __application_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 1; }();
-	};
-}
+template< typename Derived >
+class Application : private ApplicationBase
+{
+public:
+	static volatile int _initializer_eval;
+};
+
+template< typename Derived >
+volatile int Application< Derived >::_initializer_eval = [] { _application_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 1; }();
+
+ORB_NAMESPACE_END
