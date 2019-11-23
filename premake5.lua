@@ -91,11 +91,11 @@ end
 
 local function foreach_system_keywords(os, functor)
 	local keywords = {
-		["windows"] = {"win32",   "desktop",          "gl", "d3d11"},
-		["linux"]   = {"linux",   "desktop", "posix", "gl"},
-		["macosx"]  = {"macos",   "desktop", "posix", "gl"},
-		["android"] = {"android", "mobile",  "gl"},
-		["ios"]     = {"ios",     "mobile",  "gl"},
+		["windows"] = {"Win32",   "Desktop",          "OpenGL", "D3D11"},
+		["linux"]   = {"Linux",   "Desktop", "Posix", "OpenGL"},
+		["macosx"]  = {"MacOS",   "Desktop", "Posix", "OpenGL"},
+		["android"] = {"Android", "Mobile",           "OpenGL"},
+		["ios"]     = {"iOS",     "Mobile",           "OpenGL"},
 	}
 	if keywords[os] == nil then
 		return
@@ -139,10 +139,10 @@ local function decl_module(name)
 	links     (modules)
 	base_config()
 	files {
-		"src/orbit.h",
-		"src/orbit/" .. lo .. ".h",
-		"src/orbit/" .. lo .. "/**.cpp",
-		"src/orbit/" .. lo .. "/**.h",
+		"src/Orbit.h",
+		"src/Orbit/" .. lo .. ".h",
+		"src/Orbit/" .. lo .. "/**.cpp",
+		"src/Orbit/" .. lo .. "/**.h",
 	}
 	filter{"toolset:msc"} defines{"_CRT_SECURE_NO_WARNINGS"} filter{}
 	filter{"system:macosx or ios", "files:**"} language("ObjCpp") filter{}
@@ -163,12 +163,12 @@ local function decl_sample(name)
 	xcodebuildresources("assets")
 	base_config()
 	files {
-		"src/samples/" .. id .. "/*.cpp",
-		"src/samples/" .. id .. "/*.h",
+		"src/Samples/" .. id .. "/*.cpp",
+		"src/Samples/" .. id .. "/*.h",
 	}
 	filter{"system:linux"} linkoptions{"-Wl,-rpath=\\$$ORIGIN"}
 	filter{"system:ios"} files{"res/Info.plist", "assets"} filter{}
-	filter{"system:android"} files{"src/samples/" .. id .. "/android/**", "res/**", ANDROID_NATIVE_APP_GLUE_DIR .. "/android_native_app_glue.c"} filter{}
+	filter{"system:android"} files{"src/Samples/" .. id .. "/Android/**", "res/**", ANDROID_NATIVE_APP_GLUE_DIR .. "/android_native_app_glue.c"} filter{}
 	filter{"system:android"} assetdirs{"assets/"} filter{}
 	filter{"action:android-studio"} removefiles{"**.h"} filter{}
 	filter_system_files()
