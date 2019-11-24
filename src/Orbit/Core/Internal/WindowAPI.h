@@ -71,9 +71,6 @@
 #  include <android/sensor.h>
 #endif
 
-#define __ORB_NUM_WINDOW_APIS ( _ORB_HAS_WINDOW_API_WIN32   + _ORB_HAS_WINDOW_API_X11   + \
-                                _ORB_HAS_WINDOW_API_WAYLAND + _ORB_HAS_WINDOW_API_COCOA + \
-                                _ORB_HAS_WINDOW_API_ANDROID + _ORB_HAS_WINDOW_API_UIKIT )
 ORB_NAMESPACE_BEGIN
 
 enum class WindowAPI

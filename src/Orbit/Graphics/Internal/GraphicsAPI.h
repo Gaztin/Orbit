@@ -33,9 +33,6 @@
 
 ORB_NAMESPACE_BEGIN
 
-#define _ORB_NUM_GRAPHICS_APIS ( _ORB_HAS_GRAPHICS_API_OPENGL + \
-                                 _ORB_HAS_GRAPHICS_API_D3D11 )
-
 enum class GraphicsAPI
 {
 	Null = 0,
