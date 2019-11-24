@@ -18,70 +18,69 @@
 #include <cmath>
 #include <ctime>
 
-#include <orbit/core/events/window_event.h>
-#include <orbit/core/application.h>
-#include <orbit/core/asset.h>
-#include <orbit/core/entry_point.h>
-#include <orbit/core/log.h>
-#include <orbit/core/utility.h>
-#include <orbit/core/window.h>
-#include <orbit/graphics/constant_buffer.h>
-#include <orbit/graphics/fragment_shader.h>
-#include <orbit/graphics/graphics_pipeline.h>
-#include <orbit/graphics/index_buffer.h>
-#include <orbit/graphics/render_context.h>
-#include <orbit/graphics/vertex_buffer.h>
-#include <orbit/graphics/vertex_shader.h>
-#include <orbit/math/literals.h>
-#include <orbit/math/mat4.h>
-#include <orbit/math/vec2.h>
-#include <orbit/math/vec3.h>
-#include <orbit/math/vec4.h>
+#include <Orbit/Core/Application/Application.h>
+#include <Orbit/Core/Application/EntryPoint.h>
+#include <Orbit/Core/IO/Asset.h>
+#include <Orbit/Core/IO/Log.h>
+#include <Orbit/Core/Utility/Utility.h>
+#include <Orbit/Core/Widget/Window.h>
+#include <Orbit/Graphics/Buffer/ConstantBuffer.h>
+#include <Orbit/Graphics/Buffer/IndexBuffer.h>
+#include <Orbit/Graphics/Buffer/VertexBuffer.h>
+#include <Orbit/Graphics/Device/RenderContext.h>
+#include <Orbit/Graphics/Shader/FragmentShader.h>
+#include <Orbit/Graphics/Shader/GraphicsPipeline.h>
+#include <Orbit/Graphics/Shader/VertexShader.h>
+#include <Orbit/Math/Literals.h>
+#include <Orbit/Math/Matrix4.h>
+#include <Orbit/Math/Vector2.h>
+#include <Orbit/Math/Vector3.h>
+#include <Orbit/Math/Vector4.h>
 
-ORB_APP_DECL( sample_app )
+ORB_APP_DECL( SampleApp )
 {
 public:
-	sample_app();
+	SampleApp();
 
-	void frame();
-	bool is_running() { return !!m_window; }
+	void OnFrame();
+	bool IsRunning() { return !!m_window; }
 
-	static void on_window_event( const orb::window_event& e );
+	static void OnWindowEvent( const Orbit::WindowEvent& e );
 
 private:
-	orb::window                   m_window;
-	orb::window::subscription_ptr m_windowSubscription;
-	orb::render_context           m_renderContext;
-	orb::vertex_shader            m_vertexShader;
-	orb::fragment_shader          m_fragmentShader;
-	orb::vertex_buffer            m_triangleVertexBuffer;
-	orb::index_buffer             m_triangleIndexBuffer;
-	orb::constant_buffer          m_triangleConstantBuffer;
-	orb::graphics_pipeline        m_mainPipeline;
-	float                         m_time;
+	Orbit::Window                  m_window;
+	Orbit::Window::SubscriptionPtr m_window_subscription;
+	Orbit::RenderContext           m_render_context;
+	Orbit::VertexShader            m_vertex_shader;
+	Orbit::FragmentShader          m_fragment_shader;
+	Orbit::VertexBuffer            m_triangle_vertex_buffer;
+	Orbit::IndexBuffer             m_triangle_index_buffer;
+	Orbit::ConstantBuffer          m_triangle_constant_buffer;
+	Orbit::GraphicsPipeline        m_main_pipeline;
+	float                          m_time;
 };
 
-struct vertex
+struct Vertex
 {
-	orb::vec4  pos;
-	orb::color color;
+	Orbit::Vector4 pos;
+	Orbit::Color   color;
 };
 
-const orb::vertex_layout vertexLayout =
+const Orbit::VertexLayout vertex_layout
 {
-	{ "POSITION", orb::vertex_component::Vec4 },
-	{ "COLOR",    orb::vertex_component::Vec4 },
+	{ "POSITION", Orbit::VertexComponent::Vec4 },
+	{ "COLOR",    Orbit::VertexComponent::Vec4 },
 };
 
-const std::initializer_list< vertex > triangleVertices =
+const std::initializer_list< Vertex > triangle_vertices
 {
-	{ orb::vec4( -0.5f, -0.5f, 0.0f, 1.0f ),   orb::color( 0.0f, 0.0f, 1.0f, 1.0f ) },
-	{ orb::vec4( -0.5f,  0.5f, 0.0f, 1.0f ),   orb::color( 1.0f, 0.0f, 0.0f, 1.0f ) },
-	{ orb::vec4(  0.5f, -0.5f, 0.0f, 1.0f ),   orb::color( 0.0f, 0.0f, 0.0f, 1.0f ) },
-	{ orb::vec4(  0.5f,  0.5f, 0.0f, 1.0f ),   orb::color( 0.0f, 1.0f, 0.0f, 1.0f ) },
+	{ Orbit::Vector4( -0.5f, -0.5f, 0.0f, 1.0f ),   Orbit::Color( 0.0f, 0.0f, 1.0f, 1.0f ) },
+	{ Orbit::Vector4( -0.5f,  0.5f, 0.0f, 1.0f ),   Orbit::Color( 1.0f, 0.0f, 0.0f, 1.0f ) },
+	{ Orbit::Vector4(  0.5f, -0.5f, 0.0f, 1.0f ),   Orbit::Color( 0.0f, 0.0f, 0.0f, 1.0f ) },
+	{ Orbit::Vector4(  0.5f,  0.5f, 0.0f, 1.0f ),   Orbit::Color( 0.0f, 1.0f, 0.0f, 1.0f ) },
 };
 
-const std::initializer_list< uint16_t > triangleIndices =
+const std::initializer_list< uint16_t > triangle_indices
 {
 	0, 1, 2,
 	3, 2, 1,
@@ -89,122 +88,119 @@ const std::initializer_list< uint16_t > triangleIndices =
 	2, 3, 0,
 };
 
-std::tuple triangleConstants = std::make_tuple
-(
-	orb::mat4{ }
-);
+std::tuple triangle_constants = std::make_tuple( Orbit::Matrix4() );
 
-orb::mat4 projectionMatrix( 0.f );
+Orbit::Matrix4 projection_matrix( 0.f );
 
-sample_app::sample_app()
+SampleApp::SampleApp()
 	: m_window( 800, 600 )
-	, m_windowSubscription( m_window.subscribe( &sample_app::on_window_event ) )
-	, m_renderContext( m_window, orb::graphics_api::OpenGL )
-	, m_vertexShader( orb::asset( "shader.vs" ) )
-	, m_fragmentShader( orb::asset( "shader.fs" ) )
-	, m_triangleVertexBuffer( triangleVertices )
-	, m_triangleIndexBuffer( triangleIndices )
-	, m_triangleConstantBuffer( triangleConstants )
+	, m_window_subscription( m_window.subscribe( SampleApp::OnWindowEvent ) )
+	, m_render_context( m_window, Orbit::GraphicsAPI::OpenGL )
+	, m_vertex_shader( Orbit::Asset( "shader.vs" ) )
+	, m_fragment_shader( Orbit::Asset( "shader.fs" ) )
+	, m_triangle_vertex_buffer( triangle_vertices )
+	, m_triangle_index_buffer( triangle_indices )
+	, m_triangle_constant_buffer( triangle_constants )
 	, m_time( 0.0f )
 {
-	m_window.set_title( "Orbit sample #01" );
-	m_window.show();
-	m_renderContext.set_clear_color( 0.0f, 0.0f, 0.5f );
+	m_window.SetTitle( "Orbit sample #01" );
+	m_window.Show();
+	m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
 
-	m_mainPipeline.set_shaders( m_vertexShader, m_fragmentShader );
-	m_mainPipeline.describe_vertex_layout( vertexLayout );
+	m_main_pipeline.SetShaders( m_vertex_shader, m_fragment_shader );
+	m_main_pipeline.DescribeVertexLayout( vertex_layout );
 
 	/* Load text asset and log its contents */
 	{
-		orb::asset testAsset( "text.txt" );
-		const auto& txt = testAsset.get_data();
-		orb::log_info( std::string( reinterpret_cast< const char* >( txt.data() ), txt.size() ) );
+		Orbit::Asset test_asset( "text.txt" );
+		const auto& txt = test_asset.GetData();
+		Orbit::LogInfo( std::string( reinterpret_cast< const char* >( txt.data() ), txt.size() ) );
 	}
 }
 
-void sample_app::frame()
+void SampleApp::OnFrame()
 {
+	auto& [ mvp ] = triangle_constants;
 	m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
 
 	/* Calculate model-view-projection matrix */
 	{
-		using namespace orb::math_literals;
-		using namespace orb::unit_literals::metric;
+		using namespace Orbit::MathLiterals;
+		using namespace Orbit::UnitLiterals::Metric;
 
-		orb::mat4 view;
-		view.translate( orb::vec3( 0m, 0m, -5m ) );
+		Orbit::Matrix4 view;
+		view.Translate( Orbit::Vector3( 0m, 0m, -5m ) );
 
-		orb::mat4 model;
-		model.rotate( orb::vec3( 0pi, 1pi * m_time, 0pi ) );
+		Orbit::Matrix4 model;
+		model.Rotate( Orbit::Vector3( 0pi, 1pi * m_time, 0pi ) );
 
-		auto& [ mvp ] = triangleConstants;
-		mvp = model * view * projectionMatrix;
+		mvp = model * view * projection_matrix;
 	}
 
-	m_window.poll_events();
-	m_renderContext.clear( orb::buffer_mask::Color | orb::buffer_mask::Depth );
+	m_window.PollEvents();
+	m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
-	m_triangleVertexBuffer.bind();
-	m_mainPipeline.bind();
+	m_triangle_vertex_buffer.Bind();
+	m_main_pipeline.Bind();
 	{
-		m_triangleIndexBuffer.bind();
-		m_triangleConstantBuffer.bind( orb::shader_type::Vertex, 0 );
-		m_triangleConstantBuffer.update( triangleConstants );
-		m_mainPipeline.draw( m_triangleIndexBuffer );
+		m_triangle_index_buffer.Bind();
+		m_triangle_constant_buffer.Bind( Orbit::ShaderType::Vertex, 0 );
+		m_triangle_constant_buffer.Update( triangle_constants );
+		m_main_pipeline.Draw( m_triangle_index_buffer );
 	}
-	m_mainPipeline.unbind();
+	m_main_pipeline.Unbind();
 
-	m_renderContext.swap_buffers();
+	m_render_context.SwapBuffers();
 }
 
-void sample_app::on_window_event( const orb::window_event& e )
+void SampleApp::OnWindowEvent( const Orbit::WindowEvent& e )
 {
 	switch( e.type )
 	{
-		case orb::window_event::Resize:
+		case Orbit::WindowEvent::Resize:
 		{
-			orb::log_info( orb::format( "Resized: (%d, %d)", e.data.resize.w, e.data.resize.h ) );
+			Orbit::LogInfo( Orbit::Format( "Resized: (%d, %d)", e.data.resize.w, e.data.resize.h ) );
 
 			/* Update projection matrix */
 			{
-				constexpr float fov      = 60.0f * orb::Pi / 180.f;
+				constexpr float fov      = 60.0f * Orbit::Pi / 180.f;
 				constexpr float fovHalf  = fov * 0.5f;
 				const float     aspect   = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
 				constexpr float farClip  = 100.f;
 				constexpr float nearClip = 0.1f;
 
-				projectionMatrix[ 0 ]  = ( 1.0f / ( aspect * fovHalf ) );
-				projectionMatrix[ 5 ]  = ( 1.0f / fovHalf );
-				projectionMatrix[ 10 ] = ( farClip / ( farClip - nearClip ) );
-				projectionMatrix[ 11 ] = -1.0f;
-				projectionMatrix[ 14 ] = ( ( farClip * nearClip ) / ( farClip - nearClip ) );
+				projection_matrix[ 0 ]  = ( 1.0f / ( aspect * fovHalf ) );
+				projection_matrix[ 5 ]  = ( 1.0f / fovHalf );
+				projection_matrix[ 10 ] = ( farClip / ( farClip - nearClip ) );
+				projection_matrix[ 11 ] = -1.0f;
+				projection_matrix[ 14 ] = ( ( farClip * nearClip ) / ( farClip - nearClip ) );
 			}
 
 			break;
 		}
 
-		case orb::window_event::Move:
-			orb::log_info( orb::format( "Moved: (%d, %d)", e.data.move.x, e.data.move.y ) );
+		case Orbit::WindowEvent::Move:
+			Orbit::LogInfo( Orbit::Format( "Moved: (%d, %d)", e.data.move.x, e.data.move.y ) );
 			break;
 
-		case orb::window_event::Defocus:
-			orb::log_info( "Defocus" );
+		case Orbit::WindowEvent::Defocus:
+			Orbit::LogInfo( "Defocus" );
 			break;
 
-		case orb::window_event::Focus:
-			orb::log_info( "Focus" );
+		case Orbit::WindowEvent::Focus:
+			Orbit::LogInfo( "Focus" );
 			break;
 
-		case orb::window_event::Suspend:
-			orb::log_info( "Suspend" );
+		case Orbit::WindowEvent::Suspend:
+			Orbit::LogInfo( "Suspend" );
 			break;
 
-		case orb::window_event::Restore:
-			orb::log_info( "Restore" );
+		case Orbit::WindowEvent::Restore:
+			Orbit::LogInfo( "Restore" );
 			break;
 
-		case orb::window_event::Close:
-			orb::log_info( "Close" );
+		case Orbit::WindowEvent::Close:
+			Orbit::LogInfo( "Close" );
 			break;
 
 		default:
