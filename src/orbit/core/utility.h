@@ -60,12 +60,14 @@ namespace orb
 	template< typename >
 	struct tag { };
 
+	template< typename T, typename... Ts >
+	constexpr size_t type_index_v = std::variant< tag< Ts >... >( tag< T >{ } ).index();
+
 	template< typename T, typename Variant >
 	struct unique_index;
 
 	template< typename T, typename... Ts >
-	struct unique_index< T, std::variant< Ts... > >
-		: std::integral_constant< size_t, std::variant< tag< Ts >... >( tag< T >() ).index() >
+	struct unique_index< T, std::variant< Ts... > > : std::integral_constant< size_t, type_index_v< T, Ts... > >
 	{ };
 
 	template< typename T, typename... Ts >

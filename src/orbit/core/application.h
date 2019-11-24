@@ -48,6 +48,9 @@ namespace orb
 	class application : private application_base
 	{
 	public:
-		static inline volatile auto __initializer_eval = [] { __application_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 1; }();
+		static volatile int __initializer_eval;
 	};
+
+	template< typename Derived >
+	volatile int application< Derived >::__initializer_eval = [] { __application_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 1; }();
 }
