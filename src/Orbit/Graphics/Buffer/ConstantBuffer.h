@@ -45,7 +45,7 @@ public:
 	void Update( const std::tuple< Types... >& constants )
 	{
 		void* dst = UpdateBegin( ( sizeof( Types ) + ... ) );
-		UpdateSequencial( dst, constants, gen_seq_v< sizeof...( Types ) > );
+		UpdateSequencial( dst, constants, MakeSequence< sizeof...( Types ) >{ } );
 		UpdateEnd();
 	}
 

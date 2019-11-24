@@ -16,7 +16,7 @@
 */
 
 #pragma once
-#include "Orbit/Math/Vector2.h"
+#include "Orbit/Math/VectorBase.h"
 
 ORB_NAMESPACE_BEGIN
 
