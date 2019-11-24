@@ -40,6 +40,9 @@ public:
 	float& operator[]( size_t i ) { return m_elements[ i ]; }
 	const float& operator[]( size_t i ) const { return m_elements[ i ]; }
 
+	float& operator()( size_t column, size_t row );
+	const float& operator()( size_t column, size_t row ) const;
+
 private:
 
 	std::array< float, 16 > m_elements;

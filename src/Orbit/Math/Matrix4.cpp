@@ -96,4 +96,14 @@ Matrix4& Matrix4::operator*=( const Matrix4& rhs )
 	return *this;
 }
 
+float& Matrix4::operator()( size_t column, size_t row )
+{
+	return m_elements[ row * 4 + column ];
+}
+
+const float& Matrix4::operator()( size_t column, size_t row ) const
+{
+	return m_elements[ row * 4 + column ];
+}
+
 ORB_NAMESPACE_END
