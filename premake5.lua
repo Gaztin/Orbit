@@ -89,45 +89,6 @@ local function foreach_system( functor )
 	functor( 'android' )
 end
 
-local function foreach_system_keywords( os, functor )
-	local keywords = {
-		[ 'windows' ] = { 'Win32',   'Desktop',          'OpenGL', 'D3D11' },
-		[ 'linux' ]   = { 'Linux',   'Desktop', 'Posix', 'OpenGL' },
-		[ 'macosx' ]  = { 'MacOS',   'Desktop', 'Posix', 'OpenGL' },
-		[ 'android' ] = { 'Android', 'Mobile',           'OpenGL' },
-		[ 'ios' ]     = { 'iOS',     'Mobile',           'OpenGL' },
-	}
-	if( keywords[ os ] == nil ) then
-		return
-	end
-	for i=1,#keywords[ os ] do
-		functor( keywords[ os ][ i ] )
-	end
-end
-
-local function filter_system_files()
-	foreach_system( function( os )
-		-- Exclude files containing keywords from other systems
-		filter { 'system:not ' .. os }
-		foreach_system_keywords( os, function( keyword )
-			-- Keywords may appear in multiple systems
-			local target_has_keyword = false
-			foreach_system_keywords( _TARGET_OS, function( keyword2 )
-				if( keyword2 == keyword ) then
-					target_has_keyword = true
-				end
-			end )
-			if( not target_has_keyword ) then
-				removefiles {
-					'src/**' .. keyword .. '_**',
-					'src/**_' .. keyword .. '**',
-					'src/**/' .. keyword .. '.*',
-				}
-			end
-		end )
-	end )
-end
-
 local modules = { }
 local function decl_module( name )
 	local lo = name:lower()
@@ -155,7 +116,6 @@ local function decl_module( name )
 		removefiles { '**.h' }
 	filter { }
 
-	filter_system_files()
 	group()
 	table.insert( modules, name )
 end
@@ -186,7 +146,6 @@ local function decl_sample( name )
 		removefiles { '**.h' }
 	filter { }
 
-	filter_system_files()
 	group()
 	sample_index = sample_index + 1
 end
