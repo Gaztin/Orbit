@@ -42,8 +42,8 @@ ORB_APP_DECL( SampleApp )
 public:
 	SampleApp();
 
-	void OnFrame();
-	bool IsRunning() { return !!m_window; }
+	void OnFrame() override;
+	bool IsRunning() override { return !!m_window; }
 
 	static void OnWindowEvent( const Orbit::WindowEvent& e );
 
@@ -95,7 +95,7 @@ Orbit::Matrix4 projection_matrix( 0.f );
 SampleApp::SampleApp()
 	: m_window( 800, 600 )
 	, m_window_subscription( m_window.subscribe( &SampleApp::OnWindowEvent ) )
-	, m_render_context( m_window, Orbit::GraphicsAPI::D3D11 )
+	, m_render_context( m_window, Orbit::GraphicsAPI::OpenGL )
 	, m_vertex_shader( Orbit::Asset( "shader.vs" ) )
 	, m_fragment_shader( Orbit::Asset( "shader.fs" ) )
 	, m_triangle_vertex_buffer( triangle_vertices )
