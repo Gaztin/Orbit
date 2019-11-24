@@ -16,31 +16,41 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include "Orbit/Graphics/Graphics.h"
+
+/* Assume that OpenGL is always available */
+#define _ORB_HAS_GRAPHICS_API_OPENGL 1
+
+#if __has_include( <d3d11.h> )
+#  define _ORB_HAS_GRAPHICS_API_D3D11 1
+#else
+#  define _ORB_HAS_GRAPHICS_API_D3D11 0
+#endif
+
+#if _ORB_HAS_GRAPHICS_API_D3D11
+#  include <d3d11.h>
+#endif
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+enum class GraphicsAPI
 {
-public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
-
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
-
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
-
-	static RenderContext* GetCurrent();
-
-private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
-
+	Null = 0,
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+	OpenGL,
+#endif
+#if _ORB_HAS_GRAPHICS_API_D3D11
+	D3D11,
+#endif
 };
+
+constexpr GraphicsAPI kDefaultGraphicsApi =
+#if _ORB_HAS_GRAPHICS_API_D3D11
+	GraphicsAPI::D3D11;
+#elif _ORB_HAS_GRAPHICS_API_OPENGL
+	GraphicsAPI::OpenGL;
+#else
+	GraphicsAPI::Null;
+#endif
 
 ORB_NAMESPACE_END

@@ -16,30 +16,23 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include "Orbit/Graphics/Impl/VertexShaderImpl.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+class Asset;
+
+class ORB_API_GRAPHICS VertexShader
 {
 public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
+	explicit VertexShader( const Asset& asset );
+	~VertexShader();
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
-
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
-
-	static RenderContext* GetCurrent();
+	VertexShaderImpl*       GetImplPtr()       { return &m_impl; }
+	const VertexShaderImpl* GetImplPtr() const { return &m_impl; }
 
 private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
+	VertexShaderImpl m_impl;
 
 };
 

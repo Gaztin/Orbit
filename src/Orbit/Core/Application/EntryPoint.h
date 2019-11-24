@@ -16,31 +16,32 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include "Orbit/Core/Application/Application.h"
 
-ORB_NAMESPACE_BEGIN
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
 
-class ORB_API_GRAPHICS RenderContext
+INT WINAPI WinMain( HINSTANCE, HINSTANCE, PSTR, INT )
 {
-public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
+	ORB_NAMESPACE ApplicationBase::RunInstance();
+	return 0;
+}
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
+#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS ) || defined( ORB_OS_IOS )
 
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
+int main( int, char*[] )
+{
+	ORB_NAMESPACE ApplicationBase::RunInstance();
+	return 0;
+}
 
-	static RenderContext* GetCurrent();
+#elif defined( ORB_OS_ANDROID )
+#  include "orbit/Core/AndroidApp.h"
 
-private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
+extern "C" void android_main( android_app* app )
+{
+	ORB_NAMESPACE AndroidOnly::app = app;
+	ORB_NAMESPACE ApplicationBase::RunInstance();
+}
 
-};
-
-ORB_NAMESPACE_END
+#endif

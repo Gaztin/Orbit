@@ -16,30 +16,47 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include <memory>
+#include <tuple>
+
+#include "Orbit/Core/Utility/Utility.h"
+#include "Orbit/Graphics/Impl/ConstantBufferImpl.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+class ORB_API_GRAPHICS ConstantBuffer
 {
 public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
+	explicit ConstantBuffer( size_t size );
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
+	template< typename... Types >
+	ConstantBuffer( const std::tuple< Types... >& )
+		: ConstantBuffer( ( 0 + ... + sizeof( Types ) ) )
+	{
+	}
 
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
+	~ConstantBuffer();
 
-	static RenderContext* GetCurrent();
+	void Bind   ( ShaderType type, uint32_t slot );
+	void Update ( size_t location, const void* data, size_t size );
+
+	template< typename... Types >
+	void Update( const std::tuple< Types... >& constants )
+	{
+		if constexpr( sizeof...( Types ) > 0 )
+			UpdateSequencial( constants, MakeSequence< sizeof...( Types ) >() );
+		else
+			Update( 0, nullptr, 0 );
+	}
 
 private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
+	template< typename Tup, size_t... Is >
+	void UpdateSequencial( Tup&& tup, Sequence< Is... > )
+	{
+		[[ maybe_unused ]] auto l = { ( Update( Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
+	}
+
+	ConstantBufferImpl m_impl;
 
 };
 

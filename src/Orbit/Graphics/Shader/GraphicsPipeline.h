@@ -16,30 +16,31 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include "Orbit/Graphics/Impl/GraphicsPipelineImpl.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+class FragmentShader;
+class IndexBuffer;
+class VertexBuffer;
+class VertexShader;
+
+class ORB_API_GRAPHICS GraphicsPipeline
 {
 public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
+	GraphicsPipeline();
+	~GraphicsPipeline();
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
+	void Bind();
+	void Unbind();
+	void SetShaders( const VertexShader& vert, const FragmentShader& frag );
+	void DescribeVertexLayout( VertexLayout layout );
 
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
-
-	static RenderContext* GetCurrent();
+	void Draw( const VertexBuffer& vb );
+	void Draw( const IndexBuffer& ib );
 
 private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
+	GraphicsPipelineImpl m_impl;
 
 };
 

@@ -18,20 +18,19 @@
 #include <cmath>
 #include <ctime>
 
-#include <Orbit/Core/Events/WindowEvent.h>
-#include <Orbit/Core/Application.h>
-#include <Orbit/Core/Asset.h>
-#include <Orbit/Core/EntryPoint.h>
-#include <Orbit/Core/Log.h>
-#include <Orbit/Core/Utility.h>
-#include <Orbit/Core/Window.h>
-#include <Orbit/Graphics/ConstantBuffer.h>
-#include <Orbit/Graphics/FragmentShader.h>
-#include <Orbit/Graphics/GraphicsPipeline.h>
-#include <Orbit/Graphics/IndexBuffer.h>
+#include <Orbit/Core/Application/Application.h>
+#include <Orbit/Core/Application/EntryPoint.h>
+#include <Orbit/Core/IO/Asset.h>
+#include <Orbit/Core/IO/Log.h>
+#include <Orbit/Core/Utility/Utility.h>
+#include <Orbit/Core/Widget/Window.h>
+#include <Orbit/Graphics/Buffer/ConstantBuffer.h>
+#include <Orbit/Graphics/Buffer/IndexBuffer.h>
+#include <Orbit/Graphics/Buffer/VertexBuffer.h>
+#include <Orbit/Graphics/Shader/FragmentShader.h>
+#include <Orbit/Graphics/Shader/GraphicsPipeline.h>
+#include <Orbit/Graphics/Shader/VertexShader.h>
 #include <Orbit/Graphics/RenderContext.h>
-#include <Orbit/Graphics/VertexBuffer.h>
-#include <Orbit/Graphics/VertexShader.h>
 
 ORB_APP_DECL( SampleApp )
 {

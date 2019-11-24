@@ -16,31 +16,23 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include "Orbit/Core/Core.h"
+
+#if defined( ORB_OS_WINDOWS )
+#  include <memory>
+
+#  include <Windows.h>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+struct ComDeleter
 {
-public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
-
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
-
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
-
-	static RenderContext* GetCurrent();
-
-private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
-
+	void operator()( IUnknown* ptr ) const { if( ptr ) ptr->Release(); }
 };
 
+template< typename T >
+using ComPtr = std::unique_ptr< T, ComDeleter >;
+
 ORB_NAMESPACE_END
+
+#endif

@@ -16,31 +16,19 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+enum class OpenGLVersion
 {
-public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
-
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
-
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
-
-	static RenderContext* GetCurrent();
-
-private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
-
+	v2_0,
+	v3_2,
+	v4_1,
+	vES_2,
+	vES_3,
 };
+
+extern ORB_API_GRAPHICS OpenGLVersion GetSystemDefaultOpenGLVersion();
 
 ORB_NAMESPACE_END

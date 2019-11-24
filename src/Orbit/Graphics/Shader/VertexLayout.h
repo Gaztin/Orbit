@@ -16,31 +16,27 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include <initializer_list>
+#include <string>
+
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+struct VertexComponent
 {
-public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
+	enum Type
+	{
+		Float,
+		Vec2,
+		Vec3,
+		Vec4,
+	};
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
-
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
-
-	static RenderContext* GetCurrent();
-
-private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
-
+	std::string semantic_name;
+	Type        type;
 };
+
+using VertexLayout = std::initializer_list< VertexComponent >;
 
 ORB_NAMESPACE_END

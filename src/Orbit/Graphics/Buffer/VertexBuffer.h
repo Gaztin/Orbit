@@ -16,30 +16,31 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include "Orbit/Graphics/Impl/VertexBufferImpl.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+class ORB_API_GRAPHICS VertexBuffer
 {
 public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
+	VertexBuffer( const void* data, size_t count, size_t stride );
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
+	template< typename Vertex,
+		typename = typename std::enable_if_t< std::is_object_v< Vertex > > >
+	VertexBuffer( std::initializer_list< Vertex > vertices )
+		: VertexBuffer( vertices.begin(), vertices.size(), sizeof( Vertex ) )
+	{
+	}
 
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
+	~VertexBuffer();
 
-	static RenderContext* GetCurrent();
+	void Bind();
+
+	size_t GetCount() const { return m_count; }
 
 private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
+	VertexBufferImpl m_impl;
+	size_t           m_count;
 
 };
 

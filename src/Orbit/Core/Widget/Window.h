@@ -16,30 +16,70 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include <string_view>
+
+#include "Orbit/Core/Impl/WindowImpl.h"
+#include "Orbit/Core/Utility/EventDispatcher.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+struct ORB_API_CORE WindowEvent
+{
+	enum Type
+	{
+		Unknown = 0,
+		Move,
+		Resize,
+		Defocus,
+		Focus,
+		Suspend,
+		Restore,
+		Close,
+	};
+
+	union Data
+	{
+		struct Move
+		{
+			int x;
+			int y;
+		};
+
+		struct Resize
+		{
+			uint32_t w;
+			uint32_t h;
+		};
+
+		Move move;
+		Resize resize;
+	};
+
+	Type type;
+	Data data;
+};
+
+class ORB_API_CORE Window : public EventDispatcher< WindowEvent >
 {
 public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
+	Window( uint32_t width, uint32_t height, WindowAPI api = kDefaultWindowApi );
+	~Window();
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
+	void PollEvents();
+	void SetTitle( std::string_view title );
+	void SetPos( uint32_t x, uint32_t y );
+	void SetSize( uint32_t width, uint32_t height );
+	void Show();
+	void Hide();
+	void Close() { m_open = false; }
 
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
+	operator bool() const { return m_open; }
 
-	static RenderContext* GetCurrent();
+	WindowImpl* GetImplPtr() { return &m_impl; }
 
 private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
+	WindowImpl m_impl;
+	bool       m_open;
 
 };
 

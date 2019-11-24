@@ -16,30 +16,36 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include <initializer_list>
+#include <type_traits>
+
+#include "Orbit/Graphics/Impl/IndexBufferImpl.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+class ORB_API_GRAPHICS IndexBuffer
 {
 public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
+	IndexBuffer( IndexFormat fmt, const void* data, size_t count );
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
+	template< typename T,
+		typename = typename std::enable_if_t< is_index_format_v< T > > >
+	IndexBuffer( std::initializer_list< T > indices )
+		: IndexBuffer( index_format_v< T >, indices.begin(), indices.size() )
+	{
+	}
 
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
+	~IndexBuffer();
 
-	static RenderContext* GetCurrent();
+	void Bind();
+
+	IndexFormat GetFormat() const { return m_format; }
+	size_t      GetCount()  const { return m_count; }
 
 private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
+	IndexBufferImpl m_impl;
+	IndexFormat     m_format;
+	size_t          m_count;
 
 };
 

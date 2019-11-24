@@ -20,11 +20,11 @@
 #include <array>
 #include <cstring>
 
-#include "Orbit/Core/AndroidApp.h"
-#include "Orbit/Core/Log.h"
-#include "Orbit/Core/Memory.h"
-#include "Orbit/Core/Window.h"
-#include "Orbit/Core/Utility.h"
+#include "Orbit/Core/IO/Log.h"
+#include "Orbit/Core/Platform/Android/AndroidApp.h"
+#include "Orbit/Core/Platform/Windows/ComPtr.h"
+#include "Orbit/Core/Utility/Utility.h"
+#include "Orbit/Core/Widget/Window.h"
 
 #if defined( ORB_OS_ANDROID )
 #  include <android/native_window.h>

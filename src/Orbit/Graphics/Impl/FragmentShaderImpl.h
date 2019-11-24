@@ -16,31 +16,35 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include <variant>
+
+#include "Orbit/Core/Platform/Windows/ComPtr.h"
+#include "Orbit/Graphics/Impl/GraphicsAPI.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+struct _FragmentShaderImplOpenGL
 {
-public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
-
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
-
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
-
-	static RenderContext* GetCurrent();
-
-private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
-
+	GLuint id;
 };
+#endif
+
+#if _ORB_HAS_GRAPHICS_API_D3D11
+struct _FragmentShaderImplD3D11
+{
+	ComPtr< ID3D11PixelShader > pixel_shader;
+};
+#endif
+
+using FragmentShaderImpl = std::variant< std::monostate
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+	, _FragmentShaderImplOpenGL
+#endif
+#if _ORB_HAS_GRAPHICS_API_D3D11
+	, _FragmentShaderImplD3D11
+#endif
+>;
 
 ORB_NAMESPACE_END

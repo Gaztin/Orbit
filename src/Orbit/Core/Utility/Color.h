@@ -16,31 +16,25 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include <cstdlib>
+
+#include "Orbit/Core/Core.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+class ORB_API_CORE Color
 {
 public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
+	Color();
+	Color( float r, float g, float b, float a = 1.0f );
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
+	float&       operator[]( size_t i )       { return ( &r )[ i ]; }
+	const float& operator[]( size_t i ) const { return ( &r )[ i ]; }
 
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
-
-	static RenderContext* GetCurrent();
-
-private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
-
+	float r;
+	float g;
+	float b;
+	float a;
 };
 
 ORB_NAMESPACE_END

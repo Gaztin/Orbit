@@ -16,31 +16,22 @@
  */
 
 #pragma once
-#include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include <string_view>
+
+#include "Orbit/Core/Utility/Version.h"
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+namespace GLSL
 {
-public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
-
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
-	void SetClearColor( float r, float g, float b );
-
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
-
-	static RenderContext* GetCurrent();
-
-private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
-
-};
+	extern ORB_API_GRAPHICS std::string_view GetVersionDirective ( const Version& version, bool embedded );
+	extern ORB_API_GRAPHICS std::string_view GetGLSLDefine       ( void );
+	extern ORB_API_GRAPHICS std::string_view GetPrecision        ( bool embedded );
+	extern ORB_API_GRAPHICS std::string_view GetConstantsMacros  ( const Version& version, bool embedded );
+	extern ORB_API_GRAPHICS std::string_view GetVaryingMacro     ( const Version& version, bool embedded, ShaderType shader_type );
+	extern ORB_API_GRAPHICS std::string_view GetAttributeMacro   ( const Version& version, bool embedded, ShaderType shader_type );
+	extern ORB_API_GRAPHICS std::string_view GetOutColorMacro    ( const Version& version, bool embedded );
+}
 
 ORB_NAMESPACE_END
