@@ -94,8 +94,8 @@ Orbit::Matrix4 projection_matrix( 0.f );
 
 SampleApp::SampleApp()
 	: m_window( 800, 600 )
-	, m_window_subscription( m_window.subscribe( SampleApp::OnWindowEvent ) )
-	, m_render_context( m_window, Orbit::GraphicsAPI::OpenGL )
+	, m_window_subscription( m_window.subscribe( &SampleApp::OnWindowEvent ) )
+	, m_render_context( m_window, Orbit::GraphicsAPI::D3D11 )
 	, m_vertex_shader( Orbit::Asset( "shader.vs" ) )
 	, m_fragment_shader( Orbit::Asset( "shader.fs" ) )
 	, m_triangle_vertex_buffer( triangle_vertices )
@@ -135,11 +135,6 @@ void SampleApp::OnFrame()
 		model.Rotate( Orbit::Vector3( 0pi, 1pi * m_time, 0pi ) );
 
 		mvp = model * view * projection_matrix;
-
-		if( m_render_context.GetImplPtr()->index() == Orbit::unique_index_v< Orbit::_RenderContextImplD3D11, Orbit::RenderContextImpl > )
-		{
-			mvp.Transpose();
-		}
 	}
 
 	m_window.PollEvents();
@@ -168,17 +163,18 @@ void SampleApp::OnWindowEvent( const Orbit::WindowEvent& e )
 
 			/* Update projection matrix */
 			{
-				constexpr float fov      = 60.0f * Orbit::Pi / 180.f;
-				constexpr float fovHalf  = fov * 0.5f;
-				const float     aspect   = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
-				constexpr float farClip  = 100.f;
-				constexpr float nearClip = 0.1f;
+				using namespace Orbit::MathLiterals;
+				constexpr float fov       = 60pi / 180.f;
+				constexpr float fov_half  = fov / 2;
+				const float     aspect    = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
+				constexpr float far_clip  = 100.f;
+				constexpr float near_clip = 0.1f;
 
-				projection_matrix[ 0 ]  = ( 1.0f / ( aspect * fovHalf ) );
-				projection_matrix[ 5 ]  = ( 1.0f / fovHalf );
-				projection_matrix[ 10 ] = ( farClip / ( farClip - nearClip ) );
-				projection_matrix[ 11 ] = -1.0f;
-				projection_matrix[ 14 ] = ( ( farClip * nearClip ) / ( farClip - nearClip ) );
+				projection_matrix( 0, 0 )  = 1.0f / ( aspect * fov_half );
+				projection_matrix( 1, 1 )  = 1.0f / fov_half;
+				projection_matrix( 2, 2 ) = far_clip / ( far_clip - near_clip );
+				projection_matrix( 2, 3 ) = -1.0f;
+				projection_matrix( 3, 2 ) = ( far_clip * near_clip ) / ( far_clip - near_clip );
 			}
 
 			break;
