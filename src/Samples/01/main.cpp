@@ -31,6 +31,11 @@
 #include <Orbit/Graphics/Shader/FragmentShader.h>
 #include <Orbit/Graphics/Shader/GraphicsPipeline.h>
 #include <Orbit/Graphics/Shader/VertexShader.h>
+#include <Orbit/Math/Literals.h>
+#include <Orbit/Math/Matrix4.h>
+#include <Orbit/Math/Vector2.h>
+#include <Orbit/Math/Vector3.h>
+#include <Orbit/Math/Vector4.h>
 
 ORB_APP_DECL( SampleApp )
 {
@@ -57,8 +62,8 @@ private:
 
 struct Vertex
 {
-	float x, y, z, w;
-	float r, g, b, a;
+	Orbit::Vector4 pos;
+	Orbit::Color   color;
 };
 
 const Orbit::VertexLayout vertex_layout
@@ -69,19 +74,23 @@ const Orbit::VertexLayout vertex_layout
 
 const std::initializer_list< Vertex > triangle_vertices
 {
-	{ -0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f },
-	{ -0.5f,  0.5f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f, 1.0f },
-	{  0.5f, -0.5f, 0.0f, 1.0f,   0.0f, 0.0f, 0.0f, 1.0f },
-	{  0.5f,  0.5f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f, 1.0f },
+	{ Orbit::Vector4( -0.5f, -0.5f, 0.0f, 1.0f ),   Orbit::Color( 0.0f, 0.0f, 1.0f, 1.0f ) },
+	{ Orbit::Vector4( -0.5f,  0.5f, 0.0f, 1.0f ),   Orbit::Color( 1.0f, 0.0f, 0.0f, 1.0f ) },
+	{ Orbit::Vector4(  0.5f, -0.5f, 0.0f, 1.0f ),   Orbit::Color( 0.0f, 0.0f, 0.0f, 1.0f ) },
+	{ Orbit::Vector4(  0.5f,  0.5f, 0.0f, 1.0f ),   Orbit::Color( 0.0f, 1.0f, 0.0f, 1.0f ) },
 };
 
 const std::initializer_list< uint16_t > triangle_indices
 {
 	0, 1, 2,
 	3, 2, 1,
+	1, 0, 3,
+	2, 3, 0,
 };
 
-std::tuple triangle_constants = std::make_tuple( 1.0f );
+std::tuple triangle_constants = std::make_tuple( Orbit::Matrix4() );
+
+Orbit::Matrix4 projection_matrix( 0.f );
 
 SampleApp::SampleApp()
 	: m_window( 800, 600 )
@@ -111,10 +120,22 @@ SampleApp::SampleApp()
 
 void SampleApp::OnFrame()
 {
-	auto& [ diffuse ]( triangle_constants );
-
+	auto& [ mvp ] = triangle_constants;
 	m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
-	diffuse = 0.5f + ( 0.5f * sin( m_time * static_cast< float >( M_PI ) ) );
+
+	/* Calculate model-view-projection matrix */
+	{
+		using namespace Orbit::MathLiterals;
+		using namespace Orbit::UnitLiterals::Metric;
+
+		Orbit::Matrix4 view;
+		view.Translate( Orbit::Vector3( 0m, 0m, -5m ) );
+
+		Orbit::Matrix4 model;
+		model.Rotate( Orbit::Vector3( 0pi, 1pi * m_time, 0pi ) );
+
+		mvp = model * view * projection_matrix;
+	}
 
 	m_window.PollEvents();
 	m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
@@ -137,8 +158,27 @@ void SampleApp::OnWindowEvent( const Orbit::WindowEvent& e )
 	switch( e.type )
 	{
 		case Orbit::WindowEvent::Resize:
+		{
 			Orbit::LogInfo( Orbit::Format( "Resized: (%d, %d)", e.data.resize.w, e.data.resize.h ) );
+
+			/* Update projection matrix */
+			{
+				using namespace Orbit::MathLiterals;
+				constexpr float fov       = 60pi / 180.f;
+				constexpr float fov_half  = fov / 2;
+				const float     aspect    = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
+				constexpr float far_clip  = 100.f;
+				constexpr float near_clip = 0.1f;
+
+				projection_matrix( 0, 0 )  = 1.0f / ( aspect * fov_half );
+				projection_matrix( 1, 1 )  = 1.0f / fov_half;
+				projection_matrix( 2, 2 ) = far_clip / ( far_clip - near_clip );
+				projection_matrix( 2, 3 ) = -1.0f;
+				projection_matrix( 3, 2 ) = ( far_clip * near_clip ) / ( far_clip - near_clip );
+			}
+
 			break;
+		}
 
 		case Orbit::WindowEvent::Move:
 			Orbit::LogInfo( Orbit::Format( "Moved: (%d, %d)", e.data.move.x, e.data.move.y ) );

@@ -43,21 +43,20 @@ ConstantBuffer::ConstantBuffer( size_t size )
 		case( render_context_impl_index_v< _RenderContextImplOpenGL > ):
 		{
 			auto context_impl = std::get_if< _RenderContextImplOpenGL >( context_impl_ptr );
-			if( (  context_impl->embedded && context_impl->opengl_version < Version( 3 ) ) ||
-				( !context_impl->embedded && context_impl->opengl_version < Version( 3, 1 ) ) )
+
+			if( (  context_impl->embedded && context_impl->opengl_version < Version( 3 ) )||
+			    ( !context_impl->embedded && context_impl->opengl_version < Version( 3, 1 ) ) )
 			{
 				m_impl.emplace< _ConstantBufferImplOpenGL20 >();
 			}
 			else
 			{
-				m_impl.emplace< _ConstantBufferImplOpenGL31 >();
-				auto  impl      = std::addressof( m_impl.emplace< _ConstantBufferImplOpenGL31 >() );
-				auto& functions = context_impl->functions.value();
+				auto impl = std::addressof( m_impl.emplace< _ConstantBufferImplOpenGL31 >() );
 
-				functions.gen_buffers( 1, &impl->id );
-				functions.bind_buffer( OpenGL::BufferTarget::Uniform, impl->id );
-				functions.buffer_data( OpenGL::BufferTarget::Uniform, size, nullptr, OpenGL::BufferUsage::StreamDraw );
-				functions.bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
+				context_impl->functions->gen_buffers( 1, &impl->id );
+				context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl->id );
+				context_impl->functions->buffer_data( OpenGL::BufferTarget::Uniform, size, nullptr, OpenGL::BufferUsage::StreamDraw );
+				context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
 			}
 			break;
 		}
@@ -105,7 +104,7 @@ ConstantBuffer::~ConstantBuffer()
 	}
 }
 
-void ConstantBuffer::Update( size_t location, const void* data, size_t size )
+void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_t size )
 {
 	switch( m_impl.index() )
 	{
@@ -122,21 +121,38 @@ void ConstantBuffer::Update( size_t location, const void* data, size_t size )
 		}
 		case( constant_buffer_impl_index_v< _ConstantBufferImplOpenGL31 > ):
 		{
+			std::memcpy( dst, data, size );
+			break;
+		}
+	#endif
+			
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		case( constant_buffer_impl_index_v< _ConstantBufferImplD3D11 > ):
+		{
+			std::memcpy( dst, data, size );
+			break;
+		}
+	#endif
+	}
+}
+
+void* ConstantBuffer::UpdateBegin( size_t size )
+{
+	switch( m_impl.index() )
+	{
+		default: return nullptr;
+
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		case( constant_buffer_impl_index_v< _ConstantBufferImplOpenGL31 > ):
+		{
 			auto impl         = std::get_if< _ConstantBufferImplOpenGL31 >( &m_impl );
 			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
 			context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl->id );
-
-			void* dst = context_impl->functions->map_buffer_range( OpenGL::BufferTarget::Uniform, 0, size, OpenGL::MapAccess::WriteBit );
-			std::memcpy( dst, data, size );
-
-			context_impl->functions->unmap_buffer( OpenGL::BufferTarget::Uniform );
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
-
-			break;
+			return context_impl->functions->map_buffer_range( OpenGL::BufferTarget::Uniform, 0, size, OpenGL::MapAccess::WriteBit );
 		}
 	#endif
-		
+			
 	#if _ORB_HAS_GRAPHICS_API_D3D11
 		case( constant_buffer_impl_index_v< _ConstantBufferImplD3D11 > ):
 		{
@@ -145,10 +161,39 @@ void ConstantBuffer::Update( size_t location, const void* data, size_t size )
 
 			D3D11_MAPPED_SUBRESOURCE subresource;
 			if( context_impl->device_context->Map( impl->buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
-			{
-				std::memcpy( subresource.pData, data, size );
-				context_impl->device_context->Unmap( impl->buffer.get(), 0 );
-			}
+				return subresource.pData;
+
+			return nullptr;
+		}
+	#endif
+	}
+}
+
+void ConstantBuffer::UpdateEnd()
+{
+	switch( m_impl.index() )
+	{
+		default: break;
+
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		case( constant_buffer_impl_index_v< _ConstantBufferImplOpenGL31 > ):
+		{
+			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
+
+			context_impl->functions->unmap_buffer( OpenGL::BufferTarget::Uniform );
+			context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
+
+			break;
+		}
+	#endif
+
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		case( constant_buffer_impl_index_v< _ConstantBufferImplD3D11 > ):
+		{
+			auto impl         = std::get_if< _ConstantBufferImplD3D11 >( &m_impl );
+			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
+
+			context_impl->device_context->Unmap( impl->buffer.get(), 0 );
 
 			break;
 		}
@@ -174,7 +219,7 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 			break;
 		}
 	#endif
-		
+
 	#if _ORB_HAS_GRAPHICS_API_D3D11
 		case( constant_buffer_impl_index_v< _ConstantBufferImplD3D11 > ):
 		{
@@ -185,8 +230,8 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 			switch( type )
 			{
 				default: break;
-				case ShaderType::Vertex:   context_impl->device_context->VSSetConstantBuffers( slot, 1, &buffer ); break;
-				case ShaderType::Fragment: context_impl->device_context->PSSetConstantBuffers( slot, 1, &buffer ); break;
+				case ShaderType::Vertex:   { context_impl->device_context->VSSetConstantBuffers( slot, 1, &buffer ); } break;
+				case ShaderType::Fragment: { context_impl->device_context->PSSetConstantBuffers( slot, 1, &buffer ); } break;
 			}
 
 			break;

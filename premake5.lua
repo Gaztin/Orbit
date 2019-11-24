@@ -120,11 +120,12 @@ local function decl_module( name )
 	table.insert( modules, name )
 end
 
-local sample_index = 1
+local samples = { }
 local function decl_sample( name )
-	local id = string.format( '%02d', sample_index )
+	local id = string.format( '%02d', 1 + #samples )
+	local fullname = id .. '.' .. name
 	group( 'Samples' )
-	project( id .. '.' .. name )
+	project( fullname )
 	kind( 'WindowedApp' )
 	links( modules )
 	xcodebuildresources( 'assets' )
@@ -147,10 +148,11 @@ local function decl_sample( name )
 	filter { }
 
 	group()
-	sample_index = sample_index + 1
+	table.insert( samples, fullname )
 end
 
 workspace( 'Orbit' )
+	startproject( '01.Base' )
 	platforms( get_platforms() )
 	configurations { 'Debug', 'Release' }
 	gradleversion( 'com.android.tools.build:gradle:3.1.4' )
@@ -163,6 +165,8 @@ decl_module( 'Core' )
 	filter { 'system:ios' }
 		links { 'UIKit.framework', 'QuartzCore.framework' }
 	filter { }
+
+decl_module( 'Math' )
 
 decl_module( 'Graphics' )
 	filter { 'system:windows' }

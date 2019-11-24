@@ -429,6 +429,10 @@ RenderContext::RenderContext( [[ maybe_unused ]] Window& parent_window, Graphics
 			MakeCurrent();
 			impl->functions.emplace();
 
+			glEnable( GL_CULL_FACE );
+			glEnable( GL_DEPTH_TEST );
+			glCullFace( GL_BACK );
+
 			auto opengl_version = reinterpret_cast< const char* >( glGetString( GL_VERSION ) );
 			auto check_digit    = [ & ]( Version* out )
 			{

@@ -30,30 +30,33 @@ public:
 	explicit ConstantBuffer( size_t size );
 
 	template< typename... Types >
-	ConstantBuffer( const std::tuple< Types... >& )
+	ConstantBuffer( const std::tuple< Types... >& constants )
 		: ConstantBuffer( ( 0 + ... + sizeof( Types ) ) )
 	{
+		Update( constants );
 	}
 
 	~ConstantBuffer();
 
 	void Bind   ( ShaderType type, uint32_t slot );
-	void Update ( size_t location, const void* data, size_t size );
+	void Update ( void* dst, size_t location, const void* data, size_t size );
 
 	template< typename... Types >
 	void Update( const std::tuple< Types... >& constants )
 	{
-		if constexpr( sizeof...( Types ) > 0 )
-			UpdateSequencial( constants, MakeSequence< sizeof...( Types ) >() );
-		else
-			Update( 0, nullptr, 0 );
+		void* dst = UpdateBegin( ( sizeof( Types ) + ... ) );
+		UpdateSequencial( dst, constants, MakeSequence< sizeof...( Types ) >{ } );
+		UpdateEnd();
 	}
 
 private:
+	void* UpdateBegin ( size_t size );
+	void  UpdateEnd   ( void );
+
 	template< typename Tup, size_t... Is >
-	void UpdateSequencial( Tup&& tup, Sequence< Is... > )
+	void UpdateSequencial( void* dst, const Tup& tup, Sequence< Is... > )
 	{
-		[[ maybe_unused ]] auto l = { ( Update( Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
+		[[ maybe_unused ]] auto l = { ( Update( reinterpret_cast< uint8_t* >( dst ) + std::distance( &std::get< 0 >( tup ), &std::get< Is >( tup ) ), Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
 	}
 
 	ConstantBufferImpl m_impl;
