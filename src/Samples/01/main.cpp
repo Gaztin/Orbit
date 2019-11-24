@@ -135,6 +135,11 @@ void SampleApp::OnFrame()
 		model.Rotate( Orbit::Vector3( 0pi, 1pi * m_time, 0pi ) );
 
 		mvp = model * view * projection_matrix;
+
+		if( m_render_context.GetImplPtr()->index() == Orbit::unique_index_v< Orbit::_RenderContextImplD3D11, Orbit::RenderContextImpl > )
+		{
+			mvp.Transpose();
+		}
 	}
 
 	m_window.PollEvents();

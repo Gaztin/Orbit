@@ -62,6 +62,18 @@ void Matrix4::Rotate( const Vector3& r )
 	};
 }
 
+void Matrix4::Transpose()
+{
+	Matrix4 temp( *this );
+	for( size_t x = 0; x < 4; ++x )
+	{
+		for( size_t y = 0; y < 4; ++y )
+		{
+			m_elements[ y * 4 + x ] = temp.m_elements[ x * 4 + y ];
+		}
+	}
+}
+
 Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
 {
 	return ( Matrix4( *this ) *= rhs );

@@ -32,6 +32,7 @@ public:
 
 	void Translate( const Vector3& t );
 	void Rotate( const Vector3& r );
+	void Transpose();
 
 	Matrix4 operator*( const Matrix4& rhs ) const;
 	Matrix4& operator*=( const Matrix4& rhs );
