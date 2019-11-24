@@ -71,50 +71,49 @@
 #  include <android/sensor.h>
 #endif
 
-namespace Orbit
-{
-
 #define __ORB_NUM_WINDOW_APIS ( _ORB_HAS_WINDOW_API_WIN32   + _ORB_HAS_WINDOW_API_X11   + \
                                 _ORB_HAS_WINDOW_API_WAYLAND + _ORB_HAS_WINDOW_API_COCOA + \
                                 _ORB_HAS_WINDOW_API_ANDROID + _ORB_HAS_WINDOW_API_UIKIT )
+ORB_NAMESPACE_BEGIN
 
-	enum class WindowAPI
-	{
-		Null = 0,
-	#if _ORB_HAS_WINDOW_API_WIN32
-		Win32,
-	#endif
-	#if _ORB_HAS_WINDOW_API_X11
-		X11,
-	#endif
-	#if _ORB_HAS_WINDOW_API_WAYLAND
-		Wayland,
-	#endif
-	#if _ORB_HAS_WINDOW_API_COCOA
-		Cocoa,
-	#endif
-	#if _ORB_HAS_WINDOW_API_ANDROID
-		Android,
-	#endif
-	#if _ORB_HAS_WINDOW_API_UIKIT
-		UiKit,
-	#endif
-	};
-
-	constexpr WindowAPI kDefaultWindowApi =
+enum class WindowAPI
+{
+	Null = 0,
 #if _ORB_HAS_WINDOW_API_WIN32
-		WindowAPI::Win32;
-#elif _ORB_HAS_WINDOW_API_WAYLAND
-		WindowAPI::Wayland;
-#elif _ORB_HAS_WINDOW_API_X11
-		WindowAPI::X11;
-#elif _ORB_HAS_WINDOW_API_COCOA
-		WindowAPI::Cocoa;
-#elif _ORB_HAS_WINDOW_API_ANDROID
-		WindowAPI::Android;
-#elif _ORB_HAS_WINDOW_API_UIKIT
-		WindowAPI::UiKit;
-#else
-		WindowAPI::Null;
+	Win32,
 #endif
-}
+#if _ORB_HAS_WINDOW_API_X11
+	X11,
+#endif
+#if _ORB_HAS_WINDOW_API_WAYLAND
+	Wayland,
+#endif
+#if _ORB_HAS_WINDOW_API_COCOA
+	Cocoa,
+#endif
+#if _ORB_HAS_WINDOW_API_ANDROID
+	Android,
+#endif
+#if _ORB_HAS_WINDOW_API_UIKIT
+	UiKit,
+#endif
+};
+
+constexpr WindowAPI kDefaultWindowApi =
+#if _ORB_HAS_WINDOW_API_WIN32
+	WindowAPI::Win32;
+#elif _ORB_HAS_WINDOW_API_WAYLAND
+	WindowAPI::Wayland;
+#elif _ORB_HAS_WINDOW_API_X11
+	WindowAPI::X11;
+#elif _ORB_HAS_WINDOW_API_COCOA
+	WindowAPI::Cocoa;
+#elif _ORB_HAS_WINDOW_API_ANDROID
+	WindowAPI::Android;
+#elif _ORB_HAS_WINDOW_API_UIKIT
+	WindowAPI::UiKit;
+#else
+	WindowAPI::Null;
+#endif
+
+ORB_NAMESPACE_END

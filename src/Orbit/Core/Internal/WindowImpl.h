@@ -21,68 +21,68 @@
 
 #include "Orbit/Core/Internal/WindowAPI.h"
 
-namespace Orbit
+ORB_NAMESPACE_BEGIN
+
+#if _ORB_HAS_WINDOW_API_WIN32
+struct _WindowImplWin32
 {
-#if _ORB_HAS_WINDOW_API_WIN32
-	struct _WindowImplWin32
-	{
-		HWND hwnd;
-	};
+	HWND hwnd;
+};
 #endif
 #if _ORB_HAS_WINDOW_API_X11
-	struct _WindowImplX11
-	{
-		Display* display;
-		Window   window;
-	};
+struct _WindowImplX11
+{
+	Display* display;
+	Window   window;
+};
 #endif
 #if _ORB_HAS_WINDOW_API_WAYLAND
-	struct _WindowImplWayland
-	{
-		wl_surface* surface;
-	};
+struct _WindowImplWayland
+{
+	wl_surface* surface;
+};
 #endif
 #if _ORB_HAS_WINDOW_API_COCOA
-	struct _WindowImplCocoa
-	{
-		void* ns_window;
-		void* delegate;
-	};
+struct _WindowImplCocoa
+{
+	void* ns_window;
+	void* delegate;
+};
 #endif
 #if _ORB_HAS_WINDOW_API_ANDROID
-	struct _WindowImplAndroid
-	{
-		ASensorManager*    sensor_manager;
-		const ASensor*     accelerometer_sensor;
-		ASensorEventQueue* sensor_event_queue;
-	};
+struct _WindowImplAndroid
+{
+	ASensorManager*    sensor_manager;
+	const ASensor*     accelerometer_sensor;
+	ASensorEventQueue* sensor_event_queue;
+};
 #endif
 #if _ORB_HAS_WINDOW_API_UIKIT
-	struct _WindowImplUIKit
-	{
-		void* ui_window;
-	};
+struct _WindowImplUIKit
+{
+	void* ui_window;
+};
 #endif
 
-	using WindowImpl = ::std::variant< ::std::monostate
+using WindowImpl = ::std::variant< ::std::monostate
 #if _ORB_HAS_WINDOW_API_WIN32
-		, _WindowImplWin32
+	, _WindowImplWin32
 #endif
 #if _ORB_HAS_WINDOW_API_X11
-		, _WindowImplX11
+	, _WindowImplX11
 #endif
 #if _ORB_HAS_WINDOW_API_WAYLAND
-		, _WindowImplWayland
+	, _WindowImplWayland
 #endif
 #if _ORB_HAS_WINDOW_API_COCOA
-		, _WindowImplCocoa
+	, _WindowImplCocoa
 #endif
 #if _ORB_HAS_WINDOW_API_ANDROID
-		, _WindowImplAndroid
+	, _WindowImplAndroid
 #endif
 #if _ORB_HAS_WINDOW_API_UIKIT
-		, _WindowImplUIKit
+	, _WindowImplUIKit
 #endif
-	>;
+>;
 
-}
+ORB_NAMESPACE_END

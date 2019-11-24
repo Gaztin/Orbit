@@ -26,63 +26,64 @@
 
 #include "Orbit/Core.h"
 
-namespace Orbit
+ORB_NAMESPACE_BEGIN
+
+template< typename T >
+class EventDispatcher
 {
-	template< typename T >
-	class EventDispatcher
+public:
+	using Event           = T;
+	using SubscriptionPtr = std::shared_ptr< uint64_t >;
+
+	EventDispatcher() = default;
+	virtual ~EventDispatcher() = default;
+
+	template< typename Functor >
+	[[ nodiscard ]] SubscriptionPtr subscribe( Functor&& functor )
 	{
-	public:
-		using Event           = T;
-		using SubscriptionPtr = std::shared_ptr< uint64_t >;
+		static uint64_t unique_id = 0;
+		m_subscribers.push_back( Subscriber{ ++unique_id, std::forward< Functor >( functor ) } );
+		SubscriptionPtr sub( &m_subscribers.back().id, [ this ]( uint64_t* id ) { Unsubscribe( *id ); } );
+		return sub;
+	}
 
-		EventDispatcher() = default;
-		virtual ~EventDispatcher() = default;
+	void QueueEvent( const Event& e )
+	{
+		m_mutex.lock();
+		m_event_queue.push_back( e );
+		m_mutex.unlock();
+	}
 
-		template< typename Functor >
-		[[ nodiscard ]] SubscriptionPtr subscribe( Functor&& functor )
+	void SendEvents()
+	{
+		for( const Event& e : m_event_queue )
 		{
-			static uint64_t unique_id = 0;
-			m_subscribers.push_back( Subscriber{ ++unique_id, std::forward< Functor >( functor ) } );
-			SubscriptionPtr sub( &m_subscribers.back().id, [ this ]( uint64_t* id ) { Unsubscribe( *id ); } );
-			return sub;
+			for( Subscriber& sub : m_subscribers )
+				sub.functor( e );
 		}
 
-		void QueueEvent( const Event& e )
-		{
-			m_mutex.lock();
-			m_event_queue.push_back( e );
-			m_mutex.unlock();
-		}
+		m_event_queue.clear();
+	}
 
-		void SendEvents()
-		{
-			for( const Event& e : m_event_queue )
-			{
-				for( Subscriber& sub : m_subscribers )
-					sub.functor( e );
-			}
-
-			m_event_queue.clear();
-		}
-
-	private:
-		struct Subscriber
-		{
-			uint64_t id;
-			std::function< void( const Event& ) > functor;
-		};
-
-		void Unsubscribe( uint64_t id )
-		{
-			auto it = std::find_if( m_subscribers.begin(), m_subscribers.end(), [ id ]( const Subscriber& sub ) { return sub.id == id; } );
-			if( it == m_subscribers.end() )
-				return;
-
-			m_subscribers.erase( it );
-		}
-
-		std::list< Subscriber > m_subscribers;
-		std::vector< Event >    m_event_queue;
-		std::mutex              m_mutex;
+private:
+	struct Subscriber
+	{
+		uint64_t id;
+		std::function< void( const Event& ) > functor;
 	};
-}
+
+	void Unsubscribe( uint64_t id )
+	{
+		auto it = std::find_if( m_subscribers.begin(), m_subscribers.end(), [ id ]( const Subscriber& sub ) { return sub.id == id; } );
+		if( it == m_subscribers.end() )
+			return;
+
+		m_subscribers.erase( it );
+	}
+
+	std::list< Subscriber > m_subscribers;
+	std::vector< Event >    m_event_queue;
+	std::mutex              m_mutex;
+};
+
+ORB_NAMESPACE_END

@@ -20,26 +20,27 @@
 
 #include "Orbit/Core.h"
 
-namespace Orbit
-{
-	struct ORB_API_CORE WindowEvent
-	{
-		enum
-		{
-			Unknown = 0,
-			Move,
-			Resize,
-			Defocus,
-			Focus,
-			Suspend,
-			Restore,
-			Close,
-		} type;
+ORB_NAMESPACE_BEGIN
 
-		union
-		{
-			struct { int x, y; } move;
-			struct { uint32_t w, h; } resize;
-		} data;
-	};
-}
+struct ORB_API_CORE WindowEvent
+{
+	enum
+	{
+		Unknown = 0,
+		Move,
+		Resize,
+		Defocus,
+		Focus,
+		Suspend,
+		Restore,
+		Close,
+	} type;
+
+	union
+	{
+		struct { int x, y; } move;
+		struct { uint32_t w, h; } resize;
+	} data;
+};
+
+ORB_NAMESPACE_END
