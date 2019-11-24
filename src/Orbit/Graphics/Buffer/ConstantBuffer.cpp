@@ -21,7 +21,7 @@
 
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Core/Utility/Version.h"
-#include "Orbit/Graphics/RenderContext.h"
+#include "Orbit/Graphics/Device/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
 

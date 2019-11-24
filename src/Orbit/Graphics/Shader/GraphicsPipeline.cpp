@@ -21,9 +21,9 @@
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
+#include "Orbit/Graphics/Device/RenderContext.h"
 #include "Orbit/Graphics/Shader/FragmentShader.h"
 #include "Orbit/Graphics/Shader/VertexShader.h"
-#include "Orbit/Graphics/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
 

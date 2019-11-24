@@ -21,7 +21,7 @@
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Graphics/API/OpenGL/GLSL.h"
-#include "Orbit/Graphics/RenderContext.h"
+#include "Orbit/Graphics/Device/RenderContext.h"
 
 #if _ORB_HAS_GRAPHICS_API_D3D11
 #  include <d3dcompiler.h>

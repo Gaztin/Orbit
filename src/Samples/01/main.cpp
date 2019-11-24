@@ -27,10 +27,10 @@
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
+#include <Orbit/Graphics/Device/RenderContext.h>
 #include <Orbit/Graphics/Shader/FragmentShader.h>
 #include <Orbit/Graphics/Shader/GraphicsPipeline.h>
 #include <Orbit/Graphics/Shader/VertexShader.h>
-#include <Orbit/Graphics/RenderContext.h>
 
 ORB_APP_DECL( SampleApp )
 {
