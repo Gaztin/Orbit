@@ -152,7 +152,7 @@ local function decl_sample( name )
 end
 
 workspace( 'Orbit' )
-	startproject( samples[ 1 ] )
+	startproject( '01.Base' )
 	platforms( get_platforms() )
 	configurations { 'Debug', 'Release' }
 	gradleversion( 'com.android.tools.build:gradle:3.1.4' )
