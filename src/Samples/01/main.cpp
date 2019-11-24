@@ -111,10 +111,10 @@ SampleApp::SampleApp()
 
 void SampleApp::OnFrame()
 {
-	m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
-	const float diffuse = 0.5f + ( 0.5f * sin( m_time * static_cast< float >( M_PI ) ) );
+	auto& [ diffuse ]( triangle_constants );
 
-	std::get< 0 >( triangle_constants ) = diffuse;
+	m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
+	diffuse = 0.5f + ( 0.5f * sin( m_time * static_cast< float >( M_PI ) ) );
 
 	m_window.PollEvents();
 	m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
