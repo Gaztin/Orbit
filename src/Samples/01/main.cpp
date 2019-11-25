@@ -37,6 +37,8 @@
 #include <Orbit/Math/Vector3.h>
 #include <Orbit/Math/Vector4.h>
 
+constexpr Orbit::GraphicsAPI graphics_api = Orbit::GraphicsAPI::D3D11;
+
 ORB_APP_DECL( SampleApp )
 {
 public:
@@ -95,7 +97,7 @@ Orbit::Matrix4 projection_matrix( 0.f );
 SampleApp::SampleApp()
 	: m_window( 800, 600 )
 	, m_window_subscription( m_window.subscribe( &SampleApp::OnWindowEvent ) )
-	, m_render_context( m_window, Orbit::GraphicsAPI::OpenGL )
+	, m_render_context( m_window, graphics_api )
 	, m_vertex_shader( Orbit::Asset( "shader.vs" ) )
 	, m_fragment_shader( Orbit::Asset( "shader.fs" ) )
 	, m_triangle_vertex_buffer( triangle_vertices )
@@ -129,7 +131,10 @@ void SampleApp::OnFrame()
 		using namespace Orbit::UnitLiterals::Metric;
 
 		Orbit::Matrix4 view;
-		view.Translate( Orbit::Vector3( 0m, 0m, -5m ) );
+		if constexpr( graphics_api == Orbit::GraphicsAPI::OpenGL )
+			view.Translate( Orbit::Vector3( 0m, 0m, -5m ) );
+		else if constexpr( graphics_api == Orbit::GraphicsAPI::D3D11 )
+			view.Translate( Orbit::Vector3( 0m, 0m, 5m ) );
 
 		Orbit::Matrix4 model;
 		model.Rotate( Orbit::Vector3( 0pi, 1pi * m_time, 0pi ) );
@@ -164,17 +169,26 @@ void SampleApp::OnWindowEvent( const Orbit::WindowEvent& e )
 			/* Update projection matrix */
 			{
 				using namespace Orbit::MathLiterals;
-				constexpr float fov       = 60pi / 180.f;
-				constexpr float fov_half  = fov / 2;
-				const float     aspect    = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
-				constexpr float far_clip  = 100.f;
-				constexpr float near_clip = 0.1f;
+				constexpr float fov         = 60pi / 180.f;
+				constexpr float far_clip    = 100.f;
+				constexpr float near_clip   = 0.1f;
+				const float     fov_tangent = tanf( fov / 2 );
+				const float     aspect      = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
 
-				projection_matrix( 0, 0 )  = 1.0f / ( aspect * fov_half );
-				projection_matrix( 1, 1 )  = 1.0f / fov_half;
+				projection_matrix( 0, 0 ) = 1.0f / ( aspect * fov_tangent );
+				projection_matrix( 1, 1 ) = 1.0f / fov_tangent;
 				projection_matrix( 2, 2 ) = far_clip / ( far_clip - near_clip );
-				projection_matrix( 2, 3 ) = -1.0f;
-				projection_matrix( 3, 2 ) = ( far_clip * near_clip ) / ( far_clip - near_clip );
+
+				if constexpr( graphics_api == Orbit::GraphicsAPI::OpenGL )
+				{
+					projection_matrix( 3, 2 ) = -1.0f;
+					projection_matrix( 2, 3 ) = ( far_clip * near_clip ) / ( far_clip - near_clip );
+				}
+				else if constexpr( graphics_api == Orbit::GraphicsAPI::D3D11 )
+				{
+					projection_matrix( 3, 2 ) = 1.0f;
+					projection_matrix( 2, 3 ) = ( far_clip * near_clip ) / ( near_clip - far_clip );
+				}
 			}
 
 			break;
