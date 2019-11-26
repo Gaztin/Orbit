@@ -45,8 +45,11 @@ template< typename T >
 constexpr auto window_impl_index_v = unique_index_v< T, WindowImpl >;
 
 Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height, WindowAPI api )
-	: m_impl { }
-	, m_open { true }
+	: m_impl            { }
+	, m_open            { true }
+	, m_resize_dispatch { }
+	, m_move_dispatch   { }
+	, m_state_dispatch  { }
 {
 	switch( api )
 	{
