@@ -166,17 +166,13 @@ void SampleApp::OnWindowEvent( const Orbit::WindowEvent& e )
 			/* Update projection matrix */
 			{
 				using namespace Orbit::MathLiterals;
-				constexpr float fov         = 60pi / 180.f;
-				constexpr float far_clip    = 100.f;
-				constexpr float near_clip   = 0.1f;
-				const float     fov_tangent = tanf( fov / 2 );
-				const float     aspect      = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
 
-				projection_matrix( 0, 0 ) = 1.0f / ( aspect * fov_tangent );
-				projection_matrix( 1, 1 ) = 1.0f / fov_tangent;
-				projection_matrix( 3, 2 ) = 1.0f;
-				projection_matrix( 2, 2 ) = far_clip / ( far_clip - near_clip );
-				projection_matrix( 2, 3 ) = ( far_clip * near_clip ) / ( near_clip - far_clip );
+				constexpr float fov       = 60pi / 180.f;
+				constexpr float far_clip  = 100.f;
+				constexpr float near_clip = 0.1f;
+				const float     aspect    = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
+
+				projection_matrix.SetPerspective( aspect, fov, near_clip, far_clip );
 			}
 
 			break;

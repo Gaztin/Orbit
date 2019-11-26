@@ -23,10 +23,11 @@
 ORB_NAMESPACE_BEGIN
 
 Matrix4::Matrix4( float diagonal )
-	: m_elements { }
 {
-	for( size_t i = 0; i < 16; i += 5 )
-		m_elements[ i ] = diagonal;
+	for( size_t i = 0; i < 16; ++i )
+	{
+		m_elements[ i ] = ( i % 5 == 0 ) ? diagonal : 0.0f;
+	}
 }
 
 Matrix4::Matrix4( std::initializer_list< float > elements )
@@ -72,6 +73,36 @@ void Matrix4::Transpose()
 			m_elements[ y * 4 + x ] = temp.m_elements[ x * 4 + y ];
 		}
 	}
+}
+
+void Matrix4::SetIdentity()
+{
+	for( size_t i = 0; i < 16; ++i )
+	{
+		m_elements[ i ] = ( i % 5 == 0 ) ? 1.0f : 0.0f;
+	}
+}
+
+void Matrix4::SetPerspective( float aspect_ratio, float fov, float near_clip, float far_clip )
+{
+	const float fov_tangent = tanf( fov / 2 );
+
+	m_elements[ 0  ] = 1.0f / ( aspect_ratio * fov_tangent );
+	m_elements[ 1  ] = 0.0f;
+	m_elements[ 2  ] = 0.0f;
+	m_elements[ 3  ] = 0.0f;
+	m_elements[ 4  ] = 0.0f;
+	m_elements[ 5  ] = 1.0f / fov_tangent;
+	m_elements[ 6  ] = 0.0f;
+	m_elements[ 7  ] = 0.0f;
+	m_elements[ 8  ] = 0.0f;
+	m_elements[ 9  ] = 0.0f;
+	m_elements[ 10 ] = far_clip / ( far_clip - near_clip );
+	m_elements[ 11 ] = 1.0f;
+	m_elements[ 12 ] = 0.0f;
+	m_elements[ 13 ] = 0.0f;
+	m_elements[ 14 ] = ( far_clip * near_clip ) / ( near_clip - far_clip );
+	m_elements[ 15 ] = 0.0f;
 }
 
 Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
