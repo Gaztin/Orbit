@@ -49,7 +49,14 @@ public:
 
 		m_subscribers.push_back( Subscriber{ ++unique_id, std::forward< Functor >( functor ) } );
 
-		return EventSubscription( m_subscribers.back().id, [ this ]( uint64_t id ) { Unsubscribe( id ); } );
+		EventSubscription::Deleter deleter;
+		deleter.dispatcher_ptr = this;
+		deleter.functor        = []( void* self, uint64_t id )
+		{
+			reinterpret_cast< EventDispatcher< T >* >( self )->Unsubscribe( id );
+		};
+
+		return EventSubscription( m_subscribers.back().id, deleter );
 	}
 
 	void QueueEvent( const T& e )

@@ -26,8 +26,11 @@ ORB_NAMESPACE_BEGIN
 class ORB_API_CORE EventSubscription
 {
 public:
-
-	using Deleter = std::function< void( uint64_t ) >;
+	struct Deleter
+	{
+		void* dispatcher_ptr;
+		void( *functor )( void* caller, uint64_t id );
+	};
 
 	EventSubscription();
 	EventSubscription( uint64_t id, Deleter deleter );
