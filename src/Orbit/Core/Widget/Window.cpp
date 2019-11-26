@@ -68,33 +68,73 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 					switch( msg )
 					{
 						case WM_MOVE:
-							w->QueueEvent( { WindowEvent::Move, { LOWORD( lparam ), HIWORD( lparam ) } } );
+						{
+							MoveEvent e;
+							e.x = LOWORD( lparam );
+							e.y = HIWORD( lparam );
+
+							w->m_move_dispatch.QueueEvent( e );
+
 							break;
+						}
 
 						case WM_SIZE:
-							w->QueueEvent( { WindowEvent::Resize, { LOWORD( lparam ), HIWORD( lparam ) } } );
+						{
+							ResizeEvent e;
+							e.width  = LOWORD( lparam );
+							e.height = HIWORD( lparam );
+
+							w->m_resize_dispatch.QueueEvent( e );
+
 							break;
+						}
 
 						case WM_ACTIVATE:
-							if( HIWORD( wparam ) != 0 )
-								w->QueueEvent( { ( LOWORD( wparam ) == WA_INACTIVE ) ? WindowEvent::Suspend : WindowEvent::Restore } );
+						{
+							WORD minimized_state = HIWORD( wparam );
+							WORD activated       = LOWORD( wparam );
+
+							if( minimized_state != 0 )
+							{
+								StateChangedEvent< State > e;
+								e.value = ( activated == WA_INACTIVE ) ? State::Suspend : State::Restore;
+
+								w->m_state_dispatch.QueueEvent( e );
+							}
+
 							break;
+						}
 
 						case WM_SETFOCUS:
-							w->QueueEvent( { WindowEvent::Focus } );
+						{
+							StateChangedEvent< State > e;
+							e.value = State::Focus;
+
+							w->m_state_dispatch.QueueEvent( e );
+
 							break;
+						}
 
 						case WM_KILLFOCUS:
-							w->QueueEvent( { WindowEvent::Defocus } );
+						{
+							StateChangedEvent< State > e;
+							e.value = State::Defocus;
+
+							w->m_state_dispatch.QueueEvent( e );
+
 							break;
+						}
 
 						case WM_CLOSE:
-							w->Close();
-							w->QueueEvent( { WindowEvent::Close } );
-							break;
+						{
+							StateChangedEvent< State > e;
+							e.value = State::Close;
 
-						default:
+							w->m_state_dispatch.QueueEvent( e );
+							w->Close();
+
 							break;
+						}
 					}
 
 					return DefWindowProcA( hwnd, msg, wparam, lparam );
@@ -516,7 +556,9 @@ void Window::PollEvents()
 	#endif
 	}
 
-	SendEvents();
+	m_resize_dispatch.Update();
+	m_move_dispatch.Update();
+	m_state_dispatch.Update();
 }
 
 void Window::SetTitle( [[ maybe_unused ]] std::string_view title )

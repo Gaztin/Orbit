@@ -681,10 +681,9 @@ RenderContext::RenderContext( [[ maybe_unused ]] Window& parent_window, Graphics
 	}
 
 	// Resize context when window is updated
-	m_resize_subscription = parent_window.subscribe( [ this ]( const WindowEvent& e )
+	m_resize_subscription = parent_window.SubscribeToResize( [ this ]( const ResizeEvent& e )
 		{
-			if( e.type == WindowEvent::Resize )
-				Resize( e.data.resize.w, e.data.resize.h );
+			Resize( e.width, e.height );
 		}
 	);
 

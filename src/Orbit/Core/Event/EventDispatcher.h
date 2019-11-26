@@ -24,42 +24,47 @@
 #include <utility>
 #include <vector>
 
-#include "Orbit/Core/Core.h"
+#include "Orbit/Core/Event/EventSubscription.h"
 
 ORB_NAMESPACE_BEGIN
+
+#define ORB_IMPL_SUBSCRIBE_FUNCTION( FuncName, VarName )                \
+	template< typename Functor >                                        \
+	EventSubscription FuncName( Functor&& functor )                     \
+	{                                                                   \
+		return VarName.Subscribe( std::forward< Functor >( functor ) ); \
+	}
 
 template< typename T >
 class EventDispatcher
 {
 public:
-	using Event           = T;
-	using SubscriptionPtr = std::shared_ptr< uint64_t >;
-
 	EventDispatcher() = default;
-	virtual ~EventDispatcher() = default;
+	~EventDispatcher() = default;
 
 	template< typename Functor >
-	[[ nodiscard ]] SubscriptionPtr subscribe( Functor&& functor )
+	[[ nodiscard ]] EventSubscription Subscribe( Functor&& functor )
 	{
 		static uint64_t unique_id = 0;
+
 		m_subscribers.push_back( Subscriber{ ++unique_id, std::forward< Functor >( functor ) } );
-		SubscriptionPtr sub( &m_subscribers.back().id, [ this ]( uint64_t* id ) { Unsubscribe( *id ); } );
-		return sub;
+
+		return EventSubscription( &m_subscribers.back().id, [ this ]( uint64_t* id ) { Unsubscribe( *id ); } );
 	}
 
-	void QueueEvent( const Event& e )
+	void QueueEvent( const T& e )
 	{
 		m_mutex.lock();
 		m_event_queue.push_back( e );
 		m_mutex.unlock();
 	}
 
-	void SendEvents()
+	void Update()
 	{
-		for( const Event& e : m_event_queue )
+		for( const T& e : m_event_queue )
 		{
 			for( Subscriber& sub : m_subscribers )
-				sub.functor( e );
+				sub.function( e );
 		}
 
 		m_event_queue.clear();
@@ -69,7 +74,7 @@ private:
 	struct Subscriber
 	{
 		uint64_t id;
-		std::function< void( const Event& ) > functor;
+		std::function< void( const T& ) > function;
 	};
 
 	void Unsubscribe( uint64_t id )
@@ -82,7 +87,7 @@ private:
 	}
 
 	std::list< Subscriber > m_subscribers;
-	std::vector< Event >    m_event_queue;
+	std::vector< T >        m_event_queue;
 	std::mutex              m_mutex;
 };
 
