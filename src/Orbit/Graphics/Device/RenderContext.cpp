@@ -664,6 +664,7 @@ RenderContext::RenderContext( [[ maybe_unused ]] Window& parent_window, Graphics
 				desc.DepthClipEnable       = true;
 				desc.FillMode              = D3D11_FILL_SOLID;
 				desc.FrontCounterClockwise = false;
+				desc.ScissorEnable         = true;
 
 				ID3D11RasterizerState* rasterizer_state;
 				impl->device->CreateRasterizerState( &desc, &rasterizer_state );

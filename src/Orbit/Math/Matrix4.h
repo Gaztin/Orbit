@@ -33,6 +33,8 @@ public:
 	void Translate( const Vector3& t );
 	void Rotate( const Vector3& r );
 	void Transpose();
+	void SetIdentity();
+	void SetPerspective( float aspect_ratio, float fov, float near_clip, float far_clip );
 
 	Matrix4 operator*( const Matrix4& rhs ) const;
 	Matrix4& operator*=( const Matrix4& rhs );
