@@ -175,17 +175,8 @@ void SampleApp::OnWindowEvent( const Orbit::WindowEvent& e )
 				projection_matrix( 0, 0 ) = 1.0f / ( aspect * fov_tangent );
 				projection_matrix( 1, 1 ) = 1.0f / fov_tangent;
 				projection_matrix( 3, 2 ) = 1.0f;
-
-				if constexpr( graphics_api == Orbit::GraphicsAPI::OpenGL )
-				{
-					projection_matrix( 2, 2 ) = far_clip / ( near_clip - far_clip);
-					projection_matrix( 2, 3 ) = ( far_clip * near_clip ) / ( far_clip - near_clip );
-				}
-				else if constexpr( graphics_api == Orbit::GraphicsAPI::D3D11 )
-				{
-					projection_matrix( 2, 2 ) = far_clip / ( far_clip - near_clip );
-					projection_matrix( 2, 3 ) = ( far_clip * near_clip ) / ( near_clip - far_clip );
-				}
+				projection_matrix( 2, 2 ) = far_clip / ( far_clip - near_clip );
+				projection_matrix( 2, 3 ) = ( far_clip * near_clip ) / ( near_clip - far_clip );
 			}
 
 			break;
