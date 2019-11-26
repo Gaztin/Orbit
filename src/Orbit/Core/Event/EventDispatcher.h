@@ -45,11 +45,11 @@ public:
 	template< typename Functor >
 	[[ nodiscard ]] EventSubscription Subscribe( Functor&& functor )
 	{
-		static uint64_t unique_id = 0;
+		static std::atomic_uint64_t unique_id = 0;
 
 		m_subscribers.push_back( Subscriber{ ++unique_id, std::forward< Functor >( functor ) } );
 
-		return EventSubscription( &m_subscribers.back().id, [ this ]( uint64_t* id ) { Unsubscribe( *id ); } );
+		return EventSubscription( m_subscribers.back().id, [ this ]( uint64_t id ) { Unsubscribe( id ); } );
 	}
 
 	void QueueEvent( const T& e )
