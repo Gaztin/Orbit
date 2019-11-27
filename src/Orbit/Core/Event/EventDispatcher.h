@@ -60,7 +60,7 @@ public:
 		deleter.functor   = []( uint64_t id, void* user_data )
 		{
 			EventDispatcher* self = reinterpret_cast< EventDispatcher* >( user_data );
-			self->Unsubscribe( id );
+			self->Unsubscribe< T >( id );
 		};
 
 		return EventSubscription( sub.id, deleter );
@@ -86,15 +86,12 @@ private:
 		return ++counter;
 	}
 
+	template< typename T >
 	void Unsubscribe( uint64_t id )
 	{
-		( UnsubscribeQueue< Types >( std::get< Queue< Types > >( m_queues ), id ), ... );
-	}
+		Queue< T >& queue = std::get< Queue< T > >( m_queues );
 
-	template< typename T >
-	void UnsubscribeQueue( Queue< T >& queue, uint64_t id )
-	{
-		for( auto it = queue.subscribers.begin(); it != queue.subscribers.end(); )
+		for( auto it = queue.subscribers.begin(); it != queue.subscribers.end(); ++it )
 		{
 			if( it->id == id )
 			{
