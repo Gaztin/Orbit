@@ -19,49 +19,41 @@
 #include <string_view>
 
 #include "Orbit/Core/Impl/WindowImpl.h"
-#include "Orbit/Core/Utility/EventDispatcher.h"
+#include "Orbit/Core/Event/CommonEvents.h"
+#include "Orbit/Core/Event/EventDispatcher.h"
 
 ORB_NAMESPACE_BEGIN
 
-struct ORB_API_CORE WindowEvent
+enum class WindowState
 {
-	enum Type
-	{
-		Unknown = 0,
-		Move,
-		Resize,
-		Defocus,
-		Focus,
-		Suspend,
-		Restore,
-		Close,
-	};
-
-	union Data
-	{
-		struct Move
-		{
-			int x;
-			int y;
-		};
-
-		struct Resize
-		{
-			uint32_t w;
-			uint32_t h;
-		};
-
-		Move move;
-		Resize resize;
-	};
-
-	Type type;
-	Data data;
+	Focus,
+	Defocus,
+	Suspend,
+	Restore,
+	Close,
 };
 
-class ORB_API_CORE Window : public EventDispatcher< WindowEvent >
+struct ORB_API_CORE WindowResized
+{
+	uint32_t width;
+	uint32_t height;
+};
+
+struct ORB_API_CORE WindowMoved
+{
+	int x;
+	int y;
+};
+
+struct ORB_API_CORE WindowStateChanged
+{
+	WindowState state;
+};
+
+class ORB_API_CORE Window : public EventDispatcher< WindowResized, WindowMoved, WindowStateChanged >
 {
 public:
+
 	Window( uint32_t width, uint32_t height, WindowAPI api = kDefaultWindowApi );
 	~Window();
 

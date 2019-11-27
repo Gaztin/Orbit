@@ -25,8 +25,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-std::shared_ptr< void >( *_application_initializer )() = nullptr;
-std::shared_ptr< ApplicationBase > _application_instance;
+ApplicationBase*( *_application_initializer )() = nullptr;
 
 void ApplicationBase::RunInstance()
 {
@@ -39,16 +38,18 @@ void ApplicationBase::RunInstance()
 
 #else
 
-	if( _application_instance || !_application_initializer )
+	if( !_application_initializer )
 		return;
 
 	/* Initialize application instance */
-	_application_instance = std::static_pointer_cast< ApplicationBase >( _application_initializer() );
+	ApplicationBase* instance = _application_initializer();
 
-	while( _application_instance->IsRunning() )
+	while( instance->IsRunning() )
 	{
-		_application_instance->OnFrame();
+		instance->OnFrame();
 	}
+
+	delete instance;
 
 #endif
 }

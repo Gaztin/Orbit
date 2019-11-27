@@ -40,17 +40,18 @@ public:
 	static void RunInstance();
 };
 
-extern ORB_API_CORE std::shared_ptr< void >( *_application_initializer )();
-extern ORB_API_CORE std::shared_ptr< ApplicationBase > _application_instance;
+extern ORB_API_CORE ApplicationBase*( *_application_initializer )();
 
 template< typename Derived >
 class Application : private ApplicationBase
 {
 public:
+	virtual ~Application() = default;
+
 	static volatile int _initializer_eval;
 };
 
 template< typename Derived >
-volatile int Application< Derived >::_initializer_eval = [] { _application_initializer = [] { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }; return 1; }();
+volatile int Application< Derived >::_initializer_eval = ( _application_initializer = []() -> ApplicationBase* { return new Derived(); }, 1 );
 
 ORB_NAMESPACE_END

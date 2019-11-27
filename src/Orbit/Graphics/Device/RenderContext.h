@@ -38,8 +38,8 @@ public:
 	static RenderContext* GetCurrent();
 
 private:
-	RenderContextImpl       m_impl;
-	Window::SubscriptionPtr m_resize_subscription;
+	RenderContextImpl m_impl;
+	EventSubscription m_resize_subscription;
 
 };
 

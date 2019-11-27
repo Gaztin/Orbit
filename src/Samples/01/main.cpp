@@ -47,11 +47,15 @@ public:
 	void OnFrame() override;
 	bool IsRunning() override { return !!m_window; }
 
-	static void OnWindowEvent( const Orbit::WindowEvent& e );
+	static void OnWindowResize( const Orbit::WindowResized& e );
+	static void OnWindowMove( const Orbit::WindowMoved& e );
+	static void OnWindowStateChanged( const Orbit::WindowStateChanged& e );
 
 private:
 	Orbit::Window                  m_window;
-	Orbit::Window::SubscriptionPtr m_window_subscription;
+	Orbit::EventSubscription       m_resize_subscription;
+	Orbit::EventSubscription       m_move_subscription;
+	Orbit::EventSubscription       m_state_changed_subscription;
 	Orbit::RenderContext           m_render_context;
 	Orbit::VertexShader            m_vertex_shader;
 	Orbit::FragmentShader          m_fragment_shader;
@@ -96,7 +100,9 @@ Orbit::Matrix4 projection_matrix( 0.f );
 
 SampleApp::SampleApp()
 	: m_window( 800, 600 )
-	, m_window_subscription( m_window.subscribe( &SampleApp::OnWindowEvent ) )
+	, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
+	, m_move_subscription( m_window.Subscribe( OnWindowMove ) )
+	, m_state_changed_subscription( m_window.Subscribe( OnWindowStateChanged ) )
 	, m_render_context( m_window, graphics_api )
 	, m_vertex_shader( Orbit::Asset( "shader.vs" ) )
 	, m_fragment_shader( Orbit::Asset( "shader.fs" ) )
@@ -155,54 +161,37 @@ void SampleApp::OnFrame()
 	m_render_context.SwapBuffers();
 }
 
-void SampleApp::OnWindowEvent( const Orbit::WindowEvent& e )
+void SampleApp::OnWindowResize( const Orbit::WindowResized& e )
 {
-	switch( e.type )
+	Orbit::LogInfo( Orbit::Format( "Resized: (%ud, %ud)", e.width, e.height ) );
+
+	/* Update projection matrix */
 	{
-		case Orbit::WindowEvent::Resize:
-		{
-			Orbit::LogInfo( Orbit::Format( "Resized: (%d, %d)", e.data.resize.w, e.data.resize.h ) );
+		using namespace Orbit::MathLiterals;
 
-			/* Update projection matrix */
-			{
-				using namespace Orbit::MathLiterals;
+		constexpr float fov       = 60pi / 180.f;
+		constexpr float far_clip  = 100.f;
+		constexpr float near_clip = 0.1f;
+		const float     aspect    = static_cast< float >( e.width ) / e.height;
 
-				constexpr float fov       = 60pi / 180.f;
-				constexpr float far_clip  = 100.f;
-				constexpr float near_clip = 0.1f;
-				const float     aspect    = static_cast< float >( e.data.resize.w ) / e.data.resize.h;
+		projection_matrix.SetPerspective( aspect, fov, near_clip, far_clip );
+	}
+}
 
-				projection_matrix.SetPerspective( aspect, fov, near_clip, far_clip );
-			}
+void SampleApp::OnWindowMove( const Orbit::WindowMoved& e )
+{
+	Orbit::LogInfo( Orbit::Format( "Moved: (%d, %d)", e.x, e.y ) );
+}
 
-			break;
-		}
-
-		case Orbit::WindowEvent::Move:
-			Orbit::LogInfo( Orbit::Format( "Moved: (%d, %d)", e.data.move.x, e.data.move.y ) );
-			break;
-
-		case Orbit::WindowEvent::Defocus:
-			Orbit::LogInfo( "Defocus" );
-			break;
-
-		case Orbit::WindowEvent::Focus:
-			Orbit::LogInfo( "Focus" );
-			break;
-
-		case Orbit::WindowEvent::Suspend:
-			Orbit::LogInfo( "Suspend" );
-			break;
-
-		case Orbit::WindowEvent::Restore:
-			Orbit::LogInfo( "Restore" );
-			break;
-
-		case Orbit::WindowEvent::Close:
-			Orbit::LogInfo( "Close" );
-			break;
-
-		default:
-			break;
+void SampleApp::OnWindowStateChanged( const Orbit::WindowStateChanged& e )
+{
+	switch( e.state )
+	{
+		default: break;
+		case Orbit::WindowState::Focus:   { Orbit::LogInfo( "Focus" );   } break;
+		case Orbit::WindowState::Defocus: { Orbit::LogInfo( "Defocus" ); } break;
+		case Orbit::WindowState::Suspend: { Orbit::LogInfo( "Suspend" ); } break;
+		case Orbit::WindowState::Restore: { Orbit::LogInfo( "Restore" ); } break;
+		case Orbit::WindowState::Close:   { Orbit::LogInfo( "Close" );   } break;
 	}
 }

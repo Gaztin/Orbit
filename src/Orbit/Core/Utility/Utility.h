@@ -70,6 +70,23 @@ struct UniqueIndex< T, std::variant< Ts... > > : std::integral_constant< size_t,
 template< typename T, typename... Ts >
 constexpr auto unique_index_v = UniqueIndex< T, Ts... >::value;
 
+/* Function argument type deduction by courtesy of https://stackoverflow.com/a/35348334 */
+
+template< typename Ret, typename Arg, typename... Rest >
+constexpr Arg first_argument_helper( Ret( * )( Arg, Rest... ) );
+
+template< typename Ret, typename F, typename Arg, typename... Rest >
+constexpr Arg first_argument_helper( Ret( F::* )( Arg, Rest... ) );
+
+template< typename Ret, typename F, typename Arg, typename... Rest >
+constexpr Arg first_argument_helper( Ret( F::* )( Arg, Rest... ) const );
+
+template< typename F >
+constexpr decltype( first_argument_helper( &F::operator() ) ) first_argument_helper( F );
+
+template< typename T >
+using FirstArgument = decltype( first_argument_helper( std::declval< T >() ) );
+
 template< typename... Args >
 std::string Format( const char* fmt, Args... args )
 {

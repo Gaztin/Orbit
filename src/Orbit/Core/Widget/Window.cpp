@@ -68,33 +68,73 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 					switch( msg )
 					{
 						case WM_MOVE:
-							w->QueueEvent( { WindowEvent::Move, { LOWORD( lparam ), HIWORD( lparam ) } } );
+						{
+							WindowMoved e;
+							e.x = LOWORD( lparam );
+							e.y = HIWORD( lparam );
+
+							w->QueueEvent( e );
+
 							break;
+						}
 
 						case WM_SIZE:
-							w->QueueEvent( { WindowEvent::Resize, { LOWORD( lparam ), HIWORD( lparam ) } } );
+						{
+							WindowResized e;
+							e.width  = LOWORD( lparam );
+							e.height = HIWORD( lparam );
+
+							w->QueueEvent( e );
+
 							break;
+						}
 
 						case WM_ACTIVATE:
-							if( HIWORD( wparam ) != 0 )
-								w->QueueEvent( { ( LOWORD( wparam ) == WA_INACTIVE ) ? WindowEvent::Suspend : WindowEvent::Restore } );
+						{
+							WORD minimized_state = HIWORD( wparam );
+							WORD activated       = LOWORD( wparam );
+
+							if( minimized_state != 0 )
+							{
+								WindowStateChanged e;
+								e.state = ( activated == WA_INACTIVE ) ? WindowState::Suspend : WindowState::Restore;
+
+								w->QueueEvent( e );
+							}
+
 							break;
+						}
 
 						case WM_SETFOCUS:
-							w->QueueEvent( { WindowEvent::Focus } );
+						{
+							WindowStateChanged e;
+							e.state = WindowState::Focus;
+
+							w->QueueEvent( e );
+
 							break;
+						}
 
 						case WM_KILLFOCUS:
-							w->QueueEvent( { WindowEvent::Defocus } );
+						{
+							WindowStateChanged e;
+							e.state = WindowState::Defocus;
+
+							w->QueueEvent( e );
+
 							break;
+						}
 
 						case WM_CLOSE:
-							w->Close();
-							w->QueueEvent( { WindowEvent::Close } );
-							break;
+						{
+							WindowStateChanged e;
+							e.state = WindowState::Close;
 
-						default:
+							w->QueueEvent( e );
+							w->Close();
+
 							break;
+						}
 					}
 
 					return DefWindowProcA( hwnd, msg, wparam, lparam );
@@ -516,6 +556,7 @@ void Window::PollEvents()
 	#endif
 	}
 
+	/* Send events */
 	SendEvents();
 }
 
