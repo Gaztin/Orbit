@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "Orbit/Core/Event/EventSubscription.h"
+#include "Orbit/Core/Utility/Utility.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -48,11 +49,13 @@ public:
 	EventDispatcher() = default;
 	virtual ~EventDispatcher() = default;
 
-	template< typename T, typename Functor >
+	template< typename Functor >
 	[[ nodiscard ]] EventSubscription Subscribe( Functor&& functor )
 	{
-		Queue< T >& queue = std::get< Queue< T > >( m_queues );
-		Subscriber< T > sub { GenerateUniqueID(), std::forward< Functor >( functor ) };
+		using Arg = std::remove_const_t< std::remove_reference_t< FirstArgument< Functor > > >;
+
+		Queue< Arg >& queue = std::get< Queue< Arg > >( m_queues );
+		Subscriber< Arg > sub { GenerateUniqueID(), std::forward< Functor >( functor ) };
 		queue.subscribers.push_back( sub );
 
 		EventSubscription::Deleter deleter;
@@ -60,7 +63,7 @@ public:
 		deleter.functor   = []( uint64_t id, void* user_data )
 		{
 			EventDispatcher* self = reinterpret_cast< EventDispatcher* >( user_data );
-			self->Unsubscribe< T >( id );
+			self->Unsubscribe< Arg >( id );
 		};
 
 		return EventSubscription( sub.id, deleter );

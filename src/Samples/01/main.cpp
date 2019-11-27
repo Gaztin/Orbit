@@ -100,9 +100,9 @@ Orbit::Matrix4 projection_matrix( 0.f );
 
 SampleApp::SampleApp()
 	: m_window( 800, 600 )
-	, m_resize_subscription( m_window.Subscribe< Orbit::ResizeEvent >( OnWindowResize ) )
-	, m_move_subscription( m_window.Subscribe< Orbit::MoveEvent >( OnWindowMove ) )
-	, m_state_changed_subscription( m_window.Subscribe< Orbit::StateChangedEvent< Orbit::WindowState > >( OnWindowStateChanged ) )
+	, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
+	, m_move_subscription( m_window.Subscribe( OnWindowMove ) )
+	, m_state_changed_subscription( m_window.Subscribe( OnWindowStateChanged ) )
 	, m_render_context( m_window, graphics_api )
 	, m_vertex_shader( Orbit::Asset( "shader.vs" ) )
 	, m_fragment_shader( Orbit::Asset( "shader.fs" ) )
