@@ -19,7 +19,6 @@
 #include <string_view>
 
 #include "Orbit/Core/Impl/WindowImpl.h"
-#include "Orbit/Core/Event/CommonEvents.h"
 #include "Orbit/Core/Event/EventDispatcher.h"
 
 ORB_NAMESPACE_BEGIN
