@@ -28,11 +28,11 @@ class HashView
 public:
 
 	constexpr HashView()
-		: m_value{ }
+		: m_value { }
 	{ }
 
 	constexpr HashView( std::string_view str )
-		: m_value( Hash( str ) )
+		: m_value { Hash( str ) }
 	{ }
 
 	constexpr ValueType GetValue() const { return m_value; }
