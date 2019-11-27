@@ -115,7 +115,7 @@ private:
 	}
 
 	template< typename T >
-	void SendEventsInQueue( Queue< T >& queue )
+	void SendEventsInQueue( Queue< T >& queue ) const
 	{
 		std::scoped_lock lock( queue.mutex );
 
