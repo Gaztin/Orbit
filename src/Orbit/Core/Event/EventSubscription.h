@@ -28,8 +28,8 @@ class ORB_API_CORE EventSubscription
 public:
 	struct Deleter
 	{
-		void* dispatcher_ptr;
-		void( *functor )( void* caller, uint64_t id );
+		void* user_data;
+		void( *functor )( uint64_t id, void* user_data );
 	};
 
 	EventSubscription();

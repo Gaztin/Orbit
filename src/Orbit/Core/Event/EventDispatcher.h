@@ -50,10 +50,11 @@ public:
 		m_subscribers.push_back( Subscriber{ ++unique_id, std::forward< Functor >( functor ) } );
 
 		EventSubscription::Deleter deleter;
-		deleter.dispatcher_ptr = this;
-		deleter.functor        = []( void* self, uint64_t id )
+		deleter.user_data = this;
+		deleter.functor   = []( uint64_t id, void* user_data )
 		{
-			reinterpret_cast< EventDispatcher< T >* >( self )->Unsubscribe( id );
+			EventDispatcher* self = reinterpret_cast< EventDispatcher* >( user_data );
+			self->Unsubscribe( id );
 		};
 
 		return EventSubscription( m_subscribers.back().id, deleter );

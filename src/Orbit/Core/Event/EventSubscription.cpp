@@ -50,10 +50,10 @@ EventSubscription::EventSubscription( EventSubscription&& other )
 	, m_deleter       { other.m_deleter }
 	, m_control_block { other.m_control_block }
 {
-	other.m_id                     = 0;
-	other.m_deleter.dispatcher_ptr = nullptr;
-	other.m_deleter.functor        = nullptr;
-	other.m_control_block          = nullptr;
+	other.m_id                = 0;
+	other.m_deleter.user_data = nullptr;
+	other.m_deleter.functor   = nullptr;
+	other.m_control_block     = nullptr;
 }
 
 EventSubscription::~EventSubscription()
@@ -62,7 +62,7 @@ EventSubscription::~EventSubscription()
 	{
 		if( --m_control_block->m_ref_count == 0 )
 		{
-			m_deleter.functor( m_deleter.dispatcher_ptr, m_id );
+			m_deleter.functor( m_id, m_deleter.user_data );
 
 			delete m_control_block;
 		}
@@ -89,10 +89,10 @@ EventSubscription& EventSubscription::operator=( EventSubscription&& other )
 	m_deleter       = other.m_deleter;
 	m_control_block = other.m_control_block;
 
-	other.m_id                     = 0;
-	other.m_deleter.dispatcher_ptr = nullptr;
-	other.m_deleter.functor        = nullptr;
-	other.m_control_block          = nullptr;
+	other.m_id                = 0;
+	other.m_deleter.user_data = nullptr;
+	other.m_deleter.functor   = nullptr;
+	other.m_control_block     = nullptr;
 
 	return *this;
 }
