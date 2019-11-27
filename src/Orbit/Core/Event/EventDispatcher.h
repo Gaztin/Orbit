@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <functional>
 #include <list>
+#include <mutex>
 #include <tuple>
 #include <vector>
 
@@ -42,6 +43,7 @@ public:
 	template< typename T >
 	struct Queue
 	{
+		std::mutex mutex;
 		std::vector< T > events;
 		std::list< Subscriber< T > > subscribers;
 	};
@@ -54,9 +56,14 @@ public:
 	{
 		using Arg = std::remove_const_t< std::remove_reference_t< FirstArgument< Functor > > >;
 
-		Queue< Arg >& queue = std::get< Queue< Arg > >( m_queues );
-		Subscriber< Arg > sub { GenerateUniqueID(), std::forward< Functor >( functor ) };
-		queue.subscribers.push_back( sub );
+		const uint64_t unique_id = GenerateUniqueID();
+
+		{
+			Queue< Arg >&     queue      = std::get< Queue< Arg > >( m_queues );
+			Subscriber< Arg > subscriber = { unique_id, std::forward< Functor >( functor ) };
+			std::scoped_lock  lock       = std::scoped_lock( queue.mutex );
+			queue.subscribers.push_back( subscriber );
+		}
 
 		EventSubscription::Deleter deleter;
 		deleter.user_data = this;
@@ -66,24 +73,26 @@ public:
 			self->Unsubscribe< Arg >( id );
 		};
 
-		return EventSubscription( sub.id, deleter );
+		return EventSubscription( unique_id, deleter );
 	}
 
 	template< typename T >
 	void QueueEvent( const T& e )
 	{
-		Queue< T >& queue = std::get< Queue< T > >( m_queues );
+		Queue< T >&      queue = std::get< Queue< T > >( m_queues );
+		std::scoped_lock lock  = std::scoped_lock( queue.mutex );
+
 		queue.events.push_back( e );
 	}
 
 	void SendEvents()
 	{
-		( UpdateQueue( std::get< Queue< Types > >( m_queues ) ), ... );
+		( SendEventsInQueue( std::get< Queue< Types > >( m_queues ) ), ... );
 	}
 
 private:
 
-	uint64_t GenerateUniqueID()
+	uint64_t GenerateUniqueID() const
 	{
 		static std::atomic_uint64_t counter = 0;
 		return ++counter;
@@ -92,7 +101,8 @@ private:
 	template< typename T >
 	void Unsubscribe( uint64_t id )
 	{
-		Queue< T >& queue = std::get< Queue< T > >( m_queues );
+		Queue< T >&      queue = std::get< Queue< T > >( m_queues );
+		std::scoped_lock lock  = std::scoped_lock( queue.mutex );
 
 		for( auto it = queue.subscribers.begin(); it != queue.subscribers.end(); ++it )
 		{
@@ -105,8 +115,10 @@ private:
 	}
 
 	template< typename T >
-	void UpdateQueue( Queue< T >& queue )
+	void SendEventsInQueue( Queue< T >& queue )
 	{
+		std::scoped_lock lock( queue.mutex );
+
 		for( const T& e : queue.events )
 		{
 			for( Subscriber< T >& sub : queue.subscribers )
