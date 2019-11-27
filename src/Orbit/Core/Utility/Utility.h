@@ -87,6 +87,29 @@ constexpr decltype( first_argument_helper( &F::operator() ) ) first_argument_hel
 template< typename T >
 using FirstArgument = decltype( first_argument_helper( std::declval< T >() ) );
 
+/* FNV constants (reference: https://tools.ietf.org/html/draft-eastlake-fnv-17) */
+
+template< uint32_t HashSize >
+struct HashTraitsFNV;
+
+template<>
+struct HashTraitsFNV< 4 >
+{
+	using ValueType = uint32_t;
+
+	static constexpr ValueType prime        =   16777619u;
+	static constexpr ValueType offset_basis = 2166136261u;
+};
+
+template<>
+struct HashTraitsFNV< 8 >
+{
+	using ValueType = uint64_t;
+
+	static constexpr ValueType prime        =        1099511628211ull;
+	static constexpr ValueType offset_basis = 14695981039346656037ull;
+};
+
 template< typename... Args >
 std::string Format( const char* fmt, Args... args )
 {

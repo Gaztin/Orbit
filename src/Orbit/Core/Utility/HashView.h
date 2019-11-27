@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/HashTraits.h"
+#include "Orbit/Core/Utility/Utility.h"
 
 #include <functional>
 #include <string_view>
@@ -43,9 +43,9 @@ private:
 	/* FNV-1a hash function as per http://isthe.com/chongo/tech/comp/fnv/ */
 	constexpr ValueType Hash( std::string_view str ) const
 	{
-		using HashTraits = HashTraitsFNA< sizeof( ValueType ) >;
+		using HashTraits = HashTraitsFNV< sizeof( ValueType ) >;
 
-		ValueType val = HashTraits::offset_bias;
+		ValueType val = HashTraits::offset_basis;
 
 		for( size_t i = 0; i < str.length(); ++i )
 		{
