@@ -47,9 +47,9 @@ public:
 	void OnFrame() override;
 	bool IsRunning() override { return !!m_window; }
 
-	static void OnWindowResize( const Orbit::ResizeEvent& e );
-	static void OnWindowMove( const Orbit::MoveEvent& e );
-	static void OnWindowStateChanged( const Orbit::StateChangedEvent< Orbit::WindowState >& e );
+	static void OnWindowResize( const Orbit::WindowResized& e );
+	static void OnWindowMove( const Orbit::WindowMoved& e );
+	static void OnWindowStateChanged( const Orbit::WindowStateChanged& e );
 
 private:
 	Orbit::Window                  m_window;
@@ -161,7 +161,7 @@ void SampleApp::OnFrame()
 	m_render_context.SwapBuffers();
 }
 
-void SampleApp::OnWindowResize( const Orbit::ResizeEvent& e )
+void SampleApp::OnWindowResize( const Orbit::WindowResized& e )
 {
 	Orbit::LogInfo( Orbit::Format( "Resized: (%ud, %ud)", e.width, e.height ) );
 
@@ -178,14 +178,14 @@ void SampleApp::OnWindowResize( const Orbit::ResizeEvent& e )
 	}
 }
 
-void SampleApp::OnWindowMove( const Orbit::MoveEvent& e )
+void SampleApp::OnWindowMove( const Orbit::WindowMoved& e )
 {
 	Orbit::LogInfo( Orbit::Format( "Moved: (%d, %d)", e.x, e.y ) );
 }
 
-void SampleApp::OnWindowStateChanged( const Orbit::StateChangedEvent< Orbit::WindowState >& e )
+void SampleApp::OnWindowStateChanged( const Orbit::WindowStateChanged& e )
 {
-	switch( e.value )
+	switch( e.state )
 	{
 		default: break;
 		case Orbit::WindowState::Focus:   { Orbit::LogInfo( "Focus" );   } break;

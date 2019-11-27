@@ -69,7 +69,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 					{
 						case WM_MOVE:
 						{
-							MoveEvent e;
+							WindowMoved e;
 							e.x = LOWORD( lparam );
 							e.y = HIWORD( lparam );
 
@@ -80,7 +80,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 						case WM_SIZE:
 						{
-							ResizeEvent e;
+							WindowResized e;
 							e.width  = LOWORD( lparam );
 							e.height = HIWORD( lparam );
 
@@ -96,8 +96,8 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 							if( minimized_state != 0 )
 							{
-								StateChangedEvent< WindowState > e;
-								e.value = ( activated == WA_INACTIVE ) ? WindowState::Suspend : WindowState::Restore;
+								WindowStateChanged e;
+								e.state = ( activated == WA_INACTIVE ) ? WindowState::Suspend : WindowState::Restore;
 
 								w->QueueEvent( e );
 							}
@@ -107,8 +107,8 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 						case WM_SETFOCUS:
 						{
-							StateChangedEvent< WindowState > e;
-							e.value = WindowState::Focus;
+							WindowStateChanged e;
+							e.state = WindowState::Focus;
 
 							w->QueueEvent( e );
 
@@ -117,8 +117,8 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 						case WM_KILLFOCUS:
 						{
-							StateChangedEvent< WindowState > e;
-							e.value = WindowState::Defocus;
+							WindowStateChanged e;
+							e.state = WindowState::Defocus;
 
 							w->QueueEvent( e );
 
@@ -127,8 +127,8 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 						case WM_CLOSE:
 						{
-							StateChangedEvent< WindowState > e;
-							e.value = WindowState::Close;
+							WindowStateChanged e;
+							e.state = WindowState::Close;
 
 							w->QueueEvent( e );
 							w->Close();

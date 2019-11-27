@@ -33,7 +33,24 @@ enum class WindowState
 	Close,
 };
 
-class ORB_API_CORE Window : public EventDispatcher< ResizeEvent, MoveEvent, StateChangedEvent< WindowState > >
+struct ORB_API_CORE WindowResized
+{
+	uint32_t width;
+	uint32_t height;
+};
+
+struct ORB_API_CORE WindowMoved
+{
+	int x;
+	int y;
+};
+
+struct ORB_API_CORE WindowStateChanged
+{
+	WindowState state;
+};
+
+class ORB_API_CORE Window : public EventDispatcher< WindowResized, WindowMoved, WindowStateChanged >
 {
 public:
 
