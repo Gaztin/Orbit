@@ -18,7 +18,6 @@
 #pragma once
 #include "Orbit/Core/Utility/Utility.h"
 
-#include <functional>
 #include <string_view>
 
 ORB_NAMESPACE_BEGIN
