@@ -22,6 +22,19 @@
 #define ORB_NAMESPACE_BEGIN namespace Orbit {
 #define ORB_NAMESPACE_END }
 
+/* Utility macros */
+#define ORB_DISABLE_COPY( CLASS )              \
+	CLASS( const CLASS& )            = delete; \
+	CLASS& operator=( const CLASS& ) = delete
+#define ORB_DISABLE_MOVE( CLASS )         \
+	CLASS( CLASS&& )            = delete; \
+	CLASS& operator=( CLASS&& ) = delete
+#define ORB_DISABLE_COPY_AND_MOVE( CLASS )     \
+	CLASS( const CLASS& )            = delete; \
+	CLASS( CLASS&& )                 = delete; \
+	CLASS& operator=( const CLASS& ) = delete; \
+	CLASS& operator=( CLASS&& )      = delete
+
 /* Per-compiler macros. */
 #if defined( _MSC_VER )
 #  define ORB_CC_MSVC 1

@@ -36,6 +36,8 @@ public:
 	EventDispatcher() = default;
 	virtual ~EventDispatcher() = default;
 
+	ORB_DISABLE_COPY_AND_MOVE( EventDispatcher );
+
 	template< typename Functor >
 	[[ nodiscard ]] EventSubscription Subscribe( Functor&& functor )
 	{
