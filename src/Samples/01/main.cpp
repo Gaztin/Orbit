@@ -49,7 +49,7 @@ public:
 
 	static void OnWindowResize( const Orbit::ResizeEvent& e );
 	static void OnWindowMove( const Orbit::MoveEvent& e );
-	static void OnWindowStateChanged( const Orbit::StateChangedEvent< Orbit::Window::State >& e );
+	static void OnWindowStateChanged( const Orbit::StateChangedEvent< Orbit::WindowState >& e );
 
 private:
 	Orbit::Window                  m_window;
@@ -100,9 +100,9 @@ Orbit::Matrix4 projection_matrix( 0.f );
 
 SampleApp::SampleApp()
 	: m_window( 800, 600 )
-	, m_resize_subscription( m_window.SubscribeToResize( OnWindowResize ) )
-	, m_move_subscription( m_window.SubscribeToMove( OnWindowMove ) )
-	, m_state_changed_subscription( m_window.SubscribeToStateChanged( OnWindowStateChanged ) )
+	, m_resize_subscription( m_window.Subscribe< Orbit::ResizeEvent >( OnWindowResize ) )
+	, m_move_subscription( m_window.Subscribe< Orbit::MoveEvent >( OnWindowMove ) )
+	, m_state_changed_subscription( m_window.Subscribe< Orbit::StateChangedEvent< Orbit::WindowState > >( OnWindowStateChanged ) )
 	, m_render_context( m_window, graphics_api )
 	, m_vertex_shader( Orbit::Asset( "shader.vs" ) )
 	, m_fragment_shader( Orbit::Asset( "shader.fs" ) )
@@ -183,15 +183,15 @@ void SampleApp::OnWindowMove( const Orbit::MoveEvent& e )
 	Orbit::LogInfo( Orbit::Format( "Moved: (%d, %d)", e.x, e.y ) );
 }
 
-void SampleApp::OnWindowStateChanged( const Orbit::StateChangedEvent< Orbit::Window::State >& e )
+void SampleApp::OnWindowStateChanged( const Orbit::StateChangedEvent< Orbit::WindowState >& e )
 {
 	switch( e.value )
 	{
 		default: break;
-		case Orbit::Window::State::Focus:   { Orbit::LogInfo( "Focus" );   } break;
-		case Orbit::Window::State::Defocus: { Orbit::LogInfo( "Defocus" ); } break;
-		case Orbit::Window::State::Suspend: { Orbit::LogInfo( "Suspend" ); } break;
-		case Orbit::Window::State::Restore: { Orbit::LogInfo( "Restore" ); } break;
-		case Orbit::Window::State::Close:   { Orbit::LogInfo( "Close" );   } break;
+		case Orbit::WindowState::Focus:   { Orbit::LogInfo( "Focus" );   } break;
+		case Orbit::WindowState::Defocus: { Orbit::LogInfo( "Defocus" ); } break;
+		case Orbit::WindowState::Suspend: { Orbit::LogInfo( "Suspend" ); } break;
+		case Orbit::WindowState::Restore: { Orbit::LogInfo( "Restore" ); } break;
+		case Orbit::WindowState::Close:   { Orbit::LogInfo( "Close" );   } break;
 	}
 }

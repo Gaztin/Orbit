@@ -45,11 +45,8 @@ template< typename T >
 constexpr auto window_impl_index_v = unique_index_v< T, WindowImpl >;
 
 Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height, WindowAPI api )
-	: m_impl            { }
-	, m_open            { true }
-	, m_resize_dispatch { }
-	, m_move_dispatch   { }
-	, m_state_dispatch  { }
+	: m_impl { }
+	, m_open { true }
 {
 	switch( api )
 	{
@@ -76,7 +73,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 							e.x = LOWORD( lparam );
 							e.y = HIWORD( lparam );
 
-							w->m_move_dispatch.QueueEvent( e );
+							w->QueueEvent( e );
 
 							break;
 						}
@@ -87,7 +84,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 							e.width  = LOWORD( lparam );
 							e.height = HIWORD( lparam );
 
-							w->m_resize_dispatch.QueueEvent( e );
+							w->QueueEvent( e );
 
 							break;
 						}
@@ -99,10 +96,10 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 							if( minimized_state != 0 )
 							{
-								StateChangedEvent< State > e;
-								e.value = ( activated == WA_INACTIVE ) ? State::Suspend : State::Restore;
+								StateChangedEvent< WindowState > e;
+								e.value = ( activated == WA_INACTIVE ) ? WindowState::Suspend : WindowState::Restore;
 
-								w->m_state_dispatch.QueueEvent( e );
+								w->QueueEvent( e );
 							}
 
 							break;
@@ -110,30 +107,30 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 						case WM_SETFOCUS:
 						{
-							StateChangedEvent< State > e;
-							e.value = State::Focus;
+							StateChangedEvent< WindowState > e;
+							e.value = WindowState::Focus;
 
-							w->m_state_dispatch.QueueEvent( e );
+							w->QueueEvent( e );
 
 							break;
 						}
 
 						case WM_KILLFOCUS:
 						{
-							StateChangedEvent< State > e;
-							e.value = State::Defocus;
+							StateChangedEvent< WindowState > e;
+							e.value = WindowState::Defocus;
 
-							w->m_state_dispatch.QueueEvent( e );
+							w->QueueEvent( e );
 
 							break;
 						}
 
 						case WM_CLOSE:
 						{
-							StateChangedEvent< State > e;
-							e.value = State::Close;
+							StateChangedEvent< WindowState > e;
+							e.value = WindowState::Close;
 
-							w->m_state_dispatch.QueueEvent( e );
+							w->QueueEvent( e );
 							w->Close();
 
 							break;
@@ -559,9 +556,8 @@ void Window::PollEvents()
 	#endif
 	}
 
-	m_resize_dispatch.Update();
-	m_move_dispatch.Update();
-	m_state_dispatch.Update();
+	/* Send events */
+	SendEvents();
 }
 
 void Window::SetTitle( [[ maybe_unused ]] std::string_view title )

@@ -24,17 +24,18 @@
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE Window
+enum class WindowState
+{
+	Focus,
+	Defocus,
+	Suspend,
+	Restore,
+	Close,
+};
+
+class ORB_API_CORE Window : public EventDispatcher< ResizeEvent, MoveEvent, StateChangedEvent< WindowState > >
 {
 public:
-	enum class State
-	{
-		Focus,
-		Defocus,
-		Suspend,
-		Restore,
-		Close,
-	};
 
 	Window( uint32_t width, uint32_t height, WindowAPI api = kDefaultWindowApi );
 	~Window();
@@ -47,10 +48,6 @@ public:
 	void Hide();
 	void Close() { m_open = false; }
 
-	ORB_IMPL_SUBSCRIBE_FUNCTION( SubscribeToResize,       m_resize_dispatch );
-	ORB_IMPL_SUBSCRIBE_FUNCTION( SubscribeToMove,         m_move_dispatch );
-	ORB_IMPL_SUBSCRIBE_FUNCTION( SubscribeToStateChanged, m_state_dispatch );
-
 	operator bool() const { return m_open; }
 
 	WindowImpl* GetImplPtr() { return &m_impl; }
@@ -58,11 +55,6 @@ public:
 private:
 	WindowImpl m_impl;
 	bool       m_open;
-
-	/* Event dispatchers */
-	EventDispatcher< ResizeEvent >                m_resize_dispatch;
-	EventDispatcher< MoveEvent >                  m_move_dispatch;
-	EventDispatcher< StateChangedEvent< State > > m_state_dispatch;
 
 };
 

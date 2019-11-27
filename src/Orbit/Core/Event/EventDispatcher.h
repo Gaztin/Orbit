@@ -19,35 +19,41 @@
 #include <algorithm>
 #include <functional>
 #include <list>
-#include <memory>
-#include <mutex>
-#include <utility>
+#include <tuple>
 #include <vector>
 
 #include "Orbit/Core/Event/EventSubscription.h"
 
 ORB_NAMESPACE_BEGIN
 
-#define ORB_IMPL_SUBSCRIBE_FUNCTION( FuncName, VarName )                \
-	template< typename Functor >                                        \
-	EventSubscription FuncName( Functor&& functor )                     \
-	{                                                                   \
-		return VarName.Subscribe( std::forward< Functor >( functor ) ); \
-	}
-
-template< typename T >
+template< typename... Types >
 class EventDispatcher
 {
 public:
-	EventDispatcher() = default;
-	~EventDispatcher() = default;
 
-	template< typename Functor >
+	template< typename T >
+	struct Subscriber
+	{
+		uint64_t id;
+		std::function< void( const T& ) > function;
+	};
+
+	template< typename T >
+	struct Queue
+	{
+		std::vector< T > events;
+		std::list< Subscriber< T > > subscribers;
+	};
+
+	EventDispatcher() = default;
+	virtual ~EventDispatcher() = default;
+
+	template< typename T, typename Functor >
 	[[ nodiscard ]] EventSubscription Subscribe( Functor&& functor )
 	{
-		static std::atomic_uint64_t unique_id = 0;
-
-		m_subscribers.push_back( Subscriber{ ++unique_id, std::forward< Functor >( functor ) } );
+		Queue< T >& queue = std::get< Queue< T > >( m_queues );
+		Subscriber< T > sub { GenerateUniqueID(), std::forward< Functor >( functor ) };
+		queue.subscribers.push_back( sub );
 
 		EventSubscription::Deleter deleter;
 		deleter.user_data = this;
@@ -57,46 +63,61 @@ public:
 			self->Unsubscribe( id );
 		};
 
-		return EventSubscription( m_subscribers.back().id, deleter );
+		return EventSubscription( sub.id, deleter );
 	}
 
+	template< typename T >
 	void QueueEvent( const T& e )
 	{
-		m_mutex.lock();
-		m_event_queue.push_back( e );
-		m_mutex.unlock();
+		Queue< T >& queue = std::get< Queue< T > >( m_queues );
+		queue.events.push_back( e );
 	}
 
-	void Update()
+	void SendEvents()
 	{
-		for( const T& e : m_event_queue )
-		{
-			for( Subscriber& sub : m_subscribers )
-				sub.function( e );
-		}
-
-		m_event_queue.clear();
+		( UpdateQueue( std::get< Queue< Types > >( m_queues ) ), ... );
 	}
 
 private:
-	struct Subscriber
+
+	uint64_t GenerateUniqueID()
 	{
-		uint64_t id;
-		std::function< void( const T& ) > function;
-	};
+		static std::atomic_uint64_t counter = 0;
+		return ++counter;
+	}
 
 	void Unsubscribe( uint64_t id )
 	{
-		auto it = std::find_if( m_subscribers.begin(), m_subscribers.end(), [ id ]( const Subscriber& sub ) { return sub.id == id; } );
-		if( it == m_subscribers.end() )
-			return;
-
-		m_subscribers.erase( it );
+		( UnsubscribeQueue< Types >( std::get< Queue< Types > >( m_queues ), id ), ... );
 	}
 
-	std::list< Subscriber > m_subscribers;
-	std::vector< T >        m_event_queue;
-	std::mutex              m_mutex;
+	template< typename T >
+	void UnsubscribeQueue( Queue< T >& queue, uint64_t id )
+	{
+		for( auto it = queue.subscribers.begin(); it != queue.subscribers.end(); )
+		{
+			if( it->id == id )
+			{
+				queue.subscribers.erase( it );
+				break;
+			}
+		}
+	}
+
+	template< typename T >
+	void UpdateQueue( Queue< T >& queue )
+	{
+		for( const T& e : queue.events )
+		{
+			for( Subscriber< T >& sub : queue.subscribers )
+				sub.function( e );
+		}
+
+		queue.events.clear();
+	}
+
+	std::tuple< Queue< Types >... > m_queues;
+
 };
 
 ORB_NAMESPACE_END
