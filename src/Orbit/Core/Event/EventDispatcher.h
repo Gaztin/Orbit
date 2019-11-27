@@ -33,21 +33,6 @@ class EventDispatcher
 {
 public:
 
-	template< typename T >
-	struct Subscriber
-	{
-		uint64_t id;
-		std::function< void( const T& ) > function;
-	};
-
-	template< typename T >
-	struct Queue
-	{
-		std::mutex mutex;
-		std::vector< T > events;
-		std::list< Subscriber< T > > subscribers;
-	};
-
 	EventDispatcher() = default;
 	virtual ~EventDispatcher() = default;
 
@@ -76,6 +61,8 @@ public:
 		return EventSubscription( unique_id, deleter );
 	}
 
+protected:
+
 	template< typename T >
 	void QueueEvent( const T& e )
 	{
@@ -91,6 +78,21 @@ public:
 	}
 
 private:
+
+	template< typename T >
+	struct Subscriber
+	{
+		uint64_t id;
+		std::function< void( const T& ) > function;
+	};
+
+	template< typename T >
+	struct Queue
+	{
+		std::mutex mutex;
+		std::vector< T > events;
+		std::list< Subscriber< T > > subscribers;
+	};
 
 	uint64_t GenerateUniqueID() const
 	{
