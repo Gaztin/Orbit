@@ -720,6 +720,26 @@ namespace OpenGL
 		FlushExplicitBit    = 0x0010,
 		UnsynchronizedBit   = 0x0020,
 	};
+
+	enum class TextureUnit : GLenum
+	{
+		Texture0  = 0x84C0,
+		Texture1  = 0x84C1,
+		Texture2  = 0x84C2,
+		Texture3  = 0x84C3,
+		Texture4  = 0x84C4,
+		Texture5  = 0x84C5,
+		Texture6  = 0x84C6,
+		Texture7  = 0x84C7,
+		Texture8  = 0x84C8,
+		Texture9  = 0x84C9,
+		Texture10 = 0x84CA,
+		Texture11 = 0x84CB,
+		Texture12 = 0x84CC,
+		Texture13 = 0x84CD,
+		Texture14 = 0x84CE,
+		Texture15 = 0x84CF,
+	};
 }
 
 /* Enable masking on bitfield types */
@@ -751,46 +771,18 @@ namespace OpenGL
 		template< char... Chars >
 		struct ProcLiteralTraits< ProcLiteral< Chars... > >
 		{
-			static constexpr char kProcName[ sizeof...( Chars ) + 1 ] = { Chars..., '\0' };
+			static constexpr char proc_name[ sizeof...( Chars ) + 1 ] = { Chars..., '\0' };
 		};
 
 		template< typename PL, typename Func >
 		class Function;
-
-		template< typename PL, typename... Args >
-		class Function< PL, void( Args... ) >
-		{
-		public:
-			Function()
-				: m_ptr( Platform::GetProcAddress( ProcLiteralTraits< PL >::kProcName ) )
-			{
-			}
-
-			Function( const Function& ) = delete;
-			Function( Function&& ) = default;
-
-			void operator()( Args... args )
-			{
-				using Proc = void( ORB_GL_CALL* )( Args... );
-
-				// Reset error code to 0
-				while( glGetError() != GL_NO_ERROR );
-
-				reinterpret_cast< Proc >( m_ptr )( args... );
-
-				HandleError( glGetError(), ProcLiteralTraits< PL >::kProcName );
-			}
-
-		private:
-			void* m_ptr;
-		};
 
 		template< typename PL, typename R, typename... Args >
 		class Function< PL, R( Args... ) >
 		{
 		public:
 			Function()
-				: m_ptr( Platform::GetProcAddress( ProcLiteralTraits< PL >::kProcName ) )
+				: m_ptr( Platform::GetProcAddress( ProcLiteralTraits< PL >::proc_name ) )
 			{
 			}
 
@@ -804,11 +796,17 @@ namespace OpenGL
 				// Reset error code to 0
 				while( glGetError() != GL_NO_ERROR );
 
-				R res = reinterpret_cast< Proc >( m_ptr )( args... );
-
-				HandleError( glGetError(), ProcLiteralTraits< PL >::kProcName );
-
-				return res;
+				if constexpr( std::is_void_v< R > )
+				{
+					reinterpret_cast< Proc >( m_ptr )( args... );
+					HandleError( glGetError(), ProcLiteralTraits< PL >::proc_name );
+				}
+				else
+				{
+					R res = reinterpret_cast< Proc >( m_ptr )( args... );
+					HandleError( glGetError(), ProcLiteralTraits< PL >::proc_name );
+					return res;
+				}
 			}
 
 		private:
@@ -818,6 +816,18 @@ namespace OpenGL
 		static void GetBoolean ( StateParam pname, GLboolean* params ) { return glGetBooleanv( static_cast< GLenum >( pname ), params ); }
 		static void GetFloat   ( StateParam pname, GLfloat* params )   { return glGetFloatv( static_cast< GLenum >( pname ), params ); }
 		static void GetInteger ( StateParam pname, GLint* params )     { return glGetIntegerv( static_cast< GLenum >( pname ), params ); }
+
+		/* Textures */
+		Function< ProcLiteral< 'g', 'l', 'A', 'c', 't', 'i', 'v', 'e', 'T', 'e', 'x', 't', 'u', 'r', 'e' >,                                                           void( TextureUnit texture ) >                                                                                                                           glActiveTexture;
+		Function< ProcLiteral< 'g', 'l', 'B', 'i', 'n', 'd', 'T', 'e', 'x', 't', 'u', 'r', 'e' >,                                                                     void( GLenum target, GLuint texture ) >                                                                                                                 glBindTexture;
+		Function< ProcLiteral< 'g', 'l', 'C', 'o', 'm', 'p', 'r', 'e', 's', 's', 'e', 'd', 'T', 'e', 'x', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,                        void( GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data ) >         glCompressedTexImage2D;
+		Function< ProcLiteral< 'g', 'l', 'C', 'o', 'm', 'p', 'r', 'e', 's', 's', 'e', 'd', 'T', 'e', 'x', 'S', 'u', 'b', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,         void( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid* data ) > glCompressedTexSubImage2D;
+		Function< ProcLiteral< 'g', 'l', 'C', 'o', 'p', 'y', 'T', 'e', 'x', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,                                                      void( GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border ) >                              glCopyTexImage2D;
+		Function< ProcLiteral< 'g', 'l', 'C', 'o', 'p', 'y', 'T', 'e', 'x', 'S', 'u', 'b', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,                                       void( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height ) >                                     glCopyTexSubImage2D;
+		Function< ProcLiteral< 'g', 'l', 'D', 'e', 'l', 'e', 't', 'e', 'T', 'e', 'x', 't', 'u', 'r', 'e', 's' >,                                                      void( GLsizei n, const GLuint* textures ) >                                                                                                             glDeleteTextures;
+		Function< ProcLiteral< 'g', 'l', 'G', 'e', 'n', 'T', 'e', 'x', 't', 'u', 'r', 'e', 's' >,                                                                     void( GLsizei n, GLuint* textures ) >                                                                                                                   glGenTextures;
+		Function< ProcLiteral< 'g', 'l', 'I', 's', 'T', 'e', 'x', 't', 'u', 'r', 'e' >,                                                                               GLboolean( GLuint texture ) >                                                                                                                           glIsTexture;
+		Function< ProcLiteral< 'g', 'l', 'T', 'e', 'x', 'S', 'u', 'b', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,                                                           void( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* data ) >       glTexSubImage2D;
 
 		/* Buffer objects */
 		Function< ProcLiteral< 'g', 'l', 'B', 'i', 'n', 'd', 'B', 'u', 'f', 'f', 'e', 'r' >,                                                                       void( BufferTarget target, GLuint buffer )> bind_buffer;
@@ -843,9 +853,6 @@ namespace OpenGL
 		Function< ProcLiteral< 'g', 'l', 'G', 'e', 't', 'B', 'u', 'f', 'f', 'e', 'r', 'P', 'a', 'r', 'a', 'm', 'e', 't', 'e', 'r', 'i', '6', '4', 'v' >,           void( BufferTarget target, BufferParam value, GLint64* data )> get_BufferParameteri64v;
 		Function< ProcLiteral< 'g', 'l', 'G', 'e', 't', 'B', 'u', 'f', 'f', 'e', 'r', 'P', 'o', 'i', 'n', 't', 'e', 'r', 'v' >,                                    void( BufferTarget target, BufferPointerParam pname, GLvoid** params )> get_buffer_pointerv;
 		Function< ProcLiteral< 'g', 'l', 'G', 'e', 't', 'V', 'e', 'r', 't', 'e', 'x', 'A', 't', 't', 'r', 'i', 'b', 'f', 'v' >,                                    void( GLuint index, VertexAttribArrayParam pname, GLfloat* params )> get_vertex_attribfv;
-		Function< ProcLiteral< 'g', 'l', 'G', 'e', 't', 'V', 'e', 'r', 't', 'e', 'x', 'A', 't', 't', 'r', 'i', 'b', 'i', 'v' >,                                    void( GLuint index, VertexAttribArrayParam pname, GLint* params )> get_vertex_attribiv;
-		Function< ProcLiteral< 'g', 'l', 'G', 'e', 't', 'V', 'e', 'r', 't', 'e', 'x', 'A', 't', 't', 'r', 'i', 'b', 'i', 'i', 'v' >,                               void( GLuint index, VertexAttribArrayParam pname, GLint* params )> get_vertex_attribiiv;
-		Function< ProcLiteral< 'g', 'l', 'G', 'e', 't', 'V', 'e', 'r', 't', 'e', 'x', 'A', 't', 't', 'r', 'i', 'b', 'i', 'u', 'i', 'v' >,                          void( GLuint index, VertexAttribArrayParam pname, GLuint* params )> get_vertex_attribiuiv;
 		Function< ProcLiteral< 'g', 'l', 'G', 'e', 't', 'V', 'e', 'r', 't', 'e', 'x', 'A', 't', 't', 'r', 'i', 'b', 'P', 'o', 'i', 'n', 't', 'e', 'r', 'v' >,      void( GLuint index, VertexAttribArrayPointerParam pname, GLvoid** pointer )> get_vertex_attrib_pointerv;
 		Function< ProcLiteral< 'g', 'l', 'I', 's', 'B', 'u', 'f', 'f', 'e', 'r' >,                                                                                 GLboolean( GLuint buffer )> is_buffer;
 		Function< ProcLiteral< 'g', 'l', 'M', 'a', 'p', 'B', 'u', 'f', 'f', 'e', 'r', 'R', 'a', 'n', 'g', 'e' >,                                                   void* ( BufferTarget target, GLintptr offset, GLsizeiptr length, MapAccess access )> map_buffer_range;

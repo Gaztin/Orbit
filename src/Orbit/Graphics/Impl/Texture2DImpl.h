@@ -17,49 +17,34 @@
 
 #pragma once
 #include <variant>
-#include <vector>
 
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
 #include "Orbit/Graphics/Impl/GraphicsAPI.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
 
 ORB_NAMESPACE_BEGIN
 
 #if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _GraphicsPipelineImplOpenGL20
+struct _Texture2DImplOpenGL
 {
-	std::vector< VertexComponent > layout;
-	GLsizei                        stride;
-	GLuint                         shader_program;
-};
-struct _GraphicsPipelineImplOpenGL30
-{
-	std::vector< VertexComponent > layout;
-	GLsizei                        stride;
-	GLuint                         shader_program;
-	GLuint                         vao;
+	GLuint id;
 };
 #endif
 
 #if _ORB_HAS_GRAPHICS_API_D3D11
-struct _GraphicsPipelineImplD3D11
+struct _Texture2DImplD3D11
 {
-	ComPtr< ID3DBlob >           vertex_data;
-	ComPtr< ID3D11VertexShader > vertex_shader;
-	ComPtr< ID3D11PixelShader >  pixel_shader;
-	ComPtr< ID3D11InputLayout >  input_layout;
-	ComPtr< ID3D11SamplerState > sampler_state;
+	ComPtr< ID3D11Texture2D >          texture_2d;
+	ComPtr< ID3D11ShaderResourceView > shader_resource_view;
 };
 #endif
 
-using GraphicsPipelineImpl = std::variant< std::monostate
+using Texture2DImpl = std::variant< std::monostate
 #if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _GraphicsPipelineImplOpenGL20
-	, _GraphicsPipelineImplOpenGL30
+	, _Texture2DImplOpenGL
 #endif
 #if _ORB_HAS_GRAPHICS_API_D3D11
-	, _GraphicsPipelineImplD3D11
+	, _Texture2DImplD3D11
 #endif
 >;
 
