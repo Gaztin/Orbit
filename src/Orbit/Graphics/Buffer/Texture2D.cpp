@@ -66,9 +66,9 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 			texture2d_desc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM;
 			texture2d_desc.SampleDesc.Count   = 1;
 			texture2d_desc.SampleDesc.Quality = 0;
-			texture2d_desc.Usage              = D3D11_USAGE_DYNAMIC;
+			texture2d_desc.Usage              = D3D11_USAGE_DEFAULT;
 			texture2d_desc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
-			texture2d_desc.CPUAccessFlags     = D3D11_CPU_ACCESS_WRITE;
+			texture2d_desc.CPUAccessFlags     = 0;
 
 			if( data )
 			{
