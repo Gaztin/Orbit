@@ -26,6 +26,7 @@
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
+#include <Orbit/Graphics/Buffer/Texture2D.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Device/RenderContext.h>
 #include <Orbit/Graphics/Shader/FragmentShader.h>
@@ -36,8 +37,6 @@
 #include <Orbit/Math/Vector2.h>
 #include <Orbit/Math/Vector3.h>
 #include <Orbit/Math/Vector4.h>
-
-constexpr Orbit::GraphicsAPI graphics_api = Orbit::GraphicsAPI::D3D11;
 
 ORB_APP_DECL( SampleApp )
 {
@@ -63,6 +62,7 @@ private:
 	Orbit::IndexBuffer             m_triangle_index_buffer;
 	Orbit::ConstantBuffer          m_triangle_constant_buffer;
 	Orbit::GraphicsPipeline        m_main_pipeline;
+	Orbit::Texture2D               m_texture_2d;
 	float                          m_time;
 };
 
@@ -70,20 +70,22 @@ struct Vertex
 {
 	Orbit::Vector4 pos;
 	Orbit::Color   color;
+	Orbit::Vector2 texcoord;
 };
 
 const Orbit::VertexLayout vertex_layout
 {
 	{ "POSITION", Orbit::VertexComponent::Vec4 },
 	{ "COLOR",    Orbit::VertexComponent::Vec4 },
+	{ "TEXCOORD", Orbit::VertexComponent::Vec2 },
 };
 
 const std::initializer_list< Vertex > triangle_vertices
 {
-	{ Orbit::Vector4( -0.5f, -0.5f, 0.0f, 1.0f ),   Orbit::Color( 0.0f, 0.0f, 1.0f, 1.0f ) },
-	{ Orbit::Vector4( -0.5f,  0.5f, 0.0f, 1.0f ),   Orbit::Color( 1.0f, 0.0f, 0.0f, 1.0f ) },
-	{ Orbit::Vector4(  0.5f, -0.5f, 0.0f, 1.0f ),   Orbit::Color( 0.0f, 0.0f, 0.0f, 1.0f ) },
-	{ Orbit::Vector4(  0.5f,  0.5f, 0.0f, 1.0f ),   Orbit::Color( 0.0f, 1.0f, 0.0f, 1.0f ) },
+	{ Orbit::Vector4( -0.5f, -0.5f, 0.0f, 1.0f ),   Orbit::Color( 1.0f, 1.0f, 1.0f, 1.0f ), Orbit::Vector2( 0.0f, 0.0f ) },
+	{ Orbit::Vector4( -0.5f,  0.5f, 0.0f, 1.0f ),   Orbit::Color( 1.0f, 1.0f, 1.0f, 1.0f ), Orbit::Vector2( 0.0f, 1.0f ) },
+	{ Orbit::Vector4(  0.5f, -0.5f, 0.0f, 1.0f ),   Orbit::Color( 1.0f, 1.0f, 1.0f, 1.0f ), Orbit::Vector2( 1.0f, 0.0f ) },
+	{ Orbit::Vector4(  0.5f,  0.5f, 0.0f, 1.0f ),   Orbit::Color( 1.0f, 1.0f, 1.0f, 1.0f ), Orbit::Vector2( 1.0f, 1.0f ) },
 };
 
 const std::initializer_list< uint16_t > triangle_indices
@@ -98,6 +100,16 @@ std::tuple triangle_constants = std::make_tuple( Orbit::Matrix4() );
 
 Orbit::Matrix4 projection_matrix( 0.f );
 
+const uint32_t texture_data[]
+{
+	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
+	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
+	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
+	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
+};
+
+constexpr Orbit::GraphicsAPI graphics_api = Orbit::GraphicsAPI::OpenGL;
+
 SampleApp::SampleApp()
 	: m_window( 800, 600 )
 	, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
@@ -109,6 +121,7 @@ SampleApp::SampleApp()
 	, m_triangle_vertex_buffer( triangle_vertices )
 	, m_triangle_index_buffer( triangle_indices )
 	, m_triangle_constant_buffer( triangle_constants )
+	, m_texture_2d( 4, 4, texture_data )
 	, m_time( 0.0f )
 {
 	m_window.SetTitle( "Orbit sample #01" );
@@ -148,6 +161,7 @@ void SampleApp::OnFrame()
 	m_window.PollEvents();
 	m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
+	m_texture_2d.Bind();
 	m_triangle_vertex_buffer.Bind();
 	m_main_pipeline.Bind();
 	{
