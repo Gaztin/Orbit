@@ -49,6 +49,7 @@ struct _GraphicsPipelineImplD3D11
 	ComPtr< ID3D11VertexShader > vertex_shader;
 	ComPtr< ID3D11PixelShader >  pixel_shader;
 	ComPtr< ID3D11InputLayout >  input_layout;
+	ComPtr< ID3D11SamplerState > sampler_state;
 };
 #endif
 

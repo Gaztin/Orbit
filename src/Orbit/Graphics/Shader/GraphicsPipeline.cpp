@@ -68,7 +68,29 @@ GraphicsPipeline::GraphicsPipeline()
 	#if _ORB_HAS_GRAPHICS_API_D3D11
 		case( render_context_impl_index_v< _RenderContextImplD3D11 > ):
 		{
-			m_impl.emplace< _GraphicsPipelineImplD3D11 >();
+			auto impl         = std::addressof( m_impl.emplace< _GraphicsPipelineImplD3D11 >() );
+			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
+
+			D3D11_SAMPLER_DESC desc { };
+			desc.Filter           = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+			desc.AddressU         = D3D11_TEXTURE_ADDRESS_WRAP;
+			desc.AddressV         = D3D11_TEXTURE_ADDRESS_WRAP;
+			desc.AddressW         = D3D11_TEXTURE_ADDRESS_WRAP;
+			desc.MipLODBias       = 0.0f;
+			desc.MaxAnisotropy    = 1;
+			desc.ComparisonFunc   = D3D11_COMPARISON_ALWAYS;
+			desc.BorderColor[ 0 ] = 0;
+			desc.BorderColor[ 1 ] = 0;
+			desc.BorderColor[ 2 ] = 0;
+			desc.BorderColor[ 3 ] = 0;
+			desc.MinLOD           = 0;
+			desc.MaxLOD           = D3D11_FLOAT32_MAX;
+
+			ID3D11SamplerState* sampler_state;
+			if( context_impl->device->CreateSamplerState( &desc, &sampler_state ) == S_OK )
+			{
+				impl->sampler_state.reset( sampler_state );
+			}
 
 			break;
 		}
@@ -259,6 +281,12 @@ void GraphicsPipeline::Bind()
 			if( impl->vertex_shader ) context_impl->device_context->VSSetShader( impl->vertex_shader.get(), nullptr, 0 );
 			if( impl->pixel_shader )  context_impl->device_context->PSSetShader( impl->pixel_shader.get(), nullptr, 0 );
 
+			if( impl->sampler_state )
+			{
+				ID3D11SamplerState* sampler_state = impl->sampler_state.get();
+				context_impl->device_context->PSSetSamplers( 0, 1, &sampler_state );
+			}
+
 			break;
 		}
 	#endif
@@ -302,6 +330,7 @@ void GraphicsPipeline::Unbind()
 		{
 			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
 
+			context_impl->device_context->PSSetSamplers( 0, 0, nullptr );
 			context_impl->device_context->IASetInputLayout( nullptr );
 			context_impl->device_context->VSSetShader( nullptr, nullptr, 0 );
 			context_impl->device_context->PSSetShader( nullptr, nullptr, 0 );
