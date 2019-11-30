@@ -26,7 +26,7 @@ public:
 	Texture2D( uint32_t width, uint32_t height, const void* data );
 	~Texture2D();
 
-	void Bind();
+	void Bind( uint32_t slot );
 
 private:
 	Texture2DImpl m_impl;

@@ -140,7 +140,7 @@ Texture2D::~Texture2D()
 	}
 }
 
-void Texture2D::Bind()
+void Texture2D::Bind( uint32_t slot )
 {
 	switch( m_impl.index() )
 	{
@@ -151,8 +151,9 @@ void Texture2D::Bind()
 		{
 			_Texture2DImplOpenGL&     impl         = std::get< _Texture2DImplOpenGL >( m_impl );
 			_RenderContextImplOpenGL& context_impl = std::get< _RenderContextImplOpenGL >( *RenderContext::GetCurrent()->GetImplPtr() );
+			const uint32_t            unit_base    = static_cast< GLenum >( OpenGL::TextureUnit::Texture0 );
 
-			context_impl.functions->glActiveTexture( OpenGL::TextureUnit::Texture0 );
+			context_impl.functions->glActiveTexture( static_cast< OpenGL::TextureUnit >( unit_base + slot ) );
 			context_impl.functions->glBindTexture( GL_TEXTURE_2D, impl.id );
 
 			break;
@@ -166,7 +167,7 @@ void Texture2D::Bind()
 			_RenderContextImplD3D11&  context_impl = std::get< _RenderContextImplD3D11 >( *RenderContext::GetCurrent()->GetImplPtr() );
 			ID3D11ShaderResourceView* srv          = impl.shader_resource_view.get();
 
-			context_impl.device_context->PSSetShaderResources( 0, 1, &srv );
+			context_impl.device_context->PSSetShaderResources( slot, 1, &srv );
 
 			break;
 		}

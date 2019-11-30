@@ -159,7 +159,7 @@ void SampleApp::OnFrame()
 	m_window.PollEvents();
 	m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
-	m_texture_2d.Bind();
+	m_texture_2d.Bind( 0 );
 	m_triangle_vertex_buffer.Bind();
 	m_main_pipeline.Bind();
 	{
