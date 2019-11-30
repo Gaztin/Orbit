@@ -108,14 +108,12 @@ const uint32_t texture_data[]
 	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
 };
 
-constexpr Orbit::GraphicsAPI graphics_api = Orbit::GraphicsAPI::OpenGL;
-
 SampleApp::SampleApp()
 	: m_window( 800, 600 )
 	, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
 	, m_move_subscription( m_window.Subscribe( OnWindowMove ) )
 	, m_state_changed_subscription( m_window.Subscribe( OnWindowStateChanged ) )
-	, m_render_context( m_window, graphics_api )
+	, m_render_context( m_window )
 	, m_vertex_shader( Orbit::Asset( "shader.vs" ) )
 	, m_fragment_shader( Orbit::Asset( "shader.fs" ) )
 	, m_triangle_vertex_buffer( triangle_vertices )
