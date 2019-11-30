@@ -74,7 +74,7 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 			{
 				D3D11_SUBRESOURCE_DATA initial_data { };
 				initial_data.pSysMem     = data;
-				initial_data.SysMemPitch = width;
+				initial_data.SysMemPitch = width * 4;
 
 				ID3D11Texture2D* texture_2d;
 				if( context_impl.device->CreateTexture2D( &texture2d_desc, &initial_data, &texture_2d ) == S_OK )
