@@ -771,46 +771,18 @@ namespace OpenGL
 		template< char... Chars >
 		struct ProcLiteralTraits< ProcLiteral< Chars... > >
 		{
-			static constexpr char kProcName[ sizeof...( Chars ) + 1 ] = { Chars..., '\0' };
+			static constexpr char proc_name[ sizeof...( Chars ) + 1 ] = { Chars..., '\0' };
 		};
 
 		template< typename PL, typename Func >
 		class Function;
-
-		template< typename PL, typename... Args >
-		class Function< PL, void( Args... ) >
-		{
-		public:
-			Function()
-				: m_ptr( Platform::GetProcAddress( ProcLiteralTraits< PL >::kProcName ) )
-			{
-			}
-
-			Function( const Function& ) = delete;
-			Function( Function&& ) = default;
-
-			void operator()( Args... args )
-			{
-				using Proc = void( ORB_GL_CALL* )( Args... );
-
-				// Reset error code to 0
-				while( glGetError() != GL_NO_ERROR );
-
-				reinterpret_cast< Proc >( m_ptr )( args... );
-
-				HandleError( glGetError(), ProcLiteralTraits< PL >::kProcName );
-			}
-
-		private:
-			void* m_ptr;
-		};
 
 		template< typename PL, typename R, typename... Args >
 		class Function< PL, R( Args... ) >
 		{
 		public:
 			Function()
-				: m_ptr( Platform::GetProcAddress( ProcLiteralTraits< PL >::kProcName ) )
+				: m_ptr( Platform::GetProcAddress( ProcLiteralTraits< PL >::proc_name ) )
 			{
 			}
 
@@ -824,11 +796,17 @@ namespace OpenGL
 				// Reset error code to 0
 				while( glGetError() != GL_NO_ERROR );
 
-				R res = reinterpret_cast< Proc >( m_ptr )( args... );
-
-				HandleError( glGetError(), ProcLiteralTraits< PL >::kProcName );
-
-				return res;
+				if constexpr( std::is_void_v< R > )
+				{
+					reinterpret_cast< Proc >( m_ptr )( args... );
+					HandleError( glGetError(), ProcLiteralTraits< PL >::proc_name );
+				}
+				else
+				{
+					R res = reinterpret_cast< Proc >( m_ptr )( args... );
+					HandleError( glGetError(), ProcLiteralTraits< PL >::proc_name );
+					return res;
+				}
 			}
 
 		private:
