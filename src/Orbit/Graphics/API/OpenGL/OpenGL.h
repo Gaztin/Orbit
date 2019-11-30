@@ -720,6 +720,26 @@ namespace OpenGL
 		FlushExplicitBit    = 0x0010,
 		UnsynchronizedBit   = 0x0020,
 	};
+
+	enum class TextureUnit : GLenum
+	{
+		Texture0  = 0x84C0,
+		Texture1  = 0x84C1,
+		Texture2  = 0x84C2,
+		Texture3  = 0x84C3,
+		Texture4  = 0x84C4,
+		Texture5  = 0x84C5,
+		Texture6  = 0x84C6,
+		Texture7  = 0x84C7,
+		Texture8  = 0x84C8,
+		Texture9  = 0x84C9,
+		Texture10 = 0x84CA,
+		Texture11 = 0x84CB,
+		Texture12 = 0x84CC,
+		Texture13 = 0x84CD,
+		Texture14 = 0x84CE,
+		Texture15 = 0x84CF,
+	};
 }
 
 /* Enable masking on bitfield types */
@@ -818,6 +838,21 @@ namespace OpenGL
 		static void GetBoolean ( StateParam pname, GLboolean* params ) { return glGetBooleanv( static_cast< GLenum >( pname ), params ); }
 		static void GetFloat   ( StateParam pname, GLfloat* params )   { return glGetFloatv( static_cast< GLenum >( pname ), params ); }
 		static void GetInteger ( StateParam pname, GLint* params )     { return glGetIntegerv( static_cast< GLenum >( pname ), params ); }
+
+		/* Textures */
+		Function< ProcLiteral< 'g', 'l', 'A', 'c', 't', 'i', 'v', 'e', 'T', 'e', 'x', 't', 'u', 'r', 'e' >,                                                           void( TextureUnit texture ) >                                                                                                                           glActiveTexture;
+		Function< ProcLiteral< 'g', 'l', 'B', 'i', 'n', 'd', 'T', 'e', 'x', 't', 'u', 'r', 'e' >,                                                                     void( GLenum target, GLuint texture ) >                                                                                                                 glBindTexture;
+		Function< ProcLiteral< 'g', 'l', 'C', 'o', 'm', 'p', 'r', 'e', 's', 's', 'e', 'd', 'T', 'e', 'x', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,                        void( GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data ) >         glCompressedTexImage2D;
+		Function< ProcLiteral< 'g', 'l', 'C', 'o', 'm', 'p', 'r', 'e', 's', 's', 'e', 'd', 'T', 'e', 'x', 'S', 'u', 'b', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,         void( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid* data ) > glCompressedTexSubImage2D;
+		Function< ProcLiteral< 'g', 'l', 'C', 'o', 'p', 'y', 'T', 'e', 'x', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,                                                      void( GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border ) >                              glCopyTexImage2D;
+		Function< ProcLiteral< 'g', 'l', 'C', 'o', 'p', 'y', 'T', 'e', 'x', 'S', 'u', 'b', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,                                       void( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height ) >                                     glCopyTexSubImage2D;
+		Function< ProcLiteral< 'g', 'l', 'D', 'e', 'l', 'e', 't', 'e', 'T', 'e', 'x', 't', 'u', 'r', 'e', 's' >,                                                      void( GLsizei n, const GLuint* textures ) >                                                                                                             glDeleteTextures;
+		Function< ProcLiteral< 'g', 'l', 'G', 'e', 'n', 'T', 'e', 'x', 't', 'u', 'r', 'e', 's' >,                                                                     void( GLsizei n, GLuint* textures ) >                                                                                                                   glGenTextures;
+		Function< ProcLiteral< 'g', 'l', 'I', 's', 'T', 'e', 'x', 't', 'u', 'r', 'e' >,                                                                               GLboolean( GLuint texture ) >                                                                                                                           glIsTexture;
+		Function< ProcLiteral< 'g', 'l', 'T', 'e', 'x', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,                                                                          void( GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* data ) > glTexImage2D;
+		Function< ProcLiteral< 'g', 'l', 'T', 'e', 'x', 'P', 'a', 'r', 'a', 'm', 'e', 't', 'e', 'r', 'f' >,                                                           void( GLenum target, GLenum pname, GLfloat param ) >                                                                                                    glTexParameterf;
+		Function< ProcLiteral< 'g', 'l', 'T', 'e', 'x', 'P', 'a', 'r', 'a', 'm', 'e', 't', 'e', 'r', 'i' >,                                                           void( GLenum target, GLenum pname, GLint param ) >                                                                                                      glTexParameteri;
+		Function< ProcLiteral< 'g', 'l', 'T', 'e', 'x', 'S', 'u', 'b', 'I', 'm', 'a', 'g', 'e', '2', 'D' >,                                                           void( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* data ) >       glTexSubImage2D;
 
 		/* Buffer objects */
 		Function< ProcLiteral< 'g', 'l', 'B', 'i', 'n', 'd', 'B', 'u', 'f', 'f', 'e', 'r' >,                                                                       void( BufferTarget target, GLuint buffer )> bind_buffer;
