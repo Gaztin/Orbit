@@ -44,7 +44,7 @@ enum class GraphicsAPI
 #endif
 };
 
-constexpr GraphicsAPI kDefaultGraphicsApi =
+constexpr GraphicsAPI default_graphics_api =
 #if _ORB_HAS_GRAPHICS_API_D3D11
 	GraphicsAPI::D3D11;
 #elif _ORB_HAS_GRAPHICS_API_OPENGL

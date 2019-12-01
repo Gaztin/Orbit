@@ -27,7 +27,11 @@ ORB_NAMESPACE_BEGIN
 
 struct ComDeleter
 {
-	void operator()( IUnknown* ptr ) const { if( ptr ) ptr->Release(); }
+	void operator()( IUnknown* ptr ) const
+	{
+		if( ptr )
+			ptr->Release();
+	}
 };
 
 template< typename T >

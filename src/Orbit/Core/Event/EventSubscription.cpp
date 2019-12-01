@@ -20,7 +20,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-EventSubscription::EventSubscription()
+EventSubscription::EventSubscription( void )
 	: m_id            { 0 }
 	, m_deleter       { nullptr }
 	, m_control_block { nullptr }
@@ -56,7 +56,7 @@ EventSubscription::EventSubscription( EventSubscription&& other )
 	other.m_control_block     = nullptr;
 }
 
-EventSubscription::~EventSubscription()
+EventSubscription::~EventSubscription( void )
 {
 	if( m_control_block )
 	{

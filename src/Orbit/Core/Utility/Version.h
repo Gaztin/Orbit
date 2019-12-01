@@ -37,10 +37,32 @@ ORB_NAMESPACE_BEGIN
 class Version
 {
 public:
-	constexpr Version()                                               : major( 0 ), minor( 0 ), patch( 0 ) { }
-	constexpr explicit Version( uint8_t major )                       : major( major ), minor( 0 ), patch( 0 ) { }
-	constexpr Version( uint8_t major, uint8_t minor )                 : major( major ), minor( minor ), patch( 0 ) { }
-	constexpr Version( uint8_t major, uint8_t minor, uint16_t patch ) : major( major ), minor( minor ), patch( patch ) { }
+
+	constexpr Version( void )
+		: major( 0 )
+		, minor( 0 )
+		, patch( 0 )
+	{ }
+
+	constexpr explicit Version( uint8_t major )
+		: major( major )
+		, minor( 0 )
+		, patch( 0 )
+	{ }
+
+	constexpr Version( uint8_t major, uint8_t minor )
+		: major( major )
+		, minor( minor )
+		, patch( 0 )
+	{ }
+
+	constexpr Version( uint8_t major, uint8_t minor, uint16_t patch )
+		: major( major )
+		, minor( minor )
+		, patch( patch )
+	{ }
+
+public:
 
 	constexpr bool operator== ( const Version& v ) const { return ( major == v.major && minor == v.minor && patch == v.patch ); }
 	constexpr bool operator<  ( const Version& v ) const { return ( major < v.major || ( major == v.major && ( minor < v.minor || ( minor == v.minor && ( patch < v.patch ) ) ) ) ); }
@@ -48,16 +70,19 @@ public:
 	constexpr bool operator<= ( const Version& v ) const { return ( *this == v || *this < v ); }
 	constexpr bool operator>= ( const Version& v ) const { return ( *this == v || *this > v ); }
 
-	constexpr operator uint32_t() const
+	constexpr operator uint32_t( void ) const
 	{
 		return ( static_cast< uint32_t >( major ) << 24 ) |
 		       ( static_cast< uint32_t >( minor ) << 16 ) |
 		       ( static_cast< uint32_t >( patch ) );
 	}
 
+public:
+
 	uint8_t  major;
 	uint8_t  minor;
 	uint16_t patch;
+
 };
 
 ORB_NAMESPACE_END

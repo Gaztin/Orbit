@@ -19,7 +19,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-Color::Color()
+Color::Color( void )
 	: r( 0.0f )
 	, g( 0.0f )
 	, b( 0.0f )

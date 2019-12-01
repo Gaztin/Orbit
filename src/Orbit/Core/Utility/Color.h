@@ -25,16 +25,22 @@ ORB_NAMESPACE_BEGIN
 class ORB_API_CORE Color
 {
 public:
-	Color();
+
+	Color( void );
 	Color( float r, float g, float b, float a = 1.0f );
+
+public:
 
 	float&       operator[]( size_t i )       { return ( &r )[ i ]; }
 	const float& operator[]( size_t i ) const { return ( &r )[ i ]; }
+
+public:
 
 	float r;
 	float g;
 	float b;
 	float a;
+
 };
 
 ORB_NAMESPACE_END

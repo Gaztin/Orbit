@@ -26,30 +26,39 @@ ORB_NAMESPACE_BEGIN
 class ORB_API_CORE EventSubscription
 {
 public:
+
 	struct Deleter
 	{
 		void* user_data;
 		void( *functor )( uint64_t id, void* user_data );
 	};
 
-	EventSubscription();
+public:
+
+	EventSubscription( void );
 	EventSubscription( uint64_t id, Deleter deleter );
 	EventSubscription( const EventSubscription& other );
 	EventSubscription( EventSubscription&& other );
-	~EventSubscription();
+	~EventSubscription( void );
+
+public:
 
 	EventSubscription& operator=( const EventSubscription& other );
 	EventSubscription& operator=( EventSubscription&& other );
 
 private:
+
 	struct ControlBlock
 	{
 		std::atomic_uint64_t m_ref_count;
 	};
 
+private:
+
 	uint64_t      m_id;
 	Deleter       m_deleter;
 	ControlBlock* m_control_block;
+
 };
 
 ORB_NAMESPACE_END

@@ -68,35 +68,35 @@ enum class IndexFormat
 template< typename T >
 struct IndexFormatTraits
 {
-	static constexpr bool        kEnabled = false;
-	static constexpr IndexFormat kFormat  = static_cast< IndexFormat >( 0 );
+	static constexpr bool        enabled = false;
+	static constexpr IndexFormat format  = static_cast< IndexFormat >( 0 );
 };
 
 template< typename T >
-constexpr auto is_index_format_v = IndexFormatTraits< T >::kEnabled;
+constexpr auto is_index_format_v = IndexFormatTraits< T >::enabled;
 
 template< typename T >
-constexpr auto index_format_v = IndexFormatTraits< T >::kFormat;
+constexpr auto index_format_v = IndexFormatTraits< T >::format;
 
 template<>
 struct IndexFormatTraits< uint8_t >
 {
-	static constexpr bool        kEnabled = true;
-	static constexpr IndexFormat kFormat  = IndexFormat::Byte;
+	static constexpr bool        enabled = true;
+	static constexpr IndexFormat format  = IndexFormat::Byte;
 };
 
 template<>
 struct IndexFormatTraits< uint16_t >
 {
-	static constexpr bool        kEnabled = true;
-	static constexpr IndexFormat kFormat  = IndexFormat::Word;
+	static constexpr bool        enabled = true;
+	static constexpr IndexFormat format  = IndexFormat::Word;
 };
 
 template<>
 struct IndexFormatTraits< uint32_t >
 {
-	static constexpr bool        kEnabled = true;
-	static constexpr IndexFormat kFormat  = IndexFormat::DoubleWord;
+	static constexpr bool        enabled = true;
+	static constexpr IndexFormat format  = IndexFormat::DoubleWord;
 };
 
 ORB_NAMESPACE_END

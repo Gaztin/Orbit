@@ -35,7 +35,6 @@ namespace Private
 	};
 
 #endif
-
 #if _ORB_HAS_GRAPHICS_API_D3D11
 
 	struct _VertexBufferImplD3D11

@@ -33,10 +33,12 @@ class EventDispatcher
 {
 public:
 
-	EventDispatcher() = default;
-	virtual ~EventDispatcher() = default;
+	EventDispatcher( void ) = default;
+	virtual ~EventDispatcher( void ) = default;
 
 	ORB_DISABLE_COPY_AND_MOVE( EventDispatcher );
+
+public:
 
 	template< typename Functor >
 	[[ nodiscard ]] EventSubscription Subscribe( Functor&& functor )
@@ -96,6 +98,8 @@ private:
 		std::list< Subscriber< T > > subscribers;
 	};
 
+private:
+
 	uint64_t GenerateUniqueID() const
 	{
 		static std::atomic_uint64_t counter = 0;
@@ -131,6 +135,8 @@ private:
 
 		queue.events.clear();
 	}
+
+private:
 
 	std::tuple< Queue< Types >... > m_queues;
 

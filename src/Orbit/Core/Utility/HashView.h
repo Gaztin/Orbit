@@ -27,7 +27,7 @@ class HashView
 {
 public:
 
-	constexpr HashView()
+	constexpr HashView( void )
 		: m_value { }
 	{ }
 

@@ -31,27 +31,37 @@ ORB_NAMESPACE_BEGIN
 class ORB_API_CORE ApplicationBase
 {
 public:
-	ApplicationBase() = default;
-	virtual ~ApplicationBase() = default;
 
-	virtual void OnFrame() { }
-	virtual bool IsRunning() = 0;
+	ApplicationBase( void ) = default;
+	virtual ~ApplicationBase( void ) = default;
 
-	static void RunInstance();
+public:
+
+	virtual void OnFrame( void ) { }
+	virtual bool IsRunning( void ) = 0;
+
+public:
+
+	static void RunInstance( void );
+
 };
 
-extern ORB_API_CORE ApplicationBase*( *_application_initializer )();
+extern ORB_API_CORE ApplicationBase*( *_application_initializer )( void );
 
 template< typename Derived >
 class Application : private ApplicationBase
 {
 public:
-	virtual ~Application() = default;
+
+	virtual ~Application( void ) = default;
+
+private:
 
 	static volatile int _initializer_eval;
+
 };
 
 template< typename Derived >
-volatile int Application< Derived >::_initializer_eval = ( _application_initializer = []() -> ApplicationBase* { return new Derived(); }, 1 );
+volatile int Application< Derived >::_initializer_eval = ( _application_initializer = []( void ) -> ApplicationBase* { return new Derived(); }, 1 );
 
 ORB_NAMESPACE_END

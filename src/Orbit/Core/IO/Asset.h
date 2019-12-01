@@ -26,12 +26,15 @@ ORB_NAMESPACE_BEGIN
 class ORB_API_CORE Asset
 {
 public:
+
 	explicit Asset( std::string_view path );
 
 	const std::vector< uint8_t >& GetData() const { return m_data; }
 
 private:
+
 	std::vector< uint8_t > m_data;
+
 };
 
 ORB_NAMESPACE_END

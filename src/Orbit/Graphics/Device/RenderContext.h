@@ -25,7 +25,7 @@ class ORB_API_GRAPHICS RenderContext
 {
 public:
 
-	explicit RenderContext( const Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
+	explicit RenderContext( const Window& parent_window, GraphicsAPI api = default_graphics_api );
 	~RenderContext( void );
 
 public:

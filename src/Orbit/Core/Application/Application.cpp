@@ -25,10 +25,11 @@
 
 ORB_NAMESPACE_BEGIN
 
-ApplicationBase*( *_application_initializer )() = nullptr;
+ApplicationBase*( *_application_initializer )( void ) = nullptr;
 
 void ApplicationBase::RunInstance()
 {
+
 #if defined( ORB_OS_IOS )
 
 	@autoreleasepool
@@ -52,6 +53,7 @@ void ApplicationBase::RunInstance()
 	delete instance;
 
 #endif
+
 }
 
 ORB_NAMESPACE_END
@@ -66,7 +68,7 @@ ORB_NAMESPACE_END
 	ORB_NAMESPACE log_info( "didFinishLaunchingWithOptions()" );
 
 	if( ORB_NAMESPACE _application_initializer && !ORB_NAMESPACE _application_instance )
-		ORB_NAMESPACE _application_instance = std::static_pointer_cast< ORB_NAMESPACE ApplicationBase >( ORB_NAMESPACE _application_initializer() );
+		ORB_NAMESPACE _application_instance = ORB_NAMESPACE _application_initializer();
 
 	CADisplayLink* display_link = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( frame: ) ];
 	[ display_link addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
