@@ -150,8 +150,9 @@ local function decl_sample( name )
 	table.insert( samples, fullname )
 end
 
-workspace( 'Orbit' )
-	startproject( '01.Base' )
+local workspace_name = 'Orbit'
+
+workspace( workspace_name )
 	platforms( get_platforms() )
 	configurations { 'Debug', 'Release' }
 	gradleversion( 'com.android.tools.build:gradle:3.1.4' )
@@ -183,3 +184,6 @@ decl_module( 'Graphics' )
 	filter { }
 
 decl_sample( 'Triangle' )
+
+workspace( workspace_name )
+	startproject( samples[ 1 ] )
