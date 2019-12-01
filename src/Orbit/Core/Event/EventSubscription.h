@@ -29,8 +29,8 @@ public:
 
 	struct Deleter
 	{
-		void* user_data;
-		void( *functor )( uint64_t id, void* user_data );
+		const void* user_data;
+		void( *functor )( uint64_t id, const void* user_data );
 	};
 
 public:

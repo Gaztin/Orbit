@@ -789,7 +789,7 @@ namespace OpenGL
 			Function( const Function& ) = delete;
 			Function( Function&& ) = default;
 
-			R operator()( Args... args )
+			R operator()( Args... args ) const
 			{
 				using Proc = R( ORB_GL_CALL* )( Args... );
 
