@@ -28,19 +28,22 @@ class VertexShader;
 class ORB_API_GRAPHICS GraphicsPipeline
 {
 public:
-	GraphicsPipeline();
-	~GraphicsPipeline();
 
-	void Bind();
-	void Unbind();
-	void SetShaders( const VertexShader& vert, const FragmentShader& frag );
+	 GraphicsPipeline( void );
+	~GraphicsPipeline( void );
+
+public:
+
+	void Bind                ( void );
+	void Unbind              ( void );
+	void SetShaders          ( const VertexShader& vert, const FragmentShader& frag );
 	void DescribeVertexLayout( VertexLayout layout );
-
-	void Draw( const VertexBuffer& vb );
-	void Draw( const IndexBuffer& ib );
+	void Draw                ( const VertexBuffer& vb );
+	void Draw                ( const IndexBuffer& ib );
 
 private:
-	GraphicsPipelineImpl m_impl;
+
+	Private::GraphicsPipelineImpl m_impl;
 
 };
 

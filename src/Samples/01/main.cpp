@@ -44,7 +44,7 @@ public:
 	SampleApp();
 
 	void OnFrame() override;
-	bool IsRunning() override { return !!m_window; }
+	bool IsRunning() override { return m_window.IsOpen(); }
 
 	static void OnWindowResize( const Orbit::WindowResized& e );
 	static void OnWindowMove( const Orbit::WindowMoved& e );

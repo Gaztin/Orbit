@@ -24,31 +24,39 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _ConstantBufferImplOpenGL20
+namespace Private
 {
-};
-struct _ConstantBufferImplOpenGL31
-{
-	GLuint id;
-};
-#endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _ConstantBufferImplD3D11
-{
-	ComPtr< ID3D11Buffer > buffer;
-};
-#endif
-
-using ConstantBufferImpl = std::variant< std::monostate
 #if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _ConstantBufferImplOpenGL20
-	, _ConstantBufferImplOpenGL31
+
+	struct _ConstantBufferImplOpenGL20
+	{
+	};
+
+	struct _ConstantBufferImplOpenGL31
+	{
+		GLuint id;
+	};
+
 #endif
 #if _ORB_HAS_GRAPHICS_API_D3D11
-	, _ConstantBufferImplD3D11
+
+	struct _ConstantBufferImplD3D11
+	{
+		ComPtr< ID3D11Buffer > buffer;
+	};
+
 #endif
->;
+
+	using ConstantBufferImpl = std::variant< std::monostate
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		, _ConstantBufferImplOpenGL20
+		, _ConstantBufferImplOpenGL31
+	#endif
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		, _ConstantBufferImplD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

@@ -27,49 +27,46 @@
 
 ORB_NAMESPACE_BEGIN
 
-template< typename T >
-constexpr auto render_context_impl_index_v = unique_index_v< T, RenderContextImpl >;
-
-template< typename T >
-constexpr auto graphics_pipeline_impl_index_v = unique_index_v< T, GraphicsPipelineImpl >;
-
-GraphicsPipeline::GraphicsPipeline()
+GraphicsPipeline::GraphicsPipeline( void )
 	: m_impl { }
 {
-	auto context_impl_ptr = RenderContext::GetCurrent()->GetImplPtr();
+	auto& context_impl_var = RenderContext::GetCurrent()->GetPrivateImpl();
 
-	switch( context_impl_ptr->index() )
+	switch( context_impl_var.index() )
 	{
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( render_context_impl_index_v< _RenderContextImplOpenGL > ):
-		{
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( context_impl_ptr );
 
-			if( ( context_impl->embedded && context_impl->opengl_version < Version( 3 ) ) || ( !context_impl->embedded && context_impl->opengl_version < Version( 3, 0 ) ) )
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+
+		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		{
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( context_impl_var );
+
+			if( ( context_impl.embedded && context_impl.opengl_version < Version( 3 ) ) || ( !context_impl.embedded && context_impl.opengl_version < Version( 3, 0 ) ) )
 			{
-				auto impl = std::addressof( m_impl.emplace< _GraphicsPipelineImplOpenGL20 >() );
+				auto impl = std::addressof( m_impl.emplace< Private::_GraphicsPipelineImplOpenGL20 >() );
 
 				impl->stride         = 0;
-				impl->shader_program = context_impl->functions->create_program();
+				impl->shader_program = context_impl.functions->create_program();
 			}
 			else
 			{
-				auto impl = std::addressof( m_impl.emplace< _GraphicsPipelineImplOpenGL30 >() );
+				auto impl = std::addressof( m_impl.emplace< Private::_GraphicsPipelineImplOpenGL30 >() );
 
 				impl->stride         = 0;
-				impl->shader_program = context_impl->functions->create_program();
-				context_impl->functions->gen_vertex_arrays( 1, &impl->vao );
+				impl->shader_program = context_impl.functions->create_program();
+				context_impl.functions->gen_vertex_arrays( 1, &impl->vao );
 			}
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( render_context_impl_index_v< _RenderContextImplD3D11 > ):
+
+		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
-			auto impl         = std::addressof( m_impl.emplace< _GraphicsPipelineImplD3D11 >() );
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
+			auto& impl         = m_impl.emplace< Private::_GraphicsPipelineImplD3D11 >();
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
 
 			D3D11_SAMPLER_DESC desc { };
 			desc.Filter           = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -87,70 +84,72 @@ GraphicsPipeline::GraphicsPipeline()
 			desc.MaxLOD           = D3D11_FLOAT32_MAX;
 
 			ID3D11SamplerState* sampler_state;
-			if( context_impl->device->CreateSamplerState( &desc, &sampler_state ) == S_OK )
+			if( context_impl.device->CreateSamplerState( &desc, &sampler_state ) == S_OK )
 			{
-				impl->sampler_state.reset( sampler_state );
+				impl.sampler_state.reset( sampler_state );
 			}
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
-GraphicsPipeline::~GraphicsPipeline()
+GraphicsPipeline::~GraphicsPipeline( void )
 {
 	switch( m_impl.index() )
 	{
+
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL20 > ):
-		{
-			auto impl         = std::get_if< _GraphicsPipelineImplOpenGL20 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->delete_program( impl->shader_program );
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
+		{
+			auto& impl         = std::get< Private::_GraphicsPipelineImplOpenGL20 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->delete_program( impl.shader_program );
 
 			break;
 		}
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL30 > ):
-		{
-			auto impl         = std::get_if< _GraphicsPipelineImplOpenGL30 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->delete_program( impl->shader_program );
-			context_impl->functions->delete_vertex_arrays( 1, &impl->vao );
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL30, Private::GraphicsPipelineImpl > ):
+		{
+			auto& impl         = std::get< Private::_GraphicsPipelineImplOpenGL30 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->delete_program( impl.shader_program );
+			context_impl.functions->delete_vertex_arrays( 1, &impl.vao );
 
 			break;
 		}
+
 	#endif
 
-	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplD3D11 > ):
-		{
-			break;
-		}
-	#endif
 	}
 }
 
-void GraphicsPipeline::Bind()
+void GraphicsPipeline::Bind( void )
 {
 	switch( m_impl.index() )
 	{
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL20 > ):
-		{
-			auto impl         = std::get_if< _GraphicsPipelineImplOpenGL20 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->use_program( impl->shader_program );
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
+		{
+			auto& impl         = std::get< Private::_GraphicsPipelineImplOpenGL20 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->use_program( impl.shader_program );
 
 			const uint8_t* ptr = nullptr;
-			for( GLuint i = 0; i < impl->layout.size(); ++i )
+			for( GLuint i = 0; i < impl.layout.size(); ++i )
 			{
 				OpenGL::VertexAttribDataType data_type { };
 				GLint                        data_length = 0;
-				VertexComponent::Type        type        = impl->layout[ i ].type;
+				VertexComponent::Type        type        = impl.layout[ i ].type;
 
 				switch( type )
 				{
@@ -189,8 +188,8 @@ void GraphicsPipeline::Bind()
 					}
 				}
 
-				context_impl->functions->enable_vertex_attrib_array( i );
-				context_impl->functions->vertex_attrib_pointer( i, data_length, data_type, GL_FALSE, impl->stride, ptr );
+				context_impl.functions->enable_vertex_attrib_array( i );
+				context_impl.functions->vertex_attrib_pointer( i, data_length, data_type, GL_FALSE, impl.stride, ptr );
 
 				switch( type )
 				{
@@ -203,20 +202,20 @@ void GraphicsPipeline::Bind()
 
 			break;
 		}
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL30 > ):
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL30, Private::GraphicsPipelineImpl > ):
 		{
-			auto impl         = std::get_if< _GraphicsPipelineImplOpenGL30 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
+			auto& impl         = std::get< Private::_GraphicsPipelineImplOpenGL30 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
 
-			context_impl->functions->bind_vertex_array( impl->vao );
-			context_impl->functions->use_program( impl->shader_program );
+			context_impl.functions->bind_vertex_array( impl.vao );
+			context_impl.functions->use_program( impl.shader_program );
 
 			const uint8_t* ptr = nullptr;
-			for( GLuint i = 0; i < impl->layout.size(); ++i )
+			for( GLuint i = 0; i < impl.layout.size(); ++i )
 			{
 				OpenGL::VertexAttribDataType data_type { };
 				GLint                        data_length = 0;
-				VertexComponent::Type        type        = impl->layout[ i ].type;
+				VertexComponent::Type        type        = impl.layout[ i ].type;
 
 				switch( type )
 				{
@@ -255,8 +254,8 @@ void GraphicsPipeline::Bind()
 					}
 					}
 
-				context_impl->functions->enable_vertex_attrib_array( i );
-				context_impl->functions->vertex_attrib_pointer( i, data_length, data_type, GL_FALSE, impl->stride, ptr );
+				context_impl.functions->enable_vertex_attrib_array( i );
+				context_impl.functions->vertex_attrib_pointer( i, data_length, data_type, GL_FALSE, impl.stride, ptr );
 
 				switch( type )
 				{
@@ -269,75 +268,84 @@ void GraphicsPipeline::Bind()
 
 			break;
 		}
+
 	#endif
-
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplD3D11 > ):
+
+		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
 		{
-			auto impl         = std::get_if< _GraphicsPipelineImplD3D11 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
+			auto& impl         = std::get< Private::_GraphicsPipelineImplD3D11 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
 
-			if( impl->input_layout )  context_impl->device_context->IASetInputLayout( impl->input_layout.get() );
-			if( impl->vertex_shader ) context_impl->device_context->VSSetShader( impl->vertex_shader.get(), nullptr, 0 );
-			if( impl->pixel_shader )  context_impl->device_context->PSSetShader( impl->pixel_shader.get(), nullptr, 0 );
+			if( impl.input_layout )  context_impl.device_context->IASetInputLayout( impl.input_layout.get() );
+			if( impl.vertex_shader ) context_impl.device_context->VSSetShader( impl.vertex_shader.get(), nullptr, 0 );
+			if( impl.pixel_shader )  context_impl.device_context->PSSetShader( impl.pixel_shader.get(), nullptr, 0 );
 
-			if( impl->sampler_state )
+			if( impl.sampler_state )
 			{
-				ID3D11SamplerState* sampler_state = impl->sampler_state.get();
-				context_impl->device_context->PSSetSamplers( 0, 1, &sampler_state );
+				ID3D11SamplerState* sampler_state = impl.sampler_state.get();
+				context_impl.device_context->PSSetSamplers( 0, 1, &sampler_state );
 			}
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
-void GraphicsPipeline::Unbind()
+void GraphicsPipeline::Unbind( void )
 {
 	switch( m_impl.index() )
 	{
+
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL20 > ):
+
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
 		{
-			auto impl         = std::get_if< _GraphicsPipelineImplOpenGL20 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
+			auto& impl         = std::get< Private::_GraphicsPipelineImplOpenGL20 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
 
-			for( GLuint i = 0; i < impl->layout.size(); ++i )
-				context_impl->functions->disable_vertex_attrib_array( i );
+			for( GLuint i = 0; i < impl.layout.size(); ++i )
+				context_impl.functions->disable_vertex_attrib_array( i );
 
-			context_impl->functions->use_program( 0 );
+			context_impl.functions->use_program( 0 );
 
 			break;
 		}
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL30 > ):
+
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL30, Private::GraphicsPipelineImpl > ):
 		{
-			auto impl         = std::get_if< _GraphicsPipelineImplOpenGL30 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
+			auto& impl         = std::get< Private::_GraphicsPipelineImplOpenGL30 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
 
-			for( GLuint i = 0; i < impl->layout.size(); ++i )
-				context_impl->functions->disable_vertex_attrib_array( i );
+			for( GLuint i = 0; i < impl.layout.size(); ++i )
+				context_impl.functions->disable_vertex_attrib_array( i );
 
-			context_impl->functions->use_program( 0 );
-			context_impl->functions->bind_vertex_array( 0 );
+			context_impl.functions->use_program( 0 );
+			context_impl.functions->bind_vertex_array( 0 );
 
 			break;
 		}
+
 	#endif
-
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplD3D11 > ):
-		{
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->device_context->PSSetSamplers( 0, 0, nullptr );
-			context_impl->device_context->IASetInputLayout( nullptr );
-			context_impl->device_context->VSSetShader( nullptr, nullptr, 0 );
-			context_impl->device_context->PSSetShader( nullptr, nullptr, 0 );
+		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
+		{
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.device_context->PSSetSamplers( 0, 0, nullptr );
+			context_impl.device_context->IASetInputLayout( nullptr );
+			context_impl.device_context->VSSetShader( nullptr, nullptr, 0 );
+			context_impl.device_context->PSSetShader( nullptr, nullptr, 0 );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
@@ -345,72 +353,78 @@ void GraphicsPipeline::SetShaders( const VertexShader& vert, const FragmentShade
 {
 	switch( m_impl.index() )
 	{
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL20 > ):
-		{
-			auto impl          = std::get_if< _GraphicsPipelineImplOpenGL20 >( &m_impl );
-			auto impl_vert     = std::get_if< _VertexShaderImplOpenGL >( vert.GetImplPtr() );
-			auto impl_frag     = std::get_if< _FragmentShaderImplOpenGL >( frag.GetImplPtr() );
-			auto constext_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			constext_impl->functions->attach_shader( impl->shader_program, impl_vert->id );
-			constext_impl->functions->attach_shader( impl->shader_program, impl_frag->id );
-			constext_impl->functions->link_program( impl->shader_program );
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
+		{
+			auto& impl          = std::get< Private::_GraphicsPipelineImplOpenGL20 >( m_impl );
+			auto& impl_vert     = std::get< Private::_VertexShaderImplOpenGL >( vert.GetPrivateImpl() );
+			auto& impl_frag     = std::get< Private::_FragmentShaderImplOpenGL >( frag.GetPrivateImpl() );
+			auto& constext_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			constext_impl.functions->attach_shader( impl.shader_program, impl_vert.id );
+			constext_impl.functions->attach_shader( impl.shader_program, impl_frag.id );
+			constext_impl.functions->link_program( impl.shader_program );
 
 			GLint loglen = 0;
-			constext_impl->functions->get_programiv( impl->shader_program, OpenGL::ProgramParam::InfoLogLength, &loglen );
+			constext_impl.functions->get_programiv( impl.shader_program, OpenGL::ProgramParam::InfoLogLength, &loglen );
 			if( loglen > 0 )
 			{
 				std::string logbuf( static_cast< size_t >( loglen ), '\0' );
-				constext_impl->functions->get_program_info_log( impl->shader_program, loglen, nullptr, &logbuf[ 0 ] );
+				constext_impl.functions->get_program_info_log( impl.shader_program, loglen, nullptr, &logbuf[ 0 ] );
 				( logbuf );
 			}
 
 			break;
 		}
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL30 > ):
-		{
-			auto impl          = std::get_if< _GraphicsPipelineImplOpenGL30 >( &m_impl );
-			auto impl_vert     = std::get_if< _VertexShaderImplOpenGL >( vert.GetImplPtr() );
-			auto impl_frag     = std::get_if< _FragmentShaderImplOpenGL >( frag.GetImplPtr() );
-			auto constext_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			constext_impl->functions->attach_shader( impl->shader_program, impl_vert->id );
-			constext_impl->functions->attach_shader( impl->shader_program, impl_frag->id );
-			constext_impl->functions->link_program( impl->shader_program );
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL30, Private::GraphicsPipelineImpl > ):
+		{
+			auto& impl          = std::get< Private::_GraphicsPipelineImplOpenGL30 >( m_impl );
+			auto& impl_vert     = std::get< Private::_VertexShaderImplOpenGL >( vert.GetPrivateImpl() );
+			auto& impl_frag     = std::get< Private::_FragmentShaderImplOpenGL >( frag.GetPrivateImpl() );
+			auto& constext_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			constext_impl.functions->attach_shader( impl.shader_program, impl_vert.id );
+			constext_impl.functions->attach_shader( impl.shader_program, impl_frag.id );
+			constext_impl.functions->link_program( impl.shader_program );
 
 			GLint loglen = 0;
-			constext_impl->functions->get_programiv( impl->shader_program, OpenGL::ProgramParam::InfoLogLength, &loglen );
+			constext_impl.functions->get_programiv( impl.shader_program, OpenGL::ProgramParam::InfoLogLength, &loglen );
 			if( loglen > 0 )
 			{
 				std::string logbuf( static_cast< size_t >( loglen ), '\0' );
-				constext_impl->functions->get_program_info_log( impl->shader_program, loglen, nullptr, &logbuf[ 0 ] );
+				constext_impl.functions->get_program_info_log( impl.shader_program, loglen, nullptr, &logbuf[ 0 ] );
 				LogError( logbuf );
 			}
 
 			break;
 		}
+
 	#endif
-
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplD3D11 > ):
+
+		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
 		{
-			auto impl      = std::get_if< _GraphicsPipelineImplD3D11 >( &m_impl );
-			auto impl_vert = std::get_if< _VertexShaderImplD3D11 >( vert.GetImplPtr() );
-			auto impl_frag = std::get_if< _FragmentShaderImplD3D11 >( frag.GetImplPtr() );
+			auto& impl      = std::get< Private::_GraphicsPipelineImplD3D11 >( m_impl );
+			auto& impl_vert = std::get< Private::_VertexShaderImplD3D11 >( vert.GetPrivateImpl() );
+			auto& impl_frag = std::get< Private::_FragmentShaderImplD3D11 >( frag.GetPrivateImpl() );
 
-			impl->vertex_data.reset( impl_vert->vertex_data.get() );
-			impl->vertex_data->AddRef();
+			impl.vertex_data.reset( impl_vert.vertex_data.get() );
+			impl.vertex_data->AddRef();
 
-			impl->vertex_shader.reset( impl_vert->vertex_shader.get() );
-			impl->vertex_shader->AddRef();
+			impl.vertex_shader.reset( impl_vert.vertex_shader.get() );
+			impl.vertex_shader->AddRef();
 
-			impl->pixel_shader.reset( impl_frag->pixel_shader.get() );
-			impl->pixel_shader->AddRef();
+			impl.pixel_shader.reset( impl_frag.pixel_shader.get() );
+			impl.pixel_shader->AddRef();
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
@@ -418,58 +432,62 @@ void GraphicsPipeline::DescribeVertexLayout( VertexLayout layout )
 {
 	switch( m_impl.index() )
 	{
+
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL20 > ):
-		{
-			auto impl = std::get_if< _GraphicsPipelineImplOpenGL20 >( &m_impl );
 
-			impl->layout.assign( layout );
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
+		{
+			auto& impl = std::get< Private::_GraphicsPipelineImplOpenGL20 >( m_impl );
+
+			impl.layout.assign( layout );
 
 			/* Calculate stride */
-			impl->stride = 0;
-			for( const VertexComponent& cmp : impl->layout )
+			impl.stride = 0;
+			for( const VertexComponent& cmp : impl.layout )
 			{
 				switch( cmp.type )
 				{
-					case VertexComponent::Float: { impl->stride += sizeof( float ) * 1; } break;
-					case VertexComponent::Vec2:  { impl->stride += sizeof( float ) * 2; } break;
-					case VertexComponent::Vec3:  { impl->stride += sizeof( float ) * 3; } break;
-					case VertexComponent::Vec4:  { impl->stride += sizeof( float ) * 4; } break;
+					case VertexComponent::Float: { impl.stride += sizeof( float ) * 1; } break;
+					case VertexComponent::Vec2:  { impl.stride += sizeof( float ) * 2; } break;
+					case VertexComponent::Vec3:  { impl.stride += sizeof( float ) * 3; } break;
+					case VertexComponent::Vec4:  { impl.stride += sizeof( float ) * 4; } break;
 				}
 			}
 
 			break;
 		}
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL30 > ):
-		{
-			auto impl = std::get_if< _GraphicsPipelineImplOpenGL30 >( &m_impl );
 
-			impl->layout.assign( layout );
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL30, Private::GraphicsPipelineImpl > ):
+		{
+			auto& impl = std::get< Private::_GraphicsPipelineImplOpenGL30 >( m_impl );
+
+			impl.layout.assign( layout );
 
 			/* Calculate stride */
-			impl->stride = 0;
-			for( const VertexComponent& cmp : impl->layout )
+			impl.stride = 0;
+			for( const VertexComponent& cmp : impl.layout )
 			{
 				switch( cmp.type )
 				{
-					case VertexComponent::Float: { impl->stride += sizeof( float ) * 1; } break;
-					case VertexComponent::Vec2:  { impl->stride += sizeof( float ) * 2; } break;
-					case VertexComponent::Vec3:  { impl->stride += sizeof( float ) * 3; } break;
-					case VertexComponent::Vec4:  { impl->stride += sizeof( float ) * 4; } break;
+					case VertexComponent::Float: { impl.stride += sizeof( float ) * 1; } break;
+					case VertexComponent::Vec2:  { impl.stride += sizeof( float ) * 2; } break;
+					case VertexComponent::Vec3:  { impl.stride += sizeof( float ) * 3; } break;
+					case VertexComponent::Vec4:  { impl.stride += sizeof( float ) * 4; } break;
 				}
 			}
 
 			break;
 		}
+
 	#endif
-
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplD3D11 > ):
-		{
-			auto impl         = std::get_if< _GraphicsPipelineImplD3D11 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			if( !impl->vertex_data )
+		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
+		{
+			auto& impl         = std::get< Private::_GraphicsPipelineImplD3D11 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			if( !impl.vertex_data )
 			{
 				LogError( "Failed to describe vertex layout in graphics pipeline. Vertex shader missing." );
 				break;
@@ -477,6 +495,7 @@ void GraphicsPipeline::DescribeVertexLayout( VertexLayout layout )
 
 			std::vector< D3D11_INPUT_ELEMENT_DESC > descriptors;
 			descriptors.reserve( layout.size() );
+
 			for( const VertexComponent& cmp : layout )
 			{
 				D3D11_INPUT_ELEMENT_DESC desc{ };
@@ -497,12 +516,14 @@ void GraphicsPipeline::DescribeVertexLayout( VertexLayout layout )
 			}
 
 			ID3D11InputLayout* input_layout = nullptr;
-			context_impl->device->CreateInputLayout( descriptors.data(), static_cast< UINT >( descriptors.size() ), impl->vertex_data->GetBufferPointer(), impl->vertex_data->GetBufferSize(), &input_layout );
-			impl->input_layout.reset( input_layout );
+			context_impl.device->CreateInputLayout( descriptors.data(), static_cast< UINT >( descriptors.size() ), impl.vertex_data->GetBufferPointer(), impl.vertex_data->GetBufferSize(), &input_layout );
+			impl.input_layout.reset( input_layout );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
@@ -510,27 +531,32 @@ void GraphicsPipeline::Draw( const VertexBuffer& vb )
 {
 	switch( m_impl.index() )
 	{
+
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL20 > ):
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL30 > ):
+
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL30, Private::GraphicsPipelineImpl > ):
 		{
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
-			context_impl->functions->draw_arrays( OpenGL::DrawMode::Triangles, 0, static_cast< GLsizei >( vb.GetCount() ) );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			context_impl.functions->draw_arrays( OpenGL::DrawMode::Triangles, 0, static_cast< GLsizei >( vb.GetCount() ) );
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplD3D11 > ):
-		{
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->device_context->Draw( static_cast< UINT >( vb.GetCount() ), 0 );
+		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
+		{
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.device_context->Draw( static_cast< UINT >( vb.GetCount() ), 0 );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
@@ -538,11 +564,13 @@ void GraphicsPipeline::Draw( const IndexBuffer& ib )
 {
 	switch( m_impl.index() )
 	{
+
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL20 > ):
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplOpenGL30 > ):
+
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
+		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL30, Private::GraphicsPipelineImpl > ):
 		{
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
 
 			OpenGL::IndexType index_type { };
 			switch( ib.GetFormat() )
@@ -552,22 +580,25 @@ void GraphicsPipeline::Draw( const IndexBuffer& ib )
 				case IndexFormat::DoubleWord: { index_type = OpenGL::IndexType::Int;   } break;
 			}
 
-			context_impl->functions->draw_elements( OpenGL::DrawMode::Triangles, static_cast< GLsizei >( ib.GetCount() ), index_type, nullptr );
+			context_impl.functions->draw_elements( OpenGL::DrawMode::Triangles, static_cast< GLsizei >( ib.GetCount() ), index_type, nullptr );
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( graphics_pipeline_impl_index_v< _GraphicsPipelineImplD3D11 > ):
-		{
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->device_context->DrawIndexed( static_cast< UINT >( ib.GetCount() ), 0, 0 );
+		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
+		{
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.device_context->DrawIndexed( static_cast< UINT >( ib.GetCount() ), 0, 0 );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 

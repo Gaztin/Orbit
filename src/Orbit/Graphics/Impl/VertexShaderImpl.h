@@ -24,28 +24,35 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _VertexShaderImplOpenGL
+namespace Private
 {
-	GLuint id;
-};
-#endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _VertexShaderImplD3D11
-{
-	ComPtr< ID3DBlob >           vertex_data;
-	ComPtr< ID3D11VertexShader > vertex_shader;
-};
-#endif
-
-using VertexShaderImpl = std::variant< std::monostate
 #if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _VertexShaderImplOpenGL
+
+	struct _VertexShaderImplOpenGL
+	{
+		GLuint id;
+	};
+
 #endif
 #if _ORB_HAS_GRAPHICS_API_D3D11
-	, _VertexShaderImplD3D11
+
+	struct _VertexShaderImplD3D11
+	{
+		ComPtr< ID3DBlob >           vertex_data;
+		ComPtr< ID3D11VertexShader > vertex_shader;
+	};
+
 #endif
->;
+
+	using VertexShaderImpl = std::variant< std::monostate
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		, _VertexShaderImplOpenGL
+	#endif
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		, _VertexShaderImplD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

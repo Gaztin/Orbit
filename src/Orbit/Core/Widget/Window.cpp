@@ -24,924 +24,676 @@
 #  include <android_native_app_glue.h>
 #endif
 
-#if _ORB_HAS_WINDOW_API_COCOA
+#if defined( ORB_OS_MACOS )
 #  include <AppKit/AppKit.h>
 @interface OrbitWindowDelegate : NSObject< NSWindowDelegate >
-@property ORB_NAMESPACE Window*     window_ptr;
-@property ORB_NAMESPACE WindowImpl* impl;
+@property ORB_NAMESPACE Window* window;
 @end
 #endif
 
-#if _ORB_HAS_WINDOW_API_UIKIT
+#if defined( ORB_OS_IOS )
 #  include <UIKit/UIKit.h>
 @interface OrbitUIWindow : UIWindow
-@property ORB_NAMESPACE Window* window_ptr;
+@property ORB_NAMESPACE Window* window;
 @end
 #endif
 
 ORB_NAMESPACE_BEGIN
 
-template< typename T >
-constexpr auto window_impl_index_v = unique_index_v< T, WindowImpl >;
+#if defined( ORB_OS_WINDOWS )
+static ATOM RegisterWindowClass( LPCSTR name );
+#elif defined( ORB_OS_LINUX )
+static void HandleXEvent( Window* w, const XEvent& xevent );
+#elif defined( ORB_OS_ANDROID )
+static void AppCMD( android_app* state, int cmd );
+static int OnInput( android_app* state, AInputEvent* e );
+#endif
 
-Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height, WindowAPI api )
+Window::Window( uint32_t width, uint32_t height )
 	: m_impl { }
 	, m_open { true }
 {
-	switch( api )
+
+#if defined( ORB_OS_WINDOWS )
+
+	constexpr LPCSTR class_name   = "OrbitWindow";
+	static ATOM      window_class = RegisterWindowClass( class_name );
+
+	/* Create window */
+	m_impl.hwnd = CreateWindowExA( WS_EX_OVERLAPPEDWINDOW, class_name, NULL, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, NULL, NULL, GetModuleHandleA( NULL ), NULL );
+
+	/* Set user data */
+	SetWindowLongPtrA( m_impl.hwnd, GWLP_USERDATA, reinterpret_cast< LONG_PTR >( this ) );
+
+#elif defined( ORB_OS_LINUX )
+
+	/* Open display */
+	m_impl.display = XOpenDisplay( nullptr );
+
+	/* Create window */
+	const int               screen      = DefaultScreen( m_impl.display );
+	Window                  root_window = XRootWindow( m_impl.display, screen );
+	int                     depth       = DefaultDepth( m_impl.display, screen );
+	Visual*                 visual      = DefaultVisual( m_impl.display, screen );
+	constexpr unsigned long value_mask  = ( CWBackPixel | CWEventMask );
+	XSetWindowAttributes    attribs     = { };
+	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask );
+	m_impl.window                       = XCreateWindow( m_impl.display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, value_mask, &attribs );
+
+	/* Allow us to capture the window close event */
+	Atom close_atom = XInternAtom( m_impl.display, "WM_DELETE_WINDOW", True );
+	XSetWMProtocols( m_impl.display, m_impl.window, &close_atom, 1 );
+
+#elif defined( ORB_OS_MACOS )
+
+	NSRect             frame      = NSMakeRect( 0.0f, 0.0f, width, height );
+	NSWindowStyleMask  style_mask = ( NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable );
+	NSBackingStoreType backing    = ( NSBackingStoreBuffered );
+
+	/* Create window */
+	m_impl.ns_window = [ NSWindow alloc ];
+	[ ( NSWindow* )m_impl.ns_window initWithContentRect:frame styleMask:style_mask backing:backing defer:NO ];
+
+	/* Create window delegate */
+	m_impl.delegate = [ OrbitWindowDelegate alloc ];
+	[ ( NSWindow* )m_impl.ns_window setDelegate:( OrbitWindowDelegate* )m_impl.delegate ];
+	[ ( OrbitWindowDelegate* )m_impl.delegate setWindowPtr:this ];
+	[ ( OrbitWindowDelegate* )m_impl.delegate setImpl:&m_impl ];
+
+#elif defined( ORB_OS_ANDROID )
+
+	AndroidOnly::app->onInputEvent = OnInput;
+
+	m_impl.sensor_manager       = ASensorManager_getInstance();
+	m_impl.accelerometer_sensor = ASensorManager_getDefaultSensor( m_impl.sensor_manager, ASENSOR_TYPE_ACCELEROMETER );
+	m_impl.sensor_event_queue   = ASensorManager_createEventQueue( m_impl.sensor_manager, AndroidOnly::app->looper, LOOPER_ID_USER, nullptr, nullptr );
+
+	/* Update until native window is initialized. */
 	{
-		default: break;
-
-	#if _ORB_HAS_WINDOW_API_WIN32
-		case WindowAPI::Win32:
+		bool initialized = false;
+		AndroidOnly::app->userData = &initialized;
+		AndroidOnly::app->onAppCmd = []( android_app* state, int cmd )
 		{
-			auto             impl         = std::addressof( m_impl.emplace< _WindowImplWin32 >() );
-			constexpr LPCSTR kClassName   = "OrbitWindow";
-			static ATOM      window_class = [ & ]
+			if( cmd == APP_CMD_INIT_WINDOW )
 			{
-				auto window_proc = []( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
-				{
-					Window* w = reinterpret_cast< Window* >( GetWindowLongPtrA( hwnd, GWLP_USERDATA ) );
-					if( w == nullptr )
-						return DefWindowProcA( hwnd, msg, wparam, lparam );
-
-					switch( msg )
-					{
-						case WM_MOVE:
-						{
-							WindowMoved e;
-							e.x = LOWORD( lparam );
-							e.y = HIWORD( lparam );
-
-							w->QueueEvent( e );
-
-							break;
-						}
-
-						case WM_SIZE:
-						{
-							WindowResized e;
-							e.width  = LOWORD( lparam );
-							e.height = HIWORD( lparam );
-
-							w->QueueEvent( e );
-
-							break;
-						}
-
-						case WM_ACTIVATE:
-						{
-							WORD minimized_state = HIWORD( wparam );
-							WORD activated       = LOWORD( wparam );
-
-							if( minimized_state != 0 )
-							{
-								WindowStateChanged e;
-								e.state = ( activated == WA_INACTIVE ) ? WindowState::Suspend : WindowState::Restore;
-
-								w->QueueEvent( e );
-							}
-
-							break;
-						}
-
-						case WM_SETFOCUS:
-						{
-							WindowStateChanged e;
-							e.state = WindowState::Focus;
-
-							w->QueueEvent( e );
-
-							break;
-						}
-
-						case WM_KILLFOCUS:
-						{
-							WindowStateChanged e;
-							e.state = WindowState::Defocus;
-
-							w->QueueEvent( e );
-
-							break;
-						}
-
-						case WM_CLOSE:
-						{
-							WindowStateChanged e;
-							e.state = WindowState::Close;
-
-							w->QueueEvent( e );
-							w->Close();
-
-							break;
-						}
-					}
-
-					return DefWindowProcA( hwnd, msg, wparam, lparam );
-				};
-
-				WNDCLASSEXA classDesc{ };
-				classDesc.cbSize        = sizeof( WNDCLASSEXA );
-				classDesc.style         = CS_VREDRAW | CS_HREDRAW;
-				classDesc.lpfnWndProc   = window_proc;
-				classDesc.hInstance     = GetModuleHandleA( nullptr );
-				classDesc.hbrBackground = reinterpret_cast< HBRUSH >( COLOR_WINDOW );
-				classDesc.lpszClassName = kClassName;
-
-				/* Extract and copy icon from application. */
-				char path[ MAX_PATH + 1 ];
-				GetModuleFileNameA( nullptr, path, sizeof( path ) );
-				classDesc.hIcon = ExtractIconA( classDesc.hInstance, path, 0 );
-
-				return RegisterClassExA( &classDesc );
-			}();
-
-			/* Create window */
-			impl->hwnd = CreateWindowExA( WS_EX_OVERLAPPEDWINDOW, kClassName, NULL, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, NULL, NULL, GetModuleHandleA( NULL ), NULL );
-
-			/* Set user data */
-			SetWindowLongPtrA( impl->hwnd, GWLP_USERDATA, reinterpret_cast< LONG_PTR >( this ) );
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_X11
-		case WindowAPI::X11:
-		{
-			/* Open display */
-			auto impl     = std::addressof( m_impl.emplace< _WindowImplX11 >() );
-			impl->display = XOpenDisplay( nullptr );
-
-			/* Create window */
-			const int               screen      = DefaultScreen( impl->display );
-			Window                  root_window = XRootWindow( impl->display, screen );
-			int                     depth       = DefaultDepth( impl->display, screen );
-			Visual*                 visual      = DefaultVisual( impl->display, screen );
-			constexpr unsigned long kValueMask  = ( CWBackPixel | CWEventMask );
-			XSetWindowAttributes    attribs     = { };
-			attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask );
-			impl->window                        = XCreateWindow( impl->display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, kValueMask, &attribs );
-
-			/* Allow us to capture the window close event */
-			Atom close_atom = XInternAtom( impl->display, "WM_DELETE_WINDOW", True );
-			XSetWMProtocols( impl->display, impl->window, &close_atom, 1 );
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_WAYLAND
-		case WindowAPI::Wayland:
-		{
-			m_impl.emplace< _WindowImplWayland >();
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_COCOA
-		case WindowAPI::Cocoa:
-		{
-			auto               impl       = std::addressof( m_impl.emplace< _WindowImplCocoa >() );
-			NSRect             frame      = NSMakeRect( 0.0f, 0.0f, width, height );
-			NSWindowStyleMask  style_mask = ( NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable );
-			NSBackingStoreType backing    = ( NSBackingStoreBuffered );
-
-			/* Create window */
-			impl->ns_window = [ NSWindow alloc ];
-			[ ( NSWindow* )impl->ns_window initWithContentRect:frame styleMask:style_mask backing:backing defer:NO ];
-
-			/* Create window delegate */
-			impl->delegate = [ OrbitWindowDelegate alloc ];
-			[ ( NSWindow* )impl->ns_window setDelegate:( OrbitWindowDelegate* )impl->delegate ];
-			[ ( OrbitWindowDelegate* )impl->delegate setWindowPtr:this ];
-			[ ( OrbitWindowDelegate* )impl->delegate setImpl:&m_impl ];
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_ANDROID
-		case WindowAPI::Android:
-		{
-			auto app_cmd = []( android_app* state, int cmd )
-			{
-				Window* w = static_cast< Window* >( state->userData );
-
-				switch( cmd )
-				{
-					default: break;
-
-					case APP_CMD_INIT_WINDOW:
-					{
-						WindowEvent resize_event { WindowEvent::Resize };
-						resize_event.data.resize.w = static_cast< uint32_t >( ANativeWindow_getWidth( state->window ) );
-						resize_event.data.resize.h = static_cast< uint32_t >( ANativeWindow_getHeight( state->window ) );
-
-						w->QueueEvent( resize_event );
-						w->QueueEvent( { WindowEvent::Restore } );
-
-						break;
-					}
-
-					case APP_CMD_TERM_WINDOW:
-					{
-						w->QueueEvent( { WindowEvent::Suspend } );
-
-						break;
-					}
-
-					case APP_CMD_GAINED_FOCUS:
-					{
-						auto impl = std::get_if< _WindowImplAndroid >( w->GetImplPtr() );
-						ASensorEventQueue_enableSensor( impl->sensor_event_queue, impl->accelerometer_sensor );
-						ASensorEventQueue_setEventRate( impl->sensor_event_queue, impl->accelerometer_sensor, ( 1000 * 1000 / 60 ) );
-
-						w->QueueEvent( { WindowEvent::Focus } );
-
-						break;
-					}
-
-					case APP_CMD_LOST_FOCUS:
-					{
-						auto impl = std::get_if< _WindowImplAndroid >( w->GetImplPtr() );
-						ASensorEventQueue_disableSensor( impl->sensor_event_queue, impl->accelerometer_sensor );
-
-						w->QueueEvent( { WindowEvent::Defocus } );
-
-						break;
-					}
-
-					case APP_CMD_DESTROY:
-					{
-						w->Close();
-						break;
-					}
-				}
-			};
-
-			auto on_input = []( android_app* state, AInputEvent* e )
-			{
-				switch( AInputEvent_getType( e ) )
-				{
-					default: break;
-				}
-
-				return 0;
-			};
-
-			AndroidOnly::app->onInputEvent = on_input;
-
-			auto impl                  = std::addressof( m_impl.emplace< _WindowImplAndroid >() );
-			impl->sensor_manager       = ASensorManager_getInstance();
-			impl->accelerometer_sensor = ASensorManager_getDefaultSensor( impl->sensor_manager, ASENSOR_TYPE_ACCELEROMETER );
-			impl->sensor_event_queue   = ASensorManager_createEventQueue( impl->sensor_manager, AndroidOnly::app->looper, LOOPER_ID_USER, nullptr, nullptr );
-
-			/* Update until native window is initialized. */
-			{
-				bool initialized = false;
-				AndroidOnly::app->userData = &initialized;
-				AndroidOnly::app->onAppCmd = []( android_app* state, int cmd )
-				{
-					if( cmd == APP_CMD_INIT_WINDOW )
-					{
-						auto initialized = static_cast< bool* >( state->userData );
-						*initialized = true;
-					}
-				};
-
-				while( !initialized )
-				{
-					PollEvents();
-				}
+				auto initialized = static_cast< bool* >( state->userData );
+				*initialized = true;
 			}
+		};
 
-			AndroidOnly::app->userData = this;
-			AndroidOnly::app->onAppCmd = appCmd;
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_UIKIT
-		case WindowAPI::UiKit:
+		while( !initialized )
 		{
-			auto impl = std::addressof( m_impl.emplace< _WindowImplUIKit >() );
-
-			/* Initialize window */
-			impl->ui_window = [ OrbitUIWindow alloc ];
-			[ ( OrbitUIWindow* )impl->ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
-			( ( OrbitUIWindow* )impl->ui_window ).backgroundColor = [ UIColor whiteColor ];
-			[ ( OrbitUIWindow* )impl->ui_window makeKeyAndVisible];
-			[ ( OrbitUIWindow* )impl->ui_window setWindowPtr:this ];
-
-			/* Create view controller */
-			UIViewController* vc = [ UIViewController alloc ];
-			[ vc initWithNibName:nil bundle:nil ];
-			( ( OrbitUIWindow* )impl->ui_window ).rootViewController = vc;
-
-			break;
+			PollEvents();
 		}
-	#endif
 	}
+
+	AndroidOnly::app->userData = this;
+	AndroidOnly::app->onAppCmd = AppCMD;
+
+#elif defined( ORB_OS_IOS )
+
+	/* Initialize window */
+	m_impl.ui_window = [ OrbitUIWindow alloc ];
+	[ ( OrbitUIWindow* )m_impl.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+	( ( OrbitUIWindow* )m_impl.ui_window ).backgroundColor = [ UIColor whiteColor ];
+	[ ( OrbitUIWindow* )m_impl.ui_window makeKeyAndVisible ];
+	[ ( OrbitUIWindow* )m_impl.ui_window setWindowPtr:this ];
+
+	/* Create view controller */
+	UIViewController* vc = [ UIViewController alloc ];
+	[ vc initWithNibName:nil bundle:nil ];
+	( ( OrbitUIWindow* )m_impl.ui_window ).rootViewController = vc;
+
+#endif
+
 }
 
-Window::~Window()
+Window::~Window( void )
 {
-	switch( m_impl.index() )
-	{
-		default: break;
 
-	#if _ORB_HAS_WINDOW_API_WIN32
-		case( window_impl_index_v< _WindowImplWin32 > ):
-		{
-			auto impl = std::get_if< _WindowImplWin32 >( &m_impl );
-			DestroyWindow( impl->hwnd );
+#if defined( ORB_OS_WINDOWS )
 
-			break;
-		}
-	#endif
+	DestroyWindow( m_impl.hwnd );
 
-	#if _ORB_HAS_WINDOW_API_X11
-		case( window_impl_index_v< _WindowImplX11 > ):
-		{
-			auto impl = std::get_if< _WindowImplX11 >( &m_impl );
-			XDestroyWindow( impl->display, impl->window );
-			XCloseDisplay( impl->display );
+#elif defined( ORB_OS_LINUX )
 
-			break;
-		}
-	#endif
+	XDestroyWindow( m_impl.display, m_impl.window );
+	XCloseDisplay( m_impl.display );
 
-	#if _ORB_HAS_WINDOW_API_WAYLAND
-		case( window_impl_index_v< _WindowImplWayland > ):
-		{
-			break;
-		}
-	#endif
+#elif defined( ORB_OS_MACOS )
 
-	#if _ORB_HAS_WINDOW_API_COCOA
-		case( window_impl_index_v< _WindowImplCocoa > ):
-		{
-			auto impl = std::get_if< _WindowImplCocoa >( &m_impl );
-			[ ( NSWindow* )impl->ns_window close ];
-			[ ( OrbitWindowDelegate* )impl->delegate dealloc ];
-			[ ( NSWindow* )impl->nsWindow dealloc ];
+	[ ( NSWindow* )m_impl.ns_window close ];
+	[ ( OrbitWindowDelegate* )m_impl.delegate dealloc ];
+	[ ( NSWindow* )m_impl.nsWindow dealloc ];
 
-			break;
-		}
-	#endif
+#elif defined( ORB_OS_ANDROID )
 
-	#if _ORB_HAS_WINDOW_API_ANDROID
-		case( window_impl_index_v< _WindowImplAndroid > ):
-		{
-			auto impl = std::get_if< _WindowImplAndroid >( &m_impl );
-			ASensorManager_destroyEventQueue( impl->sensor_manager, impl->sensor_event_queue );
-			AndroidOnly::app->userData = nullptr;
-			AndroidOnly::app->onAppCmd = nullptr;
+	ASensorManager_destroyEventQueue( m_impl.sensor_manager, m_impl.sensor_event_queue );
+	AndroidOnly::app->userData = nullptr;
+	AndroidOnly::app->onAppCmd = nullptr;
 
-			break;
-		}
-	#endif
+#elif defined( ORB_OS_IOS )
 
-	#if _ORB_HAS_WINDOW_API_UIKIT
-		case( window_impl_index_v< _WindowImplUIKit > ):
-		{
-			auto impl = std::get_if< _WindowImplUIKit >( &m_impl );
-			[ ( OrbitUIWindow* )impl->ui_window dealloc ];
+	[ ( OrbitUIWindow* )m_impl.ui_window dealloc ];
 
-			break;
-		}
-	#endif
-	}
+#endif
+
 }
 
-void Window::PollEvents()
+void Window::PollEvents( void )
 {
-	switch( m_impl.index() )
+
+#if defined( ORB_OS_WINDOWS )
+
+	MSG msg;
+
+	while( PeekMessageA( &msg, m_impl.hwnd, 0, 0, PM_REMOVE ) )
 	{
-		default: break;
-
-	#if _ORB_HAS_WINDOW_API_WIN32
-		case( window_impl_index_v< _WindowImplWin32 > ):
-		{
-			auto impl = std::get_if< _WindowImplWin32 >( &m_impl );
-
-			MSG msg;
-			while( PeekMessageA( &msg, impl->hwnd, 0, 0, PM_REMOVE ) )
-			{
-				TranslateMessage( &msg );
-				DispatchMessageA( &msg );
-			}
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_X11
-		case( window_impl_index_v< _WindowImplX11 > ):
-		{
-			auto impl = std::get_if< _WindowImplX11 >( &m_impl );
-
-			while( XPending( impl->display ) )
-			{
-				XEvent xevent;
-				XNextEvent( impl->display, &xevent );
-
-				switch( xevent.type )
-				{
-					default: break;
-
-					case FocusIn:
-					{
-						if( xevent.xfocus.mode != NotifyNormal )
-							break;
-
-						WindowEvent e { };
-						e.type = WindowEvent::Focus;
-						QueueEvent( e );
-
-						break;
-					}
-
-					case FocusOut:
-					{
-						if( xevent.xfocus.mode != NotifyNormal )
-							break;
-
-						WindowEvent e { };
-						e.type = WindowEvent::Defocus;
-						QueueEvent( e );
-
-						break;
-					}
-
-					case ResizeRequest:
-					{
-						WindowEvent e { };
-						e.type          = WindowEvent::Resize;
-						e.data.resize.w = xevent.xresizerequest.width;
-						e.data.resize.h = xevent.xresizerequest.height;
-						QueueEvent( e );
-
-						break;
-					}
-
-					case ConfigureNotify:
-					{
-						WindowEvent e { };
-						e.type        = WindowEvent::Move;
-						e.data.move.x = xevent.xconfigure.x;
-						e.data.move.y = xevent.xconfigure.y;
-						QueueEvent( e );
-
-						break;
-					}
-
-					case ClientMessage:
-					{
-						Close();
-						break;
-					}
-				}
-			}
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_WAYLAND
-		case( window_impl_index_v< _WindowImplWayland > ):
-		{
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_COCOA
-		case( window_impl_index_v< _WindowImplCocoa > ):
-		{
-			auto     impl = std::get_if< _WindowImplCocoa >( &m_impl );
-			NSEvent* ns_event;
-			while( ( ns_event = [ ( const NSWindow* )impl->ns_window nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
-			{
-				[ ( const NSWindow* )impl->ns_window sendEvent:ns_event ];
-			}
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_ANDROID
-		case( window_impl_index_v< _WindowImplAndroid > ):
-		{
-			int                  events;
-			android_poll_source* source;
-
-			if( ALooper_pollAll( 0, nullptr, &events, reinterpret_cast< void** >( &source ) ) >= 0 )
-			{
-				if( source )
-					source->process( AndroidOnly::app, source );
-			}
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_UIKIT
-		case( window_impl_index_v< _WindowImplUIKit > ):
-		{
-			break;
-		}
-	#endif
+		TranslateMessage( &msg );
+		DispatchMessageA( &msg );
 	}
+
+#elif defined( ORB_OS_LINUX )
+
+	while( XPending( impl->display ) )
+	{
+		XEvent xevent;
+		XNextEvent( impl->display, &xevent );
+
+		HandleXEvent( this, xevent );
+	}
+
+#elif defined( ORB_OS_MACOS )
+
+	NSEvent* ns_event;
+
+	while( ( ns_event = [ ( const NSWindow* )m_impl.ns_window nextEventMatchingMask : NSEventMaskAny untilDate : nullptr inMode : NSDefaultRunLoopMode dequeue : YES ] ) != nullptr )
+	{
+		[ ( const NSWindow* )m_impl.ns_window sendEvent : ns_event ];
+	}
+
+#elif defined( ORB_OS_ANDROID )
+
+	int                  events;
+	android_poll_source* source;
+
+	if( ALooper_pollAll( 0, nullptr, &events, reinterpret_cast< void** >( &source ) ) >= 0 )
+	{
+		if( source )
+		{
+			source->process( AndroidOnly::app, source );
+		}
+	}
+
+#endif
 
 	/* Send events */
 	SendEvents();
 }
 
-void Window::SetTitle( [[ maybe_unused ]] std::string_view title )
+void Window::SetTitle( std::string_view title )
 {
-	switch( m_impl.index() )
+
+#if defined( ORB_OS_WINDOWS )
+
+	SetWindowTextA( m_impl.hwnd, title.data() );
+
+#elif defined( ORB_OS_LINUX )
+
+	XStore( m_impl.display, m_impl.window, title.data() );
+
+#elif defined( ORB_OS_MACOS )
+
+	NSString* ns_title = [ NSString stringWithUTF8String:title.data() ];
+	[ ( const NSWindow* )m_impl.ns_window setTitle:ns_title ];
+	[ nsTitle release ];
+
+#elif defined( ORB_OS_ANDROID )
+
+	// #TODO: Activity.setTitle
+
+#endif
+
+}
+
+void Window::Move( int32_t x, int32_t y )
+{
+
+#if defined( ORB_OS_WINDOWS )
+
+	RECT rect;
+
+	if( GetWindowRect( m_impl.hwnd, &rect ) )
+	{
+		const int width  = ( rect.right - rect.left );
+		const int height = ( rect.bottom - rect.top );
+
+		MoveWindow( m_impl.hwnd, x, y, width, height, FALSE );
+	}
+
+#elif defined( ORB_OS_LINUX )
+
+	XMoveWindow( m_impl.display, m_impl.window, x, y );
+
+#elif defined( ORB_OS_MACOS )
+
+	NSRect frame   = [ ( const NSWindow* )m_impl.ns_window frame ];
+	frame.origin.x = x;
+	frame.origin.y = y;
+
+	[ ( const NSWindow* )m_impl.ns_window setFrame:frame display:YES ];
+
+#endif
+
+}
+
+void Window::Resize( uint32_t width, uint32_t height )
+{
+
+#if defined( ORB_OS_WINDOWS )
+
+	RECT rect;
+	
+	if( GetWindowRect( m_impl.hwnd, &rect ) )
+	{
+		MoveWindow( m_impl.hwnd, rect.left, rect.top, width, height, TRUE );
+	}
+
+#elif defined( ORB_OS_LINUX )
+
+	XResizeWindow( m_impl.display, m_impl.window, width, height );
+
+#elif defined( ORB_OS_MACOS )
+
+	NSRect frame      = [ ( const NSWindow* )m_impl.ns_window frame ];
+	frame.size.width  = width;
+	frame.size.height = height;
+
+	[ ( const NSWindow* )m_impl.ns_window setFrame:frame display:YES ];
+
+#endif
+
+}
+
+void Window::Show( void )
+{
+
+#if defined( ORB_OS_WINDOWS )
+
+	ShowWindow( m_impl.hwnd, SW_SHOW );
+
+#elif defined( ORB_OS_LINUX )
+
+	XMapWindow( m_impl.display, m_impl.window );
+
+#elif defined( ORB_OS_MACOS )
+
+	[ ( const NSWindow* )m_impl.ns_window setIsVisible:YES ];
+
+#elif defined( ORB_OS_ANDROID )
+
+	// #TODO: Activity.setVisible
+
+#elif defined( ORB_OS_IOS )
+
+	[ ( OrbitUIWindow* )m_impl.ui_window setHidden:NO ];
+
+#endif
+
+}
+
+void Window::Hide( void )
+{
+
+#if defined( ORB_OS_WINDOWS )
+
+	ShowWindow( m_impl.hwnd, SW_HIDE );
+
+#elif defined( ORB_OS_LINUX )
+
+	XUnmapWindow( m_impl.display, m_impl.window );
+
+#elif defined( ORB_OS_MACOS )
+
+	[ ( const NSWindow* )m_impl.ns_window setIsVisible:NO ];
+
+#elif defined( ORB_OS_ANDROID )
+
+	// #TODO: Activity.setVisible
+
+#elif defined( ORB_OS_IOS )
+
+	[ ( OrbitUIWindow* )m_impl.ui_window setHidden:YES ];
+
+#endif
+
+}
+
+void Window::Close( void )
+{
+	m_open = false;
+}
+
+#if defined( ORB_OS_WINDOWS )
+
+static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
+{
+	Window* w = reinterpret_cast< Window* >( GetWindowLongPtrA( hwnd, GWLP_USERDATA ) );
+
+	switch( msg )
+	{
+		case WM_MOVE:
+		{
+			WindowMoved e;
+			e.x = LOWORD( lparam );
+			e.y = HIWORD( lparam );
+
+			w->QueueEvent( e );
+
+			break;
+		}
+
+		case WM_SIZE:
+		{
+			WindowResized e;
+			e.width  = LOWORD( lparam );
+			e.height = HIWORD( lparam );
+
+			w->QueueEvent( e );
+
+			break;
+		}
+
+		case WM_ACTIVATE:
+		{
+			WORD minimized_state = HIWORD( wparam );
+			WORD activated       = LOWORD( wparam );
+
+			if( minimized_state != 0 )
+			{
+				WindowStateChanged e;
+				e.state = ( activated == WA_INACTIVE ) ? WindowState::Suspend : WindowState::Restore;
+
+				w->QueueEvent( e );
+			}
+
+			break;
+		}
+
+		case WM_SETFOCUS:
+		{
+			WindowStateChanged e;
+			e.state = WindowState::Focus;
+
+			w->QueueEvent( e );
+
+			break;
+		}
+
+		case WM_KILLFOCUS:
+		{
+			WindowStateChanged e;
+			e.state = WindowState::Defocus;
+
+			w->QueueEvent( e );
+
+			break;
+		}
+
+		case WM_CLOSE:
+		{
+			WindowStateChanged e;
+			e.state = WindowState::Close;
+
+			w->QueueEvent( e );
+			w->Close();
+
+			break;
+		}
+	}
+
+	return DefWindowProcA( hwnd, msg, wparam, lparam );
+}
+
+ATOM RegisterWindowClass( LPCSTR name )
+{
+	WNDCLASSEXA classDesc { };
+	classDesc.cbSize        = sizeof( WNDCLASSEXA );
+	classDesc.style         = CS_VREDRAW | CS_HREDRAW;
+	classDesc.lpfnWndProc   = WindowProc;
+	classDesc.hInstance     = GetModuleHandleA( nullptr );
+	classDesc.hbrBackground = reinterpret_cast< HBRUSH >( COLOR_WINDOW );
+	classDesc.lpszClassName = name;
+
+	/* Extract and copy icon from application. */
+	char path[ MAX_PATH + 1 ];
+	GetModuleFileNameA( nullptr, path, sizeof( path ) );
+	classDesc.hIcon = ExtractIconA( classDesc.hInstance, path, 0 );
+
+	return RegisterClassExA( &classDesc );
+}
+
+#elif defined( ORB_OS_LINUX )
+
+void HandleXEvent( Window* w, const XEvent& xevent )
+{
+	switch( xevent.type )
 	{
 		default: break;
 
-	#if _ORB_HAS_WINDOW_API_WIN32
-		case( window_impl_index_v< _WindowImplWin32 > ):
+		case FocusIn:
 		{
-			auto impl = std::get_if< _WindowImplWin32 >( &m_impl );
-			SetWindowTextA( impl->hwnd, title.data() );
+			if( xevent.xfocus.mode == NotifyNormal )
+			{
+				WindowStateChanged e;
+				e.state = WindowState::Focus;
+
+				w->QueueEvent( e );
+			}
 
 			break;
 		}
-	#endif
 
-	#if _ORB_HAS_WINDOW_API_X11
-		case( window_impl_index_v< _WindowImplX11 > ):
+		case FocusOut:
 		{
-			auto impl = std::get_if< _WindowImplX11 >( &m_impl );
-			XStoreName( impl->display, impl->window, title.data() );
+			if( xevent.xfocus.mode == NotifyNormal )
+			{
+				WindowStateChanged e;
+				e.state = WindowState::Defocus;
+
+				w->QueueEvent( e );
+			}
 
 			break;
 		}
-	#endif
 
-	#if _ORB_HAS_WINDOW_API_WAYLAND
-		case( window_impl_index_v< _WindowImplWayland > ):
+		case ResizeRequest:
 		{
-			break;
-		}
-	#endif
+			WindowResized e;
+			e.width  = xevent.xresizerequest.width;
+			e.height = xevent.xresizerequest.height;
 
-	#if _ORB_HAS_WINDOW_API_COCOA
-		case( window_impl_index_v< _WindowImplCocoa > ):
-		{
-			auto      impl     = std::get_if< _WindowImplCocoa >( &m_impl );
-			NSString* ns_title = [ NSString stringWithUTF8String:title.data() ];
-			[ ( const NSWindow* )impl->ns_window setTitle:ns_title ];
-			[ nsTitle release ];
+			w->QueueEvent( e );
 
 			break;
 		}
-	#endif
 
-	#if _ORB_HAS_WINDOW_API_ANDROID
-		case( window_impl_index_v< _WindowImplAndroid > ):
+		case ConfigureNotify:
 		{
-			// #TODO: Activity.setTitle
+			WindowMoved e;
+			e.x = xevent.xconfigure.x;
+			e.y = xevent.xconfigure.y;
+
+			w->QueueEvent( e );
+
 			break;
 		}
-	#endif
 
-	#if _ORB_HAS_WINDOW_API_UIKIT
-		case( window_impl_index_v< _WindowImplUIKit > ):
+		case ClientMessage:
 		{
+			w->Close();
+
 			break;
 		}
-	#endif
 	}
 }
 
-void Window::SetPos( [[ maybe_unused ]] uint32_t x, [[ maybe_unused ]] uint32_t y )
+#elif defined( ORB_OS_ANDROID )
+
+void AppCMD( android_app* state, int cmd )
 {
-	switch( m_impl.index() )
+	Window* w = static_cast< Window* >( state->userData );
+
+	switch( cmd )
 	{
 		default: break;
 
-	#if _ORB_HAS_WINDOW_API_WIN32
-		case( window_impl_index_v< _WindowImplWin32 > ):
+		case APP_CMD_INIT_WINDOW:
 		{
-			auto impl = std::get_if< _WindowImplWin32 >( &m_impl );
+			{
+				WindowResized e;
+				e.width  = static_cast< uint32_t >( ANativeWindow_getWidth( state->window ) );
+				e.height = static_cast< uint32_t >( ANativeWindow_getHeight( state->window ) );
 
-			RECT rect { };
-			GetWindowRect( impl->hwnd, &rect );
-			MoveWindow( impl->hwnd, x, y, ( rect.right - rect.left ), ( rect.bottom - rect.top ), FALSE );
+				w->QueueEvent( resize_event );
+			}
+
+			{
+				WindowStateChanged e;
+				e.state = WindowState::Restore;
+
+				w->QueueEvent( e );
+			}
 
 			break;
 		}
-	#endif
 
-	#if _ORB_HAS_WINDOW_API_X11
-		case( window_impl_index_v< _WindowImplX11 > ):
+		case APP_CMD_TERM_WINDOW:
 		{
-			auto impl = std::get_if< _WindowImplX11 >( &m_impl );
-			XMoveWindow( impl->display, impl->window, x, y );
+			WindowStateChanged e;
+			e.state = WindowState::Suspend;
+
+			w->QueueEvent( e );
 
 			break;
 		}
-	#endif
 
-	#if _ORB_HAS_WINDOW_API_WAYLAND
-		case( window_impl_index_v< _WindowImplWayland > ):
+		case APP_CMD_GAINED_FOCUS:
 		{
-			break;
-		}
-	#endif
+			WindowImpl& impl = w->GetPrivateImpl();
+			ASensorEventQueue_enableSensor( impl.sensor_event_queue, impl.accelerometer_sensor );
+			ASensorEventQueue_setEventRate( impl.sensor_event_queue, impl.accelerometer_sensor, ( 1000 * 1000 / 60 ) );
 
-	#if _ORB_HAS_WINDOW_API_COCOA
-		case( window_impl_index_v< _WindowImplCocoa > ):
-		{
-			auto   impl    = std::get_if< _WindowImplCocoa >( &m_impl );
-			NSRect frame   = [ ( const NSWindow* )impl->ns_window frame ];
-			frame.origin.x = x;
-			frame.origin.y = y;
-			[ ( const NSWindow* )impl->ns_window setFrame:frame display:YES ];
+			WindowStateChanged e;
+			e.state = WindowState::Focus;
+
+			w->QueueEvent( e );
 
 			break;
 		}
-	#endif
 
-	#if _ORB_HAS_WINDOW_API_ANDROID
-		case( window_impl_index_v< _WindowImplAndroid > ):
+		case APP_CMD_LOST_FOCUS:
 		{
+			WindowImpl& impl = w->GetPrivateImpl();
+			ASensorEventQueue_disableSensor( impl.sensor_event_queue, impl.accelerometer_sensor );
+
+			WindowStateChanged e;
+			e.state = WindowState::Defocus;
+
+			w->QueueEvent( e );
+
 			break;
 		}
-	#endif
 
-	#if _ORB_HAS_WINDOW_API_UIKIT
-		case( window_impl_index_v< _WindowImplUIKit > ):
+		case APP_CMD_DESTROY:
 		{
+			w->Close();
 			break;
 		}
-	#endif
 	}
-}
+};
 
-void Window::SetSize( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height )
+static int OnInput( android_app* state, AInputEvent* e )
 {
-	switch( m_impl.index() )
+	switch( AInputEvent_getType( e ) )
 	{
 		default: break;
-
-	#if _ORB_HAS_WINDOW_API_WIN32
-		case( window_impl_index_v< _WindowImplWin32 > ):
-		{
-			auto impl = std::get_if< _WindowImplWin32 >( &m_impl );
-
-			RECT rect { };
-			GetWindowRect( impl->hwnd, &rect );
-			MoveWindow( impl->hwnd, rect.left, rect.top, static_cast< int >( width ), static_cast< int >( height ), FALSE );
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_X11
-		case( window_impl_index_v< _WindowImplX11 > ):
-		{
-			auto impl = std::get_if< _WindowImplX11 >( &m_impl );
-			XResizeWindow( impl->display, impl->window, width, height );
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_WAYLAND
-		case( window_impl_index_v< _WindowImplWayland > ):
-		{
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_COCOA
-		case( window_impl_index_v< _WindowImplCocoa > ):
-		{
-			auto   impl       = std::get_if< _WindowImplCocoa >( &m_impl );
-			NSRect frame      = [ ( const NSWindow* )impl->ns_window frame ];
-			frame.size.width  = width;
-			frame.size.height = height;
-			[ ( const NSWindow* )impl->ns_window setFrame:frame display:YES ];
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_ANDROID
-		case( window_impl_index_v< _WindowImplAndroid > ):
-		{
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_UIKIT
-		case( window_impl_index_v< _WindowImplUIKit > ):
-		{
-			break;
-		}
-	#endif
 	}
-}
 
-void Window::Show()
-{
-	switch( m_impl.index() )
-	{
-		default: break;
+	return 0;
+};
 
-	#if _ORB_HAS_WINDOW_API_WIN32
-		case( window_impl_index_v< _WindowImplWin32 > ):
-		{
-			auto impl = std::get_if< _WindowImplWin32 >( &m_impl );
-			ShowWindow( impl->hwnd, SW_SHOW );
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_X11
-		case( window_impl_index_v< _WindowImplX11 > ):
-		{
-			auto impl = std::get_if< _WindowImplX11 >( &m_impl );
-			XMapWindow( impl->display, impl->window );
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_WAYLAND
-		case( window_impl_index_v< _WindowImplWayland > ):
-		{
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_COCOA
-		case( window_impl_index_v< _WindowImplCocoa > ):
-		{
-			auto impl = std::get_if< _WindowImplCocoa >( &m_impl );
-			[ ( const NSWindow* )impl->ns_window setIsVisible:YES ];
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_ANDROID
-		case( window_impl_index_v< _WindowImplAndroid > ):
-		{
-			// #TODO: Activity.setVisible
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_UIKIT
-		case( window_impl_index_v< _WindowImplUIKit > ):
-		{
-			auto impl = std::get_if< _WindowImplUIKit >( &m_impl );
-			[ ( OrbitUIWindow* )impl->ui_window setHidden:NO ];
-
-			break;
-		}
-	#endif
-	}
-}
-
-void Window::Hide()
-{
-	switch( m_impl.index() )
-	{
-		default: break;
-
-	#if _ORB_HAS_WINDOW_API_WIN32
-		case( window_impl_index_v< _WindowImplWin32 > ):
-		{
-			auto impl = std::get_if< _WindowImplWin32 >( &m_impl );
-			ShowWindow( impl->hwnd, SW_HIDE );
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_X11
-		case( window_impl_index_v< _WindowImplX11 > ):
-		{
-			auto impl = std::get_if< _WindowImplX11 >( &m_impl );
-			XUnmapWindow( impl->display, impl->window );
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_WAYLAND
-		case( window_impl_index_v< _WindowImplWayland > ):
-		{
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_COCOA
-		case( window_impl_index_v< _WindowImplCocoa > ):
-		{
-			auto impl = std::get_if< _WindowImplCocoa >( &m_impl );
-			[ ( const NSWindow* )impl->ns_window setIsVisible:NO ];
-
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_ANDROID
-		case( window_impl_index_v< _WindowImplAndroid > ):
-		{
-			break;
-		}
-	#endif
-
-	#if _ORB_HAS_WINDOW_API_UIKIT
-		case( window_impl_index_v< _WindowImplUIKit > ):
-		{
-			auto impl = std::get_if< _WindowImplUIKit >( &m_impl );
-			[ ( OrbitUIWindow* )impl->ui_window setHidden:YES ];
-
-			break;
-		}
-	#endif
-	}
-}
+#endif
 
 ORB_NAMESPACE_END
 
-#if _ORB_HAS_WINDOW_API_COCOA
+#if defined( ORB_OS_MACOS )
 
 @implementation OrbitWindowDelegate
 
 -( void )windowWillClose:( NSNotification* ) __unused notification
 {
-	_windowPtr->close();
+	_window->Close();
 }
 
 -( void )windowDidMove:( NSNotification* ) __unused notification
 {
-	auto          impl  = std::get_if< ORB_NAMESPACE _WindowImplCocoa >( _impl );
-	const CGPoint point = ( ( const NSWindow* )impl->ns_window ).frame.origin;
+	WindowImpl&   impl  = _window_ptr->GetPrivateImpl();
+	const CGPoint point = ( ( const NSWindow* )impl.ns_window ).frame.origin;
 
-	ORB_NAMESPACE WindowEvent e { };
-	e.type        = ORB_NAMESPACE WindowEvent::Move;
-	e.data.move.x = static_cast< int >( point.x );
-	e.data.move.y = static_cast< int >( point.y );
-	_window_ptr->QueueEvent( e );
+	ORB_NAMESPACE WindowMoved e;
+	e.x = point.x;
+	e.y = point.y;
+
+	_window->QueueEvent( e );
 }
 
 -( NSSize )windowWillResize:( NSWindow* ) __unused sender toSize:( NSSize ) frameSize
 {
-	ORB_NAMESPACE WindowEvent e { };
-	e.type          = ORB_NAMESPACE WindowEvent::Resize;
-	e.data.resize.w = static_cast< uint32_t >( frameSize.width );
-	e.data.resize.h = static_cast< uint32_t >( frameSize.height );
-	_window_ptr->QueueEvent( e );
+	ORB_NAMESPACE WindowResized e;
+	e.width  = frameSize.width;
+	e.height = frameSize.height;
+
+	_window->QueueEvent( e );
 
 	return frameSize;
 }
 
 -( void )windowDidMiniaturize:( NSNotification* ) __unused notification
 {
-	ORB_NAMESPACE WindowEvent e { };
-	e.type = ORB_NAMESPACE WindowEvent::Suspend;
-	_window_ptr->QueueEvent( e );
+	ORB_NAMESPACE WindowStateChanged e;
+	e.state = ORB_NAMESPACE WindowState::Suspend;
+
+	_window->QueueEvent( e );
 }
 
 -( void )windowDidDeminiaturize:( NSNotification* ) __unused notification
 {
-	ORB_NAMESPACE WindowEvent e { };
-	e.type = ORB_NAMESPACE WindowEvent::Restore;
-	_window_ptr->QueueEvent( e );
+	ORB_NAMESPACE WindowStateChanged e;
+	e.state = ORB_NAMESPACE WindowState::Restore;
+
+	_window->QueueEvent( e );
 }
 
 -( void )windowDidBecomeMain:( NSNotification* ) __unused notification
 {
-	ORB_NAMESPACE WindowEvent e { };
-	e.type = ORB_NAMESPACE WindowEvent::Focus;
-	_window_ptr->QueueEvent( e );
+	ORB_NAMESPACE WindowStateChanged e;
+	e.state = ORB_NAMESPACE WindowState::Focus;
+
+	_window->QueueEvent( e );
 }
 
 -( void )windowDidResignMain:( NSNotification* ) __unused notification
 {
-	ORB_NAMESPACE WindowEvent e { };
-	e.type = ORB_NAMESPACE WindowEvent::Defocus;
-	_window_ptr->QueueEvent( e );
+	ORB_NAMESPACE WindowStateChanged e;
+	e.state = ORB_NAMESPACE WindowState::Defocus;
+
+	_window->QueueEvent( e );
 }
 
 @end
 
-#endif
-
-#if _ORB_HAS_WINDOW_API_UIKIT
+#elif defined( ORB_OS_IOS )
 
 @implementation OrbitUIWindow
 
@@ -949,11 +701,11 @@ ORB_NAMESPACE_END
 {
 	[ super layoutSubviews ];
 
-	ORB_NAMESPACE WindowEvent e { };
-	e.type          = ORB_NAMESPACE WindowEvent::Resize;
-	e.data.resize.w = static_cast< uint32_t >( self.bounds.size.width );
-	e.data.resize.h = static_cast< uint32_t >( self.bounds.size.height );
-	_window_ptr->QueueEvent( e );
+	ORB_NAMESPACE WindowResized e;
+	e.width  = self.bounds.size.width;
+	e.height = self.bounds.size.height;
+
+	_window->QueueEvent( e );
 }
 
 @end

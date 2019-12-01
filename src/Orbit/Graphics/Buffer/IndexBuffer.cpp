@@ -22,12 +22,6 @@
 
 ORB_NAMESPACE_BEGIN
 
-template< typename T >
-constexpr auto render_context_impl_index_v = unique_index_v< T, RenderContextImpl >;
-	
-template< typename T >
-constexpr auto index_buffer_impl_index_v = unique_index_v< T, IndexBufferImpl >;
-
 static size_t GetFormatSize( IndexFormat format )
 {
 	switch( format )
@@ -44,33 +38,35 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 	, m_format { format }
 	, m_count  { count }
 {
-	auto         context_impl_ptr = RenderContext::GetCurrent()->GetImplPtr();
+	auto&        context_impl_var = RenderContext::GetCurrent()->GetPrivateImpl();
 	const size_t total_size       = ( count * GetFormatSize( format ) );
 
-	switch( context_impl_ptr->index() )
+	switch( context_impl_var.index() )
 	{
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( render_context_impl_index_v< _RenderContextImplOpenGL > ):
-		{
-			auto impl         = std::addressof( m_impl.emplace< _IndexBufferImplOpenGL >() );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( context_impl_ptr );
 
-			context_impl->functions->gen_buffers( 1, &impl->id );
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::ElementArray, impl->id );
-			context_impl->functions->buffer_data( OpenGL::BufferTarget::ElementArray, total_size, data, OpenGL::BufferUsage::StaticDraw );
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::ElementArray, 0 );
+		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		{
+			auto& impl         = m_impl.emplace< Private::_IndexBufferImplOpenGL >();
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( context_impl_var );
+
+			context_impl.functions->gen_buffers( 1, &impl.id );
+			context_impl.functions->bind_buffer( OpenGL::BufferTarget::ElementArray, impl.id );
+			context_impl.functions->buffer_data( OpenGL::BufferTarget::ElementArray, total_size, data, OpenGL::BufferUsage::StaticDraw );
+			context_impl.functions->bind_buffer( OpenGL::BufferTarget::ElementArray, 0 );
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( render_context_impl_index_v< _RenderContextImplD3D11 > ):
+
+		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
-			auto impl         = std::addressof( m_impl.emplace< _IndexBufferImplD3D11 >() );
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( context_impl_ptr );
+			auto& impl         = m_impl.emplace< Private::_IndexBufferImplD3D11 >();
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( context_impl_var );
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
@@ -82,71 +78,79 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 			{
 				D3D11_SUBRESOURCE_DATA initial_data { };
 				initial_data.pSysMem = data;
-				context_impl->device->CreateBuffer( &desc, &initial_data, &buffer );
+				context_impl.device->CreateBuffer( &desc, &initial_data, &buffer );
 			}
 			else
 			{
-				context_impl->device->CreateBuffer( &desc, nullptr, &buffer );
+				context_impl.device->CreateBuffer( &desc, nullptr, &buffer );
 			}
 
-			impl->buffer.reset( buffer );
+			impl.buffer.reset( buffer );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
-IndexBuffer::~IndexBuffer()
+IndexBuffer::~IndexBuffer( void )
 {
 	switch( m_impl.index() )
 	{
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( index_buffer_impl_index_v< _IndexBufferImplOpenGL > ):
-		{
-			auto impl         = std::get_if< _IndexBufferImplOpenGL >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->delete_buffers( 1, &impl->id );
+		case( unique_index_v< Private::_IndexBufferImplOpenGL, Private::IndexBufferImpl > ):
+		{
+			auto& impl         = std::get< Private::_IndexBufferImplOpenGL >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->delete_buffers( 1, &impl.id );
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( index_buffer_impl_index_v< _IndexBufferImplD3D11 > ):
+
+		case( unique_index_v< Private::_IndexBufferImplD3D11, Private::IndexBufferImpl > ):
 		{
 			break;
 		}
+
 	#endif
+
 	}
 }
 
-void IndexBuffer::Bind()
+void IndexBuffer::Bind( void )
 {
 	switch( m_impl.index() )
 	{
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( index_buffer_impl_index_v< _IndexBufferImplOpenGL > ):
-		{
-			auto impl         = std::get_if< _IndexBufferImplOpenGL >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::ElementArray, impl->id );
+		case( unique_index_v< Private::_IndexBufferImplOpenGL, Private::IndexBufferImpl > ):
+		{
+			auto& impl         = std::get< Private::_IndexBufferImplOpenGL >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->bind_buffer( OpenGL::BufferTarget::ElementArray, impl.id );
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( index_buffer_impl_index_v< _IndexBufferImplD3D11 > ):
+
+		case( unique_index_v< Private::_IndexBufferImplD3D11, Private::IndexBufferImpl > ):
 		{
-			auto impl         = std::get_if< _IndexBufferImplD3D11 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
+			auto& impl         = std::get< Private::_IndexBufferImplD3D11 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
 
 			/* Translate format to DXGI_FORMAT */
 			DXGI_FORMAT format;
@@ -158,11 +162,13 @@ void IndexBuffer::Bind()
 				case IndexFormat::DoubleWord: { format = DXGI_FORMAT_R32_UINT; } break;
 			}
 
-			context_impl->device_context->IASetIndexBuffer( impl->buffer.get(), format, 0 );
+			context_impl.device_context->IASetIndexBuffer( impl.buffer.get(), format, 0 );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 

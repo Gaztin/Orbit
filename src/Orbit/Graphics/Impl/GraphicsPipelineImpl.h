@@ -26,41 +26,49 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _GraphicsPipelineImplOpenGL20
+namespace Private
 {
-	std::vector< VertexComponent > layout;
-	GLsizei                        stride;
-	GLuint                         shader_program;
-};
-struct _GraphicsPipelineImplOpenGL30
-{
-	std::vector< VertexComponent > layout;
-	GLsizei                        stride;
-	GLuint                         shader_program;
-	GLuint                         vao;
-};
-#endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _GraphicsPipelineImplD3D11
-{
-	ComPtr< ID3DBlob >           vertex_data;
-	ComPtr< ID3D11VertexShader > vertex_shader;
-	ComPtr< ID3D11PixelShader >  pixel_shader;
-	ComPtr< ID3D11InputLayout >  input_layout;
-	ComPtr< ID3D11SamplerState > sampler_state;
-};
-#endif
-
-using GraphicsPipelineImpl = std::variant< std::monostate
 #if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _GraphicsPipelineImplOpenGL20
-	, _GraphicsPipelineImplOpenGL30
+
+	struct _GraphicsPipelineImplOpenGL20
+	{
+		std::vector< VertexComponent > layout;
+		GLsizei                        stride;
+		GLuint                         shader_program;
+	};
+
+	struct _GraphicsPipelineImplOpenGL30
+	{
+		std::vector< VertexComponent > layout;
+		GLsizei                        stride;
+		GLuint                         shader_program;
+		GLuint                         vao;
+	};
+
 #endif
 #if _ORB_HAS_GRAPHICS_API_D3D11
-	, _GraphicsPipelineImplD3D11
+
+	struct _GraphicsPipelineImplD3D11
+	{
+		ComPtr< ID3DBlob >           vertex_data;
+		ComPtr< ID3D11VertexShader > vertex_shader;
+		ComPtr< ID3D11PixelShader >  pixel_shader;
+		ComPtr< ID3D11InputLayout >  input_layout;
+		ComPtr< ID3D11SamplerState > sampler_state;
+	};
+
 #endif
->;
+
+	using GraphicsPipelineImpl = std::variant< std::monostate
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		, _GraphicsPipelineImplOpenGL20
+		, _GraphicsPipelineImplOpenGL30
+	#endif
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		, _GraphicsPipelineImplD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

@@ -24,28 +24,36 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _VertexBufferImplOpenGL
+namespace Private
 {
-	GLuint id;
-};
+
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+
+	struct _VertexBufferImplOpenGL
+	{
+		GLuint id;
+	};
+
 #endif
 
 #if _ORB_HAS_GRAPHICS_API_D3D11
-struct _VertexBufferImplD3D11
-{
-	ComPtr< ID3D11Buffer > buffer;
-	UINT                   stride;
-};
+
+	struct _VertexBufferImplD3D11
+	{
+		ComPtr< ID3D11Buffer > buffer;
+		UINT                   stride;
+	};
+
 #endif
 
-using VertexBufferImpl = std::variant< std::monostate
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _VertexBufferImplOpenGL
-#endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	, _VertexBufferImplD3D11
-#endif
->;
+	using VertexBufferImpl = std::variant< std::monostate
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		, _VertexBufferImplOpenGL
+	#endif
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		, _VertexBufferImplD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

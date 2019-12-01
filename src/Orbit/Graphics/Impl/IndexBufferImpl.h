@@ -24,27 +24,34 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _IndexBufferImplOpenGL
+namespace Private
 {
-	GLuint id;
-};
-#endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _IndexBufferImplD3D11
-{
-	ComPtr< ID3D11Buffer > buffer;
-};
-#endif
-
-using IndexBufferImpl = std::variant< std::monostate
 #if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _IndexBufferImplOpenGL
+
+	struct _IndexBufferImplOpenGL
+	{
+		GLuint id;
+	};
+
 #endif
 #if _ORB_HAS_GRAPHICS_API_D3D11
-	, _IndexBufferImplD3D11
+
+	struct _IndexBufferImplD3D11
+	{
+		ComPtr< ID3D11Buffer > buffer;
+	};
+
 #endif
->;
+
+	using IndexBufferImpl = std::variant< std::monostate
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		, _IndexBufferImplOpenGL
+	#endif
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		, _IndexBufferImplD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

@@ -24,21 +24,30 @@ ORB_NAMESPACE_BEGIN
 class ORB_API_GRAPHICS RenderContext
 {
 public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
+	explicit RenderContext( const Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
+	~RenderContext( void );
+
+public:
+
+	bool MakeCurrent  ( void );
+	void Resize       ( uint32_t width, uint32_t height );
+	void SwapBuffers  ( void );
+	void Clear        ( BufferMask mask );
 	void SetClearColor( float r, float g, float b );
 
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
+public:
 
-	static RenderContext* GetCurrent();
+	Private::RenderContextImpl&       GetPrivateImpl( void )       { return m_impl; }
+	const Private::RenderContextImpl& GetPrivateImpl( void ) const { return m_impl; }
+
+public:
+
+	static RenderContext* GetCurrent( void );
 
 private:
-	RenderContextImpl m_impl;
+
+	Private::RenderContextImpl m_impl;
 	EventSubscription m_resize_subscription;
 
 };

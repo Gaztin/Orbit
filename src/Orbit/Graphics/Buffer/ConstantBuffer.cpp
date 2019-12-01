@@ -25,48 +25,44 @@
 
 ORB_NAMESPACE_BEGIN
 
-template< typename T >
-constexpr auto render_context_impl_index_v = unique_index_v< T, RenderContextImpl >;
-
-template< typename T >
-constexpr auto constant_buffer_impl_index_v = unique_index_v< T, ConstantBufferImpl >;
-
 ConstantBuffer::ConstantBuffer( size_t size )
 {
-	auto context_impl_ptr = RenderContext::GetCurrent()->GetImplPtr();
+	auto& context_impl_var = RenderContext::GetCurrent()->GetPrivateImpl();
 
-	switch( context_impl_ptr->index() )
+	switch( context_impl_var.index() )
 	{
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( render_context_impl_index_v< _RenderContextImplOpenGL > ):
-		{
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( context_impl_ptr );
 
-			if( (  context_impl->embedded && context_impl->opengl_version < Version( 3 ) )||
-			    ( !context_impl->embedded && context_impl->opengl_version < Version( 3, 1 ) ) )
+		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		{
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( context_impl_var );
+
+			if( (  context_impl.embedded && context_impl.opengl_version < Version( 3 ) )||
+			    ( !context_impl.embedded && context_impl.opengl_version < Version( 3, 1 ) ) )
 			{
-				m_impl.emplace< _ConstantBufferImplOpenGL20 >();
+				m_impl.emplace< Private::_ConstantBufferImplOpenGL20 >();
 			}
 			else
 			{
-				auto impl = std::addressof( m_impl.emplace< _ConstantBufferImplOpenGL31 >() );
+				auto& impl = m_impl.emplace< Private::_ConstantBufferImplOpenGL31 >();
 
-				context_impl->functions->gen_buffers( 1, &impl->id );
-				context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl->id );
-				context_impl->functions->buffer_data( OpenGL::BufferTarget::Uniform, size, nullptr, OpenGL::BufferUsage::StreamDraw );
-				context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
+				context_impl.functions->gen_buffers( 1, &impl.id );
+				context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl.id );
+				context_impl.functions->buffer_data( OpenGL::BufferTarget::Uniform, size, nullptr, OpenGL::BufferUsage::StreamDraw );
+				context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
 			}
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( render_context_impl_index_v< _RenderContextImplD3D11 > ):
+
+		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
-			auto impl         = std::addressof( m_impl.emplace< _ConstantBufferImplD3D11 >() );
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( context_impl_ptr );
+			auto& impl         = m_impl.emplace< Private::_ConstantBufferImplD3D11 >();
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( context_impl_var );
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth      = static_cast< UINT >( ( size + 0xf ) & ~0xf ); /* Align by 16 bytes */
@@ -75,32 +71,37 @@ ConstantBuffer::ConstantBuffer( size_t size )
 			desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 			ID3D11Buffer* buffer;
-			context_impl->device->CreateBuffer( &desc, nullptr, &buffer );
-			impl->buffer.reset( buffer );
+			context_impl.device->CreateBuffer( &desc, nullptr, &buffer );
+			impl.buffer.reset( buffer );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
-ConstantBuffer::~ConstantBuffer()
+ConstantBuffer::~ConstantBuffer( void )
 {
 	switch( m_impl.index() )
 	{
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( constant_buffer_impl_index_v< _ConstantBufferImplOpenGL31 > ):
-		{
-			auto impl         = std::get_if< _ConstantBufferImplOpenGL31 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->delete_buffers( 1, &impl->id );
+		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
+		{
+			auto& impl         = std::get< Private::_ConstantBufferImplOpenGL31 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->delete_buffers( 1, &impl.id );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
@@ -111,28 +112,35 @@ void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( constant_buffer_impl_index_v< _ConstantBufferImplOpenGL20 > ):
-		{
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->uniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
+		case( unique_index_v< Private::_ConstantBufferImplOpenGL20, Private::ConstantBufferImpl > ):
+		{
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->uniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
 
 			break;
 		}
-		case( constant_buffer_impl_index_v< _ConstantBufferImplOpenGL31 > ):
+
+		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
 			std::memcpy( dst, data, size );
+
 			break;
 		}
+
 	#endif
-			
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( constant_buffer_impl_index_v< _ConstantBufferImplD3D11 > ):
+
+		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
 		{
 			std::memcpy( dst, data, size );
+
 			break;
 		}
+
 	#endif
+
 	}
 }
 
@@ -143,29 +151,33 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 		default: return nullptr;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( constant_buffer_impl_index_v< _ConstantBufferImplOpenGL31 > ):
-		{
-			auto impl         = std::get_if< _ConstantBufferImplOpenGL31 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl->id );
-			return context_impl->functions->map_buffer_range( OpenGL::BufferTarget::Uniform, 0, size, OpenGL::MapAccess::WriteBit );
-		}
-	#endif
-			
-	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( constant_buffer_impl_index_v< _ConstantBufferImplD3D11 > ):
+		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
-			auto impl         = std::get_if< _ConstantBufferImplD3D11 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
+			auto& impl         = std::get< Private::_ConstantBufferImplOpenGL31 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl.id );
+			return context_impl.functions->map_buffer_range( OpenGL::BufferTarget::Uniform, 0, size, OpenGL::MapAccess::WriteBit );
+		}
+
+	#endif
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+
+		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
+		{
+			auto& impl         = std::get< Private::_ConstantBufferImplD3D11 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
 
 			D3D11_MAPPED_SUBRESOURCE subresource;
-			if( context_impl->device_context->Map( impl->buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
+			if( context_impl.device_context->Map( impl.buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
 				return subresource.pData;
 
 			return nullptr;
 		}
+
 	#endif
+
 	}
 }
 
@@ -176,28 +188,32 @@ void ConstantBuffer::UpdateEnd()
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( constant_buffer_impl_index_v< _ConstantBufferImplOpenGL31 > ):
-		{
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->unmap_buffer( OpenGL::BufferTarget::Uniform );
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
+		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
+		{
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->unmap_buffer( OpenGL::BufferTarget::Uniform );
+			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( constant_buffer_impl_index_v< _ConstantBufferImplD3D11 > ):
-		{
-			auto impl         = std::get_if< _ConstantBufferImplD3D11 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->device_context->Unmap( impl->buffer.get(), 0 );
+		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
+		{
+			auto& impl         = std::get< Private::_ConstantBufferImplD3D11 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.device_context->Unmap( impl.buffer.get(), 0 );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
@@ -208,35 +224,39 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( constant_buffer_impl_index_v< _ConstantBufferImplOpenGL31 > ):
-		{
-			auto impl         = std::get_if< _ConstantBufferImplOpenGL31 >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl->id );
-			context_impl->functions->bind_buffer_base( OpenGL::BufferTarget::Uniform, slot, impl->id );
+		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
+		{
+			auto& impl         = std::get< Private::_ConstantBufferImplOpenGL31 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl.id );
+			context_impl.functions->bind_buffer_base( OpenGL::BufferTarget::Uniform, slot, impl.id );
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( constant_buffer_impl_index_v< _ConstantBufferImplD3D11 > ):
+
+		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
 		{
-			auto          impl         = std::get_if< _ConstantBufferImplD3D11 >( &m_impl );
-			auto          context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
-			ID3D11Buffer* buffer       = impl->buffer.get();
+			auto&         impl         = std::get< Private::_ConstantBufferImplD3D11 >( m_impl );
+			auto&         context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			ID3D11Buffer* buffer       = impl.buffer.get();
 
 			switch( type )
 			{
 				default: break;
-				case ShaderType::Vertex:   { context_impl->device_context->VSSetConstantBuffers( slot, 1, &buffer ); } break;
-				case ShaderType::Fragment: { context_impl->device_context->PSSetConstantBuffers( slot, 1, &buffer ); } break;
+				case ShaderType::Vertex:   { context_impl.device_context->VSSetConstantBuffers( slot, 1, &buffer ); } break;
+				case ShaderType::Fragment: { context_impl.device_context->PSSetConstantBuffers( slot, 1, &buffer ); } break;
 			}
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 

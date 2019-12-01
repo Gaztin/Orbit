@@ -25,14 +25,18 @@ class Asset;
 class ORB_API_GRAPHICS FragmentShader
 {
 public:
-	explicit FragmentShader( const Asset& asset );
-	~FragmentShader();
 
-	FragmentShaderImpl*       GetImplPtr()       { return &m_impl; }
-	const FragmentShaderImpl* GetImplPtr() const { return &m_impl; }
+	explicit FragmentShader( const Asset& asset );
+	~FragmentShader( void );
+
+public:
+
+	Private::FragmentShaderImpl&       GetPrivateImpl( void )       { return m_impl; }
+	const Private::FragmentShaderImpl& GetPrivateImpl( void ) const { return m_impl; }
 
 private:
-	FragmentShaderImpl m_impl;
+
+	Private::FragmentShaderImpl m_impl;
 
 };
 

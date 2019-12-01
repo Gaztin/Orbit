@@ -24,28 +24,35 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _Texture2DImplOpenGL
+namespace Private
 {
-	GLuint id;
-};
-#endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _Texture2DImplD3D11
-{
-	ComPtr< ID3D11Texture2D >          texture_2d;
-	ComPtr< ID3D11ShaderResourceView > shader_resource_view;
-};
-#endif
-
-using Texture2DImpl = std::variant< std::monostate
 #if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _Texture2DImplOpenGL
+
+	struct _Texture2DImplOpenGL
+	{
+		GLuint id;
+	};
+
 #endif
 #if _ORB_HAS_GRAPHICS_API_D3D11
-	, _Texture2DImplD3D11
+
+	struct _Texture2DImplD3D11
+	{
+		ComPtr< ID3D11Texture2D >          texture_2d;
+		ComPtr< ID3D11ShaderResourceView > shader_resource_view;
+	};
+
 #endif
->;
+
+	using Texture2DImpl = std::variant< std::monostate
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		, _Texture2DImplOpenGL
+	#endif
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		, _Texture2DImplD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

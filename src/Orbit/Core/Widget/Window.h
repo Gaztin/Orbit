@@ -18,8 +18,8 @@
 #pragma once
 #include <string_view>
 
-#include "Orbit/Core/Impl/WindowImpl.h"
 #include "Orbit/Core/Event/EventDispatcher.h"
+#include "Orbit/Core/Private/WindowImpl.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -53,24 +53,29 @@ class ORB_API_CORE Window : public EventDispatcher< WindowResized, WindowMoved, 
 {
 public:
 
-	Window( uint32_t width, uint32_t height, WindowAPI api = kDefaultWindowApi );
-	~Window();
+	 Window( uint32_t width, uint32_t height );
+	~Window( void );
 
-	void PollEvents();
-	void SetTitle( std::string_view title );
-	void SetPos( uint32_t x, uint32_t y );
-	void SetSize( uint32_t width, uint32_t height );
-	void Show();
-	void Hide();
-	void Close() { m_open = false; }
+public:
 
-	operator bool() const { return m_open; }
+	void PollEvents( void );
+	void SetTitle  ( std::string_view title );
+	void Move      ( int32_t x, int32_t y );
+	void Resize    ( uint32_t width, uint32_t height );
+	void Show      ( void );
+	void Hide      ( void );
+	void Close     ( void );
 
-	WindowImpl* GetImplPtr() { return &m_impl; }
+public:
+
+	Private::WindowImpl&       GetPrivateImpl( void )       { return m_impl; }
+	const Private::WindowImpl& GetPrivateImpl( void ) const { return m_impl; }
+	bool                       IsOpen        ( void ) const { return m_open; }
 
 private:
-	WindowImpl m_impl;
-	bool       m_open;
+
+	Private::WindowImpl m_impl;
+	bool                m_open;
 
 };
 

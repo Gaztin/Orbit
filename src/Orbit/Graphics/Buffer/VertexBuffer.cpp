@@ -22,43 +22,39 @@
 
 ORB_NAMESPACE_BEGIN
 
-template< typename T >
-constexpr auto render_context_impl_index_v = unique_index_v< T, RenderContextImpl >;
-
-template< typename T >
-constexpr auto vertex_buffer_impl_index_v = unique_index_v< T, VertexBufferImpl >;
-
 VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 	: m_impl  { }
 	, m_count { count }
 {
-	auto         context_impl_ptr = RenderContext::GetCurrent()->GetImplPtr();
+	auto&        context_impl_var = RenderContext::GetCurrent()->GetPrivateImpl();
 	const size_t total_size       = ( count * stride );
 
-	switch( context_impl_ptr->index() )
+	switch( context_impl_var.index() )
 	{
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( render_context_impl_index_v< _RenderContextImplOpenGL > ):
-		{
-			auto impl         = std::addressof( m_impl.emplace< _VertexBufferImplOpenGL >() );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( context_impl_ptr );
 
-			context_impl->functions->gen_buffers( 1, &impl->id );
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::Array, impl->id );
-			context_impl->functions->buffer_data( OpenGL::BufferTarget::Array, total_size, data, OpenGL::BufferUsage::StaticDraw );
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::Array, 0 );
+		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		{
+			auto& impl         = m_impl.emplace< Private::_VertexBufferImplOpenGL >();
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( context_impl_var );
+
+			context_impl.functions->gen_buffers( 1, &impl.id );
+			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Array, impl.id );
+			context_impl.functions->buffer_data( OpenGL::BufferTarget::Array, total_size, data, OpenGL::BufferUsage::StaticDraw );
+			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Array, 0 );
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( render_context_impl_index_v< _RenderContextImplD3D11 > ):
+
+		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
-			auto impl         = std::addressof( m_impl.emplace< _VertexBufferImplD3D11 >() );
-			auto context_impl = std::get_if< _RenderContextImplD3D11 >( context_impl_ptr );
+			auto& impl         = m_impl.emplace< Private::_VertexBufferImplD3D11 >();
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( context_impl_var );
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
@@ -70,81 +66,83 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 			{
 				D3D11_SUBRESOURCE_DATA initial_data { };
 				initial_data.pSysMem = data;
-				context_impl->device->CreateBuffer( &desc, &initial_data, &buffer );
+				context_impl.device->CreateBuffer( &desc, &initial_data, &buffer );
 			}
 			else
 			{
-				context_impl->device->CreateBuffer( &desc, nullptr, &buffer );
+				context_impl.device->CreateBuffer( &desc, nullptr, &buffer );
 			}
 
-			impl->buffer.reset( buffer );
-			impl->stride = static_cast< UINT >( stride );
+			impl.buffer.reset( buffer );
+			impl.stride = static_cast< UINT >( stride );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 
-VertexBuffer::~VertexBuffer()
+VertexBuffer::~VertexBuffer( void )
 {
 	switch( m_impl.index() )
 	{
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( vertex_buffer_impl_index_v< _VertexBufferImplOpenGL > ):
-		{
-			auto impl         = std::get_if< _VertexBufferImplOpenGL >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->delete_buffers( 1, &impl->id );
+		case( unique_index_v< Private::_VertexBufferImplOpenGL, Private::VertexBufferImpl > ):
+		{
+			auto& impl         = std::get< Private::_VertexBufferImplOpenGL >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->delete_buffers( 1, &impl.id );
 
 			break;
 		}
+
 	#endif
 
-	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( vertex_buffer_impl_index_v< _VertexBufferImplD3D11 > ):
-		{
-			break;
-		}
-	#endif
 	}
 }
 
-void VertexBuffer::Bind()
+void VertexBuffer::Bind( void )
 {
 	switch( m_impl.index() )
 	{
 		default: break;
 
 	#if _ORB_HAS_GRAPHICS_API_OPENGL
-		case( vertex_buffer_impl_index_v< _VertexBufferImplOpenGL > ):
-		{
-			auto impl         = std::get_if< _VertexBufferImplOpenGL >( &m_impl );
-			auto context_impl = std::get_if< _RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetImplPtr() );
 
-			context_impl->functions->bind_buffer( OpenGL::BufferTarget::Array, impl->id );
+		case( unique_index_v< Private::_VertexBufferImplOpenGL, Private::VertexBufferImpl > ):
+		{
+			auto& impl         = std::get< Private::_VertexBufferImplOpenGL >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+
+			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Array, impl.id );
 
 			break;
 		}
-	#endif
 
+	#endif
 	#if _ORB_HAS_GRAPHICS_API_D3D11
-		case( vertex_buffer_impl_index_v< _VertexBufferImplD3D11 > ):
+
+		case( unique_index_v< Private::_VertexBufferImplD3D11, Private::VertexBufferImpl > ):
 		{
-			auto          impl         = std::get_if< _VertexBufferImplD3D11 >( &m_impl );
-			auto          context_impl = std::get_if< _RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetImplPtr() );
-			ID3D11Buffer* buffer       = impl->buffer.get();
-			UINT          stride       = impl->stride;
+			auto&         impl         = std::get< Private::_VertexBufferImplD3D11 >( m_impl );
+			auto&         context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			ID3D11Buffer* buffer       = impl.buffer.get();
+			UINT          stride       = impl.stride;
 			UINT          offset       = 0;
 
-			context_impl->device_context->IASetVertexBuffers( 0, 1, &buffer, &stride, &offset );
+			context_impl.device_context->IASetVertexBuffers( 0, 1, &buffer, &stride, &offset );
 
 			break;
 		}
+
 	#endif
+
 	}
 }
 

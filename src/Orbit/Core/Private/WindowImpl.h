@@ -16,30 +16,58 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Impl/Texture2DImpl.h"
+#include "Orbit/Core/Core.h"
+
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+#endif
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS Texture2D
+namespace Private
 {
-public:
 
-	 Texture2D( uint32_t width, uint32_t height, const void* data );
-	~Texture2D();
+#if defined( ORB_OS_WINDOWS )
 
-public:
+	struct WindowImpl
+	{
+		HWND hwnd;
+	};
 
-	void Bind( uint32_t slot );
+#elif defined( ORB_OS_LINUX )
 
-public:
+	struct WindowImpl
+	{
+		Display* display;
+		Window   window;
+	};
 
-	Private::Texture2DImpl&       GetPrivateImpl( void )       { return m_impl; }
-	const Private::Texture2DImpl& GetPrivateImpl( void ) const { return m_impl; }
+#elif defined( ORB_OS_MACOS )
 
-private:
+	struct WindowImpl
+	{
+		void* ns_window;
+		void* delegate;
+	};
 
-	Private::Texture2DImpl m_impl;
+#elif defined( ORB_OS_ANDROID )
 
-};
+	struct WindowImpl
+	{
+		ASensorManager*    sensor_manager;
+		const ASensor*     accelerometer_sensor;
+		ASensorEventQueue* sensor_event_queue;
+	};
+
+#elif defined( ORB_OS_IOS )
+
+	struct WindowImpl
+	{
+		void* ui_window;
+	};
+
+#endif
+
+}
 
 ORB_NAMESPACE_END

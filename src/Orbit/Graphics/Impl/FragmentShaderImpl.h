@@ -24,27 +24,34 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _FragmentShaderImplOpenGL
+namespace Private
 {
-	GLuint id;
-};
-#endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _FragmentShaderImplD3D11
-{
-	ComPtr< ID3D11PixelShader > pixel_shader;
-};
-#endif
-
-using FragmentShaderImpl = std::variant< std::monostate
 #if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _FragmentShaderImplOpenGL
+
+	struct _FragmentShaderImplOpenGL
+	{
+		GLuint id;
+	};
+
 #endif
 #if _ORB_HAS_GRAPHICS_API_D3D11
-	, _FragmentShaderImplD3D11
+
+	struct _FragmentShaderImplD3D11
+	{
+		ComPtr< ID3D11PixelShader > pixel_shader;
+	};
+
 #endif
->;
+
+	using FragmentShaderImpl = std::variant< std::monostate
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		, _FragmentShaderImplOpenGL
+	#endif
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		, _FragmentShaderImplD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

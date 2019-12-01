@@ -63,8 +63,6 @@ public:
 		return EventSubscription( unique_id, deleter );
 	}
 
-protected:
-
 	template< typename T >
 	void QueueEvent( const T& e )
 	{
@@ -73,6 +71,8 @@ protected:
 
 		queue.events.push_back( e );
 	}
+
+protected:
 
 	void SendEvents()
 	{

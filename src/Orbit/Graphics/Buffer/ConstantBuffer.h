@@ -27,6 +27,7 @@ ORB_NAMESPACE_BEGIN
 class ORB_API_GRAPHICS ConstantBuffer
 {
 public:
+
 	explicit ConstantBuffer( size_t size );
 
 	template< typename... Types >
@@ -36,10 +37,12 @@ public:
 		Update( constants );
 	}
 
-	~ConstantBuffer();
+	~ConstantBuffer( void );
 
-	void Bind   ( ShaderType type, uint32_t slot );
-	void Update ( void* dst, size_t location, const void* data, size_t size );
+public:
+
+	void Bind  ( ShaderType type, uint32_t slot );
+	void Update( void* dst, size_t location, const void* data, size_t size );
 
 	template< typename... Types >
 	void Update( const std::tuple< Types... >& constants )
@@ -50,8 +53,9 @@ public:
 	}
 
 private:
-	void* UpdateBegin ( size_t size );
-	void  UpdateEnd   ( void );
+
+	void* UpdateBegin( size_t size );
+	void  UpdateEnd  ( void );
 
 	template< typename Tup, size_t... Is >
 	void UpdateSequencial( void* dst, const Tup& tup, Sequence< Is... > )
@@ -59,7 +63,9 @@ private:
 		[[ maybe_unused ]] auto l = { ( Update( reinterpret_cast< uint8_t* >( dst ) + std::distance( &std::get< 0 >( tup ), &std::get< Is >( tup ) ), Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
 	}
 
-	ConstantBufferImpl m_impl;
+private:
+
+	Private::ConstantBufferImpl m_impl;
 
 };
 

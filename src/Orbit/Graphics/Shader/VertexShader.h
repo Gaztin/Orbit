@@ -25,14 +25,18 @@ class Asset;
 class ORB_API_GRAPHICS VertexShader
 {
 public:
-	explicit VertexShader( const Asset& asset );
-	~VertexShader();
 
-	VertexShaderImpl*       GetImplPtr()       { return &m_impl; }
-	const VertexShaderImpl* GetImplPtr() const { return &m_impl; }
+	explicit VertexShader( const Asset& asset );
+	~VertexShader( void );
+
+public:
+
+	Private::VertexShaderImpl&       GetPrivateImpl( void )       { return m_impl; }
+	const Private::VertexShaderImpl& GetPrivateImpl( void ) const { return m_impl; }
 
 private:
-	VertexShaderImpl m_impl;
+
+	Private::VertexShaderImpl m_impl;
 
 };
 

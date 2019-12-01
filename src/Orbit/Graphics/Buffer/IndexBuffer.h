@@ -26,6 +26,7 @@ ORB_NAMESPACE_BEGIN
 class ORB_API_GRAPHICS IndexBuffer
 {
 public:
+
 	IndexBuffer( IndexFormat fmt, const void* data, size_t count );
 
 	template< typename T,
@@ -35,17 +36,22 @@ public:
 	{
 	}
 
-	~IndexBuffer();
+	~IndexBuffer( void );
 
-	void Bind();
+public:
 
-	IndexFormat GetFormat() const { return m_format; }
-	size_t      GetCount()  const { return m_count; }
+	void Bind( void );
+
+public:
+
+	IndexFormat GetFormat( void ) const { return m_format; }
+	size_t      GetCount ( void ) const { return m_count; }
 
 private:
-	IndexBufferImpl m_impl;
-	IndexFormat     m_format;
-	size_t          m_count;
+
+	Private::IndexBufferImpl m_impl;
+	IndexFormat m_format;
+	size_t m_count;
 
 };
 

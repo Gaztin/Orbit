@@ -20,8 +20,8 @@
 #include <type_traits>
 #include <variant>
 
-#include "Orbit/Core/Impl/WindowImpl.h"
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
+#include "Orbit/Core/Private/WindowImpl.h"
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Core/Utility/Version.h"
 #include "Orbit/Graphics/Impl/GraphicsAPI.h"
@@ -29,104 +29,75 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _RenderContextImplOpenGL
+namespace Private
 {
-	bool    embedded;
-	Version opengl_version;
 
-#if _ORB_HAS_WINDOW_API_WIN32
-	struct _SubImplWin32
+#if _ORB_HAS_GRAPHICS_API_OPENGL
+
+	struct _RenderContextImplOpenGL
 	{
-		WindowImpl* parent_window_impl;
-		HDC         hdc;
-		HGLRC       hglrc;
-	};
-#endif
-#if _ORB_HAS_WINDOW_API_X11
-	struct _SubImplX11
-	{
-		WindowImpl* parent_window_impl;
-		GC          gc;
-		GLXContext  context;
-	};
-#endif
-#if _ORB_HAS_WINDOW_API_WAYLAND
-	struct _SubImplWayland
-	{
-	};
-#endif
-#if _ORB_HAS_WINDOW_API_COCOA
-	struct _SubImplCocoa
-	{
+		bool    embedded;
+		Version opengl_version;
+
+	#if defined( ORB_OS_WINDOWS )
+
+		HDC   hdc;
+		HGLRC hglrc;
+
+	#elif defined( ORB_OS_LINUX )
+
+		const WindowImpl* parent_window_impl;
+		GC                gc;
+		GLXContext        context;
+
+	#elif defined( ORB_OS_MACOS )
+
 		void* view;
-	};
-#endif
-#if _ORB_HAS_WINDOW_API_ANDROID
-	struct _SubImplAndroid
-	{
+
+	#elif defined( ORB_OS_ANDROID )
+
 		EGLDisplay display;
 		EGLConfig  config;
 		EGLSurface surface;
 		EGLContext context;
-	};
-#endif
-#if _ORB_HAS_WINDOW_API_UIKIT
-	struct _SubImplUIKit
-	{
+
+	#elif defined( ORB_OS_IOS )
+
 		void* context;
 		void* view;
+
+	#endif
+
+		std::optional< OpenGL::Functions > functions;
 	};
+
+#endif
+#if _ORB_HAS_GRAPHICS_API_D3D11
+
+	struct _RenderContextImplD3D11
+	{
+		ComPtr< IDXGISwapChain >          swap_chain;
+		ComPtr< ID3D11Device >            device;
+		ComPtr< ID3D11DeviceContext >     device_context;
+		ComPtr< ID3D11RenderTargetView >  render_target_view;
+		ComPtr< ID3D11Texture2D >         depth_stencil_buffer;
+		ComPtr< ID3D11DepthStencilState > depth_stencil_state;
+		ComPtr< ID3D11DepthStencilView >  depth_stencil_view;
+		ComPtr< ID3D11RasterizerState >   rasterizer_state;
+		Color                             clear_color;
+	};
+
 #endif
 
-	using _SubImpl = std::variant< std::monostate
-#if _ORB_HAS_WINDOW_API_WIN32
-	, _SubImplWin32
-#endif
-#if _ORB_HAS_WINDOW_API_X11
-	, _SubImplX11
-#endif
-#if _ORB_HAS_WINDOW_API_WAYLAND
-	, _SubImplWayland
-#endif
-#if _ORB_HAS_WINDOW_API_COCOA
-	, _SubImplCocoa
-#endif
-#if _ORB_HAS_WINDOW_API_ANDROID
-	, _SubImplAndroid
-#endif
-#if _ORB_HAS_WINDOW_API_UIKIT
-	, _SubImplUIKit
-#endif
+	using RenderContextImpl = std::variant< std::monostate
+	#if _ORB_HAS_GRAPHICS_API_OPENGL
+		, _RenderContextImplOpenGL
+	#endif
+	#if _ORB_HAS_GRAPHICS_API_D3D11
+		, _RenderContextImplD3D11
+	#endif
 	>;
 
-	std::optional< OpenGL::Functions > functions;
-	_SubImpl                           sub_impl;
-};
-#endif
-
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _RenderContextImplD3D11
-{
-	ComPtr< IDXGISwapChain >          swap_chain;
-	ComPtr< ID3D11Device >            device;
-	ComPtr< ID3D11DeviceContext >     device_context;
-	ComPtr< ID3D11RenderTargetView >  render_target_view;
-	ComPtr< ID3D11Texture2D >         depth_stencil_buffer;
-	ComPtr< ID3D11DepthStencilState > depth_stencil_state;
-	ComPtr< ID3D11DepthStencilView >  depth_stencil_view;
-	ComPtr< ID3D11RasterizerState >   rasterizer_state;
-	Color                             clear_color;
-};
-#endif
-
-using RenderContextImpl = std::variant< std::monostate
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _RenderContextImplOpenGL
-#endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	, _RenderContextImplD3D11
-#endif
->;
+}
 
 ORB_NAMESPACE_END
