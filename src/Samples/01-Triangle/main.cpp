@@ -77,7 +77,7 @@ public:
 		, m_texture_2d( 4, 4, texture_data )
 		, m_time( 0.0f )
 	{
-		m_window.SetTitle( "Orbit sample #01" );
+		m_window.SetTitle( "Orbit Sample (01-Triangle)" );
 		m_window.Show();
 		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
 
