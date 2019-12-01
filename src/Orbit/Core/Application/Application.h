@@ -22,7 +22,7 @@
 #include "Orbit/Core/Core.h"
 
 #define ORB_APP_DECL( APP_TYPE )                                                                       \
-    class APP_TYPE; /* Forward declaration */                                                          \
+    class APP_TYPE;                                                                                    \
     volatile int _orb_app_initializer_eval = ORB_NAMESPACE Application< APP_TYPE >::_initializer_eval; \
     class APP_TYPE final : public ORB_NAMESPACE Application< APP_TYPE >
 
@@ -55,7 +55,7 @@ public:
 
 	virtual ~Application( void ) = default;
 
-private:
+public:
 
 	static volatile int _initializer_eval;
 
