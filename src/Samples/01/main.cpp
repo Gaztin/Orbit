@@ -131,9 +131,8 @@ SampleApp::SampleApp()
 
 	/* Load text asset and log its contents */
 	{
-		Orbit::Asset test_asset( "text.txt" );
-		const auto& txt = test_asset.GetData();
-		Orbit::LogInfo( std::string( reinterpret_cast< const char* >( txt.data() ), txt.size() ) );
+		Orbit::Asset text( "text.txt" );
+		Orbit::LogInfo( std::string( reinterpret_cast< const char* >( text.GetData() ), text.GetSize() ) );
 	}
 }
 

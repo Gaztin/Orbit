@@ -29,7 +29,10 @@ public:
 
 	explicit Asset( std::string_view path );
 
-	const std::vector< uint8_t >& GetData() const { return m_data; }
+public:
+
+	const uint8_t* GetData( void ) const { return m_data.data(); }
+	size_t         GetSize( void ) const { return m_data.size(); }
 
 private:
 
