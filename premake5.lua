@@ -122,7 +122,7 @@ end
 local samples = { }
 local function decl_sample( name )
 	local id = string.format( '%02d', 1 + #samples )
-	local fullname = id .. '.' .. name
+	local fullname = id .. '-' .. name
 	group( 'Samples' )
 	project( fullname )
 	kind( 'WindowedApp' )
@@ -130,8 +130,8 @@ local function decl_sample( name )
 	xcodebuildresources( 'assets' )
 	base_config()
 	files {
-		'src/Samples/' .. id .. '/*.cpp',
-		'src/Samples/' .. id .. '/*.h',
+		'src/Samples/' .. fullname .. '/*.cpp',
+		'src/Samples/' .. fullname .. '/*.h',
 	}
 
 	filter { 'system:linux' }
@@ -139,7 +139,7 @@ local function decl_sample( name )
 	filter { 'system:ios' }
 		files { 'res/Info.plist', 'assets' }
 	filter { 'system:android' }
-		files { 'src/Samples/' .. id .. '/Android/**', 'res/**', ANDROID_NATIVE_APP_GLUE_DIR .. '/android_native_app_glue.c' }
+		files { 'src/Samples/' .. fullname .. '/Android/**', 'res/**', ANDROID_NATIVE_APP_GLUE_DIR .. '/android_native_app_glue.c' }
 	filter { 'system:android' }
 		assetdirs { 'assets/' }
 	filter { 'action:android-studio' }
@@ -182,7 +182,4 @@ decl_module( 'Graphics' )
 		defines { 'GLES_SILENCE_DEPRECATION' }
 	filter { }
 
-decl_sample( 'Base' )
-	filter { 'system:windows' }
-		defines { '_USE_MATH_DEFINES' }
-	filter { }
+decl_sample( 'Triangle' )
