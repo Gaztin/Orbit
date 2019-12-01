@@ -184,6 +184,7 @@ decl_module( 'Graphics' )
 	filter { }
 
 decl_sample( 'Triangle' )
+decl_sample( 'Cube' )
 
 workspace( workspace_name )
 	startproject( samples[ 1 ] )

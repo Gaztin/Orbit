@@ -372,6 +372,7 @@ RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
 			glEnable( GL_CULL_FACE );
 			glEnable( GL_DEPTH_TEST );
 			glCullFace( GL_BACK );
+			glFrontFace( GL_CW );
 
 			const char* opengl_version = reinterpret_cast< const char* >( glGetString( GL_VERSION ) );
 
