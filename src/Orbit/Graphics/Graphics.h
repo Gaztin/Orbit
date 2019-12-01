@@ -19,7 +19,6 @@
 #include <cstdint>
 
 #include "Orbit/Core/Utility/Bitmask.h"
-#include "Orbit.h"
 
 #if defined( ORB_BUILD_GRAPHICS )
 #  define ORB_API_GRAPHICS ORB_DLL_EXPORT

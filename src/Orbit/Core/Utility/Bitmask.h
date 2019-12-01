@@ -18,7 +18,7 @@
 #pragma once
 #include <type_traits>
 
-#include "Orbit.h"
+#include "Orbit/Core/Core.h"
 
 #define ORB_ENABLE_BITMASKING( ENUM )         \
     template<>                                \

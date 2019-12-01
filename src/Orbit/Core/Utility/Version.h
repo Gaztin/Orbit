@@ -18,7 +18,7 @@
 #pragma once
 #include <cstdint>
 
-#include "Orbit.h"
+#include "Orbit/Core/Core.h"
 
 /* See https://stackoverflow.com/a/22253389 */
 #ifdef major
