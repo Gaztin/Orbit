@@ -41,7 +41,7 @@ ORB_NAMESPACE_BEGIN
 
 static RenderContext* current_context = nullptr;
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
+#if( ORB_HAS_D3D11 )
 constexpr DXGI_FORMAT back_buffer_format  = DXGI_FORMAT_R8G8B8A8_UNORM;
 constexpr DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 #endif
@@ -54,7 +54,7 @@ RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case GraphicsAPI::OpenGL:
 		{
@@ -432,7 +432,7 @@ RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case GraphicsAPI::D3D11:
 		{
@@ -645,7 +645,7 @@ RenderContext::~RenderContext()
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -712,7 +712,7 @@ RenderContext::~RenderContext()
 bool RenderContext::MakeCurrent()
 {
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
+#if( ORB_HAS_OPENGL )
 
 	if( m_impl.index() == unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > )
 	{
@@ -761,7 +761,7 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -789,7 +789,7 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
@@ -878,7 +878,7 @@ void RenderContext::SwapBuffers()
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -910,7 +910,7 @@ void RenderContext::SwapBuffers()
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
@@ -932,7 +932,7 @@ void RenderContext::Clear( BufferMask mask )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -946,7 +946,7 @@ void RenderContext::Clear( BufferMask mask )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
@@ -972,7 +972,7 @@ void RenderContext::SetClearColor( float r, float g, float b )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -982,7 +982,7 @@ void RenderContext::SetClearColor( float r, float g, float b )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{

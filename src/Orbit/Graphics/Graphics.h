@@ -28,19 +28,43 @@
 
 /* Graphics API macros. */
 #if defined( ORB_OS_WINDOWS )
-#  define ORB_HAS_D3D11
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  1
+#  define ORB_HAS_OPENGL 1
 #elif defined( ORB_OS_LINUX )
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  0
+#  define ORB_HAS_OPENGL 1
 #elif defined( ORB_OS_MACOS )
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  0
+#  define ORB_HAS_OPENGL 1
 #elif defined( ORB_OS_ANDROID )
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  0
+#  define ORB_HAS_OPENGL 1
 #elif defined( ORB_OS_IOS )
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  0
+#  define ORB_HAS_OPENGL 1
+#endif
 #endif
 
 ORB_NAMESPACE_BEGIN
+
+enum class GraphicsAPI
+{
+	Null = 0,
+#if( ORB_HAS_D3D11 )
+	D3D11,
+#endif
+#if( ORB_HAS_OPENGL )
+	OpenGL,
+#endif
+};
+
+#if( ORB_HAS_D3D11 )
+constexpr GraphicsAPI default_graphics_api = GraphicsAPI::D3D11;
+#elif( ORB_HAS_OPENGL )
+constexpr GraphicsAPI default_graphics_api = GraphicsAPI::OpenGL;
+#else
+constexpr GraphicsAPI default_graphics_api = GraphicsAPI::Null;
+#endif
 
 /* Enumerators */
 

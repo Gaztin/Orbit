@@ -45,7 +45,7 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -61,7 +61,7 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
@@ -101,7 +101,7 @@ IndexBuffer::~IndexBuffer( void )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_IndexBufferImplOpenGL, Private::IndexBufferImpl > ):
 		{
@@ -114,7 +114,7 @@ IndexBuffer::~IndexBuffer( void )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_IndexBufferImplD3D11, Private::IndexBufferImpl > ):
 		{
@@ -132,7 +132,7 @@ void IndexBuffer::Bind( void )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_IndexBufferImplOpenGL, Private::IndexBufferImpl > ):
 		{
@@ -145,7 +145,7 @@ void IndexBuffer::Bind( void )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_IndexBufferImplD3D11, Private::IndexBufferImpl > ):
 		{

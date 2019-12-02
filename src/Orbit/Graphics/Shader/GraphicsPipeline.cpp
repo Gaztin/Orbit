@@ -35,7 +35,7 @@ GraphicsPipeline::GraphicsPipeline( void )
 	switch( context_impl_var.index() )
 	{
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -61,7 +61,7 @@ GraphicsPipeline::GraphicsPipeline( void )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
@@ -102,7 +102,7 @@ GraphicsPipeline::~GraphicsPipeline( void )
 	switch( m_impl.index() )
 	{
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
 		{
@@ -135,7 +135,7 @@ void GraphicsPipeline::Bind( void )
 	switch( m_impl.index() )
 	{
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
 		{
@@ -270,7 +270,7 @@ void GraphicsPipeline::Bind( void )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
 		{
@@ -300,7 +300,7 @@ void GraphicsPipeline::Unbind( void )
 	switch( m_impl.index() )
 	{
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
 		{
@@ -330,7 +330,7 @@ void GraphicsPipeline::Unbind( void )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
 		{
@@ -354,7 +354,7 @@ void GraphicsPipeline::SetShaders( const VertexShader& vert, const FragmentShade
 	switch( m_impl.index() )
 	{
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
 		{
@@ -403,7 +403,7 @@ void GraphicsPipeline::SetShaders( const VertexShader& vert, const FragmentShade
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
 		{
@@ -433,7 +433,7 @@ void GraphicsPipeline::DescribeVertexLayout( VertexLayout layout )
 	switch( m_impl.index() )
 	{
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
 		{
@@ -480,7 +480,7 @@ void GraphicsPipeline::DescribeVertexLayout( VertexLayout layout )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
 		{
@@ -532,7 +532,7 @@ void GraphicsPipeline::Draw( const VertexBuffer& vb )
 	switch( m_impl.index() )
 	{
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
 		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL30, Private::GraphicsPipelineImpl > ):
@@ -544,7 +544,7 @@ void GraphicsPipeline::Draw( const VertexBuffer& vb )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
 		{
@@ -565,7 +565,7 @@ void GraphicsPipeline::Draw( const IndexBuffer& ib )
 	switch( m_impl.index() )
 	{
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL20, Private::GraphicsPipelineImpl > ):
 		case( unique_index_v< Private::_GraphicsPipelineImplOpenGL30, Private::GraphicsPipelineImpl > ):
@@ -586,7 +586,7 @@ void GraphicsPipeline::Draw( const IndexBuffer& ib )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_GraphicsPipelineImplD3D11, Private::GraphicsPipelineImpl > ):
 		{

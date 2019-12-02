@@ -24,7 +24,6 @@
 #include "Orbit/Core/Private/WindowImpl.h"
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Core/Utility/Version.h"
-#include "Orbit/Graphics/Impl/GraphicsAPI.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"
 
 ORB_NAMESPACE_BEGIN
@@ -32,7 +31,7 @@ ORB_NAMESPACE_BEGIN
 namespace Private
 {
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
+#if( ORB_HAS_OPENGL )
 
 	struct _RenderContextImplOpenGL
 	{
@@ -72,7 +71,7 @@ namespace Private
 	};
 
 #endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
+#if( ORB_HAS_D3D11 )
 
 	struct _RenderContextImplD3D11
 	{
@@ -90,10 +89,10 @@ namespace Private
 #endif
 
 	using RenderContextImpl = std::variant< std::monostate
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 		, _RenderContextImplOpenGL
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 		, _RenderContextImplD3D11
 	#endif
 	>;

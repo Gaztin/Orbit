@@ -33,7 +33,7 @@ ConstantBuffer::ConstantBuffer( size_t size )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -57,7 +57,7 @@ ConstantBuffer::ConstantBuffer( size_t size )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
@@ -88,7 +88,7 @@ ConstantBuffer::~ConstantBuffer( void )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
@@ -111,7 +111,7 @@ void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL20, Private::ConstantBufferImpl > ):
 		{
@@ -130,7 +130,7 @@ void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
 		{
@@ -150,7 +150,7 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 	{
 		default: return nullptr;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
@@ -162,7 +162,7 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
 		{
@@ -187,7 +187,7 @@ void ConstantBuffer::UpdateEnd()
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
@@ -200,7 +200,7 @@ void ConstantBuffer::UpdateEnd()
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
 		{
@@ -223,7 +223,7 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
@@ -237,7 +237,7 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
 		{

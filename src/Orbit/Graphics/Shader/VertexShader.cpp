@@ -23,7 +23,7 @@
 #include "Orbit/Graphics/API/OpenGL/GLSL.h"
 #include "Orbit/Graphics/Device/RenderContext.h"
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
+#if( ORB_HAS_D3D11 )
 #  include <d3dcompiler.h>
 #endif
 
@@ -37,7 +37,7 @@ VertexShader::VertexShader( const Asset& asset )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -92,7 +92,7 @@ VertexShader::VertexShader( const Asset& asset )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
@@ -134,7 +134,7 @@ VertexShader::~VertexShader( void )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_VertexShaderImplOpenGL, Private::VertexShaderImpl > ):
 		{

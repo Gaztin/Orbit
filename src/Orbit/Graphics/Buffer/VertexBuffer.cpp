@@ -33,7 +33,7 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -49,7 +49,7 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
@@ -90,7 +90,7 @@ VertexBuffer::~VertexBuffer( void )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_VertexBufferImplOpenGL, Private::VertexBufferImpl > ):
 		{
@@ -113,7 +113,7 @@ void VertexBuffer::Bind( void )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_VertexBufferImplOpenGL, Private::VertexBufferImpl > ):
 		{
@@ -126,7 +126,7 @@ void VertexBuffer::Bind( void )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_VertexBufferImplD3D11, Private::VertexBufferImpl > ):
 		{

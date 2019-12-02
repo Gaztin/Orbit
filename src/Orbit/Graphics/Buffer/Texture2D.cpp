@@ -29,7 +29,7 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
 		{
@@ -53,7 +53,7 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
 		{
@@ -120,7 +120,7 @@ Texture2D::~Texture2D( void )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_Texture2DImplOpenGL, Private::Texture2DImpl > ):
 		{
@@ -142,7 +142,7 @@ void Texture2D::Bind( uint32_t slot )
 	{
 		default: break;
 
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_Texture2DImplOpenGL, Private::Texture2DImpl > ):
 		{
@@ -157,7 +157,7 @@ void Texture2D::Bind( uint32_t slot )
 		}
 
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_Texture2DImplD3D11, Private::Texture2DImpl > ):
 		{

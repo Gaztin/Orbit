@@ -19,7 +19,6 @@
 #include <variant>
 
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/Impl/GraphicsAPI.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"
 
 ORB_NAMESPACE_BEGIN
@@ -27,7 +26,7 @@ ORB_NAMESPACE_BEGIN
 namespace Private
 {
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
+#if( ORB_HAS_OPENGL )
 
 	struct _FragmentShaderImplOpenGL
 	{
@@ -35,7 +34,7 @@ namespace Private
 	};
 
 #endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
+#if( ORB_HAS_D3D11 )
 
 	struct _FragmentShaderImplD3D11
 	{
@@ -45,10 +44,10 @@ namespace Private
 #endif
 
 	using FragmentShaderImpl = std::variant< std::monostate
-	#if _ORB_HAS_GRAPHICS_API_OPENGL
+	#if( ORB_HAS_OPENGL )
 		, _FragmentShaderImplOpenGL
 	#endif
-	#if _ORB_HAS_GRAPHICS_API_D3D11
+	#if( ORB_HAS_D3D11 )
 		, _FragmentShaderImplD3D11
 	#endif
 	>;
