@@ -37,6 +37,6 @@ struct VertexComponent
 	Type        type;
 };
 
-using VertexLayout = std::initializer_list< VertexComponent >;
+using VertexLayout = std::vector< VertexComponent >;
 
 ORB_NAMESPACE_END

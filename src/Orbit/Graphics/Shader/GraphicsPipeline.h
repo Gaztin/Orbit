@@ -37,7 +37,7 @@ public:
 	void Bind                ( void );
 	void Unbind              ( void );
 	void SetShaders          ( const VertexShader& vert, const FragmentShader& frag );
-	void DescribeVertexLayout( VertexLayout layout );
+	void DescribeVertexLayout( const VertexLayout& layout );
 	void Draw                ( const VertexBuffer& vb );
 	void Draw                ( const IndexBuffer& ib );
 

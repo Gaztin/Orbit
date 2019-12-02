@@ -428,7 +428,7 @@ void GraphicsPipeline::SetShaders( const VertexShader& vert, const FragmentShade
 	}
 }
 
-void GraphicsPipeline::DescribeVertexLayout( VertexLayout layout )
+void GraphicsPipeline::DescribeVertexLayout( const VertexLayout& layout )
 {
 	switch( m_impl.index() )
 	{
@@ -439,7 +439,7 @@ void GraphicsPipeline::DescribeVertexLayout( VertexLayout layout )
 		{
 			auto& impl = std::get< Private::_GraphicsPipelineImplOpenGL20 >( m_impl );
 
-			impl.layout.assign( layout );
+			impl.layout = layout;
 
 			/* Calculate stride */
 			impl.stride = 0;
@@ -461,7 +461,7 @@ void GraphicsPipeline::DescribeVertexLayout( VertexLayout layout )
 		{
 			auto& impl = std::get< Private::_GraphicsPipelineImplOpenGL30 >( m_impl );
 
-			impl.layout.assign( layout );
+			impl.layout = layout;
 
 			/* Calculate stride */
 			impl.stride = 0;

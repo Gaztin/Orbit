@@ -32,17 +32,17 @@ namespace Private
 
 	struct _GraphicsPipelineImplOpenGL20
 	{
-		std::vector< VertexComponent > layout;
-		GLsizei                        stride;
-		GLuint                         shader_program;
+		VertexLayout layout;
+		GLsizei      stride;
+		GLuint       shader_program;
 	};
 
 	struct _GraphicsPipelineImplOpenGL30
 	{
-		std::vector< VertexComponent > layout;
-		GLsizei                        stride;
-		GLuint                         shader_program;
-		GLuint                         vao;
+		VertexLayout layout;
+		GLsizei      stride;
+		GLuint       shader_program;
+		GLuint       vao;
 	};
 
 #endif
