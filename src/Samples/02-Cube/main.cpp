@@ -15,14 +15,9 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include <cmath>
-#include <ctime>
-
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
-#include <Orbit/Core/IO/Log.h>
-#include <Orbit/Core/Utility/Utility.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
@@ -37,7 +32,6 @@
 #include <Orbit/Math/Vector2.h>
 #include <Orbit/Math/Vector3.h>
 #include <Orbit/Math/Vector4.h>
-
 
 struct Vertex
 {
@@ -189,19 +183,14 @@ public:
 
 	static void OnWindowResize( const Orbit::WindowResized& e )
 	{
-		Orbit::LogInfo( Orbit::Format( "Resized: (%u, %u)", e.width, e.height ) );
+		using namespace Orbit::MathLiterals;
 
-		/* Update projection matrix */
-		{
-			using namespace Orbit::MathLiterals;
+		constexpr float fov       = 60pi / 180.f;
+		constexpr float far_clip  = 100.f;
+		constexpr float near_clip = 0.1f;
+		const float     aspect    = static_cast< float >( e.width ) / e.height;
 
-			constexpr float fov       = 60pi / 180.f;
-			constexpr float far_clip  = 100.f;
-			constexpr float near_clip = 0.1f;
-			const float     aspect    = static_cast< float >( e.width ) / e.height;
-
-			projection_matrix.SetPerspective( aspect, fov, near_clip, far_clip );
-		}
+		projection_matrix.SetPerspective( aspect, fov, near_clip, far_clip );
 	}
 
 private:
