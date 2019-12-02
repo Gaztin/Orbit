@@ -161,7 +161,7 @@ public:
 			view.Translate( Orbit::Vector3( 0m, 0m, 5m ) );
 
 			Orbit::Matrix4 model;
-			model.Rotate( Orbit::Vector3( 0pi, 1pi * m_time, 0pi ) );
+			model.Rotate( Orbit::Vector3( 0pi, 0.5pi * m_time, 0pi ) );
 
 			mvp = model * view * projection_matrix;
 		}
