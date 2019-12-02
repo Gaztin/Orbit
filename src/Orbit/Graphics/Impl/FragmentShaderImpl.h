@@ -19,7 +19,7 @@
 #include <variant>
 
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 

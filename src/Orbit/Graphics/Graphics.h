@@ -43,6 +43,29 @@
 #  define ORB_HAS_D3D11  0
 #  define ORB_HAS_OPENGL 1
 #endif
+
+/* Direct3D includes */
+#if( ORB_HAS_D3D11 )
+#  include <d3d11.h>
+#endif
+
+/* OpenGL includes */
+#if( ORB_HAS_OPENGL )
+#  if defined( ORB_OS_WINDOWS )
+#    include <Windows.h>
+#    include <gl/GL.h>
+#  elif defined( ORB_OS_LINUX )
+#    include <GL/glx.h>
+#    include <GL/gl.h>
+#  elif defined( ORB_OS_MACOS )
+#    include <OpenGL/gl.h>
+#  elif defined( ORB_OS_ANDROID )
+#    include <EGL/egl.h>
+#    include <EGL/eglext.h>
+#    include <GLES3/gl3.h>
+#  elif defined( ORB_OS_IOS )
+#    include <OpenGLES/ES3/gl.h>
+#  endif
 #endif
 
 ORB_NAMESPACE_BEGIN

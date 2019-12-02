@@ -27,22 +27,6 @@
 
 #include "Orbit/Core/Utility/Bitmask.h"
 
-#if defined( ORB_OS_WINDOWS )
-#  include <Windows.h>
-#  include <gl/GL.h>
-#elif defined( ORB_OS_LINUX )
-#  include <GL/glx.h>
-#  include <GL/gl.h>
-#elif defined( ORB_OS_MACOS )
-#  include <OpenGL/gl.h>
-#elif defined( ORB_OS_ANDROID )
-#  include <EGL/egl.h>
-#  include <EGL/eglext.h>
-#  include <GLES3/gl3.h>
-#elif defined( ORB_OS_IOS )
-#  include <OpenGLES/ES3/gl.h>
-#endif
-
 #if defined( Bool )
 #  pragma push_macro( "Bool" )
 #  undef Bool
