@@ -28,6 +28,7 @@ class ORB_API_GRAPHICS Shader
 public:
 
 	explicit Shader( std::string_view source, const VertexLayout& vertex_layout );
+	~Shader( void );
 
 public:
 

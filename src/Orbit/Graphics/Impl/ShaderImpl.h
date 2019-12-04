@@ -33,9 +33,8 @@ namespace Private
 	struct _ShaderImplOpenGL
 	{
 		VertexLayout layout;
-		GLuint       vertex_shader;
-		GLuint       fragment_shader;
 		GLuint       program;
+		GLsizei      vertex_stride;
 		GLuint       vao;
 	};
 
