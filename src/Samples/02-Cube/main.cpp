@@ -135,7 +135,7 @@ float4 PSMain( PixelData input ) : SV_TARGET
 #endif
 )";
 
-const std::initializer_list< Vertex > triangle_vertices
+const std::initializer_list< Vertex > vertex_data
 {
 	/* Front face */
 	{ Orbit::Vector4( -1.f, -1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 1.f ) },
@@ -169,7 +169,7 @@ const std::initializer_list< Vertex > triangle_vertices
 	{ Orbit::Vector4( -1.f,  1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 1.f ) },
 };
 
-const std::initializer_list< uint16_t > triangle_indices
+const std::initializer_list< uint16_t > index_data
 {
 	/* Front face */
 	0, 1, 2,
@@ -191,7 +191,7 @@ const std::initializer_list< uint16_t > triangle_indices
 	20, 22, 23,
 };
 
-std::tuple triangle_constants = std::make_tuple( Orbit::Matrix4() );
+std::tuple constant_data = std::make_tuple( Orbit::Matrix4() );
 
 Orbit::Matrix4 projection_matrix( 0.f );
 
@@ -212,9 +212,9 @@ public:
 		, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
 		, m_render_context( m_window )
 		, m_shader( shader_source, vertex_layout )
-		, m_triangle_vertex_buffer( triangle_vertices )
-		, m_triangle_index_buffer( triangle_indices )
-		, m_triangle_constant_buffer( triangle_constants )
+		, m_triangle_vertex_buffer( vertex_data )
+		, m_triangle_index_buffer( index_data )
+		, m_triangle_constant_buffer( constant_data )
 		, m_texture_2d( 4, 4, texture_data )
 		, m_time( 0.0f )
 	{
@@ -227,7 +227,7 @@ public:
 
 	void OnFrame( void ) override
 	{
-		auto& [ mvp ] = triangle_constants;
+		auto& [ mvp ] = constant_data;
 		m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
 
 		/* Calculate model-view-projection matrix */
@@ -252,7 +252,7 @@ public:
 		m_shader.Bind();
 		m_triangle_index_buffer.Bind();
 		m_triangle_constant_buffer.Bind( Orbit::ShaderType::Vertex, 0 );
-		m_triangle_constant_buffer.Update( triangle_constants );
+		m_triangle_constant_buffer.Update( constant_data );
 		m_shader.Draw( m_triangle_index_buffer );
 		m_shader.Unbind();
 

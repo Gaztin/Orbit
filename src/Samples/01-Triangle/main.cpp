@@ -122,14 +122,14 @@ float4 PSMain( PixelData input ) : SV_TARGET
 #endif
 )";
 
-const std::initializer_list< Vertex > triangle_vertices
+const std::initializer_list< Vertex > vertex_data
 {
 	{ Orbit::Vector4( -1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f ), Orbit::Color( 1.0f, 0.0f, 1.0f, 1.0f ), Orbit::Vector2( 0.0f, 0.0f ) },
 	{ Orbit::Vector4(  0.0f,                              1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f ), Orbit::Color( 0.0f, 1.0f, 1.0f, 1.0f ), Orbit::Vector2( 0.5f, 1.0f ) },
 	{ Orbit::Vector4(  1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f ), Orbit::Color( 1.0f, 1.0f, 0.0f, 1.0f ), Orbit::Vector2( 1.0f, 0.0f ) },
 };
 
-const std::initializer_list< uint16_t > triangle_indices
+const std::initializer_list< uint16_t > index_data
 {
 	0, 1, 2,
 };
@@ -150,8 +150,8 @@ public:
 		: m_window( 800, 600 )
 		, m_render_context( m_window )
 		, m_shader( shader_source, vertex_layout )
-		, m_triangle_vertex_buffer( triangle_vertices )
-		, m_triangle_index_buffer( triangle_indices )
+		, m_triangle_vertex_buffer( vertex_data )
+		, m_triangle_index_buffer( index_data )
 		, m_texture_2d( 4, 4, texture_data )
 		, m_time( 0.0f )
 	{
