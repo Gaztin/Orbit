@@ -150,8 +150,8 @@ public:
 		: m_window( 800, 600 )
 		, m_render_context( m_window )
 		, m_shader( shader_source, vertex_layout )
-		, m_triangle_vertex_buffer( vertex_data )
-		, m_triangle_index_buffer( index_data )
+		, m_vertex_buffer( vertex_data )
+		, m_index_buffer( index_data )
 		, m_texture_2d( 4, 4, texture_data )
 		, m_time( 0.0f )
 	{
@@ -166,10 +166,10 @@ public:
 		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
 		m_texture_2d.Bind( 0 );
-		m_triangle_vertex_buffer.Bind();
+		m_vertex_buffer.Bind();
 		m_shader.Bind();
-		m_triangle_index_buffer.Bind();
-		m_shader.Draw( m_triangle_index_buffer );
+		m_index_buffer.Bind();
+		m_shader.Draw( m_index_buffer );
 		m_shader.Unbind();
 
 		m_render_context.SwapBuffers();
@@ -182,8 +182,8 @@ private:
 	Orbit::Window           m_window;
 	Orbit::RenderContext    m_render_context;
 	Orbit::Shader           m_shader;
-	Orbit::VertexBuffer     m_triangle_vertex_buffer;
-	Orbit::IndexBuffer      m_triangle_index_buffer;
+	Orbit::VertexBuffer     m_vertex_buffer;
+	Orbit::IndexBuffer      m_index_buffer;
 	Orbit::Texture2D        m_texture_2d;
 	float                   m_time;
 
