@@ -23,9 +23,7 @@
 #include <Orbit/Graphics/Buffer/Texture2D.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Device/RenderContext.h>
-#include <Orbit/Graphics/Shader/FragmentShader.h>
-#include <Orbit/Graphics/Shader/GraphicsPipeline.h>
-#include <Orbit/Graphics/Shader/VertexShader.h>
+#include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Math/Vector2.h>
 #include <Orbit/Math/Vector4.h>
 
@@ -42,6 +40,87 @@ const Orbit::VertexLayout vertex_layout
 	{ "COLOR",    Orbit::VertexComponent::Vec4 },
 	{ "TEXCOORD", Orbit::VertexComponent::Vec2 },
 };
+
+constexpr std::string_view shader_source = R"(
+#if defined( GLSL )
+
+#  if defined( VERTEX )
+
+ORB_ATTRIBUTE vec4 a_position;
+ORB_ATTRIBUTE vec4 a_color;
+ORB_ATTRIBUTE vec2 a_texcoord;
+
+ORB_VARYING vec4 v_position;
+ORB_VARYING vec4 v_color;
+ORB_VARYING vec2 v_texcoord;
+
+void main()
+{
+	v_position = a_position;
+	v_color    = a_color;
+	v_texcoord = a_texcoord;
+
+	gl_Position = v_position;
+}
+
+#  elif defined( FRAGMENT )
+
+uniform sampler2D diffuse_texture;
+
+ORB_VARYING vec4 v_position;
+ORB_VARYING vec4 v_color;
+ORB_VARYING vec2 v_texcoord;
+
+void main()
+{
+	vec4 tex_color = texture( diffuse_texture, v_texcoord );
+	vec4 out_color = tex_color * v_color;
+
+	ORB_SET_OUT_COLOR( out_color );
+}
+
+#  endif
+
+#elif defined( HLSL )
+
+Texture2D diffuse_texture;
+
+SamplerState texture_sampler;
+
+struct VertexData
+{
+	float4 position : POSITION;
+	float4 color    : COLOR;
+	float2 texcoord : TEXCOORD;
+};
+
+struct PixelData
+{
+	float4 position : SV_POSITION;
+	float4 color    : COLOR;
+	float2 texcoord : TEXCOORD;
+};
+
+PixelData VSMain( VertexData input )
+{
+	PixelData output;
+	output.position = input.position;
+	output.color    = input.color;
+	output.texcoord = input.texcoord;
+
+	return output;
+}
+
+float4 PSMain( PixelData input ) : SV_TARGET
+{
+	float4 tex_color = diffuse_texture.Sample( texture_sampler, input.texcoord );
+	float4 out_color = tex_color * input.color;
+
+	return out_color;
+}
+
+#endif
+)";
 
 const std::initializer_list< Vertex > triangle_vertices
 {
@@ -70,8 +149,7 @@ public:
 	SampleApp( void )
 		: m_window( 800, 600 )
 		, m_render_context( m_window )
-		, m_vertex_shader( Orbit::Asset( "triangle_shader.vs" ) )
-		, m_fragment_shader( Orbit::Asset( "triangle_shader.fs" ) )
+		, m_shader( shader_source, vertex_layout )
 		, m_triangle_vertex_buffer( triangle_vertices )
 		, m_triangle_index_buffer( triangle_indices )
 		, m_texture_2d( 4, 4, texture_data )
@@ -80,9 +158,6 @@ public:
 		m_window.SetTitle( "Orbit Sample (01-Triangle)" );
 		m_window.Show();
 		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
-
-		m_main_pipeline.SetShaders( m_vertex_shader, m_fragment_shader );
-		m_main_pipeline.DescribeVertexLayout( vertex_layout );
 	}
 
 	void OnFrame( void ) override
@@ -92,10 +167,10 @@ public:
 
 		m_texture_2d.Bind( 0 );
 		m_triangle_vertex_buffer.Bind();
-		m_main_pipeline.Bind();
+		m_shader.Bind();
 		m_triangle_index_buffer.Bind();
-		m_main_pipeline.Draw( m_triangle_index_buffer );
-		m_main_pipeline.Unbind();
+		m_shader.Draw( m_triangle_index_buffer );
+		m_shader.Unbind();
 
 		m_render_context.SwapBuffers();
 	}
@@ -106,11 +181,9 @@ private:
 
 	Orbit::Window           m_window;
 	Orbit::RenderContext    m_render_context;
-	Orbit::VertexShader     m_vertex_shader;
-	Orbit::FragmentShader   m_fragment_shader;
+	Orbit::Shader           m_shader;
 	Orbit::VertexBuffer     m_triangle_vertex_buffer;
 	Orbit::IndexBuffer      m_triangle_index_buffer;
-	Orbit::GraphicsPipeline m_main_pipeline;
 	Orbit::Texture2D        m_texture_2d;
 	float                   m_time;
 
