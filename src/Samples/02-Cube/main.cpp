@@ -24,6 +24,7 @@
 #include <Orbit/Graphics/Buffer/Texture2D.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Device/RenderContext.h>
+#include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Math/Literals.h>
 #include <Orbit/Math/Matrix4.h>
@@ -210,12 +211,12 @@ public:
 	SampleApp( void )
 		: m_window( 800, 600 )
 		, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
-		, m_render_context( m_window, Orbit::GraphicsAPI::OpenGL )
+		, m_render_context( m_window )
 		, m_shader( shader_source, vertex_layout )
 		, m_vertex_buffer( vertex_data )
 		, m_index_buffer( index_data )
 		, m_constant_buffer( constant_data )
-		, m_texture_2d( 4, 4, texture_data )
+		, m_texture( 4, 4, texture_data )
 		, m_time( 0.0f )
 	{
 		m_window.SetTitle( "Orbit Sample (02-Cube)" );
@@ -227,34 +228,40 @@ public:
 
 	void OnFrame( void ) override
 	{
-		auto& [ mvp ] = constant_data;
-		m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
-
-		/* Calculate model-view-projection matrix */
+		/* Update constant buffer */
 		{
-			using namespace Orbit::MathLiterals;
-			using namespace Orbit::UnitLiterals::Metric;
+			auto& [ mvp ] = constant_data;
+			m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
 
-			Orbit::Matrix4 view;
-			view.Translate( Orbit::Vector3( 0m, 0m, 5m ) );
+			/* Calculate model-view-projection matrix */
+			{
+				using namespace Orbit::MathLiterals;
+				using namespace Orbit::UnitLiterals::Metric;
 
-			Orbit::Matrix4 model;
-			model.Rotate( Orbit::Vector3( 0pi, 0.5pi * m_time, 0pi ) );
+				Orbit::Matrix4 view;
+				view.Translate( Orbit::Vector3( 0m, 0m, 5m ) );
 
-			mvp = model * view * projection_matrix;
+				Orbit::Matrix4 model;
+				model.Rotate( Orbit::Vector3( 0pi, 0.5pi * m_time, 0pi ) );
+
+				mvp = model * view * projection_matrix;
+			}
+
+			m_constant_buffer.Update( constant_data );
 		}
 
 		m_window.PollEvents();
 		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
-		m_texture_2d.Bind( 0 );
-		m_vertex_buffer.Bind();
-		m_shader.Bind();
-		m_index_buffer.Bind();
-		m_constant_buffer.Bind( Orbit::ShaderType::Vertex, 0 );
-		m_constant_buffer.Update( constant_data );
-		m_shader.Draw( m_index_buffer );
-		m_shader.Unbind();
+		Orbit::RenderCommand command;
+		command.vertex_buffer = &m_vertex_buffer;
+		command.index_buffer  = &m_index_buffer;
+		command.shader        = &m_shader;
+		command.constant_buffers.push_back( &m_constant_buffer );
+		command.textures.push_back( &m_texture );
+
+		m_renderer.QueueCommand( command );
+		m_renderer.Render();
 
 		m_render_context.SwapBuffers();
 	}
@@ -284,7 +291,8 @@ private:
 	Orbit::VertexBuffer      m_vertex_buffer;
 	Orbit::IndexBuffer       m_index_buffer;
 	Orbit::ConstantBuffer    m_constant_buffer;
-	Orbit::Texture2D         m_texture_2d;
+	Orbit::Texture2D         m_texture;
+	Orbit::BasicRenderer     m_renderer;
 	float                    m_time;
 
 };
