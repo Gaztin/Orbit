@@ -26,48 +26,36 @@ ORB_NAMESPACE_BEGIN
 
 namespace Private
 {
+	struct WindowData
+	{
 
 #if defined( ORB_OS_WINDOWS )
 
-	struct WindowImpl
-	{
 		HWND hwnd;
-	};
 
 #elif defined( ORB_OS_LINUX )
 
-	struct WindowImpl
-	{
 		Display* display;
 		Window   window;
-	};
 
 #elif defined( ORB_OS_MACOS )
 
-	struct WindowImpl
-	{
 		void* ns_window;
 		void* delegate;
-	};
 
 #elif defined( ORB_OS_ANDROID )
 
-	struct WindowImpl
-	{
 		ASensorManager*    sensor_manager;
 		const ASensor*     accelerometer_sensor;
 		ASensorEventQueue* sensor_event_queue;
-	};
 
 #elif defined( ORB_OS_IOS )
 
-	struct WindowImpl
-	{
 		void* ui_window;
-	};
 
 #endif
 
+	};
 }
 
 ORB_NAMESPACE_END

@@ -21,7 +21,7 @@
 #include <variant>
 
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Core/Private/WindowImpl.h"
+#include "Orbit/Core/Private/WindowData.h"
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Core/Utility/Version.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"

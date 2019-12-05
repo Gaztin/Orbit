@@ -50,7 +50,7 @@ static int OnInput( android_app* state, AInputEvent* e );
 #endif
 
 Window::Window( uint32_t width, uint32_t height )
-	: m_impl { }
+	: m_data { }
 	, m_open { true }
 {
 
@@ -60,29 +60,29 @@ Window::Window( uint32_t width, uint32_t height )
 	static ATOM      window_class = RegisterWindowClass( class_name );
 
 	/* Create window */
-	m_impl.hwnd = CreateWindowExA( WS_EX_OVERLAPPEDWINDOW, class_name, NULL, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, NULL, NULL, GetModuleHandleA( NULL ), NULL );
+	m_data.hwnd = CreateWindowExA( WS_EX_OVERLAPPEDWINDOW, class_name, NULL, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, NULL, NULL, GetModuleHandleA( NULL ), NULL );
 
 	/* Set user data */
-	SetWindowLongPtrA( m_impl.hwnd, GWLP_USERDATA, reinterpret_cast< LONG_PTR >( this ) );
+	SetWindowLongPtrA( m_data.hwnd, GWLP_USERDATA, reinterpret_cast< LONG_PTR >( this ) );
 
 #elif defined( ORB_OS_LINUX )
 
 	/* Open display */
-	m_impl.display = XOpenDisplay( nullptr );
+	m_data.display = XOpenDisplay( nullptr );
 
 	/* Create window */
-	const int               screen      = DefaultScreen( m_impl.display );
-	Window                  root_window = XRootWindow( m_impl.display, screen );
-	int                     depth       = DefaultDepth( m_impl.display, screen );
-	Visual*                 visual      = DefaultVisual( m_impl.display, screen );
+	const int               screen      = DefaultScreen( m_data.display );
+	Window                  root_window = XRootWindow( m_data.display, screen );
+	int                     depth       = DefaultDepth( m_data.display, screen );
+	Visual*                 visual      = DefaultVisual( m_data.display, screen );
 	constexpr unsigned long value_mask  = ( CWBackPixel | CWEventMask );
 	XSetWindowAttributes    attribs     = { };
 	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask );
-	m_impl.window                       = XCreateWindow( m_impl.display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, value_mask, &attribs );
+	m_data.window                       = XCreateWindow( m_data.display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, value_mask, &attribs );
 
 	/* Allow us to capture the window close event */
-	Atom close_atom = XInternAtom( m_impl.display, "WM_DELETE_WINDOW", True );
-	XSetWMProtocols( m_impl.display, m_impl.window, &close_atom, 1 );
+	Atom close_atom = XInternAtom( m_data.display, "WM_DELETE_WINDOW", True );
+	XSetWMProtocols( m_data.display, m_data.window, &close_atom, 1 );
 
 #elif defined( ORB_OS_MACOS )
 
@@ -91,22 +91,22 @@ Window::Window( uint32_t width, uint32_t height )
 	NSBackingStoreType backing    = ( NSBackingStoreBuffered );
 
 	/* Create window */
-	m_impl.ns_window = [ NSWindow alloc ];
-	[ ( NSWindow* )m_impl.ns_window initWithContentRect:frame styleMask:style_mask backing:backing defer:NO ];
+	m_data.ns_window = [ NSWindow alloc ];
+	[ ( NSWindow* )m_data.ns_window initWithContentRect:frame styleMask:style_mask backing:backing defer:NO ];
 
 	/* Create window delegate */
-	m_impl.delegate = [ OrbitWindowDelegate alloc ];
-	[ ( NSWindow* )m_impl.ns_window setDelegate:( OrbitWindowDelegate* )m_impl.delegate ];
-	[ ( OrbitWindowDelegate* )m_impl.delegate setWindowPtr:this ];
-	[ ( OrbitWindowDelegate* )m_impl.delegate setImpl:&m_impl ];
+	m_data.delegate = [ OrbitWindowDelegate alloc ];
+	[ ( NSWindow* )m_data.ns_window setDelegate:( OrbitWindowDelegate* )m_data.delegate ];
+	[ ( OrbitWindowDelegate* )m_data.delegate setWindowPtr:this ];
+	[ ( OrbitWindowDelegate* )m_data.delegate setImpl:&m_data ];
 
 #elif defined( ORB_OS_ANDROID )
 
 	AndroidOnly::app->onInputEvent = OnInput;
 
-	m_impl.sensor_manager       = ASensorManager_getInstance();
-	m_impl.accelerometer_sensor = ASensorManager_getDefaultSensor( m_impl.sensor_manager, ASENSOR_TYPE_ACCELEROMETER );
-	m_impl.sensor_event_queue   = ASensorManager_createEventQueue( m_impl.sensor_manager, AndroidOnly::app->looper, LOOPER_ID_USER, nullptr, nullptr );
+	m_data.sensor_manager       = ASensorManager_getInstance();
+	m_data.accelerometer_sensor = ASensorManager_getDefaultSensor( m_data.sensor_manager, ASENSOR_TYPE_ACCELEROMETER );
+	m_data.sensor_event_queue   = ASensorManager_createEventQueue( m_data.sensor_manager, AndroidOnly::app->looper, LOOPER_ID_USER, nullptr, nullptr );
 
 	/* Update until native window is initialized. */
 	{
@@ -133,16 +133,16 @@ Window::Window( uint32_t width, uint32_t height )
 #elif defined( ORB_OS_IOS )
 
 	/* Initialize window */
-	m_impl.ui_window = [ OrbitUIWindow alloc ];
-	[ ( OrbitUIWindow* )m_impl.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
-	( ( OrbitUIWindow* )m_impl.ui_window ).backgroundColor = [ UIColor whiteColor ];
-	[ ( OrbitUIWindow* )m_impl.ui_window makeKeyAndVisible ];
-	[ ( OrbitUIWindow* )m_impl.ui_window setWindowPtr:this ];
+	m_data.ui_window = [ OrbitUIWindow alloc ];
+	[ ( OrbitUIWindow* )m_data.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+	( ( OrbitUIWindow* )m_data.ui_window ).backgroundColor = [ UIColor whiteColor ];
+	[ ( OrbitUIWindow* )m_data.ui_window makeKeyAndVisible ];
+	[ ( OrbitUIWindow* )m_data.ui_window setWindowPtr:this ];
 
 	/* Create view controller */
 	UIViewController* vc = [ UIViewController alloc ];
 	[ vc initWithNibName:nil bundle:nil ];
-	( ( OrbitUIWindow* )m_impl.ui_window ).rootViewController = vc;
+	( ( OrbitUIWindow* )m_data.ui_window ).rootViewController = vc;
 
 #endif
 
@@ -153,28 +153,28 @@ Window::~Window( void )
 
 #if defined( ORB_OS_WINDOWS )
 
-	DestroyWindow( m_impl.hwnd );
+	DestroyWindow( m_data.hwnd );
 
 #elif defined( ORB_OS_LINUX )
 
-	XDestroyWindow( m_impl.display, m_impl.window );
-	XCloseDisplay( m_impl.display );
+	XDestroyWindow( m_data.display, m_data.window );
+	XCloseDisplay( m_data.display );
 
 #elif defined( ORB_OS_MACOS )
 
-	[ ( NSWindow* )m_impl.ns_window close ];
-	[ ( OrbitWindowDelegate* )m_impl.delegate dealloc ];
-	[ ( NSWindow* )m_impl.nsWindow dealloc ];
+	[ ( NSWindow* )m_data.ns_window close ];
+	[ ( OrbitWindowDelegate* )m_data.delegate dealloc ];
+	[ ( NSWindow* )m_data.nsWindow dealloc ];
 
 #elif defined( ORB_OS_ANDROID )
 
-	ASensorManager_destroyEventQueue( m_impl.sensor_manager, m_impl.sensor_event_queue );
+	ASensorManager_destroyEventQueue( m_data.sensor_manager, m_data.sensor_event_queue );
 	AndroidOnly::app->userData = nullptr;
 	AndroidOnly::app->onAppCmd = nullptr;
 
 #elif defined( ORB_OS_IOS )
 
-	[ ( OrbitUIWindow* )m_impl.ui_window dealloc ];
+	[ ( OrbitUIWindow* )m_data.ui_window dealloc ];
 
 #endif
 
@@ -187,7 +187,7 @@ void Window::PollEvents( void )
 
 	MSG msg;
 
-	while( PeekMessageA( &msg, m_impl.hwnd, 0, 0, PM_REMOVE ) )
+	while( PeekMessageA( &msg, m_data.hwnd, 0, 0, PM_REMOVE ) )
 	{
 		TranslateMessage( &msg );
 		DispatchMessageA( &msg );
@@ -207,9 +207,9 @@ void Window::PollEvents( void )
 
 	NSEvent* ns_event;
 
-	while( ( ns_event = [ ( const NSWindow* )m_impl.ns_window nextEventMatchingMask : NSEventMaskAny untilDate : nullptr inMode : NSDefaultRunLoopMode dequeue : YES ] ) != nullptr )
+	while( ( ns_event = [ ( const NSWindow* )m_data.ns_window nextEventMatchingMask : NSEventMaskAny untilDate : nullptr inMode : NSDefaultRunLoopMode dequeue : YES ] ) != nullptr )
 	{
-		[ ( const NSWindow* )m_impl.ns_window sendEvent : ns_event ];
+		[ ( const NSWindow* )m_data.ns_window sendEvent : ns_event ];
 	}
 
 #elif defined( ORB_OS_ANDROID )
@@ -236,16 +236,16 @@ void Window::SetTitle( std::string_view title )
 
 #if defined( ORB_OS_WINDOWS )
 
-	SetWindowTextA( m_impl.hwnd, title.data() );
+	SetWindowTextA( m_data.hwnd, title.data() );
 
 #elif defined( ORB_OS_LINUX )
 
-	XStore( m_impl.display, m_impl.window, title.data() );
+	XStore( m_data.display, m_data.window, title.data() );
 
 #elif defined( ORB_OS_MACOS )
 
 	NSString* ns_title = [ NSString stringWithUTF8String:title.data() ];
-	[ ( const NSWindow* )m_impl.ns_window setTitle:ns_title ];
+	[ ( const NSWindow* )m_data.ns_window setTitle:ns_title ];
 	[ nsTitle release ];
 
 #elif defined( ORB_OS_ANDROID )
@@ -263,25 +263,25 @@ void Window::Move( int32_t x, int32_t y )
 
 	RECT rect;
 
-	if( GetWindowRect( m_impl.hwnd, &rect ) )
+	if( GetWindowRect( m_data.hwnd, &rect ) )
 	{
 		const int width  = ( rect.right - rect.left );
 		const int height = ( rect.bottom - rect.top );
 
-		MoveWindow( m_impl.hwnd, x, y, width, height, FALSE );
+		MoveWindow( m_data.hwnd, x, y, width, height, FALSE );
 	}
 
 #elif defined( ORB_OS_LINUX )
 
-	XMoveWindow( m_impl.display, m_impl.window, x, y );
+	XMoveWindow( m_data.display, m_data.window, x, y );
 
 #elif defined( ORB_OS_MACOS )
 
-	NSRect frame   = [ ( const NSWindow* )m_impl.ns_window frame ];
+	NSRect frame   = [ ( const NSWindow* )m_data.ns_window frame ];
 	frame.origin.x = x;
 	frame.origin.y = y;
 
-	[ ( const NSWindow* )m_impl.ns_window setFrame:frame display:YES ];
+	[ ( const NSWindow* )m_data.ns_window setFrame:frame display:YES ];
 
 #endif
 
@@ -294,22 +294,22 @@ void Window::Resize( uint32_t width, uint32_t height )
 
 	RECT rect;
 	
-	if( GetWindowRect( m_impl.hwnd, &rect ) )
+	if( GetWindowRect( m_data.hwnd, &rect ) )
 	{
-		MoveWindow( m_impl.hwnd, rect.left, rect.top, width, height, TRUE );
+		MoveWindow( m_data.hwnd, rect.left, rect.top, width, height, TRUE );
 	}
 
 #elif defined( ORB_OS_LINUX )
 
-	XResizeWindow( m_impl.display, m_impl.window, width, height );
+	XResizeWindow( m_data.display, m_data.window, width, height );
 
 #elif defined( ORB_OS_MACOS )
 
-	NSRect frame      = [ ( const NSWindow* )m_impl.ns_window frame ];
+	NSRect frame      = [ ( const NSWindow* )m_data.ns_window frame ];
 	frame.size.width  = width;
 	frame.size.height = height;
 
-	[ ( const NSWindow* )m_impl.ns_window setFrame:frame display:YES ];
+	[ ( const NSWindow* )m_data.ns_window setFrame:frame display:YES ];
 
 #endif
 
@@ -320,15 +320,15 @@ void Window::Show( void )
 
 #if defined( ORB_OS_WINDOWS )
 
-	ShowWindow( m_impl.hwnd, SW_SHOW );
+	ShowWindow( m_data.hwnd, SW_SHOW );
 
 #elif defined( ORB_OS_LINUX )
 
-	XMapWindow( m_impl.display, m_impl.window );
+	XMapWindow( m_data.display, m_data.window );
 
 #elif defined( ORB_OS_MACOS )
 
-	[ ( const NSWindow* )m_impl.ns_window setIsVisible:YES ];
+	[ ( const NSWindow* )m_data.ns_window setIsVisible:YES ];
 
 #elif defined( ORB_OS_ANDROID )
 
@@ -336,7 +336,7 @@ void Window::Show( void )
 
 #elif defined( ORB_OS_IOS )
 
-	[ ( OrbitUIWindow* )m_impl.ui_window setHidden:NO ];
+	[ ( OrbitUIWindow* )m_data.ui_window setHidden:NO ];
 
 #endif
 
@@ -347,15 +347,15 @@ void Window::Hide( void )
 
 #if defined( ORB_OS_WINDOWS )
 
-	ShowWindow( m_impl.hwnd, SW_HIDE );
+	ShowWindow( m_data.hwnd, SW_HIDE );
 
 #elif defined( ORB_OS_LINUX )
 
-	XUnmapWindow( m_impl.display, m_impl.window );
+	XUnmapWindow( m_data.display, m_data.window );
 
 #elif defined( ORB_OS_MACOS )
 
-	[ ( const NSWindow* )m_impl.ns_window setIsVisible:NO ];
+	[ ( const NSWindow* )m_data.ns_window setIsVisible:NO ];
 
 #elif defined( ORB_OS_ANDROID )
 
@@ -363,7 +363,7 @@ void Window::Hide( void )
 
 #elif defined( ORB_OS_IOS )
 
-	[ ( OrbitUIWindow* )m_impl.ui_window setHidden:YES ];
+	[ ( OrbitUIWindow* )m_data.ui_window setHidden:YES ];
 
 #endif
 

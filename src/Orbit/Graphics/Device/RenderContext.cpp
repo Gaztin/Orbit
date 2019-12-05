@@ -59,7 +59,7 @@ RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
 		case GraphicsAPI::OpenGL:
 		{
 			auto& impl        = m_impl.emplace< Private::_RenderContextImplOpenGL >();
-			auto& window_impl = parent_window.GetPrivateImpl();
+			auto& window_impl = parent_window.GetPrivateData();
 
 		#if defined( ORB_OS_WINDOWS )
 
@@ -437,7 +437,7 @@ RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
 		case GraphicsAPI::D3D11:
 		{
 			auto& impl        = m_impl.emplace< Private::_RenderContextImplD3D11 >();
-			auto& window_impl = parent_window.GetPrivateImpl();
+			auto& window_impl = parent_window.GetPrivateData();
 
 			/* Find the monitor refresh rate */
 			DXGI_RATIONAL refreshRate = { 60000, 1000 };
