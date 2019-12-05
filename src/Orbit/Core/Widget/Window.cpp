@@ -27,14 +27,12 @@
 #if defined( ORB_OS_MACOS )
 #  include <AppKit/AppKit.h>
 @interface OrbitWindowDelegate : NSObject< NSWindowDelegate >
-@property ORB_NAMESPACE Window* window;
 @end
 #endif
 
 #if defined( ORB_OS_IOS )
 #  include <UIKit/UIKit.h>
 @interface OrbitUIWindow : UIWindow
-@property ORB_NAMESPACE Window* window;
 @end
 #endif
 
@@ -97,8 +95,6 @@ Window::Window( uint32_t width, uint32_t height )
 	/* Create window delegate */
 	m_data.delegate = [ OrbitWindowDelegate alloc ];
 	[ ( NSWindow* )m_data.ns_window setDelegate:( OrbitWindowDelegate* )m_data.delegate ];
-	[ ( OrbitWindowDelegate* )m_data.delegate setWindowPtr:this ];
-	[ ( OrbitWindowDelegate* )m_data.delegate setImpl:&m_data ];
 
 #elif defined( ORB_OS_ANDROID )
 
@@ -137,7 +133,6 @@ Window::Window( uint32_t width, uint32_t height )
 	[ ( OrbitUIWindow* )m_data.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
 	( ( OrbitUIWindow* )m_data.ui_window ).backgroundColor = [ UIColor whiteColor ];
 	[ ( OrbitUIWindow* )m_data.ui_window makeKeyAndVisible ];
-	[ ( OrbitUIWindow* )m_data.ui_window setWindowPtr:this ];
 
 	/* Create view controller */
 	UIViewController* vc = [ UIViewController alloc ];
@@ -633,7 +628,7 @@ ORB_NAMESPACE_END
 
 -( void )windowWillClose:( NSNotification* ) __unused notification
 {
-	_window->Close();
+	Window::GetInstance().Close();
 }
 
 -( void )windowDidMove:( NSNotification* ) __unused notification
@@ -645,7 +640,7 @@ ORB_NAMESPACE_END
 	e.x = point.x;
 	e.y = point.y;
 
-	_window->QueueEvent( e );
+	Window::GetInstance().QueueEvent( e );
 }
 
 -( NSSize )windowWillResize:( NSWindow* ) __unused sender toSize:( NSSize ) frameSize
@@ -654,7 +649,7 @@ ORB_NAMESPACE_END
 	e.width  = frameSize.width;
 	e.height = frameSize.height;
 
-	_window->QueueEvent( e );
+	Window::GetInstance().QueueEvent( e );
 
 	return frameSize;
 }
@@ -664,7 +659,7 @@ ORB_NAMESPACE_END
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Suspend;
 
-	_window->QueueEvent( e );
+	Window::GetInstance().QueueEvent( e );
 }
 
 -( void )windowDidDeminiaturize:( NSNotification* ) __unused notification
@@ -672,7 +667,7 @@ ORB_NAMESPACE_END
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Restore;
 
-	_window->QueueEvent( e );
+	Window::GetInstance().QueueEvent( e );
 }
 
 -( void )windowDidBecomeMain:( NSNotification* ) __unused notification
@@ -680,7 +675,7 @@ ORB_NAMESPACE_END
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Focus;
 
-	_window->QueueEvent( e );
+	Window::GetInstance().QueueEvent( e );
 }
 
 -( void )windowDidResignMain:( NSNotification* ) __unused notification
@@ -688,7 +683,7 @@ ORB_NAMESPACE_END
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Defocus;
 
-	_window->QueueEvent( e );
+	Window::GetInstance().QueueEvent( e );
 }
 
 @end
@@ -705,7 +700,7 @@ ORB_NAMESPACE_END
 	e.width  = self.bounds.size.width;
 	e.height = self.bounds.size.height;
 
-	_window->QueueEvent( e );
+	Window::GetInstance().QueueEvent( e );
 }
 
 @end

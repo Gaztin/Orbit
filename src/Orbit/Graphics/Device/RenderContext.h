@@ -16,16 +16,17 @@
  */
 
 #pragma once
+#include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Core/Widget/Window.h"
 #include "Orbit/Graphics/Impl/RenderContextImpl.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+class ORB_API_GRAPHICS RenderContext : public Singleton< RenderContext >
 {
 public:
 
-	explicit RenderContext( const Window& parent_window, GraphicsAPI api = default_graphics_api );
+	explicit RenderContext( GraphicsAPI api = default_graphics_api );
 	~RenderContext( void );
 
 public:
@@ -40,10 +41,6 @@ public:
 
 	Private::RenderContextImpl&       GetPrivateImpl( void )       { return m_impl; }
 	const Private::RenderContextImpl& GetPrivateImpl( void ) const { return m_impl; }
-
-public:
-
-	static RenderContext* GetCurrent( void );
 
 private:
 

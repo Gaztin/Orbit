@@ -23,7 +23,7 @@ ORB_NAMESPACE_BEGIN
 
 Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 {
-	auto& context_impl_var = RenderContext::GetCurrent()->GetPrivateImpl();
+	auto& context_impl_var = RenderContext::GetInstance().GetPrivateImpl();
 
 	switch( context_impl_var.index() )
 	{
@@ -125,7 +125,7 @@ Texture2D::~Texture2D( void )
 		case( unique_index_v< Private::_Texture2DImplOpenGL, Private::Texture2DImpl > ):
 		{
 			auto& impl         = std::get< Private::_Texture2DImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 			
 			context_impl.functions->glDeleteTextures( 1, &impl.id );
 
@@ -147,7 +147,7 @@ void Texture2D::Bind( uint32_t slot )
 		case( unique_index_v< Private::_Texture2DImplOpenGL, Private::Texture2DImpl > ):
 		{
 			auto&          impl         = std::get< Private::_Texture2DImplOpenGL >( m_impl );
-			auto&          context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto&          context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 			const uint32_t unit_base    = static_cast< GLenum >( OpenGL::TextureUnit::Texture0 );
 
 			context_impl.functions->glActiveTexture( static_cast< OpenGL::TextureUnit >( unit_base + slot ) );
@@ -162,7 +162,7 @@ void Texture2D::Bind( uint32_t slot )
 		case( unique_index_v< Private::_Texture2DImplD3D11, Private::Texture2DImpl > ):
 		{
 			auto&                     impl         = std::get< Private::_Texture2DImplD3D11 >( m_impl );
-			auto&                     context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto&                     context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
 			ID3D11ShaderResourceView* srv          = impl.shader_resource_view.get();
 
 			context_impl.device_context->PSSetShaderResources( slot, 1, &srv );

@@ -39,14 +39,12 @@
 
 ORB_NAMESPACE_BEGIN
 
-static RenderContext* current_context = nullptr;
-
 #if( ORB_HAS_D3D11 )
 constexpr DXGI_FORMAT back_buffer_format  = DXGI_FORMAT_R8G8B8A8_UNORM;
 constexpr DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 #endif
 
-RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
+RenderContext::RenderContext( GraphicsAPI api )
 	: m_impl                { }
 	, m_resize_subscription { }
 {
@@ -59,7 +57,7 @@ RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
 		case GraphicsAPI::OpenGL:
 		{
 			auto& impl        = m_impl.emplace< Private::_RenderContextImplOpenGL >();
-			auto& window_impl = parent_window.GetPrivateData();
+			auto& window_impl = Window::GetInstance().GetPrivateData();
 
 		#if defined( ORB_OS_WINDOWS )
 
@@ -138,9 +136,8 @@ RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
 
 		#elif defined( ORB_OS_LINUX )
 
-			sub_impl->parent_window_impl = &window_impl;
-			sub_impl->gc                 = XCreateGC( window_impl.display, window_impl.window, 0, nullptr );
-			sub_impl->glxContext         = [ & ]
+			sub_impl->gc         = XCreateGC( window_impl.display, window_impl.window, 0, nullptr );
+			sub_impl->glxContext = [ & ]
 			{
 				/* Create render context */
 				{
@@ -437,7 +434,7 @@ RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
 		case GraphicsAPI::D3D11:
 		{
 			auto& impl        = m_impl.emplace< Private::_RenderContextImplD3D11 >();
-			auto& window_impl = parent_window.GetPrivateData();
+			auto& window_impl = Window::GetInstance().GetPrivateData();
 
 			/* Find the monitor refresh rate */
 			DXGI_RATIONAL refreshRate = { 60000, 1000 };
@@ -626,17 +623,15 @@ RenderContext::RenderContext( const Window& parent_window, GraphicsAPI api )
 
 	}
 
-	// Resize context when window is updated
-	m_resize_subscription = parent_window.Subscribe( [ this ]( const WindowResized& e )
+	/* Resize context when window is updated */
+	m_resize_subscription = Window::GetInstance().Subscribe( [ this ]( const WindowResized& e )
 		{
 			Resize( e.width, e.height );
 		}
 	);
 
-	if( current_context == nullptr )
-	{
-		MakeCurrent();
-	}
+	/* make current */
+	MakeCurrent();
 }
 
 RenderContext::~RenderContext()
@@ -655,42 +650,32 @@ RenderContext::~RenderContext()
 
 			HWND hwnd = WindowFromDC( impl.hdc );
 
-			if( current_context == this )
-				wglMakeCurrent( NULL, NULL );
-
+			wglMakeCurrent( NULL, NULL );
 			wglDeleteContext( impl.hglrc );
 			ReleaseDC( hwnd, impl.hdc );
 
 		#elif defined( ORB_OS_LINUX )
 
-			if( current_context == this )
-				glXMakeCurrent( impl.display, None, nullptr );
-
+			glXMakeCurrent( impl.display, None, nullptr );
 			glXDestroyContext( impl.display, impl.context );
 			XFreeGC( impl.display, impl.gc );
 
 		#elif defined( ORB_OS_MACOS )
 
-			if( current_context == this )
-				[ NSOpenGLContext clearCurrentContext ];
-
+			[ NSOpenGLContext clearCurrentContext ];
 			[ ( const NSOpenGLView* )impl.view removeFromSuperview ];
 			[ ( const NSOpenGLView* )impl.view dealloc ];
 
 		#elif defined( ORB_OS_ANDROID )
 
-			if( current_context == this )
-				eglMakeCurrent( impl.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
-
+			eglMakeCurrent( impl.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
 			eglDestroyContext( impl.display, impl.context );
 			eglDestroySurface( impl.display, impl.surface );
 			eglTerminate( impl.display );
 
 		#elif defined( ORB_OS_IOS )
 
-			if( current_context == this )
-				[ EAGLContext setCurrentContext:nullptr ];
-
+			[ EAGLContext setCurrentContext:nullptr ];
 			[ ( GLKView* )impl.view dealloc ];
 			[ ( EAGLContext* )impl.context dealloc ];
 
@@ -701,11 +686,6 @@ RenderContext::~RenderContext()
 
 	#endif
 
-	}
-
-	if( current_context == this )
-	{
-		current_context = nullptr;
 	}
 }
 
@@ -746,17 +726,11 @@ bool RenderContext::MakeCurrent()
 
 #endif
 
-	current_context = this;
-
 	return true;
 }
 
 void RenderContext::Resize( uint32_t width, uint32_t height )
 {
-	RenderContext* prev_current_context = current_context;
-
-	MakeCurrent();
-
 	switch( m_impl.index() )
 	{
 		default: break;
@@ -867,9 +841,6 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 	#endif
 
 	}
-
-	if( prev_current_context != this )
-		prev_current_context->MakeCurrent();
 }
 
 void RenderContext::SwapBuffers()
@@ -998,11 +969,6 @@ void RenderContext::SetClearColor( float r, float g, float b )
 	#endif
 
 	}
-}
-
-RenderContext* RenderContext::GetCurrent( void )
-{
-	return current_context;
 }
 
 ORB_NAMESPACE_END

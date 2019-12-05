@@ -211,7 +211,6 @@ public:
 	SampleApp( void )
 		: m_window( 800, 600 )
 		, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
-		, m_render_context( m_window )
 		, m_shader( shader_source, vertex_layout )
 		, m_vertex_buffer( vertex_data )
 		, m_index_buffer( index_data )

@@ -38,7 +38,7 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 	, m_format { format }
 	, m_count  { count }
 {
-	auto&        context_impl_var = RenderContext::GetCurrent()->GetPrivateImpl();
+	auto&        context_impl_var = RenderContext::GetInstance().GetPrivateImpl();
 	const size_t total_size       = ( count * GetFormatSize( format ) );
 
 	switch( context_impl_var.index() )
@@ -106,7 +106,7 @@ IndexBuffer::~IndexBuffer( void )
 		case( unique_index_v< Private::_IndexBufferImplOpenGL, Private::IndexBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_IndexBufferImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.functions->delete_buffers( 1, &impl.id );
 
@@ -137,7 +137,7 @@ void IndexBuffer::Bind( void )
 		case( unique_index_v< Private::_IndexBufferImplOpenGL, Private::IndexBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_IndexBufferImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.functions->bind_buffer( OpenGL::BufferTarget::ElementArray, impl.id );
 
@@ -150,7 +150,7 @@ void IndexBuffer::Bind( void )
 		case( unique_index_v< Private::_IndexBufferImplD3D11, Private::IndexBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_IndexBufferImplD3D11 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			/* Translate format to DXGI_FORMAT */
 			DXGI_FORMAT format;

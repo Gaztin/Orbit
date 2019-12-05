@@ -26,7 +26,7 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 	: m_impl  { }
 	, m_count { count }
 {
-	auto&        context_impl_var = RenderContext::GetCurrent()->GetPrivateImpl();
+	auto&        context_impl_var = RenderContext::GetInstance().GetPrivateImpl();
 	const size_t total_size       = ( count * stride );
 
 	switch( context_impl_var.index() )
@@ -95,7 +95,7 @@ VertexBuffer::~VertexBuffer( void )
 		case( unique_index_v< Private::_VertexBufferImplOpenGL, Private::VertexBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_VertexBufferImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.functions->delete_buffers( 1, &impl.id );
 
@@ -118,7 +118,7 @@ void VertexBuffer::Bind( void )
 		case( unique_index_v< Private::_VertexBufferImplOpenGL, Private::VertexBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_VertexBufferImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Array, impl.id );
 
@@ -131,7 +131,7 @@ void VertexBuffer::Bind( void )
 		case( unique_index_v< Private::_VertexBufferImplD3D11, Private::VertexBufferImpl > ):
 		{
 			auto&         impl         = std::get< Private::_VertexBufferImplD3D11 >( m_impl );
-			auto&         context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto&         context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
 			ID3D11Buffer* buffer       = impl.buffer.get();
 			UINT          stride       = impl.stride;
 			UINT          offset       = 0;

@@ -45,9 +45,8 @@ namespace Private
 
 	#elif defined( ORB_OS_LINUX )
 
-		const WindowImpl* parent_window_impl;
-		GC                gc;
-		GLXContext        context;
+		GC         gc;
+		GLXContext context;
 
 	#elif defined( ORB_OS_MACOS )
 

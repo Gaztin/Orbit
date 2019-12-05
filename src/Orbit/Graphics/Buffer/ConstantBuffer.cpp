@@ -27,7 +27,7 @@ ORB_NAMESPACE_BEGIN
 
 ConstantBuffer::ConstantBuffer( size_t size )
 {
-	auto& context_impl_var = RenderContext::GetCurrent()->GetPrivateImpl();
+	auto& context_impl_var = RenderContext::GetInstance().GetPrivateImpl();
 
 	switch( context_impl_var.index() )
 	{
@@ -93,7 +93,7 @@ ConstantBuffer::~ConstantBuffer( void )
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_ConstantBufferImplOpenGL31 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.functions->delete_buffers( 1, &impl.id );
 
@@ -115,7 +115,7 @@ void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_
 
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL20, Private::ConstantBufferImpl > ):
 		{
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.functions->uniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
 
@@ -155,7 +155,7 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_ConstantBufferImplOpenGL31 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl.id );
 			return context_impl.functions->map_buffer_range( OpenGL::BufferTarget::Uniform, 0, size, OpenGL::MapAccess::WriteBit );
@@ -167,7 +167,7 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_ConstantBufferImplD3D11 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			D3D11_MAPPED_SUBRESOURCE subresource;
 			if( context_impl.device_context->Map( impl.buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
@@ -191,7 +191,7 @@ void ConstantBuffer::UpdateEnd()
 
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.functions->unmap_buffer( OpenGL::BufferTarget::Uniform );
 			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
@@ -205,7 +205,7 @@ void ConstantBuffer::UpdateEnd()
 		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_ConstantBufferImplD3D11 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.device_context->Unmap( impl.buffer.get(), 0 );
 
@@ -228,7 +228,7 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 		case( unique_index_v< Private::_ConstantBufferImplOpenGL31, Private::ConstantBufferImpl > ):
 		{
 			auto& impl         = std::get< Private::_ConstantBufferImplOpenGL31 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl.id );
 			context_impl.functions->bind_buffer_base( OpenGL::BufferTarget::Uniform, slot, impl.id );
@@ -242,7 +242,7 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 		case( unique_index_v< Private::_ConstantBufferImplD3D11, Private::ConstantBufferImpl > ):
 		{
 			auto&         impl         = std::get< Private::_ConstantBufferImplD3D11 >( m_impl );
-			auto&         context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			auto&         context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
 			ID3D11Buffer* buffer       = impl.buffer.get();
 
 			switch( type )

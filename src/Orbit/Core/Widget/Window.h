@@ -20,6 +20,7 @@
 
 #include "Orbit/Core/Event/EventDispatcher.h"
 #include "Orbit/Core/Private/WindowData.h"
+#include "Orbit/Core/Utility/Singleton.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -49,7 +50,9 @@ struct ORB_API_CORE WindowStateChanged
 	WindowState state;
 };
 
-class ORB_API_CORE Window : public EventDispatcher< WindowResized, WindowMoved, WindowStateChanged >
+class ORB_API_CORE Window
+	: public EventDispatcher< WindowResized, WindowMoved, WindowStateChanged >
+	, public Singleton< Window >
 {
 public:
 

@@ -36,7 +36,7 @@ GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGL::Sha
 
 Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 {
-	Private::RenderContextImpl& context_impl = RenderContext::GetCurrent()->GetPrivateImpl();
+	Private::RenderContextImpl& context_impl = RenderContext::GetInstance().GetPrivateImpl();
 
 	switch( context_impl.index() )
 	{
@@ -237,7 +237,7 @@ Shader::~Shader( void )
 
 	if( m_impl.index() == unique_index_v< Private::_ShaderImplOpenGL, Private::ShaderImpl > )
 	{
-		Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+		Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 		Private::_ShaderImplOpenGL&        impl = std::get< Private::_ShaderImplOpenGL >( m_impl );
 
 		if( impl.vao )
@@ -262,7 +262,7 @@ void Shader::Bind( void )
 
 		case( unique_index_v< Private::_ShaderImplD3D11, Private::ShaderImpl > ):
 		{
-			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
 			Private::_ShaderImplD3D11&        impl  = std::get< Private::_ShaderImplD3D11 >( m_impl );
 
 			if( impl.input_layout )
@@ -288,7 +288,7 @@ void Shader::Bind( void )
 
 		case( unique_index_v< Private::_ShaderImplOpenGL, Private::ShaderImpl > ):
 		{
-			Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 			Private::_ShaderImplOpenGL&        impl = std::get< Private::_ShaderImplOpenGL >( m_impl );
 
 			gl.functions->bind_vertex_array( impl.vao );
@@ -368,7 +368,7 @@ void Shader::Unbind( void )
 
 		case( unique_index_v< Private::_ShaderImplD3D11, Private::ShaderImpl > ):
 		{
-			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
 			Private::_ShaderImplD3D11&        impl  = std::get< Private::_ShaderImplD3D11 >( m_impl );
 
 			if( impl.input_layout )
@@ -423,7 +423,7 @@ void Shader::Unbind( void )
 
 		case( unique_index_v< Private::_ShaderImplOpenGL, Private::ShaderImpl > ):
 		{
-			Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 			Private::_ShaderImplOpenGL&        impl = std::get< Private::_ShaderImplOpenGL >( m_impl );
 
 			for( GLuint i = 0; i < impl.layout.size(); ++i )
@@ -454,7 +454,7 @@ void Shader::Draw( const IndexBuffer& ib )
 
 		case( unique_index_v< Private::_ShaderImplD3D11, Private::ShaderImpl > ):
 		{
-			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			d3d11.device_context->DrawIndexed( static_cast< UINT >( ib.GetCount() ), 0, 0 );
 
@@ -466,7 +466,7 @@ void Shader::Draw( const IndexBuffer& ib )
 
 		case( unique_index_v< Private::_ShaderImplOpenGL, Private::ShaderImpl > ):
 		{
-			Private::_RenderContextImplOpenGL& gl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+			Private::_RenderContextImplOpenGL& gl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 			OpenGL::IndexType index_type { };
 
@@ -491,7 +491,7 @@ void Shader::Draw( const IndexBuffer& ib )
 
 GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGL::ShaderType gl_shader_type )
 {
-	Private::_RenderContextImplOpenGL& gl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetCurrent()->GetPrivateImpl() );
+	Private::_RenderContextImplOpenGL& gl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
 
 	const std::string_view version_directive  = GLSL::GetVersionDirective( gl.opengl_version, gl.embedded );
 	const std::string_view glsl_define        = GLSL::GetGLSLDefine();
