@@ -100,7 +100,6 @@ local function decl_module( name )
 	links( modules )
 	base_config()
 	files {
-		'src/Orbit/Orbit.h',
 		'src/Orbit/' .. lo .. '/**.cpp',
 		'src/Orbit/' .. lo .. '/**.h',
 	}
