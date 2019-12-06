@@ -34,7 +34,6 @@ public:
 
 	void Bind  ( void );
 	void Unbind( void );
-	void Draw  ( const IndexBuffer& ib );
 
 private:
 

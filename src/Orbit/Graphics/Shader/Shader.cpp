@@ -444,49 +444,6 @@ void Shader::Unbind( void )
 	}
 }
 
-void Shader::Draw( const IndexBuffer& ib )
-{
-	switch( m_impl.index() )
-	{
-		default: break;
-
-	#if( ORB_HAS_D3D11 )
-
-		case( unique_index_v< Private::_ShaderDataD3D11, Private::ShaderData > ):
-		{
-			Private::_RenderContextDataD3D11& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
-
-			d3d11.device_context->DrawIndexed( static_cast< UINT >( ib.GetCount() ), 0, 0 );
-
-			break;
-		}
-
-	#endif
-	#if( ORB_HAS_OPENGL )
-
-		case( unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > ):
-		{
-			Private::_RenderContextDataOpenGL& gl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
-
-			OpenGL::IndexType index_type { };
-
-			switch( ib.GetFormat() )
-			{
-				case IndexFormat::Byte:       { index_type = OpenGL::IndexType::Byte;  } break;
-				case IndexFormat::Word:       { index_type = OpenGL::IndexType::Short; } break;
-				case IndexFormat::DoubleWord: { index_type = OpenGL::IndexType::Int;   } break;
-			}
-
-			gl.functions->draw_elements( OpenGL::DrawMode::Triangles, static_cast< GLsizei >( ib.GetCount() ), index_type, nullptr );
-
-			break;
-		}
-
-	#endif
-
-	}
-}
-
 #if( ORB_HAS_OPENGL )
 
 GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGL::ShaderType gl_shader_type )
