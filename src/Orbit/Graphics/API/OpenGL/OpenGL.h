@@ -724,13 +724,10 @@ namespace OpenGL
 		Texture14 = 0x84CE,
 		Texture15 = 0x84CF,
 	};
-}
 
-/* Enable masking on bitfield types */
-ORB_ENABLE_BITMASKING( OpenGL::MapAccess );
+	/* Enable masking on bitfield types */
+	ORB_ENABLE_BITMASKING( OpenGL::MapAccess );
 	
-namespace OpenGL
-{
 	namespace Platform
 	{
 		extern ORB_API_GRAPHICS void* GetProcAddress( std::string_view name );
