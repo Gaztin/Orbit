@@ -28,11 +28,7 @@ namespace Private
 
 #if( ORB_HAS_OPENGL )
 
-	struct _ConstantBufferImplOpenGL20
-	{
-	};
-
-	struct _ConstantBufferImplOpenGL31
+	struct _IndexBufferDataOpenGL
 	{
 		GLuint id;
 	};
@@ -40,20 +36,19 @@ namespace Private
 #endif
 #if( ORB_HAS_D3D11 )
 
-	struct _ConstantBufferImplD3D11
+	struct _IndexBufferDataD3D11
 	{
 		ComPtr< ID3D11Buffer > buffer;
 	};
 
 #endif
 
-	using ConstantBufferImpl = std::variant< std::monostate
+	using IndexBufferData = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
-		, _ConstantBufferImplOpenGL20
-		, _ConstantBufferImplOpenGL31
+		, _IndexBufferDataOpenGL
 	#endif
 	#if( ORB_HAS_D3D11 )
-		, _ConstantBufferImplD3D11
+		, _IndexBufferDataD3D11
 	#endif
 	>;
 }

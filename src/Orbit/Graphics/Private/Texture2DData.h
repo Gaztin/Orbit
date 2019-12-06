@@ -28,7 +28,7 @@ namespace Private
 
 #if( ORB_HAS_OPENGL )
 
-	struct _IndexBufferImplOpenGL
+	struct _Texture2DDataOpenGL
 	{
 		GLuint id;
 	};
@@ -36,19 +36,20 @@ namespace Private
 #endif
 #if( ORB_HAS_D3D11 )
 
-	struct _IndexBufferImplD3D11
+	struct _Texture2DDataD3D11
 	{
-		ComPtr< ID3D11Buffer > buffer;
+		ComPtr< ID3D11Texture2D >          texture_2d;
+		ComPtr< ID3D11ShaderResourceView > shader_resource_view;
 	};
 
 #endif
 
-	using IndexBufferImpl = std::variant< std::monostate
+	using Texture2DData = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
-		, _IndexBufferImplOpenGL
+		, _Texture2DDataOpenGL
 	#endif
 	#if( ORB_HAS_D3D11 )
-		, _IndexBufferImplD3D11
+		, _Texture2DDataD3D11
 	#endif
 	>;
 }

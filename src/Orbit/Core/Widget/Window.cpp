@@ -575,7 +575,7 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_GAINED_FOCUS:
 		{
-			WindowImpl& impl = w->GetPrivateImpl();
+			WindowData& impl = w->GetPrivateData();
 			ASensorEventQueue_enableSensor( impl.sensor_event_queue, impl.accelerometer_sensor );
 			ASensorEventQueue_setEventRate( impl.sensor_event_queue, impl.accelerometer_sensor, ( 1000 * 1000 / 60 ) );
 
@@ -589,7 +589,7 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_LOST_FOCUS:
 		{
-			WindowImpl& impl = w->GetPrivateImpl();
+			WindowData& impl = w->GetPrivateData();
 			ASensorEventQueue_disableSensor( impl.sensor_event_queue, impl.accelerometer_sensor );
 
 			WindowStateChanged e;
@@ -633,7 +633,7 @@ ORB_NAMESPACE_END
 
 -( void )windowDidMove:( NSNotification* ) __unused notification
 {
-	WindowImpl&   impl  = _window_ptr->GetPrivateImpl();
+	WindowData&   impl  = _window_ptr->GetPrivateData();
 	const CGPoint point = ( ( const NSWindow* )impl.ns_window ).frame.origin;
 
 	ORB_NAMESPACE WindowMoved e;

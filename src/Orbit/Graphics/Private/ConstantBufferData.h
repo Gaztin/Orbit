@@ -28,7 +28,11 @@ namespace Private
 
 #if( ORB_HAS_OPENGL )
 
-	struct _VertexBufferImplOpenGL
+	struct _ConstantBufferDataOpenGL20
+	{
+	};
+
+	struct _ConstantBufferDataOpenGL31
 	{
 		GLuint id;
 	};
@@ -36,20 +40,20 @@ namespace Private
 #endif
 #if( ORB_HAS_D3D11 )
 
-	struct _VertexBufferImplD3D11
+	struct _ConstantBufferDataD3D11
 	{
 		ComPtr< ID3D11Buffer > buffer;
-		UINT                   stride;
 	};
 
 #endif
 
-	using VertexBufferImpl = std::variant< std::monostate
+	using ConstantBufferData = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
-		, _VertexBufferImplOpenGL
+		, _ConstantBufferDataOpenGL20
+		, _ConstantBufferDataOpenGL31
 	#endif
 	#if( ORB_HAS_D3D11 )
-		, _VertexBufferImplD3D11
+		, _ConstantBufferDataD3D11
 	#endif
 	>;
 }

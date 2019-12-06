@@ -18,7 +18,7 @@
 #pragma once
 #include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include "Orbit/Graphics/Private/RenderContextData.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -39,12 +39,12 @@ public:
 
 public:
 
-	Private::RenderContextImpl&       GetPrivateImpl( void )       { return m_impl; }
-	const Private::RenderContextImpl& GetPrivateImpl( void ) const { return m_impl; }
+	Private::RenderContextData&       GetPrivateData( void )       { return m_impl; }
+	const Private::RenderContextData& GetPrivateData( void ) const { return m_impl; }
 
 private:
 
-	Private::RenderContextImpl m_impl;
+	Private::RenderContextData m_impl;
 	EventSubscription m_resize_subscription;
 
 };

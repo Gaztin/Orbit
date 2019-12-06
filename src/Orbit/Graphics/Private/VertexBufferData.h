@@ -28,7 +28,7 @@ namespace Private
 
 #if( ORB_HAS_OPENGL )
 
-	struct _Texture2DImplOpenGL
+	struct _VertexBufferDataOpenGL
 	{
 		GLuint id;
 	};
@@ -36,20 +36,20 @@ namespace Private
 #endif
 #if( ORB_HAS_D3D11 )
 
-	struct _Texture2DImplD3D11
+	struct _VertexBufferDataD3D11
 	{
-		ComPtr< ID3D11Texture2D >          texture_2d;
-		ComPtr< ID3D11ShaderResourceView > shader_resource_view;
+		ComPtr< ID3D11Buffer > buffer;
+		UINT                   stride;
 	};
 
 #endif
 
-	using Texture2DImpl = std::variant< std::monostate
+	using VertexBufferData = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
-		, _Texture2DImplOpenGL
+		, _VertexBufferDataOpenGL
 	#endif
 	#if( ORB_HAS_D3D11 )
-		, _Texture2DImplD3D11
+		, _VertexBufferDataD3D11
 	#endif
 	>;
 }

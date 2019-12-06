@@ -30,7 +30,7 @@ namespace Private
 
 #if( ORB_HAS_OPENGL )
 
-	struct _ShaderImplOpenGL
+	struct _ShaderDataOpenGL
 	{
 		VertexLayout layout;
 		GLuint       program;
@@ -41,7 +41,7 @@ namespace Private
 #endif
 #if( ORB_HAS_D3D11 )
 
-	struct _ShaderImplD3D11
+	struct _ShaderDataD3D11
 	{
 		ComPtr< ID3D11VertexShader > vertex_shader;
 		ComPtr< ID3D11PixelShader >  pixel_shader;
@@ -51,12 +51,12 @@ namespace Private
 
 #endif
 
-	using ShaderImpl = std::variant< std::monostate
+	using ShaderData = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
-		, _ShaderImplOpenGL
+		, _ShaderDataOpenGL
 	#endif
 	#if( ORB_HAS_D3D11 )
-		, _ShaderImplD3D11
+		, _ShaderDataD3D11
 	#endif
 	>;
 }

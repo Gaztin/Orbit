@@ -33,7 +33,7 @@ namespace Private
 
 #if( ORB_HAS_OPENGL )
 
-	struct _RenderContextImplOpenGL
+	struct _RenderContextDataOpenGL
 	{
 		bool    embedded;
 		Version opengl_version;
@@ -72,7 +72,7 @@ namespace Private
 #endif
 #if( ORB_HAS_D3D11 )
 
-	struct _RenderContextImplD3D11
+	struct _RenderContextDataD3D11
 	{
 		ComPtr< IDXGISwapChain >          swap_chain;
 		ComPtr< ID3D11Device >            device;
@@ -87,12 +87,12 @@ namespace Private
 
 #endif
 
-	using RenderContextImpl = std::variant< std::monostate
+	using RenderContextData = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
-		, _RenderContextImplOpenGL
+		, _RenderContextDataOpenGL
 	#endif
 	#if( ORB_HAS_D3D11 )
-		, _RenderContextImplD3D11
+		, _RenderContextDataD3D11
 	#endif
 	>;
 

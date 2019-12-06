@@ -38,7 +38,7 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 	, m_format { format }
 	, m_count  { count }
 {
-	auto&        context_impl_var = RenderContext::GetInstance().GetPrivateImpl();
+	auto&        context_impl_var = RenderContext::GetInstance().GetPrivateData();
 	const size_t total_size       = ( count * GetFormatSize( format ) );
 
 	switch( context_impl_var.index() )
@@ -47,10 +47,10 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
-			auto& impl         = m_impl.emplace< Private::_IndexBufferImplOpenGL >();
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( context_impl_var );
+			auto& impl         = m_impl.emplace< Private::_IndexBufferDataOpenGL >();
+			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( context_impl_var );
 
 			context_impl.functions->gen_buffers( 1, &impl.id );
 			context_impl.functions->bind_buffer( OpenGL::BufferTarget::ElementArray, impl.id );
@@ -63,10 +63,10 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl         = m_impl.emplace< Private::_IndexBufferImplD3D11 >();
-			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( context_impl_var );
+			auto& impl         = m_impl.emplace< Private::_IndexBufferDataD3D11 >();
+			auto& context_impl = std::get< Private::_RenderContextDataD3D11 >( context_impl_var );
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
@@ -103,10 +103,10 @@ IndexBuffer::~IndexBuffer( void )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_IndexBufferImplOpenGL, Private::IndexBufferImpl > ):
+		case( unique_index_v< Private::_IndexBufferDataOpenGL, Private::IndexBufferData > ):
 		{
-			auto& impl         = std::get< Private::_IndexBufferImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
+			auto& impl         = std::get< Private::_IndexBufferDataOpenGL >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
 			context_impl.functions->delete_buffers( 1, &impl.id );
 
@@ -116,7 +116,7 @@ IndexBuffer::~IndexBuffer( void )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_IndexBufferImplD3D11, Private::IndexBufferImpl > ):
+		case( unique_index_v< Private::_IndexBufferDataD3D11, Private::IndexBufferData > ):
 		{
 			break;
 		}
@@ -134,10 +134,10 @@ void IndexBuffer::Bind( void )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_IndexBufferImplOpenGL, Private::IndexBufferImpl > ):
+		case( unique_index_v< Private::_IndexBufferDataOpenGL, Private::IndexBufferData > ):
 		{
-			auto& impl         = std::get< Private::_IndexBufferImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
+			auto& impl         = std::get< Private::_IndexBufferDataOpenGL >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
 			context_impl.functions->bind_buffer( OpenGL::BufferTarget::ElementArray, impl.id );
 
@@ -147,10 +147,10 @@ void IndexBuffer::Bind( void )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_IndexBufferImplD3D11, Private::IndexBufferImpl > ):
+		case( unique_index_v< Private::_IndexBufferDataD3D11, Private::IndexBufferData > ):
 		{
-			auto& impl         = std::get< Private::_IndexBufferImplD3D11 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
+			auto& impl         = std::get< Private::_IndexBufferDataD3D11 >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
 
 			/* Translate format to DXGI_FORMAT */
 			DXGI_FORMAT format;

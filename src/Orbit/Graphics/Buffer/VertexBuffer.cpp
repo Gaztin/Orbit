@@ -26,7 +26,7 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 	: m_impl  { }
 	, m_count { count }
 {
-	auto&        context_impl_var = RenderContext::GetInstance().GetPrivateImpl();
+	auto&        context_impl_var = RenderContext::GetInstance().GetPrivateData();
 	const size_t total_size       = ( count * stride );
 
 	switch( context_impl_var.index() )
@@ -35,10 +35,10 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
-			auto& impl         = m_impl.emplace< Private::_VertexBufferImplOpenGL >();
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( context_impl_var );
+			auto& impl         = m_impl.emplace< Private::_VertexBufferDataOpenGL >();
+			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( context_impl_var );
 
 			context_impl.functions->gen_buffers( 1, &impl.id );
 			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Array, impl.id );
@@ -51,10 +51,10 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl         = m_impl.emplace< Private::_VertexBufferImplD3D11 >();
-			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( context_impl_var );
+			auto& impl         = m_impl.emplace< Private::_VertexBufferDataD3D11 >();
+			auto& context_impl = std::get< Private::_RenderContextDataD3D11 >( context_impl_var );
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
@@ -92,10 +92,10 @@ VertexBuffer::~VertexBuffer( void )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_VertexBufferImplOpenGL, Private::VertexBufferImpl > ):
+		case( unique_index_v< Private::_VertexBufferDataOpenGL, Private::VertexBufferData > ):
 		{
-			auto& impl         = std::get< Private::_VertexBufferImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
+			auto& impl         = std::get< Private::_VertexBufferDataOpenGL >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
 			context_impl.functions->delete_buffers( 1, &impl.id );
 
@@ -115,10 +115,10 @@ void VertexBuffer::Bind( void )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_VertexBufferImplOpenGL, Private::VertexBufferImpl > ):
+		case( unique_index_v< Private::_VertexBufferDataOpenGL, Private::VertexBufferData > ):
 		{
-			auto& impl         = std::get< Private::_VertexBufferImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
+			auto& impl         = std::get< Private::_VertexBufferDataOpenGL >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
 			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Array, impl.id );
 
@@ -128,10 +128,10 @@ void VertexBuffer::Bind( void )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_VertexBufferImplD3D11, Private::VertexBufferImpl > ):
+		case( unique_index_v< Private::_VertexBufferDataD3D11, Private::VertexBufferData > ):
 		{
-			auto&         impl         = std::get< Private::_VertexBufferImplD3D11 >( m_impl );
-			auto&         context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
+			auto&         impl         = std::get< Private::_VertexBufferDataD3D11 >( m_impl );
+			auto&         context_impl = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
 			ID3D11Buffer* buffer       = impl.buffer.get();
 			UINT          stride       = impl.stride;
 			UINT          offset       = 0;

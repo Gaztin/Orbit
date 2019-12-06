@@ -36,7 +36,7 @@ GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGL::Sha
 
 Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 {
-	Private::RenderContextImpl& context_impl = RenderContext::GetInstance().GetPrivateImpl();
+	Private::RenderContextData& context_impl = RenderContext::GetInstance().GetPrivateData();
 
 	switch( context_impl.index() )
 	{
@@ -44,10 +44,10 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( context_impl );
-			Private::_ShaderImplD3D11&        impl  = m_impl.emplace< Private::_ShaderImplD3D11 >();
+			Private::_RenderContextDataD3D11& d3d11 = std::get< Private::_RenderContextDataD3D11 >( context_impl );
+			Private::_ShaderDataD3D11&        impl  = m_impl.emplace< Private::_ShaderDataD3D11 >();
 
 			UINT flags = D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS;
 
@@ -163,10 +163,10 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 	#endif
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
-			Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( context_impl );
-			Private::_ShaderImplOpenGL&        impl = m_impl.emplace< Private::_ShaderImplOpenGL >();
+			Private::_RenderContextDataOpenGL& gl   = std::get< Private::_RenderContextDataOpenGL >( context_impl );
+			Private::_ShaderDataOpenGL&        impl = m_impl.emplace< Private::_ShaderDataOpenGL >();
 
 			/* Create shader program */
 			{
@@ -235,10 +235,10 @@ Shader::~Shader( void )
 
 #if( ORB_HAS_OPENGL )
 
-	if( m_impl.index() == unique_index_v< Private::_ShaderImplOpenGL, Private::ShaderImpl > )
+	if( m_impl.index() == unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > )
 	{
-		Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
-		Private::_ShaderImplOpenGL&        impl = std::get< Private::_ShaderImplOpenGL >( m_impl );
+		Private::_RenderContextDataOpenGL& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
+		Private::_ShaderDataOpenGL&        impl = std::get< Private::_ShaderDataOpenGL >( m_impl );
 
 		if( impl.vao )
 		{
@@ -260,10 +260,10 @@ void Shader::Bind( void )
 
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_ShaderImplD3D11, Private::ShaderImpl > ):
+		case( unique_index_v< Private::_ShaderDataD3D11, Private::ShaderData > ):
 		{
-			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
-			Private::_ShaderImplD3D11&        impl  = std::get< Private::_ShaderImplD3D11 >( m_impl );
+			Private::_RenderContextDataD3D11& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
+			Private::_ShaderDataD3D11&        impl  = std::get< Private::_ShaderDataD3D11 >( m_impl );
 
 			if( impl.input_layout )
 				d3d11.device_context->IASetInputLayout( impl.input_layout.get() );
@@ -286,10 +286,10 @@ void Shader::Bind( void )
 	#endif
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ShaderImplOpenGL, Private::ShaderImpl > ):
+		case( unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > ):
 		{
-			Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
-			Private::_ShaderImplOpenGL&        impl = std::get< Private::_ShaderImplOpenGL >( m_impl );
+			Private::_RenderContextDataOpenGL& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
+			Private::_ShaderDataOpenGL&        impl = std::get< Private::_ShaderDataOpenGL >( m_impl );
 
 			gl.functions->bind_vertex_array( impl.vao );
 			gl.functions->use_program( impl.program );
@@ -366,10 +366,10 @@ void Shader::Unbind( void )
 
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_ShaderImplD3D11, Private::ShaderImpl > ):
+		case( unique_index_v< Private::_ShaderDataD3D11, Private::ShaderData > ):
 		{
-			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
-			Private::_ShaderImplD3D11&        impl  = std::get< Private::_ShaderImplD3D11 >( m_impl );
+			Private::_RenderContextDataD3D11& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
+			Private::_ShaderDataD3D11&        impl  = std::get< Private::_ShaderDataD3D11 >( m_impl );
 
 			if( impl.input_layout )
 			{
@@ -421,10 +421,10 @@ void Shader::Unbind( void )
 	#endif
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ShaderImplOpenGL, Private::ShaderImpl > ):
+		case( unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > ):
 		{
-			Private::_RenderContextImplOpenGL& gl   = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
-			Private::_ShaderImplOpenGL&        impl = std::get< Private::_ShaderImplOpenGL >( m_impl );
+			Private::_RenderContextDataOpenGL& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
+			Private::_ShaderDataOpenGL&        impl = std::get< Private::_ShaderDataOpenGL >( m_impl );
 
 			for( GLuint i = 0; i < impl.layout.size(); ++i )
 				gl.functions->disable_vertex_attrib_array( i );
@@ -452,9 +452,9 @@ void Shader::Draw( const IndexBuffer& ib )
 
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_ShaderImplD3D11, Private::ShaderImpl > ):
+		case( unique_index_v< Private::_ShaderDataD3D11, Private::ShaderData > ):
 		{
-			Private::_RenderContextImplD3D11& d3d11 = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
+			Private::_RenderContextDataD3D11& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
 
 			d3d11.device_context->DrawIndexed( static_cast< UINT >( ib.GetCount() ), 0, 0 );
 
@@ -464,9 +464,9 @@ void Shader::Draw( const IndexBuffer& ib )
 	#endif
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ShaderImplOpenGL, Private::ShaderImpl > ):
+		case( unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > ):
 		{
-			Private::_RenderContextImplOpenGL& gl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
+			Private::_RenderContextDataOpenGL& gl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
 			OpenGL::IndexType index_type { };
 
@@ -491,7 +491,7 @@ void Shader::Draw( const IndexBuffer& ib )
 
 GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGL::ShaderType gl_shader_type )
 {
-	Private::_RenderContextImplOpenGL& gl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
+	Private::_RenderContextDataOpenGL& gl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
 	const std::string_view version_directive  = GLSL::GetVersionDirective( gl.opengl_version, gl.embedded );
 	const std::string_view glsl_define        = GLSL::GetGLSLDefine();

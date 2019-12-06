@@ -23,7 +23,7 @@ ORB_NAMESPACE_BEGIN
 
 Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 {
-	auto& context_impl_var = RenderContext::GetInstance().GetPrivateImpl();
+	auto& context_impl_var = RenderContext::GetInstance().GetPrivateData();
 
 	switch( context_impl_var.index() )
 	{
@@ -31,9 +31,9 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
-			auto& impl = m_impl.emplace< Private::_Texture2DImplOpenGL >();
+			auto& impl = m_impl.emplace< Private::_Texture2DDataOpenGL >();
 
 			glGenTextures( 1, &impl.id );
 			glBindTexture( GL_TEXTURE_2D, impl.id );
@@ -55,10 +55,10 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl         = m_impl.emplace< Private::_Texture2DImplD3D11 >();
-			auto& context_impl = std::get< Private::_RenderContextImplD3D11 >( context_impl_var );
+			auto& impl         = m_impl.emplace< Private::_Texture2DDataD3D11 >();
+			auto& context_impl = std::get< Private::_RenderContextDataD3D11 >( context_impl_var );
 
 			D3D11_TEXTURE2D_DESC texture2d_desc { };
 			texture2d_desc.Width              = width;
@@ -122,10 +122,10 @@ Texture2D::~Texture2D( void )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_Texture2DImplOpenGL, Private::Texture2DImpl > ):
+		case( unique_index_v< Private::_Texture2DDataOpenGL, Private::Texture2DData > ):
 		{
-			auto& impl         = std::get< Private::_Texture2DImplOpenGL >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
+			auto& impl         = std::get< Private::_Texture2DDataOpenGL >( m_impl );
+			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 			
 			context_impl.functions->glDeleteTextures( 1, &impl.id );
 
@@ -144,10 +144,10 @@ void Texture2D::Bind( uint32_t slot )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_Texture2DImplOpenGL, Private::Texture2DImpl > ):
+		case( unique_index_v< Private::_Texture2DDataOpenGL, Private::Texture2DData > ):
 		{
-			auto&          impl         = std::get< Private::_Texture2DImplOpenGL >( m_impl );
-			auto&          context_impl = std::get< Private::_RenderContextImplOpenGL >( RenderContext::GetInstance().GetPrivateImpl() );
+			auto&          impl         = std::get< Private::_Texture2DDataOpenGL >( m_impl );
+			auto&          context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 			const uint32_t unit_base    = static_cast< GLenum >( OpenGL::TextureUnit::Texture0 );
 
 			context_impl.functions->glActiveTexture( static_cast< OpenGL::TextureUnit >( unit_base + slot ) );
@@ -159,10 +159,10 @@ void Texture2D::Bind( uint32_t slot )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_Texture2DImplD3D11, Private::Texture2DImpl > ):
+		case( unique_index_v< Private::_Texture2DDataD3D11, Private::Texture2DData > ):
 		{
-			auto&                     impl         = std::get< Private::_Texture2DImplD3D11 >( m_impl );
-			auto&                     context_impl = std::get< Private::_RenderContextImplD3D11 >( RenderContext::GetInstance().GetPrivateImpl() );
+			auto&                     impl         = std::get< Private::_Texture2DDataD3D11 >( m_impl );
+			auto&                     context_impl = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
 			ID3D11ShaderResourceView* srv          = impl.shader_resource_view.get();
 
 			context_impl.device_context->PSSetShaderResources( slot, 1, &srv );

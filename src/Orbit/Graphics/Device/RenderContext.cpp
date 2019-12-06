@@ -56,7 +56,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		case GraphicsAPI::OpenGL:
 		{
-			auto& impl        = m_impl.emplace< Private::_RenderContextImplOpenGL >();
+			auto& impl        = m_impl.emplace< Private::_RenderContextDataOpenGL >();
 			auto& window_impl = Window::GetInstance().GetPrivateData();
 
 		#if defined( ORB_OS_WINDOWS )
@@ -433,7 +433,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		case GraphicsAPI::D3D11:
 		{
-			auto& impl        = m_impl.emplace< Private::_RenderContextImplD3D11 >();
+			auto& impl        = m_impl.emplace< Private::_RenderContextDataD3D11 >();
 			auto& window_impl = Window::GetInstance().GetPrivateData();
 
 			/* Find the monitor refresh rate */
@@ -642,9 +642,9 @@ RenderContext::~RenderContext()
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextImplOpenGL >( m_impl );
+			auto& impl = std::get< Private::_RenderContextDataOpenGL >( m_impl );
 
 		#if defined( ORB_OS_WINDOWS )
 
@@ -694,9 +694,9 @@ bool RenderContext::MakeCurrent()
 
 #if( ORB_HAS_OPENGL )
 
-	if( m_impl.index() == unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > )
+	if( m_impl.index() == unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > )
 	{
-		auto& impl = std::get< Private::_RenderContextImplOpenGL >( m_impl );
+		auto& impl = std::get< Private::_RenderContextDataOpenGL >( m_impl );
 
 	#if defined( ORB_OS_WINDOWS )
 
@@ -737,12 +737,12 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
 
 		#if defined( ORB_OS_ANDROID )
 
-			auto& impl = std::get< Private::_RenderContextImplOpenGL >( m_impl );
+			auto& impl = std::get< Private::_RenderContextDataOpenGL >( m_impl );
 
 			eglMakeCurrent( impl.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
 
@@ -765,9 +765,9 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextImplD3D11 >( m_impl );
+			auto& impl = std::get< Private::_RenderContextDataD3D11 >( m_impl );
 
 			impl.device_context->OMSetRenderTargets( 0, nullptr, nullptr );
 			impl.device_context->ClearState();
@@ -851,9 +851,9 @@ void RenderContext::SwapBuffers()
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextImplOpenGL >( m_impl );
+			auto& impl = std::get< Private::_RenderContextDataOpenGL >( m_impl );
 
 		#if defined( ORB_OS_WINDOWS )
 
@@ -883,9 +883,9 @@ void RenderContext::SwapBuffers()
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextImplD3D11 >( m_impl );
+			auto& impl = std::get< Private::_RenderContextDataD3D11 >( m_impl );
 
 			impl.swap_chain->Present( 0, 0 );
 
@@ -905,7 +905,7 @@ void RenderContext::Clear( BufferMask mask )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
 			GLbitfield glmask = 0;
 			glmask |= ( ( !!( mask & BufferMask::Color ) ) ? GL_COLOR_BUFFER_BIT : 0 );
@@ -919,9 +919,9 @@ void RenderContext::Clear( BufferMask mask )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextImplD3D11 >( m_impl );
+			auto& impl = std::get< Private::_RenderContextDataD3D11 >( m_impl );
 
 			if( !!( mask & BufferMask::Color ) )
 				impl.device_context->ClearRenderTargetView( impl.render_target_view.get(), &impl.clear_color[ 0 ] );
@@ -945,7 +945,7 @@ void RenderContext::SetClearColor( float r, float g, float b )
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextImplOpenGL, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
 			glClearColor( r, g, b, 1.0f );
 
@@ -955,9 +955,9 @@ void RenderContext::SetClearColor( float r, float g, float b )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextImplD3D11, Private::RenderContextImpl > ):
+		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextImplD3D11 >( m_impl );
+			auto& impl = std::get< Private::_RenderContextDataD3D11 >( m_impl );
 			impl.clear_color.r = r;
 			impl.clear_color.g = g;
 			impl.clear_color.b = b;
