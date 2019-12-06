@@ -486,7 +486,7 @@ GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGL::Sha
 	};
 
 	GLuint shader = gl.functions->create_shader( gl_shader_type );
-	gl.functions->shader_source( shader, sources.size(), sources.data(), lengths.data() );
+	gl.functions->shader_source( shader, static_cast< GLsizei >( sources.size() ), sources.data(), lengths.data() );
 	gl.functions->compile_shader( shader );
 
 	GLint status;
