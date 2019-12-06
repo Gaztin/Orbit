@@ -190,10 +190,10 @@ void Window::PollEvents( void )
 
 #elif defined( ORB_OS_LINUX )
 
-	while( XPending( impl->display ) )
+	while( XPending( data->display ) )
 	{
 		XEvent xevent;
-		XNextEvent( impl->display, &xevent );
+		XNextEvent( data->display, &xevent );
 
 		HandleXEvent( this, xevent );
 	}
@@ -575,9 +575,9 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_GAINED_FOCUS:
 		{
-			WindowData& impl = w->GetPrivateData();
-			ASensorEventQueue_enableSensor( impl.sensor_event_queue, impl.accelerometer_sensor );
-			ASensorEventQueue_setEventRate( impl.sensor_event_queue, impl.accelerometer_sensor, ( 1000 * 1000 / 60 ) );
+			WindowData& data = w->GetPrivateData();
+			ASensorEventQueue_enableSensor( data.sensor_event_queue, data.accelerometer_sensor );
+			ASensorEventQueue_setEventRate( data.sensor_event_queue, data.accelerometer_sensor, ( 1000 * 1000 / 60 ) );
 
 			WindowStateChanged e;
 			e.state = WindowState::Focus;
@@ -589,8 +589,8 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_LOST_FOCUS:
 		{
-			WindowData& impl = w->GetPrivateData();
-			ASensorEventQueue_disableSensor( impl.sensor_event_queue, impl.accelerometer_sensor );
+			WindowData& data = w->GetPrivateData();
+			ASensorEventQueue_disableSensor( data.sensor_event_queue, data.accelerometer_sensor );
 
 			WindowStateChanged e;
 			e.state = WindowState::Defocus;
@@ -633,8 +633,8 @@ ORB_NAMESPACE_END
 
 -( void )windowDidMove:( NSNotification* ) __unused notification
 {
-	WindowData&   impl  = _window_ptr->GetPrivateData();
-	const CGPoint point = ( ( const NSWindow* )impl.ns_window ).frame.origin;
+	WindowData&   data  = _window_ptr->GetPrivateData();
+	const CGPoint point = ( ( const NSWindow* )data.ns_window ).frame.origin;
 
 	ORB_NAMESPACE WindowMoved e;
 	e.x = point.x;

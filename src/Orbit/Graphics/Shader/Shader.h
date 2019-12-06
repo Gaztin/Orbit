@@ -37,7 +37,7 @@ public:
 
 private:
 
-	Private::ShaderData m_impl;
+	Private::ShaderData m_data;
 
 };
 

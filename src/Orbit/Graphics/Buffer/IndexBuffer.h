@@ -49,9 +49,9 @@ public:
 
 private:
 
-	Private::IndexBufferData m_impl;
-	IndexFormat m_format;
-	size_t m_count;
+	Private::IndexBufferData m_data;
+	IndexFormat              m_format;
+	size_t                   m_count;
 
 };
 

@@ -65,7 +65,7 @@ private:
 
 private:
 
-	Private::ConstantBufferData m_impl;
+	Private::ConstantBufferData m_data;
 
 };
 

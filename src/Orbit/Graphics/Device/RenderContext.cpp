@@ -45,7 +45,7 @@ constexpr DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 #endif
 
 RenderContext::RenderContext( GraphicsAPI api )
-	: m_impl                { }
+	: m_data                { }
 	, m_resize_subscription { }
 {
 	switch( api )
@@ -56,14 +56,14 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		case GraphicsAPI::OpenGL:
 		{
-			auto& impl        = m_impl.emplace< Private::_RenderContextDataOpenGL >();
-			auto& window_impl = Window::GetInstance().GetPrivateData();
+			auto& data        = m_data.emplace< Private::_RenderContextDataOpenGL >();
+			auto& window_data = Window::GetInstance().GetPrivateData();
 
 		#if defined( ORB_OS_WINDOWS )
 
 			/* Set pixel format */
 			{
-				impl.hdc = GetDC( window_impl.hwnd );
+				data.hdc = GetDC( window_data.hwnd );
 
 				PIXELFORMATDESCRIPTOR desc { };
 				desc.nSize      = sizeof( PIXELFORMATDESCRIPTOR );
@@ -73,14 +73,14 @@ RenderContext::RenderContext( GraphicsAPI api )
 				desc.cColorBits = 24;
 				desc.cDepthBits = 32;
 				desc.iLayerType = PFD_MAIN_PLANE;
-				const int format = ChoosePixelFormat( impl.hdc, &desc );
+				const int format = ChoosePixelFormat( data.hdc, &desc );
 
-				SetPixelFormat( impl.hdc, format, &desc );
+				SetPixelFormat( data.hdc, format, &desc );
 			}
 
 			/* Create dummy context */
-			HGLRC dummy_context = wglCreateContext( impl.hdc );
-			wglMakeCurrent( impl.hdc, dummy_context );
+			HGLRC dummy_context = wglCreateContext( data.hdc );
+			wglMakeCurrent( data.hdc, dummy_context );
 
 			/* Create persistent context */
 			{
@@ -113,7 +113,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 					int  pixel_formats = 0;
 					UINT pixel_format_count = 0;
-					wglChoosePixelFormatARB( impl.hdc, format_attributes, nullptr, 1, &pixel_formats, &pixel_format_count );
+					wglChoosePixelFormatARB( data.hdc, format_attributes, nullptr, 1, &pixel_formats, &pixel_format_count );
 
 					const int contextAttributes[]
 					{
@@ -123,11 +123,11 @@ RenderContext::RenderContext( GraphicsAPI api )
 						0
 					};
 
-					impl.hglrc = wglCreateContextAttribsARB( impl.hdc, nullptr, contextAttributes );
+					data.hglrc = wglCreateContextAttribsARB( data.hdc, nullptr, contextAttributes );
 				}
 				else
 				{
-					impl.hglrc = wglCreateContext( impl.hdc );
+					data.hglrc = wglCreateContext( data.hdc );
 				}
 			}
 
@@ -136,12 +136,12 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		#elif defined( ORB_OS_LINUX )
 
-			sub_impl->gc         = XCreateGC( window_impl.display, window_impl.window, 0, nullptr );
-			sub_impl->glxContext = [ & ]
+			sub_data->gc         = XCreateGC( window_data.display, window_data.window, 0, nullptr );
+			sub_data->glxContext = [ & ]
 			{
 				/* Create render context */
 				{
-					int screen = DefaultScreen( window_impl.display );
+					int screen = DefaultScreen( window_data.display );
 					int attribs[]
 					{
 						GLX_X_RENDERABLE,  True,
@@ -161,7 +161,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 					do
 					{
 						int major, minor;
-						if( !glXQueryVersion( window_impl->display, &major, &minor ) )
+						if( !glXQueryVersion( window_data->display, &major, &minor ) )
 							break;
 						if( ( major < 1 ) || ( major == 1 && minor < 3 ) )
 							break;
@@ -173,7 +173,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 							break;
 
 						int fb_config_count = 0;
-						GLXFBConfig* fb_configs = glXChooseFBConfig( window_impl.display, screen, attribs, &fb_config_count );
+						GLXFBConfig* fb_configs = glXChooseFBConfig( window_data.display, screen, attribs, &fb_config_count );
 						if( !fb_configs )
 							break;
 						if( fb_config_count == 0 )
@@ -184,14 +184,14 @@ RenderContext::RenderContext( GraphicsAPI api )
 						int best_sample_count = 0;
 						for( int i = 0; i < fb_config_count; ++i )
 						{
-							XVisualInfo* vi = glXGetVisualFromFBConfig( window_impl.display, fb_configs[ i ] );
+							XVisualInfo* vi = glXGetVisualFromFBConfig( window_data.display, fb_configs[ i ] );
 							if( vi )
 							{
 								int samples = 0;
 								int sample_count = 0;
 
-								glXGetFBConfigAttrib( window_impl.display, fb_configs[ i ], GLX_SAMPLE_BUFFERS, &samples );
-								glXGetFBConfigAttrib( window_impl.display, fb_configs[ i ], GLX_SAMPLES, &sample_count );
+								glXGetFBConfigAttrib( window_data.display, fb_configs[ i ], GLX_SAMPLE_BUFFERS, &samples );
+								glXGetFBConfigAttrib( window_data.display, fb_configs[ i ], GLX_SAMPLES, &sample_count );
 
 								if( samples && sample_count > best_sample_count )
 								{
@@ -214,13 +214,13 @@ RenderContext::RenderContext( GraphicsAPI api )
 							None
 						};
 
-						return glXCreateContextAttribsARB( window_impl.display, best_fb_config, 0, True, context_attribs );
+						return glXCreateContextAttribsARB( window_data.display, best_fb_config, 0, True, context_attribs );
 
 					} while( false );
 
 					// If all else fails, use legacy method
-					XVisualInfo* visual_info = glXChooseVisual( window_impl.display, screen, attribs );
-					return glXCreateContext( window_impl.display, visual_info, nullptr, true );
+					XVisualInfo* visual_info = glXChooseVisual( window_data.display, screen, attribs );
+					return glXCreateContext( window_data.display, visual_info, nullptr, true );
 				}
 			}();
 
@@ -235,33 +235,33 @@ RenderContext::RenderContext( GraphicsAPI api )
 				0
 			};
 
-			NSWindow*            ns_indow     = ( NSWindow* )window_impl->ns_window;
+			NSWindow*            ns_indow     = ( NSWindow* )window_data->ns_window;
 			NSOpenGLPixelFormat* pixel_format = [ NSOpenGLPixelFormat alloc ];
 			[ pixel_format initWithAttributes:attribs ];
 
-			sub_impl->view = [ NSOpenGLView alloc ];
-			[ ( NSOpenGLView* )sub_impl->view initWithFrame:ns_window.contentView.frame pixelFormat:pixel_format ];
-			[ ( NSOpenGLView* )sub_impl->view prepareOpenGL ];
-			[ ns_window.contentView addSubview:( NSOpenGLView* )sub_impl->view ];
+			sub_data->view = [ NSOpenGLView alloc ];
+			[ ( NSOpenGLView* )sub_data->view initWithFrame:ns_window.contentView.frame pixelFormat:pixel_format ];
+			[ ( NSOpenGLView* )sub_data->view prepareOpenGL ];
+			[ ns_window.contentView addSubview:( NSOpenGLView* )sub_data->view ];
 
 		#elif defined( ORB_OS_ANDROID )
 
 			/* Initialize display */
 			{
-				impl->display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
-				eglInitialize( impl->display, nullptr, nullptr );
+				data->display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+				eglInitialize( data->display, nullptr, nullptr );
 			}
 
 			/* Choose config */
-			impl->config = EGL_NO_CONFIG_KHR;
+			data->config = EGL_NO_CONFIG_KHR;
 			do
 			{
 				EGLint config_count = 0;
-				if( !eglGetConfigs( impl->display, nullptr, 0, &config_count ) )
+				if( !eglGetConfigs( data->display, nullptr, 0, &config_count ) )
 					break;
 
 				std::vector< EGLConfig > configs( static_cast< size_t >( config_count ) );
-				if( !eglGetConfigs( impl->display, configs.data(), configs.size(), &config_count ) )
+				if( !eglGetConfigs( data->display, configs.data(), configs.size(), &config_count ) )
 					break;
 
 				const EGLint required_conformant   = EGL_OPENGL_ES3_BIT_KHR;
@@ -277,42 +277,42 @@ RenderContext::RenderContext( GraphicsAPI api )
 				for( const EGLConfig& config : configs )
 				{
 					EGLint conformant = 0;
-					eglGetConfigAttrib( impl->display, config, EGL_CONFORMANT, &conformant );
+					eglGetConfigAttrib( data->display, config, EGL_CONFORMANT, &conformant );
 					if( ( conformant & required_conformant ) == 0 )
 						continue;
 
 					EGLint surface_type = 0;
-					eglGetConfigAttrib( impl->display, config, EGL_SURFACE_TYPE, &surface_type );
+					eglGetConfigAttrib( data->display, config, EGL_SURFACE_TYPE, &surface_type );
 					if( ( surface_type & required_surface_type ) == 0 )
 						continue;
 
 					EGLint red_size = 0;
-					eglGetConfigAttrib( impl->display, config, EGL_RED_SIZE, &red_size );
+					eglGetConfigAttrib( data->display, config, EGL_RED_SIZE, &red_size );
 					if( red_size < best_red_size )
 						continue;
 
 					EGLint green_size = 0;
-					eglGetConfigAttrib( impl->display, config, EGL_RED_SIZE, &green_size );
+					eglGetConfigAttrib( data->display, config, EGL_RED_SIZE, &green_size );
 					if( green_size < best_green_size )
 						continue;
 
 					EGLint blue_size = 0;
-					eglGetConfigAttrib( impl->display, config, EGL_RED_SIZE, &blue_size );
+					eglGetConfigAttrib( data->display, config, EGL_RED_SIZE, &blue_size );
 					if( blue_size < best_blue_size )
 						continue;
 
 					EGLint alpha_size = 0;
-					eglGetConfigAttrib( impl->display, config, EGL_RED_SIZE, &alpha_size );
+					eglGetConfigAttrib( data->display, config, EGL_RED_SIZE, &alpha_size );
 					if( alpha_size < best_alpha_size )
 						continue;
 
 					EGLint buffer_size = 0;
-					eglGetConfigAttrib( impl->display, config, EGL_BUFFER_SIZE, &buffer_size );
+					eglGetConfigAttrib( data->display, config, EGL_BUFFER_SIZE, &buffer_size );
 					if( buffer_size < best_buffer_size )
 						continue;
 
 					EGLint depth_size = 0;
-					eglGetConfigAttrib( impl->display, config, EGL_DEPTH_SIZE, &depth_size );
+					eglGetConfigAttrib( data->display, config, EGL_DEPTH_SIZE, &depth_size );
 					if( depth_size < best_depth_size )
 						continue;
 
@@ -322,17 +322,17 @@ RenderContext::RenderContext( GraphicsAPI api )
 					best_alpha_size  = alpha_size;
 					best_buffer_size = buffer_size;
 					best_depth_size  = depth_size;
-					impl->config     = config;
+					data->config     = config;
 				}
 
 				EGLint visual_id = 0;
-				eglGetConfigAttrib( impl->display, sub_impl->config, EGL_NATIVE_VISUAL_ID, &visual_id );
+				eglGetConfigAttrib( data->display, sub_data->config, EGL_NATIVE_VISUAL_ID, &visual_id );
 				ANativeWindow_setBuffersGeometry( AndroidOnly::app->window, 0, 0, visual_id );
 
 			} while( false );
 
 			/* Create window surface */
-			impl->surface = eglCreateWindowSurface( impl->display, impl->config, AndroidOnly::app->window, nullptr );
+			data->surface = eglCreateWindowSurface( data->display, data->config, AndroidOnly::app->window, nullptr );
 
 			/* Create context */
 			{
@@ -342,7 +342,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 					EGL_NONE,
 				};
 
-				impl->context = eglCreateContext( impl->display, impl->config, EGL_NO_CONTEXT, attribs );
+				data->context = eglCreateContext( data->display, data->config, EGL_NO_CONTEXT, attribs );
 			}
 
 		#elif defined( ORB_OS_IOS )
@@ -350,21 +350,21 @@ RenderContext::RenderContext( GraphicsAPI api )
 			OrbitGLKViewDelegate* delegate = [ OrbitGLKViewDelegate alloc ];
 			[ delegate init ];
 
-			impl->context = [ EAGLContext alloc ];
-			[ ( EAGLContext* )impl->context initWithAPI:kEAGLRenderingAPIOpenGLES3 ];
+			data->context = [ EAGLContext alloc ];
+			[ ( EAGLContext* )data->context initWithAPI:kEAGLRenderingAPIOpenGLES3 ];
 
-			impl->view = [ GLKView alloc ];
-			[ ( GLKView* )impl->view initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
-			( ( GLKView* )impl->view ).context               = ( EAGLContext* )impl->context;
-			( ( GLKView* )impl->view ).delegate              = delegate;
-			( ( GLKView* )impl->view ).enableSetNeedsDisplay = NO;
-			[ ( UIWindow* )window_impl.ui_window addSubview:( GLKView* )impl->view ];
+			data->view = [ GLKView alloc ];
+			[ ( GLKView* )data->view initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+			( ( GLKView* )data->view ).context               = ( EAGLContext* )data->context;
+			( ( GLKView* )data->view ).delegate              = delegate;
+			( ( GLKView* )data->view ).enableSetNeedsDisplay = NO;
+			[ ( UIWindow* )window_data.ui_window addSubview:( GLKView* )data->view ];
 
 		#endif
 
 			/* Load functions */
 			MakeCurrent();
-			impl.functions.emplace();
+			data.functions.emplace();
 
 			glEnable( GL_CULL_FACE );
 			glEnable( GL_DEPTH_TEST );
@@ -405,7 +405,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 				opengl_version += 7;
 				if( std::strncmp( opengl_version, "ES", 2 ) != 0 )
 					return Version( 0 );
-				impl.embedded = true;
+				data.embedded = true;
 				opengl_version += 3;
 				if( check_digit( &v ) )
 					return v;
@@ -421,9 +421,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 				return Version( 0 );
 			};
 
-			impl.opengl_version = parse_version();
+			data.opengl_version = parse_version();
 
-			LogInfo( Format( "OpenGL version: %s %d.%d", impl.embedded ? "ES" : "", impl.opengl_version.major, impl.opengl_version.minor ) );
+			LogInfo( Format( "OpenGL version: %s %d.%d", data.embedded ? "ES" : "", data.opengl_version.major, data.opengl_version.minor ) );
 
 			break;
 		}
@@ -433,8 +433,8 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		case GraphicsAPI::D3D11:
 		{
-			auto& impl        = m_impl.emplace< Private::_RenderContextDataD3D11 >();
-			auto& window_impl = Window::GetInstance().GetPrivateData();
+			auto& data        = m_data.emplace< Private::_RenderContextDataD3D11 >();
+			auto& window_data = Window::GetInstance().GetPrivateData();
 
 			/* Find the monitor refresh rate */
 			DXGI_RATIONAL refreshRate = { 60000, 1000 };
@@ -455,7 +455,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 				UINT monitor_width;
 				UINT monitor_height;
 				{ /* Get monitor resolution. */
-					HMONITOR    monitor = MonitorFromWindow( window_impl.hwnd, MONITOR_DEFAULTTONEAREST );
+					HMONITOR    monitor = MonitorFromWindow( window_data.hwnd, MONITOR_DEFAULTTONEAREST );
 					MONITORINFO monitor_info;
 					monitor_info.cbSize = sizeof( MONITORINFO );
 					GetMonitorInfoA( monitor, &monitor_info );
@@ -504,7 +504,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 				};
 
 				RECT window_rect;
-				GetWindowRect( window_impl.hwnd, &window_rect );
+				GetWindowRect( window_data.hwnd, &window_rect );
 
 				DXGI_SWAP_CHAIN_DESC desc { };
 				desc.BufferDesc.Width       = ( window_rect.right - window_rect.left );
@@ -514,43 +514,43 @@ RenderContext::RenderContext( GraphicsAPI api )
 				desc.SampleDesc.Count       = 1;
 				desc.BufferUsage            = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 				desc.BufferCount            = 1;
-				desc.OutputWindow           = window_impl.hwnd;
+				desc.OutputWindow           = window_data.hwnd;
 				desc.Windowed               = true;
 				desc.SwapEffect             = DXGI_SWAP_EFFECT_DISCARD;
 
 				IDXGISwapChain* swap_chain;
 				D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, kDeviceFlags, kFeatureLevels.data(), static_cast< UINT >( kFeatureLevels.size() ), D3D11_SDK_VERSION, &desc, &swap_chain, NULL, NULL, NULL );
-				impl.swap_chain.reset( swap_chain );
+				data.swap_chain.reset( swap_chain );
 			}
 
 			/* Get the device */
 			{
 				void* device;
-				impl.swap_chain->GetDevice( __uuidof( ID3D11Device ), &device );
-				impl.device.reset( static_cast< ID3D11Device* >( device ) );
+				data.swap_chain->GetDevice( __uuidof( ID3D11Device ), &device );
+				data.device.reset( static_cast< ID3D11Device* >( device ) );
 			}
 
 			/* Get the device context */
 			{
 				ID3D11DeviceContext* deviceContext;
-				impl.device->GetImmediateContext( &deviceContext );
-				impl.device_context.reset( deviceContext );
+				data.device->GetImmediateContext( &deviceContext );
+				data.device_context.reset( deviceContext );
 			}
 
 			/* Create the render target */
 			{
 				ID3D11Texture2D* back_buffer;
-				impl.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer ) );
+				data.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer ) );
 				ID3D11RenderTargetView* renderTargetView;
-				impl.device->CreateRenderTargetView( back_buffer, NULL, &renderTargetView );
-				impl.render_target_view.reset( renderTargetView );
+				data.device->CreateRenderTargetView( back_buffer, NULL, &renderTargetView );
+				data.render_target_view.reset( renderTargetView );
 				back_buffer->Release();
 			}
 
 			/* Create the depth stencil */
 			{
 				RECT rect { };
-				GetWindowRect( window_impl.hwnd, &rect );
+				GetWindowRect( window_data.hwnd, &rect );
 
 				D3D11_TEXTURE2D_DESC buffer_desc { };
 				buffer_desc.Width            = ( rect.right - rect.left );
@@ -562,8 +562,8 @@ RenderContext::RenderContext( GraphicsAPI api )
 				buffer_desc.BindFlags        = D3D11_BIND_DEPTH_STENCIL;
 
 				ID3D11Texture2D* depth_stencil_buffer;
-				impl.device->CreateTexture2D( &buffer_desc, NULL, &depth_stencil_buffer );
-				impl.depth_stencil_buffer.reset( depth_stencil_buffer );
+				data.device->CreateTexture2D( &buffer_desc, NULL, &depth_stencil_buffer );
+				data.depth_stencil_buffer.reset( depth_stencil_buffer );
 
 				D3D11_DEPTH_STENCIL_DESC state_desc { };
 				state_desc.DepthEnable                  = true;
@@ -582,20 +582,20 @@ RenderContext::RenderContext( GraphicsAPI api )
 				state_desc.BackFace.StencilFunc         = D3D11_COMPARISON_ALWAYS;
 
 				ID3D11DepthStencilState* depth_stencil_state;
-				impl.device->CreateDepthStencilState( &state_desc, &depth_stencil_state );
-				impl.device_context->OMSetDepthStencilState( depth_stencil_state, 1 );
-				impl.depth_stencil_state.reset( depth_stencil_state );
+				data.device->CreateDepthStencilState( &state_desc, &depth_stencil_state );
+				data.device_context->OMSetDepthStencilState( depth_stencil_state, 1 );
+				data.depth_stencil_state.reset( depth_stencil_state );
 					
 				D3D11_DEPTH_STENCIL_VIEW_DESC view_desc { };
 				view_desc.Format        = depth_buffer_format;
 				view_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
 				ID3D11DepthStencilView* depth_stencil_view;
-				impl.device->CreateDepthStencilView( depth_stencil_buffer, &view_desc, &depth_stencil_view );
+				data.device->CreateDepthStencilView( depth_stencil_buffer, &view_desc, &depth_stencil_view );
 
-				ID3D11RenderTargetView* render_target_views[] = { impl.render_target_view.get() };
-				impl.device_context->OMSetRenderTargets( 1, render_target_views, depth_stencil_view );
-				impl.depth_stencil_view.reset( depth_stencil_view );
+				ID3D11RenderTargetView* render_target_views[] = { data.render_target_view.get() };
+				data.device_context->OMSetRenderTargets( 1, render_target_views, depth_stencil_view );
+				data.depth_stencil_view.reset( depth_stencil_view );
 			}
 
 			/* Create rasterizer */
@@ -608,13 +608,13 @@ RenderContext::RenderContext( GraphicsAPI api )
 				desc.ScissorEnable         = true;
 
 				ID3D11RasterizerState* rasterizer_state;
-				impl.device->CreateRasterizerState( &desc, &rasterizer_state );
-				impl.device_context->RSSetState( rasterizer_state );
-				impl.rasterizer_state.reset( rasterizer_state );
+				data.device->CreateRasterizerState( &desc, &rasterizer_state );
+				data.device_context->RSSetState( rasterizer_state );
+				data.rasterizer_state.reset( rasterizer_state );
 			}
 
 			/* Set default topology */
-			impl.device_context->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+			data.device_context->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
 			break;
 		}
@@ -636,7 +636,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 RenderContext::~RenderContext()
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: break;
 
@@ -644,40 +644,40 @@ RenderContext::~RenderContext()
 
 		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextDataOpenGL >( m_impl );
+			auto& data = std::get< Private::_RenderContextDataOpenGL >( m_data );
 
 		#if defined( ORB_OS_WINDOWS )
 
-			HWND hwnd = WindowFromDC( impl.hdc );
+			HWND hwnd = WindowFromDC( data.hdc );
 
 			wglMakeCurrent( NULL, NULL );
-			wglDeleteContext( impl.hglrc );
-			ReleaseDC( hwnd, impl.hdc );
+			wglDeleteContext( data.hglrc );
+			ReleaseDC( hwnd, data.hdc );
 
 		#elif defined( ORB_OS_LINUX )
 
-			glXMakeCurrent( impl.display, None, nullptr );
-			glXDestroyContext( impl.display, impl.context );
-			XFreeGC( impl.display, impl.gc );
+			glXMakeCurrent( data.display, None, nullptr );
+			glXDestroyContext( data.display, data.context );
+			XFreeGC( data.display, data.gc );
 
 		#elif defined( ORB_OS_MACOS )
 
 			[ NSOpenGLContext clearCurrentContext ];
-			[ ( const NSOpenGLView* )impl.view removeFromSuperview ];
-			[ ( const NSOpenGLView* )impl.view dealloc ];
+			[ ( const NSOpenGLView* )data.view removeFromSuperview ];
+			[ ( const NSOpenGLView* )data.view dealloc ];
 
 		#elif defined( ORB_OS_ANDROID )
 
-			eglMakeCurrent( impl.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
-			eglDestroyContext( impl.display, impl.context );
-			eglDestroySurface( impl.display, impl.surface );
-			eglTerminate( impl.display );
+			eglMakeCurrent( data.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
+			eglDestroyContext( data.display, data.context );
+			eglDestroySurface( data.display, data.surface );
+			eglTerminate( data.display );
 
 		#elif defined( ORB_OS_IOS )
 
 			[ EAGLContext setCurrentContext:nullptr ];
-			[ ( GLKView* )impl.view dealloc ];
-			[ ( EAGLContext* )impl.context dealloc ];
+			[ ( GLKView* )data.view dealloc ];
+			[ ( EAGLContext* )data.context dealloc ];
 
 		#endif
 
@@ -694,31 +694,31 @@ bool RenderContext::MakeCurrent()
 
 #if( ORB_HAS_OPENGL )
 
-	if( m_impl.index() == unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > )
+	if( m_data.index() == unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > )
 	{
-		auto& impl = std::get< Private::_RenderContextDataOpenGL >( m_impl );
+		auto& data = std::get< Private::_RenderContextDataOpenGL >( m_data );
 
 	#if defined( ORB_OS_WINDOWS )
 
-		if( !wglMakeCurrent( impl.hdc, impl.hglrc ) )
+		if( !wglMakeCurrent( data.hdc, data.hglrc ) )
 			return false;
 
 	#elif defined( ORB_OS_LINUX )
 
-		if( !glXMakeCurrent( impl.window_impl->display, impl.window_impl->window, impl.context ) )
+		if( !glXMakeCurrent( data.window_data->display, data.window_data->window, data.context ) )
 			return false;
 
 	#elif defined( ORB_OS_MACOS )
 
-		[ [ ( const NSOpenGLView* )impl.view openGLContext ] makeCurrentContext ];
+		[ [ ( const NSOpenGLView* )data.view openGLContext ] makeCurrentContext ];
 
 	#elif defined( ORB_OS_ANDROID )
 
-		eglMakeCurrent( impl.display, impl.surface, impl.surface, impl.context );
+		eglMakeCurrent( data.display, data.surface, data.surface, data.context );
 
 	#elif defined( ORB_OS_IOS )
 
-		[ EAGLContext setCurrentContext:( EAGLContext* )impl.context ];
+		[ EAGLContext setCurrentContext:( EAGLContext* )data.context ];
 
 	#endif
 
@@ -731,7 +731,7 @@ bool RenderContext::MakeCurrent()
 
 void RenderContext::Resize( uint32_t width, uint32_t height )
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: break;
 
@@ -742,18 +742,18 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 		#if defined( ORB_OS_ANDROID )
 
-			auto& impl = std::get< Private::_RenderContextDataOpenGL >( m_impl );
+			auto& data = std::get< Private::_RenderContextDataOpenGL >( m_data );
 
-			eglMakeCurrent( impl.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
+			eglMakeCurrent( data.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
 
-			if( impl.surface != EGL_NO_SURFACE )
-				eglDestroySurface( impl.display, impl.surface );
+			if( data.surface != EGL_NO_SURFACE )
+				eglDestroySurface( data.display, data.surface );
 
-			impl.surface = eglCreateWindowSurface( impl.display, impl.eglConfig, AndroidOnly::app->window, nullptr );
+			data.surface = eglCreateWindowSurface( data.display, data.eglConfig, AndroidOnly::app->window, nullptr );
 
 		#elif defined( ORB_OS_IOS )
 
-			( ( GLKView* )impl.view ).layer.frame = CGRectMake( 0.f, 0.f, width, height );
+			( ( GLKView* )data.view ).layer.frame = CGRectMake( 0.f, 0.f, width, height );
 
 		#endif
 
@@ -767,35 +767,35 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextDataD3D11 >( m_impl );
+			auto& data = std::get< Private::_RenderContextDataD3D11 >( m_data );
 
-			impl.device_context->OMSetRenderTargets( 0, nullptr, nullptr );
-			impl.device_context->ClearState();
-			impl.device_context->Flush();
+			data.device_context->OMSetRenderTargets( 0, nullptr, nullptr );
+			data.device_context->ClearState();
+			data.device_context->Flush();
 
 			D3D11_TEXTURE2D_DESC depth_stencil_buffer_desc { };
-			impl.depth_stencil_buffer->GetDesc( &depth_stencil_buffer_desc );
+			data.depth_stencil_buffer->GetDesc( &depth_stencil_buffer_desc );
 
 			D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc { };
-			impl.depth_stencil_view->GetDesc( &depth_stencil_view_desc );
+			data.depth_stencil_view->GetDesc( &depth_stencil_view_desc );
 
-			impl.render_target_view.reset();
-			impl.depth_stencil_buffer.reset();
-			impl.depth_stencil_view.reset();
+			data.render_target_view.reset();
+			data.depth_stencil_buffer.reset();
+			data.depth_stencil_view.reset();
 
 			DXGI_SWAP_CHAIN_DESC swap_chain_desc { };
-			impl.swap_chain->GetDesc( &swap_chain_desc );
+			data.swap_chain->GetDesc( &swap_chain_desc );
 			swap_chain_desc.BufferDesc.Width  = width;
 			swap_chain_desc.BufferDesc.Height = height;
-			impl.swap_chain->ResizeBuffers( 1, swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height, swap_chain_desc.BufferDesc.Format, swap_chain_desc.Flags );
+			data.swap_chain->ResizeBuffers( 1, swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height, swap_chain_desc.BufferDesc.Format, swap_chain_desc.Flags );
 
 			/* Recreate render target */
 			{
 				ID3D11Texture2D* back_buffer;
-				impl.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer ) );
+				data.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer ) );
 				ID3D11RenderTargetView* renderTargetView;
-				impl.device->CreateRenderTargetView( back_buffer, nullptr, &renderTargetView );
-				impl.render_target_view.reset( renderTargetView );
+				data.device->CreateRenderTargetView( back_buffer, nullptr, &renderTargetView );
+				data.render_target_view.reset( renderTargetView );
 				back_buffer->Release();
 			}
 
@@ -805,19 +805,19 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 				depth_stencil_buffer_desc.Height = height;
 
 				ID3D11Texture2D* depth_stencil_buffer;
-				impl.device->CreateTexture2D( &depth_stencil_buffer_desc, NULL, &depth_stencil_buffer );
-				impl.depth_stencil_buffer.reset( depth_stencil_buffer );
+				data.device->CreateTexture2D( &depth_stencil_buffer_desc, NULL, &depth_stencil_buffer );
+				data.depth_stencil_buffer.reset( depth_stencil_buffer );
 
 				ID3D11DepthStencilView* depth_stencil_view;
-				impl.device->CreateDepthStencilView( depth_stencil_buffer, &depth_stencil_view_desc, &depth_stencil_view );
-				impl.depth_stencil_view.reset( depth_stencil_view );
+				data.device->CreateDepthStencilView( depth_stencil_buffer, &depth_stencil_view_desc, &depth_stencil_view );
+				data.depth_stencil_view.reset( depth_stencil_view );
 			}
 
-			ID3D11RenderTargetView* render_target_views[] = { impl.render_target_view.get() };
-			impl.device_context->OMSetRenderTargets( 1, render_target_views, impl.depth_stencil_view.get() );
-			impl.device_context->OMSetDepthStencilState( impl.depth_stencil_state.get(), 0 );
-			impl.device_context->RSSetState( impl.rasterizer_state.get() );
-			impl.device_context->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+			ID3D11RenderTargetView* render_target_views[] = { data.render_target_view.get() };
+			data.device_context->OMSetRenderTargets( 1, render_target_views, data.depth_stencil_view.get() );
+			data.device_context->OMSetDepthStencilState( data.depth_stencil_state.get(), 0 );
+			data.device_context->RSSetState( data.rasterizer_state.get() );
+			data.device_context->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
 			D3D11_VIEWPORT viewport { };
 			viewport.TopLeftX = 0;
@@ -826,14 +826,14 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 			viewport.Height   = static_cast< FLOAT >( height );
 			viewport.MinDepth = 0.0f;
 			viewport.MaxDepth = 1.0f;
-			impl.device_context->RSSetViewports( 1, &viewport );
+			data.device_context->RSSetViewports( 1, &viewport );
 
 			RECT scissor { };
 			scissor.left   = 0;
 			scissor.right  = width;
 			scissor.top    = 0;
 			scissor.bottom = height;
-			impl.device_context->RSSetScissorRects( 1, &scissor );
+			data.device_context->RSSetScissorRects( 1, &scissor );
 
 			break;
 		}
@@ -845,7 +845,7 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 void RenderContext::SwapBuffers()
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: break;
 
@@ -853,27 +853,27 @@ void RenderContext::SwapBuffers()
 
 		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextDataOpenGL >( m_impl );
+			auto& data = std::get< Private::_RenderContextDataOpenGL >( m_data );
 
 		#if defined( ORB_OS_WINDOWS )
 
-			::SwapBuffers( impl.hdc );
+			::SwapBuffers( data.hdc );
 
 		#elif defined( ORB_OS_LINUX )
 
-			glXSwapBuffers( impl.window_impl->display, impl.window_impl->window );
+			glXSwapBuffers( data.window_data->display, data.window_data->window );
 
 		#elif defined( ORB_OS_MACOS )
 
-			[ [ ( const NSOpenGLView* )impl.view openGLContext ] flushBuffer ];
+			[ [ ( const NSOpenGLView* )data.view openGLContext ] flushBuffer ];
 
 		#elif defined( ORB_OS_ANDROID )
 
-			eglSwapBuffers( impl.display, impl.surface );
+			eglSwapBuffers( data.display, data.surface );
 
 		#elif defined( ORB_OS_IOS )
 
-			[ ( GLKView* )impl.view display ];
+			[ ( GLKView* )data.view display ];
 
 		#endif
 
@@ -885,9 +885,9 @@ void RenderContext::SwapBuffers()
 
 		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextDataD3D11 >( m_impl );
+			auto& data = std::get< Private::_RenderContextDataD3D11 >( m_data );
 
-			impl.swap_chain->Present( 0, 0 );
+			data.swap_chain->Present( 0, 0 );
 
 			break;
 		}
@@ -899,7 +899,7 @@ void RenderContext::SwapBuffers()
 
 void RenderContext::Clear( BufferMask mask )
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: break;
 
@@ -921,13 +921,13 @@ void RenderContext::Clear( BufferMask mask )
 
 		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextDataD3D11 >( m_impl );
+			auto& data = std::get< Private::_RenderContextDataD3D11 >( m_data );
 
 			if( !!( mask & BufferMask::Color ) )
-				impl.device_context->ClearRenderTargetView( impl.render_target_view.get(), &impl.clear_color[ 0 ] );
+				data.device_context->ClearRenderTargetView( data.render_target_view.get(), &data.clear_color[ 0 ] );
 
 			if( !!( mask & BufferMask::Depth ) )
-				impl.device_context->ClearDepthStencilView( impl.depth_stencil_view.get(), D3D11_CLEAR_DEPTH, 1.0f, 0 );
+				data.device_context->ClearDepthStencilView( data.depth_stencil_view.get(), D3D11_CLEAR_DEPTH, 1.0f, 0 );
 
 			break;
 		}
@@ -939,7 +939,7 @@ void RenderContext::Clear( BufferMask mask )
 
 void RenderContext::SetClearColor( float r, float g, float b )
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: break;
 
@@ -957,11 +957,11 @@ void RenderContext::SetClearColor( float r, float g, float b )
 
 		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl = std::get< Private::_RenderContextDataD3D11 >( m_impl );
-			impl.clear_color.r = r;
-			impl.clear_color.g = g;
-			impl.clear_color.b = b;
-			impl.clear_color.a = 1.0f;
+			auto& data = std::get< Private::_RenderContextDataD3D11 >( m_data );
+			data.clear_color.r = r;
+			data.clear_color.g = g;
+			data.clear_color.b = b;
+			data.clear_color.a = 1.0f;
 
 			break;
 		}

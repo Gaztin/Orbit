@@ -33,12 +33,12 @@ public:
 
 public:
 
-	Private::Texture2DData&       GetPrivateData( void )       { return m_impl; }
-	const Private::Texture2DData& GetPrivateData( void ) const { return m_impl; }
+	Private::Texture2DData&       GetPrivateData( void )       { return m_data; }
+	const Private::Texture2DData& GetPrivateData( void ) const { return m_data; }
 
 private:
 
-	Private::Texture2DData m_impl;
+	Private::Texture2DData m_data;
 
 };
 

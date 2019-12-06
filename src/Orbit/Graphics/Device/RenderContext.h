@@ -39,13 +39,13 @@ public:
 
 public:
 
-	Private::RenderContextData&       GetPrivateData( void )       { return m_impl; }
-	const Private::RenderContextData& GetPrivateData( void ) const { return m_impl; }
+	Private::RenderContextData&       GetPrivateData( void )       { return m_data; }
+	const Private::RenderContextData& GetPrivateData( void ) const { return m_data; }
 
 private:
 
-	Private::RenderContextData m_impl;
-	EventSubscription m_resize_subscription;
+	Private::RenderContextData m_data;
+	EventSubscription          m_resize_subscription;
 
 };
 

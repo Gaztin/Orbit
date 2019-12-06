@@ -45,8 +45,8 @@ public:
 
 private:
 
-	Private::VertexBufferData m_impl;
-	size_t m_count;
+	Private::VertexBufferData m_data;
+	size_t                    m_count;
 
 };
 

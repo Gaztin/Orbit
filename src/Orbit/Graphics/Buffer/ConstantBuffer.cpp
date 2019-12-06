@@ -27,9 +27,9 @@ ORB_NAMESPACE_BEGIN
 
 ConstantBuffer::ConstantBuffer( size_t size )
 {
-	auto& context_impl_var = RenderContext::GetInstance().GetPrivateData();
+	auto& context_data = RenderContext::GetInstance().GetPrivateData();
 
-	switch( context_impl_var.index() )
+	switch( context_data.index() )
 	{
 		default: break;
 
@@ -37,21 +37,21 @@ ConstantBuffer::ConstantBuffer( size_t size )
 
 		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
-			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( context_impl_var );
+			auto& gl = std::get< Private::_RenderContextDataOpenGL >( context_data );
 
-			if( (  context_impl.embedded && context_impl.opengl_version < Version( 3 ) )||
-			    ( !context_impl.embedded && context_impl.opengl_version < Version( 3, 1 ) ) )
+			if( (  gl.embedded && gl.opengl_version < Version( 3 ) )||
+			    ( !gl.embedded && gl.opengl_version < Version( 3, 1 ) ) )
 			{
-				m_impl.emplace< Private::_ConstantBufferDataOpenGL20 >();
+				m_data.emplace< Private::_ConstantBufferDataOpenGL20 >();
 			}
 			else
 			{
-				auto& impl = m_impl.emplace< Private::_ConstantBufferDataOpenGL31 >();
+				auto& data = m_data.emplace< Private::_ConstantBufferDataOpenGL31 >();
 
-				context_impl.functions->gen_buffers( 1, &impl.id );
-				context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl.id );
-				context_impl.functions->buffer_data( OpenGL::BufferTarget::Uniform, size, nullptr, OpenGL::BufferUsage::StreamDraw );
-				context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
+				gl.functions->gen_buffers( 1, &data.id );
+				gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, data.id );
+				gl.functions->buffer_data( OpenGL::BufferTarget::Uniform, size, nullptr, OpenGL::BufferUsage::StreamDraw );
+				gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
 			}
 			break;
 		}
@@ -61,8 +61,8 @@ ConstantBuffer::ConstantBuffer( size_t size )
 
 		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
 		{
-			auto& impl         = m_impl.emplace< Private::_ConstantBufferDataD3D11 >();
-			auto& context_impl = std::get< Private::_RenderContextDataD3D11 >( context_impl_var );
+			auto& data  = m_data.emplace< Private::_ConstantBufferDataD3D11 >();
+			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( context_data );
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth      = static_cast< UINT >( ( size + 0xf ) & ~0xf ); /* Align by 16 bytes */
@@ -71,8 +71,8 @@ ConstantBuffer::ConstantBuffer( size_t size )
 			desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 			ID3D11Buffer* buffer;
-			context_impl.device->CreateBuffer( &desc, nullptr, &buffer );
-			impl.buffer.reset( buffer );
+			d3d11.device->CreateBuffer( &desc, nullptr, &buffer );
+			data.buffer.reset( buffer );
 
 			break;
 		}
@@ -84,7 +84,7 @@ ConstantBuffer::ConstantBuffer( size_t size )
 
 ConstantBuffer::~ConstantBuffer( void )
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: break;
 
@@ -92,10 +92,10 @@ ConstantBuffer::~ConstantBuffer( void )
 
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
 		{
-			auto& impl         = std::get< Private::_ConstantBufferDataOpenGL31 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
+			auto& data = std::get< Private::_ConstantBufferDataOpenGL31 >( m_data );
+			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			context_impl.functions->delete_buffers( 1, &impl.id );
+			gl.functions->delete_buffers( 1, &data.id );
 
 			break;
 		}
@@ -107,7 +107,7 @@ ConstantBuffer::~ConstantBuffer( void )
 
 void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_t size )
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: break;
 
@@ -115,9 +115,9 @@ void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_
 
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL20, Private::ConstantBufferData > ):
 		{
-			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
+			auto& gl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			context_impl.functions->uniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
+			gl.functions->uniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
 
 			break;
 		}
@@ -146,7 +146,7 @@ void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_
 
 void* ConstantBuffer::UpdateBegin( size_t size )
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: return nullptr;
 
@@ -154,11 +154,11 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
 		{
-			auto& impl         = std::get< Private::_ConstantBufferDataOpenGL31 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
+			auto& data = std::get< Private::_ConstantBufferDataOpenGL31 >( m_data );
+			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl.id );
-			return context_impl.functions->map_buffer_range( OpenGL::BufferTarget::Uniform, 0, size, OpenGL::MapAccess::WriteBit );
+			gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, data.id );
+			return gl.functions->map_buffer_range( OpenGL::BufferTarget::Uniform, 0, size, OpenGL::MapAccess::WriteBit );
 		}
 
 	#endif
@@ -166,11 +166,11 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 
 		case( unique_index_v< Private::_ConstantBufferDataD3D11, Private::ConstantBufferData > ):
 		{
-			auto& impl         = std::get< Private::_ConstantBufferDataD3D11 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
+			auto& data  = std::get< Private::_ConstantBufferDataD3D11 >( m_data );
+			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
 
 			D3D11_MAPPED_SUBRESOURCE subresource;
-			if( context_impl.device_context->Map( impl.buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
+			if( d3d11.device_context->Map( data.buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
 				return subresource.pData;
 
 			return nullptr;
@@ -183,7 +183,7 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 
 void ConstantBuffer::UpdateEnd()
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: break;
 
@@ -191,10 +191,10 @@ void ConstantBuffer::UpdateEnd()
 
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
 		{
-			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
+			auto& gl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			context_impl.functions->unmap_buffer( OpenGL::BufferTarget::Uniform );
-			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
+			gl.functions->unmap_buffer( OpenGL::BufferTarget::Uniform );
+			gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
 
 			break;
 		}
@@ -204,10 +204,10 @@ void ConstantBuffer::UpdateEnd()
 
 		case( unique_index_v< Private::_ConstantBufferDataD3D11, Private::ConstantBufferData > ):
 		{
-			auto& impl         = std::get< Private::_ConstantBufferDataD3D11 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
+			auto& data  = std::get< Private::_ConstantBufferDataD3D11 >( m_data );
+			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
 
-			context_impl.device_context->Unmap( impl.buffer.get(), 0 );
+			d3d11.device_context->Unmap( data.buffer.get(), 0 );
 
 			break;
 		}
@@ -219,7 +219,7 @@ void ConstantBuffer::UpdateEnd()
 
 void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 {
-	switch( m_impl.index() )
+	switch( m_data.index() )
 	{
 		default: break;
 
@@ -227,11 +227,11 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
 		{
-			auto& impl         = std::get< Private::_ConstantBufferDataOpenGL31 >( m_impl );
-			auto& context_impl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
+			auto& data = std::get< Private::_ConstantBufferDataOpenGL31 >( m_data );
+			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			context_impl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, impl.id );
-			context_impl.functions->bind_buffer_base( OpenGL::BufferTarget::Uniform, slot, impl.id );
+			gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, data.id );
+			gl.functions->bind_buffer_base( OpenGL::BufferTarget::Uniform, slot, data.id );
 
 			break;
 		}
@@ -241,15 +241,15 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 
 		case( unique_index_v< Private::_ConstantBufferDataD3D11, Private::ConstantBufferData > ):
 		{
-			auto&         impl         = std::get< Private::_ConstantBufferDataD3D11 >( m_impl );
-			auto&         context_impl = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
-			ID3D11Buffer* buffer       = impl.buffer.get();
+			auto&         data   = std::get< Private::_ConstantBufferDataD3D11 >( m_data );
+			auto&         d3d11  = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
+			ID3D11Buffer* buffer = data.buffer.get();
 
 			switch( type )
 			{
 				default: break;
-				case ShaderType::Vertex:   { context_impl.device_context->VSSetConstantBuffers( slot, 1, &buffer ); } break;
-				case ShaderType::Fragment: { context_impl.device_context->PSSetConstantBuffers( slot, 1, &buffer ); } break;
+				case ShaderType::Vertex:   { d3d11.device_context->VSSetConstantBuffers( slot, 1, &buffer ); } break;
+				case ShaderType::Fragment: { d3d11.device_context->PSSetConstantBuffers( slot, 1, &buffer ); } break;
 			}
 
 			break;
