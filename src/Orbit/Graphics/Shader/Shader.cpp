@@ -21,6 +21,7 @@
 
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/API/OpenGL/GLSL.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Device/RenderContext.h"
 
@@ -31,7 +32,7 @@
 ORB_NAMESPACE_BEGIN
 
 #if( ORB_HAS_OPENGL )
-GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGL::ShaderType gl_shader_type );
+GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShaderType gl_shader_type );
 #endif
 
 Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
@@ -170,36 +171,36 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 
 			/* Create shader program */
 			{
-				GLuint vertex_shader   = CompileGLSL( source, ShaderType::Vertex, OpenGL::ShaderType::Vertex );
-				GLuint fragment_shader = CompileGLSL( source, ShaderType::Fragment, OpenGL::ShaderType::Fragment );
+				GLuint vertex_shader   = CompileGLSL( source, ShaderType::Vertex, OpenGLShaderType::Vertex );
+				GLuint fragment_shader = CompileGLSL( source, ShaderType::Fragment, OpenGLShaderType::Fragment );
 
-				data.program = gl.functions->create_program();
-				gl.functions->attach_shader( data.program, vertex_shader );
-				gl.functions->attach_shader( data.program, fragment_shader );
-				gl.functions->link_program( data.program );
+				data.program = glCreateProgram();
+				glAttachShader( data.program, vertex_shader );
+				glAttachShader( data.program, fragment_shader );
+				glLinkProgram( data.program );
 
 				GLint status;
-				gl.functions->get_programiv( data.program, OpenGL::ProgramParam::LinkStatus, &status );
+				glGetProgramiv( data.program, OpenGLProgramParam::LinkStatus, &status );
 				if( status == GL_FALSE )
 				{
 					GLint loglen;
-					gl.functions->get_programiv( data.program, OpenGL::ProgramParam::InfoLogLength, &loglen );
+					glGetProgramiv( data.program, OpenGLProgramParam::InfoLogLength, &loglen );
 					if( loglen > 0 )
 					{
 						std::string logbuf( static_cast< size_t >( loglen ), '\0' );
-						gl.functions->get_program_info_log( data.program, loglen, nullptr, &logbuf[ 0 ] );
+						glGetProgramInfoLog( data.program, loglen, nullptr, &logbuf[ 0 ] );
 						LogError( logbuf );
 					}
 				}
 
-				gl.functions->delete_shader( fragment_shader );
-				gl.functions->delete_shader( vertex_shader );
+				glDeleteShader( fragment_shader );
+				glDeleteShader( vertex_shader );
 			}
 
 			/* Create vertex array for GL 3.0+ or GLES 3+ */
 			if( ( gl.embedded && gl.opengl_version >= Version( 3 ) ) || ( !gl.embedded && gl.opengl_version >= Version( 3, 0 ) ) )
 			{
-				gl.functions->gen_vertex_arrays( 1, &data.vao );
+				glGenVertexArrays( 1, &data.vao );
 			}
 			else
 			{
@@ -237,15 +238,14 @@ Shader::~Shader( void )
 
 	if( m_data.index() == unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > )
 	{
-		auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 		auto& data = std::get< Private::_ShaderDataOpenGL >( m_data );
 
 		if( data.vao )
 		{
-			gl.functions->delete_vertex_arrays( 1, &data.vao );
+			glDeleteVertexArrays( 1, &data.vao );
 		}
 
-		gl.functions->delete_program( data.program );
+		glDeleteProgram( data.program );
 	}
 
 #endif
@@ -288,18 +288,17 @@ void Shader::Bind( void )
 
 		case( unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > ):
 		{
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 			auto& data = std::get< Private::_ShaderDataOpenGL >( m_data );
 
-			gl.functions->bind_vertex_array( data.vao );
-			gl.functions->use_program( data.program );
+			glBindVertexArray( data.vao );
+			glUseProgram( data.program );
 
 			const uint8_t* ptr = nullptr;
 
 			for( GLuint i = 0; i < data.layout.size(); ++i )
 			{
-				OpenGL::VertexAttribDataType data_type { };
-				GLint                        data_length = 0;
+				OpenGLVertexAttribDataType data_type { };
+				GLint                      data_length = 0;
 
 				switch( data.layout[ i ].type )
 				{
@@ -311,35 +310,35 @@ void Shader::Bind( void )
 
 					case VertexComponent::Float:
 					{
-						data_type   = OpenGL::VertexAttribDataType::Float;
+						data_type   = OpenGLVertexAttribDataType::Float;
 						data_length = 1;
 						break;
 					}
 
 					case VertexComponent::Vec2:
 					{
-						data_type   = OpenGL::VertexAttribDataType::Float;
+						data_type   = OpenGLVertexAttribDataType::Float;
 						data_length = 2;
 						break;
 					}
 
 					case VertexComponent::Vec3:
 					{
-						data_type   = OpenGL::VertexAttribDataType::Float;
+						data_type   = OpenGLVertexAttribDataType::Float;
 						data_length = 3;
 						break;
 					}
 
 					case VertexComponent::Vec4:
 					{
-						data_type   = OpenGL::VertexAttribDataType::Float;
+						data_type   = OpenGLVertexAttribDataType::Float;
 						data_length = 4;
 						break;
 					}
 				}
 
-				gl.functions->enable_vertex_attrib_array( i );
-				gl.functions->vertex_attrib_pointer( i, data_length, data_type, GL_FALSE, data.vertex_stride, ptr );
+				glEnableVertexAttribArray( i );
+				glVertexAttribPointer( i, data_length, data_type, GL_FALSE, data.vertex_stride, ptr );
 
 				switch( data.layout[ i ].type )
 				{
@@ -423,17 +422,16 @@ void Shader::Unbind( void )
 
 		case( unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > ):
 		{
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 			auto& data = std::get< Private::_ShaderDataOpenGL >( m_data );
 
 			for( GLuint i = 0; i < data.layout.size(); ++i )
-				gl.functions->disable_vertex_attrib_array( i );
+				glDisableVertexAttribArray( i );
 
-			gl.functions->use_program( 0 );
+			glUseProgram( 0 );
 
 			if( data.vao )
 			{
-				gl.functions->bind_vertex_array( 0 );
+				glBindVertexArray( 0 );
 			}
 
 			break;
@@ -446,7 +444,7 @@ void Shader::Unbind( void )
 
 #if( ORB_HAS_OPENGL )
 
-GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGL::ShaderType gl_shader_type )
+GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShaderType gl_shader_type )
 {
 	auto& gl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
@@ -485,20 +483,20 @@ GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGL::Sha
 		static_cast< GLint >( source.size() ),
 	};
 
-	GLuint shader = gl.functions->create_shader( gl_shader_type );
-	gl.functions->shader_source( shader, static_cast< GLsizei >( sources.size() ), sources.data(), lengths.data() );
-	gl.functions->compile_shader( shader );
+	GLuint shader = glCreateShader( gl_shader_type );
+	glShaderSource( shader, static_cast< GLsizei >( sources.size() ), sources.data(), lengths.data() );
+	glCompileShader( shader );
 
 	GLint status;
-	gl.functions->get_shaderiv( shader, OpenGL::ShaderParam::CompileStatus, &status );
+	glGetShaderiv( shader, OpenGLShaderParam::CompileStatus, &status );
 	if( status == GL_FALSE )
 	{
 		GLint loglen;
-		gl.functions->get_shaderiv( shader, OpenGL::ShaderParam::InfoLogLength, &loglen );
+		glGetShaderiv( shader, OpenGLShaderParam::InfoLogLength, &loglen );
 		if( loglen > 0 )
 		{
 			std::string logbuf( static_cast< size_t >( loglen ), '\0' );
-			gl.functions->get_shader_info_log( shader, loglen, nullptr, &logbuf[ 0 ] );
+			glGetShaderInfoLog( shader, loglen, nullptr, &logbuf[ 0 ] );
 			LogError( logbuf );
 		}
 

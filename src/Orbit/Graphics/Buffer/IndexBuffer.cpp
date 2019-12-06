@@ -18,6 +18,7 @@
 #include "IndexBuffer.h"
 
 #include "Orbit/Core/Utility/Utility.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Device/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
@@ -50,12 +51,11 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* index_data, size_t cou
 		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
 			auto& data = m_data.emplace< Private::_IndexBufferDataOpenGL >();
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( context_data );
 
-			gl.functions->gen_buffers( 1, &data.id );
-			gl.functions->bind_buffer( OpenGL::BufferTarget::ElementArray, data.id );
-			gl.functions->buffer_data( OpenGL::BufferTarget::ElementArray, total_size, index_data, OpenGL::BufferUsage::StaticDraw );
-			gl.functions->bind_buffer( OpenGL::BufferTarget::ElementArray, 0 );
+			glGenBuffers( 1, &data.id );
+			glBindBuffer( OpenGLBufferTarget::ElementArray, data.id );
+			glBufferData( OpenGLBufferTarget::ElementArray, total_size, index_data, OpenGLBufferUsage::StaticDraw );
+			glBindBuffer( OpenGLBufferTarget::ElementArray, 0 );
 
 			break;
 		}
@@ -106,9 +106,8 @@ IndexBuffer::~IndexBuffer( void )
 		case( unique_index_v< Private::_IndexBufferDataOpenGL, Private::IndexBufferData > ):
 		{
 			auto& data = std::get< Private::_IndexBufferDataOpenGL >( m_data );
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			gl.functions->delete_buffers( 1, &data.id );
+			glDeleteBuffers( 1, &data.id );
 
 			break;
 		}
@@ -137,9 +136,8 @@ void IndexBuffer::Bind( void )
 		case( unique_index_v< Private::_IndexBufferDataOpenGL, Private::IndexBufferData > ):
 		{
 			auto& data = std::get< Private::_IndexBufferDataOpenGL >( m_data );
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			gl.functions->bind_buffer( OpenGL::BufferTarget::ElementArray, data.id );
+			glBindBuffer( OpenGLBufferTarget::ElementArray, data.id );
 
 			break;
 		}

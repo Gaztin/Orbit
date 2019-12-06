@@ -21,6 +21,7 @@
 
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Core/Utility/Version.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Device/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
@@ -48,10 +49,10 @@ ConstantBuffer::ConstantBuffer( size_t size )
 			{
 				auto& data = m_data.emplace< Private::_ConstantBufferDataOpenGL31 >();
 
-				gl.functions->gen_buffers( 1, &data.id );
-				gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, data.id );
-				gl.functions->buffer_data( OpenGL::BufferTarget::Uniform, size, nullptr, OpenGL::BufferUsage::StreamDraw );
-				gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
+				glGenBuffers( 1, &data.id );
+				glBindBuffer( OpenGLBufferTarget::Uniform, data.id );
+				glBufferData( OpenGLBufferTarget::Uniform, size, nullptr, OpenGLBufferUsage::StreamDraw );
+				glBindBuffer( OpenGLBufferTarget::Uniform, 0 );
 			}
 			break;
 		}
@@ -93,9 +94,8 @@ ConstantBuffer::~ConstantBuffer( void )
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
 		{
 			auto& data = std::get< Private::_ConstantBufferDataOpenGL31 >( m_data );
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			gl.functions->delete_buffers( 1, &data.id );
+			glDeleteBuffers( 1, &data.id );
 
 			break;
 		}
@@ -115,9 +115,7 @@ void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_
 
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL20, Private::ConstantBufferData > ):
 		{
-			auto& gl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
-
-			gl.functions->uniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
+			glUniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
 
 			break;
 		}
@@ -155,10 +153,9 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
 		{
 			auto& data = std::get< Private::_ConstantBufferDataOpenGL31 >( m_data );
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, data.id );
-			return gl.functions->map_buffer_range( OpenGL::BufferTarget::Uniform, 0, size, OpenGL::MapAccess::WriteBit );
+			glBindBuffer( OpenGLBufferTarget::Uniform, data.id );
+			return glMapBufferRange( OpenGLBufferTarget::Uniform, 0, size, OpenGLMapAccess::WriteBit );
 		}
 
 	#endif
@@ -191,10 +188,8 @@ void ConstantBuffer::UpdateEnd()
 
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
 		{
-			auto& gl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
-
-			gl.functions->unmap_buffer( OpenGL::BufferTarget::Uniform );
-			gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, 0 );
+			glUnmapBuffer( OpenGLBufferTarget::Uniform );
+			glBindBuffer( OpenGLBufferTarget::Uniform, 0 );
 
 			break;
 		}
@@ -228,10 +223,9 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
 		{
 			auto& data = std::get< Private::_ConstantBufferDataOpenGL31 >( m_data );
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			gl.functions->bind_buffer( OpenGL::BufferTarget::Uniform, data.id );
-			gl.functions->bind_buffer_base( OpenGL::BufferTarget::Uniform, slot, data.id );
+			glBindBuffer( OpenGLBufferTarget::Uniform, data.id );
+			glBindBufferBase( OpenGLBufferTarget::Uniform, slot, data.id );
 
 			break;
 		}

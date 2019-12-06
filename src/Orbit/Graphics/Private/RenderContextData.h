@@ -66,7 +66,6 @@ namespace Private
 
 	#endif
 
-		std::optional< OpenGL::Functions > functions;
 	};
 
 #endif

@@ -18,6 +18,7 @@
 #include "VertexBuffer.h"
 
 #include "Orbit/Core/Utility/Utility.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Device/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
@@ -38,12 +39,11 @@ VertexBuffer::VertexBuffer( const void* vertex_data, size_t count, size_t stride
 		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 		{
 			auto& data = m_data.emplace< Private::_VertexBufferDataOpenGL >();
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( context_data );
 
-			gl.functions->gen_buffers( 1, &data.id );
-			gl.functions->bind_buffer( OpenGL::BufferTarget::Array, data.id );
-			gl.functions->buffer_data( OpenGL::BufferTarget::Array, total_size, vertex_data, OpenGL::BufferUsage::StaticDraw );
-			gl.functions->bind_buffer( OpenGL::BufferTarget::Array, 0 );
+			glGenBuffers( 1, &data.id );
+			glBindBuffer( OpenGLBufferTarget::Array, data.id );
+			glBufferData( OpenGLBufferTarget::Array, total_size, vertex_data, OpenGLBufferUsage::StaticDraw );
+			glBindBuffer( OpenGLBufferTarget::Array, 0 );
 
 			break;
 		}
@@ -95,9 +95,8 @@ VertexBuffer::~VertexBuffer( void )
 		case( unique_index_v< Private::_VertexBufferDataOpenGL, Private::VertexBufferData > ):
 		{
 			auto& data = std::get< Private::_VertexBufferDataOpenGL >( m_data );
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			gl.functions->delete_buffers( 1, &data.id );
+			glDeleteBuffers( 1, &data.id );
 
 			break;
 		}
@@ -118,9 +117,8 @@ void VertexBuffer::Bind( void )
 		case( unique_index_v< Private::_VertexBufferDataOpenGL, Private::VertexBufferData > ):
 		{
 			auto& data = std::get< Private::_VertexBufferDataOpenGL >( m_data );
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 
-			gl.functions->bind_buffer( OpenGL::BufferTarget::Array, data.id );
+			glBindBuffer( OpenGLBufferTarget::Array, data.id );
 
 			break;
 		}

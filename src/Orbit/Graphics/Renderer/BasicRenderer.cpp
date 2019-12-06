@@ -17,6 +17,7 @@
 
 #include "BasicRenderer.h"
 
+#include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Buffer/ConstantBuffer.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/Texture2D.h"
@@ -71,18 +72,16 @@ void BasicRenderer::Render( void )
 
 			case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
 			{
-				Private::_RenderContextDataOpenGL& gl = std::get< Private::_RenderContextDataOpenGL >( context_data );
-
-				OpenGL::IndexType index_type { };
+				OpenGLIndexType index_type { };
 
 				switch( command.index_buffer->GetFormat() )
 				{
-					case IndexFormat::Byte:       { index_type = OpenGL::IndexType::Byte;  } break;
-					case IndexFormat::Word:       { index_type = OpenGL::IndexType::Short; } break;
-					case IndexFormat::DoubleWord: { index_type = OpenGL::IndexType::Int;   } break;
+					case IndexFormat::Byte:       { index_type = OpenGLIndexType::Byte;  } break;
+					case IndexFormat::Word:       { index_type = OpenGLIndexType::Short; } break;
+					case IndexFormat::DoubleWord: { index_type = OpenGLIndexType::Int;   } break;
 				}
 
-				gl.functions->draw_elements( OpenGL::DrawMode::Triangles, static_cast< GLsizei >( command.index_buffer->GetCount() ), index_type, nullptr );
+				glDrawElements( OpenGLDrawMode::Triangles, static_cast< GLsizei >( command.index_buffer->GetCount() ), index_type, nullptr );
 
 				break;
 			}

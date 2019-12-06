@@ -17,6 +17,7 @@
 
 #include "Texture2D.h"
 
+#include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Device/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
@@ -125,12 +126,12 @@ Texture2D::~Texture2D( void )
 		case( unique_index_v< Private::_Texture2DDataOpenGL, Private::Texture2DData > ):
 		{
 			auto& data = std::get< Private::_Texture2DDataOpenGL >( m_data );
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
 			
-			gl.functions->glDeleteTextures( 1, &data.id );
+			glDeleteTextures( 1, &data.id );
 
 			break;
 		}
+
 	#endif
 
 	}
@@ -147,11 +148,10 @@ void Texture2D::Bind( uint32_t slot )
 		case( unique_index_v< Private::_Texture2DDataOpenGL, Private::Texture2DData > ):
 		{
 			auto&          data      = std::get< Private::_Texture2DDataOpenGL >( m_data );
-			auto&          gl        = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
-			const uint32_t unit_base = static_cast< GLenum >( OpenGL::TextureUnit::Texture0 );
+			const uint32_t unit_base = static_cast< GLenum >( OpenGLTextureUnit::Texture0 );
 
-			gl.functions->glActiveTexture( static_cast< OpenGL::TextureUnit >( unit_base + slot ) );
-			gl.functions->glBindTexture( GL_TEXTURE_2D, data.id );
+			glActiveTexture( static_cast< OpenGLTextureUnit >( unit_base + slot ) );
+			glBindTexture( GL_TEXTURE_2D, data.id );
 
 			break;
 		}
