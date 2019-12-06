@@ -160,7 +160,7 @@ public:
 		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
 	}
 
-	void OnFrame( void ) override
+	void OnFrame( float /*delta_time*/ ) override
 	{
 		m_window.PollEvents();
 		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );

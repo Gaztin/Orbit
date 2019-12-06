@@ -216,7 +216,6 @@ public:
 		, m_index_buffer( index_data )
 		, m_constant_buffer( constant_data )
 		, m_texture( 4, 4, texture_data )
-		, m_time( 0.0f )
 	{
 		m_window.SetTitle( "Orbit Sample (02-Cube)" );
 		m_window.Show();
@@ -225,12 +224,11 @@ public:
 
 public:
 
-	void OnFrame( void ) override
+	void OnFrame( float delta_time ) override
 	{
 		/* Update constant buffer */
 		{
 			auto& [ mvp ] = constant_data;
-			m_time = static_cast< float >( clock() ) / CLOCKS_PER_SEC;
 
 			/* Calculate model-view-projection matrix */
 			{
@@ -240,10 +238,9 @@ public:
 				Orbit::Matrix4 view;
 				view.Translate( Orbit::Vector3( 0m, 0m, 5m ) );
 
-				Orbit::Matrix4 model;
-				model.Rotate( Orbit::Vector3( 0pi, 0.5pi * m_time, 0pi ) );
+				m_model.Rotate( Orbit::Vector3( 0pi, 0.5pi * delta_time, 0pi ) );
 
-				mvp = model * view * projection_matrix;
+				mvp = m_model * view * projection_matrix;
 			}
 
 			m_constant_buffer.Update( constant_data );
@@ -292,6 +289,6 @@ private:
 	Orbit::ConstantBuffer    m_constant_buffer;
 	Orbit::Texture2D         m_texture;
 	Orbit::BasicRenderer     m_renderer;
-	float                    m_time;
+	Orbit::Matrix4           m_model;
 
 };

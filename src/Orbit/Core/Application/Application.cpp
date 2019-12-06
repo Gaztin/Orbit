@@ -17,6 +17,8 @@
 
 #include "Application.h"
 
+#include <chrono>
+
 #if defined( ORB_OS_IOS )
 #  include <UIKit/UIKit.h>
 @interface OrbitApplicationDelegate : UIResponder< UIApplicationDelegate >
@@ -44,10 +46,16 @@ void ApplicationBase::RunInstance()
 
 	/* Initialize application instance */
 	ApplicationBase* instance = _application_initializer();
+	auto             time     = std::chrono::high_resolution_clock::now();
 
 	while( instance->IsRunning() )
 	{
-		instance->OnFrame();
+		auto now   = std::chrono::high_resolution_clock::now();
+		auto delta = std::chrono::duration_cast< std::chrono::duration< float > >( now - time );
+
+		time = now;
+
+		instance->OnFrame( delta.count() );
 	}
 
 	delete instance;
@@ -102,10 +110,12 @@ ORB_NAMESPACE_END
 	ORB_NAMESPACE _application_instance.reset();
 }
 
--( void )frame:( CADisplayLink* )__unused displayLink
+-( void )frame:( CADisplayLink* ) displayLink
 {
+	float delta_time = static_cast< float >( [ displayLink duration ] );
+
 	if( ORB_NAMESPACE _application_instance )
-		ORB_NAMESPACE _application_instance->OnFrame();
+		ORB_NAMESPACE _application_instance->OnFrame( delta_time );
 }
 
 @end
