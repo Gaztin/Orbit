@@ -768,6 +768,8 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 			details.surface = eglCreateWindowSurface( details.display, details.config, AndroidOnly::app->window, nullptr );
 
+			eglMakeCurrent( details.display, details.surface, details.surface, details.context );
+
 		#elif defined( ORB_OS_IOS )
 
 			( ( GLKView* )details.view ).layer.frame = CGRectMake( 0.f, 0.f, width, height );
