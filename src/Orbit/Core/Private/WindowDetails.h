@@ -22,10 +22,15 @@
 #  include <Windows.h>
 #elif defined( ORB_OS_LINUX )
 #  include <X11/Xlib.h>
+#elif defined( ORB_OS_MACOS )
+@class NSWindow;
+@class ORB_NAMESPACED_OBJC( WindowDelegate );
 #elif defined( ORB_OS_ANDROID )
 struct ASensorEventQueue;
 struct ASensorManager;
 struct ASensor;
+#elif defined( ORB_OS_IOS )
+@class ORB_NAMESPACE_OBJC( UIWindow );
 #endif
 
 ORB_NAMESPACE_BEGIN
@@ -46,8 +51,8 @@ namespace Private
 
 #elif defined( ORB_OS_MACOS )
 
-		void* ns_window;
-		void* delegate;
+		NSWindow*                              window;
+		ORB_NAMESPACED_OBJC( WindowDelegate )* delegate;
 
 #elif defined( ORB_OS_ANDROID )
 
@@ -57,7 +62,7 @@ namespace Private
 
 #elif defined( ORB_OS_IOS )
 
-		void* ui_window;
+		ORB_NAMESPACED_OBJC( UIWindow )* ui_window;
 
 #endif
 

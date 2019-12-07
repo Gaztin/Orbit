@@ -24,14 +24,14 @@
 
 -( void )windowWillClose:( NSNotification* ) __unused notification
 {
-	Window::GetInstance().Close();
+	ORB_NAMESPACE Window::GetInstance().Close();
 }
 
 -( void )windowDidMove:( NSNotification* ) __unused notification
 {
-	Window&       window  = Window::GetInstance();
-	auto&         details = window.GetPrivateDetails();
-	const CGPoint point   = details.window.frame.origin;
+	ORB_NAMESPACE Window& window  = ORB_NAMESPACE Window::GetInstance();
+	auto&                 details = window.GetPrivateDetails();
+	const CGPoint         point   = details.window.frame.origin;
 
 	ORB_NAMESPACE WindowMoved e;
 	e.x = point.x;
