@@ -45,8 +45,9 @@ constexpr DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 #endif
 
 RenderContext::RenderContext( GraphicsAPI api )
-	: m_details             { }
-	, m_resize_subscription { }
+	: m_details              { }
+	, m_window_resized       { }
+	, m_window_state_changed { }
 {
 	switch( api )
 	{
@@ -623,9 +624,19 @@ RenderContext::RenderContext( GraphicsAPI api )
 	}
 
 	/* Resize context when window is updated */
-	m_resize_subscription = Window::GetInstance().Subscribe( [ this ]( const WindowResized& e )
+	m_window_resized = Window::GetInstance().Subscribe( [ this ]( const WindowResized& e )
 		{
 			Resize( e.width, e.height );
+		}
+	);
+
+	/* Disable rendering when minimized */
+	m_window_state_changed = Window::GetInstance().Subscribe( [ this ]( const WindowStateChanged& e )
+		{
+			if( e.state == WindowState::Suspend )
+			{
+				Resize( 0, 0 );
+			}
 		}
 	);
 
@@ -784,8 +795,13 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 			DXGI_SWAP_CHAIN_DESC swap_chain_desc { };
 			details.swap_chain->GetDesc( &swap_chain_desc );
-			swap_chain_desc.BufferDesc.Width  = width;
-			swap_chain_desc.BufferDesc.Height = height;
+
+			if( width && height )
+			{
+				swap_chain_desc.BufferDesc.Width  = width;
+				swap_chain_desc.BufferDesc.Height = height;
+			}
+
 			details.swap_chain->ResizeBuffers( 1, swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height, swap_chain_desc.BufferDesc.Format, swap_chain_desc.Flags );
 
 			/* Recreate render target */
@@ -800,8 +816,8 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 			/* Recreate depth stencil */
 			{
-				depth_stencil_buffer_desc.Width  = width;
-				depth_stencil_buffer_desc.Height = height;
+				depth_stencil_buffer_desc.Width  = swap_chain_desc.BufferDesc.Width;
+				depth_stencil_buffer_desc.Height = swap_chain_desc.BufferDesc.Height;
 
 				ID3D11Texture2D* depth_stencil_buffer;
 				details.device->CreateTexture2D( &depth_stencil_buffer_desc, NULL, &depth_stencil_buffer );
@@ -842,7 +858,7 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 	}
 }
 
-void RenderContext::SwapBuffers()
+void RenderContext::SwapBuffers( void )
 {
 	switch( m_details.index() )
 	{

@@ -45,7 +45,8 @@ public:
 private:
 
 	Private::RenderContextDetails m_details;
-	EventSubscription             m_resize_subscription;
+	EventSubscription             m_window_resized;
+	EventSubscription             m_window_state_changed;
 
 };
 
