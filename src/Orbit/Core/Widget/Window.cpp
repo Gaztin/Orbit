@@ -48,7 +48,7 @@ static void AppCMD( android_app* state, int cmd );
 static int OnInput( android_app* state, AInputEvent* e );
 #endif
 
-Window::Window( uint32_t width, uint32_t height )
+Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height )
 	: m_details { }
 	, m_open    { true }
 {
@@ -247,12 +247,13 @@ void Window::SetTitle( std::string_view title )
 #elif defined( ORB_OS_ANDROID )
 
 	// #TODO: Activity.setTitle
+	( void )title;
 
 #endif
 
 }
 
-void Window::Move( int32_t x, int32_t y )
+void Window::Move( [[ maybe_unused ]] int32_t x, [[ maybe_unused ]] int32_t y )
 {
 
 #if defined( ORB_OS_WINDOWS )
@@ -283,7 +284,7 @@ void Window::Move( int32_t x, int32_t y )
 
 }
 
-void Window::Resize( uint32_t width, uint32_t height )
+void Window::Resize( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height )
 {
 
 #if defined( ORB_OS_WINDOWS )

@@ -57,10 +57,11 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		case GraphicsAPI::OpenGL:
 		{
-			auto& details        = m_details.emplace< Private::_RenderContextDetailsOpenGL >();
-			auto& window_details = Window::GetInstance().GetPrivateDetails();
+			auto& details = m_details.emplace< Private::_RenderContextDetailsOpenGL >();
 
 		#if defined( ORB_OS_WINDOWS )
+
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			/* Set pixel format */
 			{
@@ -136,6 +137,8 @@ RenderContext::RenderContext( GraphicsAPI api )
 			wglDeleteContext( dummy_context );
 
 		#elif defined( ORB_OS_LINUX )
+
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			sub_data->gc         = XCreateGC( window_details.display, window_details.window, 0, nullptr );
 			sub_data->glxContext = [ & ]
@@ -226,6 +229,8 @@ RenderContext::RenderContext( GraphicsAPI api )
 			}();
 
 		#elif defined( ORB_OS_MACOS )
+
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			const NSOpenGLPixelFormatAttribute attribs[]
 			{
@@ -347,6 +352,8 @@ RenderContext::RenderContext( GraphicsAPI api )
 			}
 
 		#elif defined( ORB_OS_IOS )
+
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			OrbitGLKViewDelegate* delegate = [ OrbitGLKViewDelegate alloc ];
 			[ delegate init ];
