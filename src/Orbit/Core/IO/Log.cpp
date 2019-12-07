@@ -17,6 +17,8 @@
 
 #include "Log.h"
 
+#include <cstdio>
+
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
 #elif defined( ORB_OS_ANDROID )
