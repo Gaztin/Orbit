@@ -17,9 +17,11 @@
 
 #pragma once
 #include <variant>
+#include <vector>
 
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/Graphics.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/Shader/VertexLayout.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -28,28 +30,33 @@ namespace Private
 
 #if( ORB_HAS_OPENGL )
 
-	struct _Texture2DDataOpenGL
+	struct _ShaderDetailsOpenGL
 	{
-		GLuint id;
+		VertexLayout layout;
+		GLuint       program;
+		GLsizei      vertex_stride;
+		GLuint       vao;
 	};
 
 #endif
 #if( ORB_HAS_D3D11 )
 
-	struct _Texture2DDataD3D11
+	struct _ShaderDetailsD3D11
 	{
-		ComPtr< ID3D11Texture2D >          texture_2d;
-		ComPtr< ID3D11ShaderResourceView > shader_resource_view;
+		ComPtr< ID3D11VertexShader > vertex_shader;
+		ComPtr< ID3D11PixelShader >  pixel_shader;
+		ComPtr< ID3D11InputLayout >  input_layout;
+		ComPtr< ID3D11SamplerState > sampler_state;
 	};
 
 #endif
 
-	using Texture2DData = std::variant< std::monostate
+	using ShaderDetails = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
-		, _Texture2DDataOpenGL
+		, _ShaderDetailsOpenGL
 	#endif
 	#if( ORB_HAS_D3D11 )
-		, _Texture2DDataD3D11
+		, _ShaderDetailsD3D11
 	#endif
 	>;
 }

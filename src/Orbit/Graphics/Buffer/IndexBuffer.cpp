@@ -34,27 +34,27 @@ static size_t GetFormatSize( IndexFormat format )
 	}
 }
 
-IndexBuffer::IndexBuffer( IndexFormat format, const void* index_data, size_t count )
-	: m_data   { }
-	, m_format { format }
-	, m_count  { count }
+IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
+	: m_details { }
+	, m_format  { format }
+	, m_count   { count }
 {
-	auto&        context_data = RenderContext::GetInstance().GetPrivateData();
-	const size_t total_size   = ( count * GetFormatSize( format ) );
+	auto&        context_details = RenderContext::GetInstance().GetPrivateDetails();
+	const size_t total_size      = ( count * GetFormatSize( format ) );
 
-	switch( context_data.index() )
+	switch( context_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& data = m_data.emplace< Private::_IndexBufferDataOpenGL >();
+			auto& details = m_details.emplace< Private::_IndexBufferDetailsOpenGL >();
 
-			glGenBuffers( 1, &data.id );
-			glBindBuffer( OpenGLBufferTarget::ElementArray, data.id );
-			glBufferData( OpenGLBufferTarget::ElementArray, total_size, index_data, OpenGLBufferUsage::StaticDraw );
+			glGenBuffers( 1, &details.id );
+			glBindBuffer( OpenGLBufferTarget::ElementArray, details.id );
+			glBufferData( OpenGLBufferTarget::ElementArray, total_size, data, OpenGLBufferUsage::StaticDraw );
 			glBindBuffer( OpenGLBufferTarget::ElementArray, 0 );
 
 			break;
@@ -63,10 +63,10 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* index_data, size_t cou
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& data  = m_data.emplace< Private::_IndexBufferDataD3D11 >();
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( context_data );
+			auto& details = m_details.emplace< Private::_IndexBufferDetailsD3D11 >();
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
@@ -74,10 +74,10 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* index_data, size_t cou
 			desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
 			ID3D11Buffer* buffer;
-			if( index_data )
+			if( data )
 			{
 				D3D11_SUBRESOURCE_DATA initial_data { };
-				initial_data.pSysMem = index_data;
+				initial_data.pSysMem = data;
 				d3d11.device->CreateBuffer( &desc, &initial_data, &buffer );
 			}
 			else
@@ -85,7 +85,7 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* index_data, size_t cou
 				d3d11.device->CreateBuffer( &desc, nullptr, &buffer );
 			}
 
-			data.buffer.reset( buffer );
+			details.buffer.reset( buffer );
 
 			break;
 		}
@@ -97,17 +97,17 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* index_data, size_t cou
 
 IndexBuffer::~IndexBuffer( void )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_IndexBufferDataOpenGL, Private::IndexBufferData > ):
+		case( unique_index_v< Private::_IndexBufferDetailsOpenGL, Private::IndexBufferDetails > ):
 		{
-			auto& data = std::get< Private::_IndexBufferDataOpenGL >( m_data );
+			auto& details = std::get< Private::_IndexBufferDetailsOpenGL >( m_details );
 
-			glDeleteBuffers( 1, &data.id );
+			glDeleteBuffers( 1, &details.id );
 
 			break;
 		}
@@ -115,7 +115,7 @@ IndexBuffer::~IndexBuffer( void )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_IndexBufferDataD3D11, Private::IndexBufferData > ):
+		case( unique_index_v< Private::_IndexBufferDetailsD3D11, Private::IndexBufferDetails > ):
 		{
 			break;
 		}
@@ -127,17 +127,17 @@ IndexBuffer::~IndexBuffer( void )
 
 void IndexBuffer::Bind( void )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_IndexBufferDataOpenGL, Private::IndexBufferData > ):
+		case( unique_index_v< Private::_IndexBufferDetailsOpenGL, Private::IndexBufferDetails > ):
 		{
-			auto& data = std::get< Private::_IndexBufferDataOpenGL >( m_data );
+			auto& details = std::get< Private::_IndexBufferDetailsOpenGL >( m_details );
 
-			glBindBuffer( OpenGLBufferTarget::ElementArray, data.id );
+			glBindBuffer( OpenGLBufferTarget::ElementArray, details.id );
 
 			break;
 		}
@@ -145,10 +145,10 @@ void IndexBuffer::Bind( void )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_IndexBufferDataD3D11, Private::IndexBufferData > ):
+		case( unique_index_v< Private::_IndexBufferDetailsD3D11, Private::IndexBufferDetails > ):
 		{
-			auto& data  = std::get< Private::_IndexBufferDataD3D11 >( m_data );
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
+			auto& details = std::get< Private::_IndexBufferDetailsD3D11 >( m_details );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 
 			/* Translate format to DXGI_FORMAT */
 			DXGI_FORMAT format;
@@ -160,7 +160,7 @@ void IndexBuffer::Bind( void )
 				case IndexFormat::DoubleWord: { format = DXGI_FORMAT_R32_UINT; } break;
 			}
 
-			d3d11.device_context->IASetIndexBuffer( data.buffer.get(), format, 0 );
+			d3d11.device_context->IASetIndexBuffer( details.buffer.get(), format, 0 );
 
 			break;
 		}

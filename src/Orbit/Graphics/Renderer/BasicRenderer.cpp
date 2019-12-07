@@ -34,7 +34,7 @@ void BasicRenderer::QueueCommand( const RenderCommand& command )
 
 void BasicRenderer::Render( void )
 {
-	Private::RenderContextData& context_data = RenderContext::GetInstance().GetPrivateData();
+	Private::RenderContextDetails& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
 	for( RenderCommand& command : m_commands )
 	{
@@ -52,15 +52,15 @@ void BasicRenderer::Render( void )
 			command.constant_buffers[ i ]->Bind( ShaderType::Vertex, static_cast< uint32_t >( i ) );
 		}
 
-		switch( context_data.index() )
+		switch( context_details.index() )
 		{
 			default: break;
 
 		#if( ORB_HAS_D3D11 )
 
-			case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
+			case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 			{
-				Private::_RenderContextDataD3D11& d3d11 = std::get< Private::_RenderContextDataD3D11 >( context_data );
+				Private::_RenderContextDetailsD3D11& d3d11 = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 				d3d11.device_context->DrawIndexed( static_cast< UINT >( command.index_buffer->GetCount() ), 0, 0 );
 
@@ -70,7 +70,7 @@ void BasicRenderer::Render( void )
 		#endif
 		#if( ORB_HAS_OPENGL )
 
-			case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
+			case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 			{
 				OpenGLIndexType index_type { };
 

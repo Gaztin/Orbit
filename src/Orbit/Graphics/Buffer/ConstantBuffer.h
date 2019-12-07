@@ -20,7 +20,7 @@
 #include <tuple>
 
 #include "Orbit/Core/Utility/Utility.h"
-#include "Orbit/Graphics/Private/ConstantBufferData.h"
+#include "Orbit/Graphics/Private/ConstantBufferDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -65,7 +65,7 @@ private:
 
 private:
 
-	Private::ConstantBufferData m_data;
+	Private::ConstantBufferDetails m_details;
 
 };
 

@@ -37,18 +37,18 @@ GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShade
 
 Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 {
-	auto& context_data = RenderContext::GetInstance().GetPrivateData();
+	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
-	switch( context_data.index() )
+	switch( context_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( context_data );
-			auto& data  = m_data.emplace< Private::_ShaderDataD3D11 >();
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
+			auto& details = m_details.emplace< Private::_ShaderDetailsD3D11 >();
 
 			UINT flags = D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS;
 
@@ -80,7 +80,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 
 				if( SUCCEEDED( d3d11.device->CreateVertexShader( vertex_data->GetBufferPointer(), vertex_data->GetBufferSize(), nullptr, &vertex_shader ) ) )
 				{
-					data.vertex_shader.reset( vertex_shader );
+					details.vertex_shader.reset( vertex_shader );
 				}
 			}
 
@@ -100,7 +100,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 				if( SUCCEEDED( d3d11.device->CreatePixelShader( pixel_data->GetBufferPointer(), pixel_data->GetBufferSize(), nullptr, &pixel_shader ) ) )
 				{
 					pixel_data->Release();
-					data.pixel_shader.reset( pixel_shader );
+					details.pixel_shader.reset( pixel_shader );
 				}
 			}
 
@@ -132,7 +132,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 
 				if( SUCCEEDED( d3d11.device->CreateInputLayout( descriptors.data(), static_cast< UINT >( descriptors.size() ), vertex_data->GetBufferPointer(), vertex_data->GetBufferSize(), &input_layout ) ) )
 				{
-					data.input_layout.reset( input_layout );
+					details.input_layout.reset( input_layout );
 				}
 
 				vertex_data->Release();
@@ -154,7 +154,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 
 				if( SUCCEEDED( d3d11.device->CreateSamplerState( &desc, &sampler_state ) ) )
 				{
-					data.sampler_state.reset( sampler_state );
+					details.sampler_state.reset( sampler_state );
 				}
 			}
 
@@ -164,31 +164,31 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 	#endif
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& gl   = std::get< Private::_RenderContextDataOpenGL >( context_data );
-			auto& data = m_data.emplace< Private::_ShaderDataOpenGL >();
+			auto& gl      = std::get< Private::_RenderContextDetailsOpenGL >( context_details );
+			auto& details = m_details.emplace< Private::_ShaderDetailsOpenGL >();
 
 			/* Create shader program */
 			{
 				GLuint vertex_shader   = CompileGLSL( source, ShaderType::Vertex, OpenGLShaderType::Vertex );
 				GLuint fragment_shader = CompileGLSL( source, ShaderType::Fragment, OpenGLShaderType::Fragment );
 
-				data.program = glCreateProgram();
-				glAttachShader( data.program, vertex_shader );
-				glAttachShader( data.program, fragment_shader );
-				glLinkProgram( data.program );
+				details.program = glCreateProgram();
+				glAttachShader( details.program, vertex_shader );
+				glAttachShader( details.program, fragment_shader );
+				glLinkProgram( details.program );
 
 				GLint status;
-				glGetProgramiv( data.program, OpenGLProgramParam::LinkStatus, &status );
+				glGetProgramiv( details.program, OpenGLProgramParam::LinkStatus, &status );
 				if( status == GL_FALSE )
 				{
 					GLint loglen;
-					glGetProgramiv( data.program, OpenGLProgramParam::InfoLogLength, &loglen );
+					glGetProgramiv( details.program, OpenGLProgramParam::InfoLogLength, &loglen );
 					if( loglen > 0 )
 					{
 						std::string logbuf( static_cast< size_t >( loglen ), '\0' );
-						glGetProgramInfoLog( data.program, loglen, nullptr, &logbuf[ 0 ] );
+						glGetProgramInfoLog( details.program, loglen, nullptr, &logbuf[ 0 ] );
 						LogError( logbuf );
 					}
 				}
@@ -200,26 +200,26 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 			/* Create vertex array for GL 3.0+ or GLES 3+ */
 			if( ( gl.embedded && gl.opengl_version >= Version( 3 ) ) || ( !gl.embedded && gl.opengl_version >= Version( 3, 0 ) ) )
 			{
-				glGenVertexArrays( 1, &data.vao );
+				glGenVertexArrays( 1, &details.vao );
 			}
 			else
 			{
-				data.vao = 0;
+				details.vao = 0;
 			}
 
 			/* Copy vertex layout*/
-			data.layout = vertex_layout;
+			details.layout = vertex_layout;
 
 			/* Calculate vertex stride */
-			data.vertex_stride = 0;
+			details.vertex_stride = 0;
 			for( const VertexComponent& component : vertex_layout )
 			{
 				switch( component.type )
 				{
-					case VertexComponent::Float: { data.vertex_stride += sizeof( float );     } break;
-					case VertexComponent::Vec2:  { data.vertex_stride += sizeof( float ) * 2; } break;
-					case VertexComponent::Vec3:  { data.vertex_stride += sizeof( float ) * 3; } break;
-					case VertexComponent::Vec4:  { data.vertex_stride += sizeof( float ) * 4; } break;
+					case VertexComponent::Float: { details.vertex_stride += sizeof( float );     } break;
+					case VertexComponent::Vec2:  { details.vertex_stride += sizeof( float ) * 2; } break;
+					case VertexComponent::Vec3:  { details.vertex_stride += sizeof( float ) * 3; } break;
+					case VertexComponent::Vec4:  { details.vertex_stride += sizeof( float ) * 4; } break;
 				}
 			}
 
@@ -236,16 +236,16 @@ Shader::~Shader( void )
 
 #if( ORB_HAS_OPENGL )
 
-	if( m_data.index() == unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > )
+	if( m_details.index() == unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > )
 	{
-		auto& data = std::get< Private::_ShaderDataOpenGL >( m_data );
+		auto& details = std::get< Private::_ShaderDetailsOpenGL >( m_details );
 
-		if( data.vao )
+		if( details.vao )
 		{
-			glDeleteVertexArrays( 1, &data.vao );
+			glDeleteVertexArrays( 1, &details.vao );
 		}
 
-		glDeleteProgram( data.program );
+		glDeleteProgram( details.program );
 	}
 
 #endif
@@ -254,29 +254,29 @@ Shader::~Shader( void )
 
 void Shader::Bind( void )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_ShaderDataD3D11, Private::ShaderData > ):
+		case( unique_index_v< Private::_ShaderDetailsD3D11, Private::ShaderDetails > ):
 		{
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
-			auto& data  = std::get< Private::_ShaderDataD3D11 >( m_data );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& details = std::get< Private::_ShaderDetailsD3D11 >( m_details );
 
-			if( data.input_layout )
-				d3d11.device_context->IASetInputLayout( data.input_layout.get() );
+			if( details.input_layout )
+				d3d11.device_context->IASetInputLayout( details.input_layout.get() );
 
-			if( data.vertex_shader )
-				d3d11.device_context->VSSetShader( data.vertex_shader.get(), nullptr, 0 );
+			if( details.vertex_shader )
+				d3d11.device_context->VSSetShader( details.vertex_shader.get(), nullptr, 0 );
 
-			if( data.pixel_shader )
-				d3d11.device_context->PSSetShader( data.pixel_shader.get(), nullptr, 0 );
+			if( details.pixel_shader )
+				d3d11.device_context->PSSetShader( details.pixel_shader.get(), nullptr, 0 );
 
-			if( data.sampler_state )
+			if( details.sampler_state )
 			{
-				ID3D11SamplerState* sampler_states[] = { data.sampler_state.get() };
+				ID3D11SamplerState* sampler_states[] = { details.sampler_state.get() };
 				d3d11.device_context->PSSetSamplers( 0, 1, sampler_states );
 			}
 
@@ -286,21 +286,21 @@ void Shader::Bind( void )
 	#endif
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > ):
+		case( unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > ):
 		{
-			auto& data = std::get< Private::_ShaderDataOpenGL >( m_data );
+			auto& details = std::get< Private::_ShaderDetailsOpenGL >( m_details );
 
-			glBindVertexArray( data.vao );
-			glUseProgram( data.program );
+			glBindVertexArray( details.vao );
+			glUseProgram( details.program );
 
 			const uint8_t* ptr = nullptr;
 
-			for( GLuint i = 0; i < data.layout.size(); ++i )
+			for( GLuint i = 0; i < details.layout.size(); ++i )
 			{
 				OpenGLVertexAttribDataType data_type { };
 				GLint                      data_length = 0;
 
-				switch( data.layout[ i ].type )
+				switch( details.layout[ i ].type )
 				{
 					default:
 					{
@@ -338,9 +338,9 @@ void Shader::Bind( void )
 				}
 
 				glEnableVertexAttribArray( i );
-				glVertexAttribPointer( i, data_length, data_type, GL_FALSE, data.vertex_stride, ptr );
+				glVertexAttribPointer( i, data_length, data_type, GL_FALSE, details.vertex_stride, ptr );
 
-				switch( data.layout[ i ].type )
+				switch( details.layout[ i ].type )
 				{
 					case VertexComponent::Float: { ptr += sizeof( float ) * 1; } break;
 					case VertexComponent::Vec2:  { ptr += sizeof( float ) * 2; } break;
@@ -359,55 +359,55 @@ void Shader::Bind( void )
 
 void Shader::Unbind( void )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_ShaderDataD3D11, Private::ShaderData > ):
+		case( unique_index_v< Private::_ShaderDetailsD3D11, Private::ShaderDetails > ):
 		{
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
-			auto& data  = std::get< Private::_ShaderDataD3D11 >( m_data );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& details = std::get< Private::_ShaderDetailsD3D11 >( m_details );
 
-			if( data.input_layout )
+			if( details.input_layout )
 			{
 				ID3D11InputLayout* bound_input_layout;
 				d3d11.device_context->IAGetInputLayout( &bound_input_layout );
-				if( bound_input_layout == data.input_layout.get() )
+				if( bound_input_layout == details.input_layout.get() )
 				{
 					d3d11.device_context->IASetInputLayout( nullptr );
 					bound_input_layout->Release();
 				}
 			}
 
-			if( data.vertex_shader )
+			if( details.vertex_shader )
 			{
 				ID3D11VertexShader* bound_vertex_shader;
 				d3d11.device_context->VSGetShader( &bound_vertex_shader, nullptr, nullptr );
-				if( bound_vertex_shader == data.vertex_shader.get() )
+				if( bound_vertex_shader == details.vertex_shader.get() )
 				{
 					d3d11.device_context->VSSetShader( nullptr, nullptr, 0 );
 					bound_vertex_shader->Release();
 				}
 			}
 
-			if( data.pixel_shader )
+			if( details.pixel_shader )
 			{
 				ID3D11PixelShader* bound_pixel_shader;
 				d3d11.device_context->PSGetShader( &bound_pixel_shader, nullptr, nullptr );
-				if( bound_pixel_shader == data.pixel_shader.get() )
+				if( bound_pixel_shader == details.pixel_shader.get() )
 				{
 					d3d11.device_context->PSSetShader( nullptr, nullptr, 0 );
 					bound_pixel_shader->Release();
 				}
 			}
 
-			if( data.sampler_state )
+			if( details.sampler_state )
 			{
 				ID3D11SamplerState* bound_sampler_state;
 				d3d11.device_context->PSGetSamplers( 0, 1, &bound_sampler_state );
-				if( bound_sampler_state == data.sampler_state.get() )
+				if( bound_sampler_state == details.sampler_state.get() )
 				{
 					d3d11.device_context->PSSetSamplers( 0, 0, nullptr );
 					bound_sampler_state->Release();
@@ -420,16 +420,16 @@ void Shader::Unbind( void )
 	#endif
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ShaderDataOpenGL, Private::ShaderData > ):
+		case( unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > ):
 		{
-			auto& data = std::get< Private::_ShaderDataOpenGL >( m_data );
+			auto& details = std::get< Private::_ShaderDetailsOpenGL >( m_details );
 
-			for( GLuint i = 0; i < data.layout.size(); ++i )
+			for( GLuint i = 0; i < details.layout.size(); ++i )
 				glDisableVertexAttribArray( i );
 
 			glUseProgram( 0 );
 
-			if( data.vao )
+			if( details.vao )
 			{
 				glBindVertexArray( 0 );
 			}
@@ -446,7 +446,7 @@ void Shader::Unbind( void )
 
 GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShaderType gl_shader_type )
 {
-	auto& gl = std::get< Private::_RenderContextDataOpenGL >( RenderContext::GetInstance().GetPrivateData() );
+	auto& gl = std::get< Private::_RenderContextDetailsOpenGL >( RenderContext::GetInstance().GetPrivateDetails() );
 
 	const std::string_view version_directive  = GLSL::GetVersionDirective( gl.opengl_version, gl.embedded );
 	const std::string_view glsl_define        = GLSL::GetGLSLDefine();

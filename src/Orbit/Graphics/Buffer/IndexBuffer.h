@@ -19,7 +19,7 @@
 #include <initializer_list>
 #include <type_traits>
 
-#include "Orbit/Graphics/Private/IndexBufferData.h"
+#include "Orbit/Graphics/Private/IndexBufferDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -49,9 +49,9 @@ public:
 
 private:
 
-	Private::IndexBufferData m_data;
-	IndexFormat              m_format;
-	size_t                   m_count;
+	Private::IndexBufferDetails m_details;
+	IndexFormat                 m_format;
+	size_t                      m_count;
 
 };
 

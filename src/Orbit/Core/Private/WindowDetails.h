@@ -26,7 +26,7 @@ ORB_NAMESPACE_BEGIN
 
 namespace Private
 {
-	struct WindowData
+	struct WindowDetails
 	{
 
 #if defined( ORB_OS_WINDOWS )

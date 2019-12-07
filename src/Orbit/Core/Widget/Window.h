@@ -19,7 +19,7 @@
 #include <string_view>
 
 #include "Orbit/Core/Event/EventDispatcher.h"
-#include "Orbit/Core/Private/WindowData.h"
+#include "Orbit/Core/Private/WindowDetails.h"
 #include "Orbit/Core/Utility/Singleton.h"
 
 ORB_NAMESPACE_BEGIN
@@ -71,14 +71,14 @@ public:
 
 public:
 
-	Private::WindowData&       GetPrivateData( void )       { return m_data; }
-	const Private::WindowData& GetPrivateData( void ) const { return m_data; }
-	bool                       IsOpen        ( void ) const { return m_open; }
+	Private::WindowDetails&       GetPrivateDetails( void )       { return m_details; }
+	const Private::WindowDetails& GetPrivateDetails( void ) const { return m_details; }
+	bool                          IsOpen           ( void ) const { return m_open; }
 
 private:
 
-	Private::WindowData m_data;
-	bool                m_open;
+	Private::WindowDetails m_details;
+	bool                   m_open;
 
 };
 

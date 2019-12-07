@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Private/VertexBufferData.h"
+#include "Orbit/Graphics/Private/VertexBufferDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -45,8 +45,8 @@ public:
 
 private:
 
-	Private::VertexBufferData m_data;
-	size_t                    m_count;
+	Private::VertexBufferDetails m_details;
+	size_t                       m_count;
 
 };
 

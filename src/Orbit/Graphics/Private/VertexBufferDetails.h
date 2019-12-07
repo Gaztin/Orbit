@@ -28,7 +28,7 @@ namespace Private
 
 #if( ORB_HAS_OPENGL )
 
-	struct _VertexBufferDataOpenGL
+	struct _VertexBufferDetailsOpenGL
 	{
 		GLuint id;
 	};
@@ -36,7 +36,7 @@ namespace Private
 #endif
 #if( ORB_HAS_D3D11 )
 
-	struct _VertexBufferDataD3D11
+	struct _VertexBufferDetailsD3D11
 	{
 		ComPtr< ID3D11Buffer > buffer;
 		UINT                   stride;
@@ -44,12 +44,12 @@ namespace Private
 
 #endif
 
-	using VertexBufferData = std::variant< std::monostate
+	using VertexBufferDetails = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
-		, _VertexBufferDataOpenGL
+		, _VertexBufferDetailsOpenGL
 	#endif
 	#if( ORB_HAS_D3D11 )
-		, _VertexBufferDataD3D11
+		, _VertexBufferDetailsD3D11
 	#endif
 	>;
 }

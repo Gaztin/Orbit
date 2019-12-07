@@ -23,26 +23,26 @@
 
 ORB_NAMESPACE_BEGIN
 
-VertexBuffer::VertexBuffer( const void* vertex_data, size_t count, size_t stride )
-	: m_data  { }
-	, m_count { count }
+VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
+	: m_details { }
+	, m_count   { count }
 {
-	auto&        context_data = RenderContext::GetInstance().GetPrivateData();
-	const size_t total_size   = ( count * stride );
+	auto&        context_details = RenderContext::GetInstance().GetPrivateDetails();
+	const size_t total_size      = ( count * stride );
 
-	switch( context_data.index() )
+	switch( context_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& data = m_data.emplace< Private::_VertexBufferDataOpenGL >();
+			auto& details = m_details.emplace< Private::_VertexBufferDetailsOpenGL >();
 
-			glGenBuffers( 1, &data.id );
-			glBindBuffer( OpenGLBufferTarget::Array, data.id );
-			glBufferData( OpenGLBufferTarget::Array, total_size, vertex_data, OpenGLBufferUsage::StaticDraw );
+			glGenBuffers( 1, &details.id );
+			glBindBuffer( OpenGLBufferTarget::Array, details.id );
+			glBufferData( OpenGLBufferTarget::Array, total_size, data, OpenGLBufferUsage::StaticDraw );
 			glBindBuffer( OpenGLBufferTarget::Array, 0 );
 
 			break;
@@ -51,10 +51,10 @@ VertexBuffer::VertexBuffer( const void* vertex_data, size_t count, size_t stride
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& data  = m_data.emplace< Private::_VertexBufferDataD3D11 >();
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( context_data );
+			auto& details = m_details.emplace< Private::_VertexBufferDetailsD3D11 >();
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
@@ -62,10 +62,10 @@ VertexBuffer::VertexBuffer( const void* vertex_data, size_t count, size_t stride
 			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
 			ID3D11Buffer* buffer;
-			if( vertex_data )
+			if( data )
 			{
 				D3D11_SUBRESOURCE_DATA initial_data { };
-				initial_data.pSysMem = vertex_data;
+				initial_data.pSysMem = data;
 				d3d11.device->CreateBuffer( &desc, &initial_data, &buffer );
 			}
 			else
@@ -73,8 +73,8 @@ VertexBuffer::VertexBuffer( const void* vertex_data, size_t count, size_t stride
 				d3d11.device->CreateBuffer( &desc, nullptr, &buffer );
 			}
 
-			data.buffer.reset( buffer );
-			data.stride = static_cast< UINT >( stride );
+			details.buffer.reset( buffer );
+			details.stride = static_cast< UINT >( stride );
 
 			break;
 		}
@@ -86,17 +86,17 @@ VertexBuffer::VertexBuffer( const void* vertex_data, size_t count, size_t stride
 
 VertexBuffer::~VertexBuffer( void )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_VertexBufferDataOpenGL, Private::VertexBufferData > ):
+		case( unique_index_v< Private::_VertexBufferDetailsOpenGL, Private::VertexBufferDetails > ):
 		{
-			auto& data = std::get< Private::_VertexBufferDataOpenGL >( m_data );
+			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( m_details );
 
-			glDeleteBuffers( 1, &data.id );
+			glDeleteBuffers( 1, &details.id );
 
 			break;
 		}
@@ -108,17 +108,17 @@ VertexBuffer::~VertexBuffer( void )
 
 void VertexBuffer::Bind( void )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_VertexBufferDataOpenGL, Private::VertexBufferData > ):
+		case( unique_index_v< Private::_VertexBufferDetailsOpenGL, Private::VertexBufferDetails > ):
 		{
-			auto& data = std::get< Private::_VertexBufferDataOpenGL >( m_data );
+			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( m_details );
 
-			glBindBuffer( OpenGLBufferTarget::Array, data.id );
+			glBindBuffer( OpenGLBufferTarget::Array, details.id );
 
 			break;
 		}
@@ -126,13 +126,13 @@ void VertexBuffer::Bind( void )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_VertexBufferDataD3D11, Private::VertexBufferData > ):
+		case( unique_index_v< Private::_VertexBufferDetailsD3D11, Private::VertexBufferDetails > ):
 		{
-			auto&         data   = std::get< Private::_VertexBufferDataD3D11 >( m_data );
-			auto&         d3d11  = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
-			ID3D11Buffer* buffer = data.buffer.get();
-			UINT          stride = data.stride;
-			UINT          offset = 0;
+			auto&         details = std::get< Private::_VertexBufferDetailsD3D11 >( m_details );
+			auto&         d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			ID3D11Buffer* buffer  = details.buffer.get();
+			UINT          stride  = details.stride;
+			UINT          offset  = 0;
 
 			d3d11.device_context->IASetVertexBuffers( 0, 1, &buffer, &stride, &offset );
 

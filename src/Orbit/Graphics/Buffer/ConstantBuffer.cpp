@@ -28,26 +28,26 @@ ORB_NAMESPACE_BEGIN
 
 ConstantBuffer::ConstantBuffer( size_t size )
 {
-	auto& context_data = RenderContext::GetInstance().GetPrivateData();
+	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
-	switch( context_data.index() )
+	switch( context_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& gl = std::get< Private::_RenderContextDataOpenGL >( context_data );
+			auto& gl = std::get< Private::_RenderContextDetailsOpenGL >( context_details );
 
 			if( (  gl.embedded && gl.opengl_version < Version( 3 ) )||
 			    ( !gl.embedded && gl.opengl_version < Version( 3, 1 ) ) )
 			{
-				m_data.emplace< Private::_ConstantBufferDataOpenGL20 >();
+				m_details.emplace< Private::_ConstantBufferDetailsOpenGL20 >();
 			}
 			else
 			{
-				auto& data = m_data.emplace< Private::_ConstantBufferDataOpenGL31 >();
+				auto& data = m_details.emplace< Private::_ConstantBufferDetailsOpenGL31 >();
 
 				glGenBuffers( 1, &data.id );
 				glBindBuffer( OpenGLBufferTarget::Uniform, data.id );
@@ -60,10 +60,10 @@ ConstantBuffer::ConstantBuffer( size_t size )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& data  = m_data.emplace< Private::_ConstantBufferDataD3D11 >();
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( context_data );
+			auto& details = m_details.emplace< Private::_ConstantBufferDetailsD3D11 >();
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth      = static_cast< UINT >( ( size + 0xf ) & ~0xf ); /* Align by 16 bytes */
@@ -73,7 +73,7 @@ ConstantBuffer::ConstantBuffer( size_t size )
 
 			ID3D11Buffer* buffer;
 			d3d11.device->CreateBuffer( &desc, nullptr, &buffer );
-			data.buffer.reset( buffer );
+			details.buffer.reset( buffer );
 
 			break;
 		}
@@ -85,17 +85,17 @@ ConstantBuffer::ConstantBuffer( size_t size )
 
 ConstantBuffer::~ConstantBuffer( void )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsOpenGL31, Private::ConstantBufferDetails > ):
 		{
-			auto& data = std::get< Private::_ConstantBufferDataOpenGL31 >( m_data );
+			auto& details = std::get< Private::_ConstantBufferDetailsOpenGL31 >( m_details );
 
-			glDeleteBuffers( 1, &data.id );
+			glDeleteBuffers( 1, &details.id );
 
 			break;
 		}
@@ -107,20 +107,20 @@ ConstantBuffer::~ConstantBuffer( void )
 
 void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_t size )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ConstantBufferDataOpenGL20, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsOpenGL20, Private::ConstantBufferDetails > ):
 		{
 			glUniform1f( static_cast< GLint >( location ), *reinterpret_cast< const GLfloat* >( data ) );
 
 			break;
 		}
 
-		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsOpenGL31, Private::ConstantBufferDetails > ):
 		{
 			std::memcpy( dst, data, size );
 
@@ -130,7 +130,7 @@ void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_ConstantBufferDataD3D11, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsD3D11, Private::ConstantBufferDetails > ):
 		{
 			std::memcpy( dst, data, size );
 
@@ -144,30 +144,30 @@ void ConstantBuffer::Update( void* dst, size_t location, const void* data, size_
 
 void* ConstantBuffer::UpdateBegin( size_t size )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: return nullptr;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsOpenGL31, Private::ConstantBufferDetails > ):
 		{
-			auto& data = std::get< Private::_ConstantBufferDataOpenGL31 >( m_data );
+			auto& details = std::get< Private::_ConstantBufferDetailsOpenGL31 >( m_details );
 
-			glBindBuffer( OpenGLBufferTarget::Uniform, data.id );
+			glBindBuffer( OpenGLBufferTarget::Uniform, details.id );
 			return glMapBufferRange( OpenGLBufferTarget::Uniform, 0, size, OpenGLMapAccess::WriteBit );
 		}
 
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_ConstantBufferDataD3D11, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsD3D11, Private::ConstantBufferDetails > ):
 		{
-			auto& data  = std::get< Private::_ConstantBufferDataD3D11 >( m_data );
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
+			auto& details = std::get< Private::_ConstantBufferDetailsD3D11 >( m_details );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 
 			D3D11_MAPPED_SUBRESOURCE subresource;
-			if( d3d11.device_context->Map( data.buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
+			if( d3d11.device_context->Map( details.buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
 				return subresource.pData;
 
 			return nullptr;
@@ -180,13 +180,13 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 
 void ConstantBuffer::UpdateEnd()
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsOpenGL31, Private::ConstantBufferDetails > ):
 		{
 			glUnmapBuffer( OpenGLBufferTarget::Uniform );
 			glBindBuffer( OpenGLBufferTarget::Uniform, 0 );
@@ -197,12 +197,12 @@ void ConstantBuffer::UpdateEnd()
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_ConstantBufferDataD3D11, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsD3D11, Private::ConstantBufferDetails > ):
 		{
-			auto& data  = std::get< Private::_ConstantBufferDataD3D11 >( m_data );
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
+			auto& details = std::get< Private::_ConstantBufferDetailsD3D11 >( m_details );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 
-			d3d11.device_context->Unmap( data.buffer.get(), 0 );
+			d3d11.device_context->Unmap( details.buffer.get(), 0 );
 
 			break;
 		}
@@ -214,18 +214,18 @@ void ConstantBuffer::UpdateEnd()
 
 void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_ConstantBufferDataOpenGL31, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsOpenGL31, Private::ConstantBufferDetails > ):
 		{
-			auto& data = std::get< Private::_ConstantBufferDataOpenGL31 >( m_data );
+			auto& details = std::get< Private::_ConstantBufferDetailsOpenGL31 >( m_details );
 
-			glBindBuffer( OpenGLBufferTarget::Uniform, data.id );
-			glBindBufferBase( OpenGLBufferTarget::Uniform, slot, data.id );
+			glBindBuffer( OpenGLBufferTarget::Uniform, details.id );
+			glBindBufferBase( OpenGLBufferTarget::Uniform, slot, details.id );
 
 			break;
 		}
@@ -233,11 +233,11 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_ConstantBufferDataD3D11, Private::ConstantBufferData > ):
+		case( unique_index_v< Private::_ConstantBufferDetailsD3D11, Private::ConstantBufferDetails > ):
 		{
-			auto&         data   = std::get< Private::_ConstantBufferDataD3D11 >( m_data );
-			auto&         d3d11  = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
-			ID3D11Buffer* buffer = data.buffer.get();
+			auto&         details = std::get< Private::_ConstantBufferDetailsD3D11 >( m_details );
+			auto&         d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			ID3D11Buffer* buffer  = details.buffer.get();
 
 			switch( type )
 			{

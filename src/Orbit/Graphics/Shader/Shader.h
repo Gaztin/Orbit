@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Private/ShaderData.h"
+#include "Orbit/Graphics/Private/ShaderDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -37,7 +37,7 @@ public:
 
 private:
 
-	Private::ShaderData m_data;
+	Private::ShaderDetails m_details;
 
 };
 

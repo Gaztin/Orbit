@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Private/Texture2DData.h"
+#include "Orbit/Graphics/Private/Texture2DDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -33,12 +33,12 @@ public:
 
 public:
 
-	Private::Texture2DData&       GetPrivateData( void )       { return m_data; }
-	const Private::Texture2DData& GetPrivateData( void ) const { return m_data; }
+	Private::Texture2DDetails&       GetPrivateDetails( void )       { return m_details; }
+	const Private::Texture2DDetails& GetPrivateDetails( void ) const { return m_details; }
 
 private:
 
-	Private::Texture2DData m_data;
+	Private::Texture2DDetails m_details;
 
 };
 

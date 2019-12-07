@@ -22,30 +22,30 @@
 
 ORB_NAMESPACE_BEGIN
 
-Texture2D::Texture2D( uint32_t width, uint32_t height, const void* texture_data )
+Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 {
-	auto& context_data = RenderContext::GetInstance().GetPrivateData();
+	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
-	switch( context_data.index() )
+	switch( context_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_RenderContextDataOpenGL, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& data = m_data.emplace< Private::_Texture2DDataOpenGL >();
+			auto& details = m_details.emplace< Private::_Texture2DDetailsOpenGL >();
 
-			glGenTextures( 1, &data.id );
-			glBindTexture( GL_TEXTURE_2D, data.id );
+			glGenTextures( 1, &details.id );
+			glBindTexture( GL_TEXTURE_2D, details.id );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-			if( texture_data )
+			if( data )
 			{
-				glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data );
+				glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 			}
 
 			glBindTexture( GL_TEXTURE_2D, 0 );
@@ -56,10 +56,10 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* texture_data 
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_RenderContextDataD3D11, Private::RenderContextData > ):
+		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& data  = m_data.emplace< Private::_Texture2DDataD3D11 >();
-			auto& d3d11 = std::get< Private::_RenderContextDataD3D11 >( context_data );
+			auto& details = m_details.emplace< Private::_Texture2DDetailsD3D11 >();
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 			D3D11_TEXTURE2D_DESC texture2d_desc { };
 			texture2d_desc.Width              = width;
@@ -73,16 +73,16 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* texture_data 
 			texture2d_desc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
 			texture2d_desc.CPUAccessFlags     = 0;
 
-			if( texture_data )
+			if( data )
 			{
 				D3D11_SUBRESOURCE_DATA initial_data { };
-				initial_data.pSysMem     = texture_data;
+				initial_data.pSysMem     = data;
 				initial_data.SysMemPitch = width * 4;
 
 				ID3D11Texture2D* texture_2d;
 				if( d3d11.device->CreateTexture2D( &texture2d_desc, &initial_data, &texture_2d ) == S_OK )
 				{
-					data.texture_2d.reset( texture_2d );
+					details.texture_2d.reset( texture_2d );
 				}
 			}
 			else
@@ -90,11 +90,11 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* texture_data 
 				ID3D11Texture2D* texture_2d;
 				if( d3d11.device->CreateTexture2D( &texture2d_desc, nullptr, &texture_2d ) == S_OK )
 				{
-					data.texture_2d.reset( texture_2d );
+					details.texture_2d.reset( texture_2d );
 				}
 			}
 
-			if( data.texture_2d )
+			if( details.texture_2d )
 			{
 				D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc { };
 				srv_desc.Format              = texture2d_desc.Format;
@@ -102,9 +102,9 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* texture_data 
 				srv_desc.Texture2D.MipLevels = 1;
 
 				ID3D11ShaderResourceView* srv;
-				if( d3d11.device->CreateShaderResourceView( data.texture_2d.get(), &srv_desc, &srv ) == S_OK )
+				if( d3d11.device->CreateShaderResourceView( details.texture_2d.get(), &srv_desc, &srv ) == S_OK )
 				{
-					data.shader_resource_view.reset( srv );
+					details.shader_resource_view.reset( srv );
 				}
 
 				break;
@@ -117,17 +117,17 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* texture_data 
 
 Texture2D::~Texture2D( void )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_Texture2DDataOpenGL, Private::Texture2DData > ):
+		case( unique_index_v< Private::_Texture2DDetailsOpenGL, Private::Texture2DDetails > ):
 		{
-			auto& data = std::get< Private::_Texture2DDataOpenGL >( m_data );
+			auto& details = std::get< Private::_Texture2DDetailsOpenGL >( m_details );
 			
-			glDeleteTextures( 1, &data.id );
+			glDeleteTextures( 1, &details.id );
 
 			break;
 		}
@@ -139,19 +139,19 @@ Texture2D::~Texture2D( void )
 
 void Texture2D::Bind( uint32_t slot )
 {
-	switch( m_data.index() )
+	switch( m_details.index() )
 	{
 		default: break;
 
 	#if( ORB_HAS_OPENGL )
 
-		case( unique_index_v< Private::_Texture2DDataOpenGL, Private::Texture2DData > ):
+		case( unique_index_v< Private::_Texture2DDetailsOpenGL, Private::Texture2DDetails > ):
 		{
-			auto&          data      = std::get< Private::_Texture2DDataOpenGL >( m_data );
+			auto&          details   = std::get< Private::_Texture2DDetailsOpenGL >( m_details );
 			const uint32_t unit_base = static_cast< GLenum >( OpenGLTextureUnit::Texture0 );
 
 			glActiveTexture( static_cast< OpenGLTextureUnit >( unit_base + slot ) );
-			glBindTexture( GL_TEXTURE_2D, data.id );
+			glBindTexture( GL_TEXTURE_2D, details.id );
 
 			break;
 		}
@@ -159,11 +159,11 @@ void Texture2D::Bind( uint32_t slot )
 	#endif
 	#if( ORB_HAS_D3D11 )
 
-		case( unique_index_v< Private::_Texture2DDataD3D11, Private::Texture2DData > ):
+		case( unique_index_v< Private::_Texture2DDetailsD3D11, Private::Texture2DDetails > ):
 		{
-			auto&                     data  = std::get< Private::_Texture2DDataD3D11 >( m_data );
-			auto&                     d3d11 = std::get< Private::_RenderContextDataD3D11 >( RenderContext::GetInstance().GetPrivateData() );
-			ID3D11ShaderResourceView* srv   = data.shader_resource_view.get();
+			auto&                     details = std::get< Private::_Texture2DDetailsD3D11 >( m_details );
+			auto&                     d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			ID3D11ShaderResourceView* srv     = details.shader_resource_view.get();
 
 			d3d11.device_context->PSSetShaderResources( slot, 1, &srv );
 
