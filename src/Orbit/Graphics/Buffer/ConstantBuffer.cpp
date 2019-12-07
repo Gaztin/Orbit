@@ -212,7 +212,7 @@ void ConstantBuffer::UpdateEnd()
 	}
 }
 
-void ConstantBuffer::Bind( ShaderType type, uint32_t slot )
+void ConstantBuffer::Bind( [[ maybe_unused ]] ShaderType type, uint32_t slot )
 {
 	switch( m_details.index() )
 	{

@@ -46,7 +46,7 @@ public:
 
 };
 
-extern ORB_API_CORE ApplicationBase*( *_application_initializer )( void );
+extern ORB_API_CORE std::shared_ptr< void >( *_application_initializer )( void );
 
 template< typename Derived >
 class Application : private ApplicationBase
@@ -62,6 +62,6 @@ public:
 };
 
 template< typename Derived >
-volatile int Application< Derived >::_initializer_eval = ( _application_initializer = []( void ) -> ApplicationBase* { return new Derived(); }, 1 );
+volatile int Application< Derived >::_initializer_eval = ( _application_initializer = []( void ) { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }, 1 );
 
 ORB_NAMESPACE_END

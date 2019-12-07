@@ -18,6 +18,12 @@
 #pragma once
 #include "Orbit/Graphics/Graphics.h"
 
+#if defined( Bool )
+#  pragma push_macro( "Bool" )
+#  undef Bool
+#  define UNDEFINED_Bool
+#endif
+
 ORB_NAMESPACE_BEGIN
 
 enum class OpenGLBufferTarget : GLenum
@@ -705,3 +711,8 @@ enum class OpenGLTextureUnit : GLenum
 ORB_ENABLE_BITMASKING( OpenGLMapAccess );
 
 ORB_NAMESPACE_END
+
+#if defined( UNDEFINED_Bool )
+#  pragma pop_macro( "Bool" )
+#  undef UNDEFINED_Bool
+#endif

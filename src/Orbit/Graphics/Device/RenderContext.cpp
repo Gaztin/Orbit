@@ -140,15 +140,14 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
-			sub_data->gc         = XCreateGC( window_details.display, window_details.window, 0, nullptr );
-			sub_data->glxContext = [ & ]
+			details.gc      = XCreateGC( window_details.display, window_details.window, 0, nullptr );
+			details.context = [ & ]
 			{
 				/* Create render context */
 				{
 					int screen = DefaultScreen( window_details.display );
 					int attribs[]
 					{
-						GLX_X_RENDERABLE,  True,
 						GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
 						GLX_RENDER_TYPE,   GLX_RGBA_BIT,
 						GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
@@ -165,7 +164,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 					do
 					{
 						int major, minor;
-						if( !glXQueryVersion( window_details->display, &major, &minor ) )
+						if( !glXQueryVersion( window_details.display, &major, &minor ) )
 							break;
 						if( ( major < 1 ) || ( major == 1 && minor < 3 ) )
 							break;
@@ -184,8 +183,8 @@ RenderContext::RenderContext( GraphicsAPI api )
 							break;
 
 						// Choose the best config
-						int best_fb_config_idx = 0;
-						int best_sample_count = 0;
+						int best_fb_config_idx = -1;
+						int best_sample_count  = 0;
 						for( int i = 0; i < fb_config_count; ++i )
 						{
 							XVisualInfo* vi = glXGetVisualFromFBConfig( window_details.display, fb_configs[ i ] );
@@ -200,11 +199,14 @@ RenderContext::RenderContext( GraphicsAPI api )
 								if( samples && sample_count > best_sample_count )
 								{
 									best_fb_config_idx = i;
-									best_sample_count  = sampleCount;
+									best_sample_count  = sample_count;
 								}
 							}
 							XFree( vi );
 						}
+						
+						if( best_fb_config_idx < 0 )
+							break;
 
 						GLXFBConfig best_fb_config = fb_configs[ best_fb_config_idx ];
 
@@ -673,9 +675,11 @@ RenderContext::~RenderContext()
 
 		#elif defined( ORB_OS_LINUX )
 
-			glXMakeCurrent( details.display, None, nullptr );
-			glXDestroyContext( details.display, details.context );
-			XFreeGC( details.display, details.gc );
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
+
+			glXMakeCurrent( window_details.display, None, nullptr );
+			glXDestroyContext( window_details.display, details.context );
+			XFreeGC( window_details.display, details.gc );
 
 		#elif defined( ORB_OS_MACOS )
 
@@ -722,7 +726,9 @@ bool RenderContext::MakeCurrent()
 
 	#elif defined( ORB_OS_LINUX )
 
-		if( !glXMakeCurrent( details.window_data->display, details.window_data->window, details.context ) )
+		auto& window_details = Window::GetInstance().GetPrivateDetails();
+
+		if( !glXMakeCurrent( window_details.display, window_details.window, details.context ) )
 			return false;
 
 	#elif defined( ORB_OS_MACOS )
@@ -877,25 +883,34 @@ void RenderContext::SwapBuffers( void )
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
 
 		#if defined( ORB_OS_WINDOWS )
+
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
 
 			::SwapBuffers( details.hdc );
 
 		#elif defined( ORB_OS_LINUX )
 
-			glXSwapBuffers( details.window_data->display, details.window_data->window );
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
+
+			glXSwapBuffers( window_details.display, window_details.window );
 
 		#elif defined( ORB_OS_MACOS )
+
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
 
 			[ [ ( const NSOpenGLView* )details.view openGLContext ] flushBuffer ];
 
 		#elif defined( ORB_OS_ANDROID )
 
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+
 			eglSwapBuffers( details.display, details.surface );
 
 		#elif defined( ORB_OS_IOS )
+
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
 
 			[ ( GLKView* )details.view display ];
 

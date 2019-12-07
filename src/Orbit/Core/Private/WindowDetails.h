@@ -20,6 +20,8 @@
 
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
+#elif defined( ORB_OS_LINUX )
+#  include <X11/Xlib.h>
 #elif defined( ORB_OS_ANDROID )
 struct ASensorEventQueue;
 struct ASensorManager;
@@ -39,8 +41,8 @@ namespace Private
 
 #elif defined( ORB_OS_LINUX )
 
-		Display* display;
-		Window   window;
+		_XDisplay* display;
+		XID        window;
 
 #elif defined( ORB_OS_MACOS )
 

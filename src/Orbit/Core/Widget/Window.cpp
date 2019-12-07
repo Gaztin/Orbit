@@ -71,7 +71,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 	/* Create window */
 	const int               screen      = DefaultScreen( m_details.display );
-	Window                  root_window = XRootWindow( m_details.display, screen );
+	XID                     root_window = XRootWindow( m_details.display, screen );
 	int                     depth       = DefaultDepth( m_details.display, screen );
 	Visual*                 visual      = DefaultVisual( m_details.display, screen );
 	constexpr unsigned long value_mask  = ( CWBackPixel | CWEventMask );
@@ -82,6 +82,17 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	/* Allow us to capture the window close event */
 	Atom close_atom = XInternAtom( m_details.display, "WM_DELETE_WINDOW", True );
 	XSetWMProtocols( m_details.display, m_details.window, &close_atom, 1 );
+	
+	/* Send initial resize event */
+	XEvent xevent;
+	xevent.xresizerequest.type       = ResizeRequest;
+	xevent.xresizerequest.display    = m_details.display;
+	xevent.xresizerequest.window     = m_details.window;
+	xevent.xresizerequest.width      = width;
+	xevent.xresizerequest.height     = height;
+	xevent.xresizerequest.send_event = True;
+	xevent.xresizerequest.serial     = 0;
+	XSendEvent( m_details.display, m_details.window, False, 0, &xevent );
 
 #elif defined( ORB_OS_MACOS )
 
@@ -183,10 +194,10 @@ void Window::PollEvents( void )
 
 #elif defined( ORB_OS_LINUX )
 
-	while( XPending( data->display ) )
+	while( XPending( m_details.display ) )
 	{
 		XEvent xevent;
-		XNextEvent( data->display, &xevent );
+		XNextEvent( m_details.display, &xevent );
 
 		HandleXEvent( this, xevent );
 	}
@@ -224,7 +235,7 @@ void Window::SetTitle( std::string_view title )
 
 #elif defined( ORB_OS_LINUX )
 
-	XStore( m_details.display, m_details.window, title.data() );
+	XStoreName( m_details.display, m_details.window, title.data() );
 
 #elif defined( ORB_OS_MACOS )
 

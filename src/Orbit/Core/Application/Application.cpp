@@ -27,7 +27,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-ApplicationBase*( *_application_initializer )( void ) = nullptr;
+std::shared_ptr< void >( *_application_initializer )( void );
 
 void ApplicationBase::RunInstance()
 {
@@ -45,8 +45,8 @@ void ApplicationBase::RunInstance()
 		return;
 
 	/* Initialize application instance */
-	ApplicationBase* instance = _application_initializer();
-	auto             time     = std::chrono::high_resolution_clock::now();
+	auto instance = std::static_pointer_cast< ApplicationBase >( _application_initializer() );
+	auto time     = std::chrono::high_resolution_clock::now();
 
 	while( instance->IsRunning() )
 	{
@@ -57,8 +57,6 @@ void ApplicationBase::RunInstance()
 
 		instance->OnFrame( delta.count() );
 	}
-
-	delete instance;
 
 #endif
 

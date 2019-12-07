@@ -91,7 +91,6 @@ end
 
 local modules = { }
 local function decl_module( name )
-	local lo = name:lower()
 	local up = name:upper()
 	group( 'Engine' )
 	project( name )
@@ -100,8 +99,8 @@ local function decl_module( name )
 	links( modules )
 	base_config()
 	files {
-		'src/Orbit/' .. lo .. '/**.cpp',
-		'src/Orbit/' .. lo .. '/**.h',
+		'src/Orbit/' .. name .. '/**.cpp',
+		'src/Orbit/' .. name .. '/**.h',
 	}
 
 	filter { 'toolset:msc' }
