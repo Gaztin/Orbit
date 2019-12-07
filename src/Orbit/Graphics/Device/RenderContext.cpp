@@ -184,8 +184,8 @@ RenderContext::RenderContext( GraphicsAPI api )
 							break;
 
 						// Choose the best config
-						int best_fb_config_idx = 0;
-						int best_sample_count = 0;
+						int best_fb_config_idx = -1;
+						int best_sample_count  = 0;
 						for( int i = 0; i < fb_config_count; ++i )
 						{
 							XVisualInfo* vi = glXGetVisualFromFBConfig( window_details.display, fb_configs[ i ] );
@@ -205,6 +205,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 							}
 							XFree( vi );
 						}
+						
+						if( best_fb_config_idx < 0 )
+							break;
 
 						GLXFBConfig best_fb_config = fb_configs[ best_fb_config_idx ];
 
