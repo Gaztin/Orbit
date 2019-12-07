@@ -96,7 +96,7 @@ void HandleOpenGLError( GLenum err, std::string_view func )
 		error_string = Format( "Unknown error: %d", err );
 
 	/* Log error */
-	LogError( Format( "%s - %s", func, error_string.c_str() ) );
+	LogError( Format( "%s - %s", func.data(), error_string.c_str() ) );
 }
 
 ORB_NAMESPACE_END
