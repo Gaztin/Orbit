@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit.h"
+#include "Orbit/Orbit.h"
 
 #if defined( ORB_BUILD_MATH )
 #  define ORB_API_MATH ORB_DLL_EXPORT

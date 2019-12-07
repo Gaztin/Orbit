@@ -16,39 +16,46 @@
  */
 
 #pragma once
-#include <variant>
+#include "Orbit/Core/Core.h"
 
-#include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/Impl/GraphicsAPI.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+#endif
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _ConstantBufferImplOpenGL20
+namespace Private
 {
-};
-struct _ConstantBufferImplOpenGL31
-{
-	GLuint id;
-};
+	struct WindowDetails
+	{
+
+#if defined( ORB_OS_WINDOWS )
+
+		HWND hwnd;
+
+#elif defined( ORB_OS_LINUX )
+
+		Display* display;
+		Window   window;
+
+#elif defined( ORB_OS_MACOS )
+
+		void* ns_window;
+		void* delegate;
+
+#elif defined( ORB_OS_ANDROID )
+
+		ASensorManager*    sensor_manager;
+		const ASensor*     accelerometer_sensor;
+		ASensorEventQueue* sensor_event_queue;
+
+#elif defined( ORB_OS_IOS )
+
+		void* ui_window;
+
 #endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _ConstantBufferImplD3D11
-{
-	ComPtr< ID3D11Buffer > buffer;
-};
-#endif
-
-using ConstantBufferImpl = std::variant< std::monostate
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _ConstantBufferImplOpenGL20
-	, _ConstantBufferImplOpenGL31
-#endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	, _ConstantBufferImplD3D11
-#endif
->;
+	};
+}
 
 ORB_NAMESPACE_END

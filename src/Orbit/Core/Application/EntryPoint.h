@@ -36,7 +36,7 @@ int main( int, char*[] )
 }
 
 #elif defined( ORB_OS_ANDROID )
-#  include "orbit/Core/AndroidApp.h"
+#  include "Orbit/Core/AndroidApp.h"
 
 extern "C" void android_main( android_app* app )
 {

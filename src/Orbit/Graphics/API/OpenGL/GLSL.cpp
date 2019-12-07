@@ -46,7 +46,17 @@ namespace GLSL
 
 	std::string_view GetGLSLDefine( void )
 	{
-		return "#define ORB_GLSL 1\n";
+		return "#define GLSL 1\n";
+	}
+
+	std::string_view GetShaderTypeDefine( ShaderType shader_type )
+	{
+		switch( shader_type )
+		{
+			default:                   { return "#error Invalid shader type\n"; } break;
+			case ShaderType::Vertex:   { return "#define VERTEX 1\n";           } break;
+			case ShaderType::Fragment: { return "#define FRAGMENT 1\n";         } break;
+		}
 	}
 
 	std::string_view GetPrecision( bool embedded )

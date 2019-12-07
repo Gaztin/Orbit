@@ -19,33 +19,43 @@
 #include <variant>
 
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/Impl/GraphicsAPI.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _VertexShaderImplOpenGL
+namespace Private
 {
-	GLuint id;
-};
+
+#if( ORB_HAS_OPENGL )
+
+	struct _ConstantBufferDetailsOpenGL20
+	{
+	};
+
+	struct _ConstantBufferDetailsOpenGL31
+	{
+		GLuint id;
+	};
+
+#endif
+#if( ORB_HAS_D3D11 )
+
+	struct _ConstantBufferDetailsD3D11
+	{
+		ComPtr< ID3D11Buffer > buffer;
+	};
+
 #endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _VertexShaderImplD3D11
-{
-	ComPtr< ID3DBlob >           vertex_data;
-	ComPtr< ID3D11VertexShader > vertex_shader;
-};
-#endif
-
-using VertexShaderImpl = std::variant< std::monostate
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _VertexShaderImplOpenGL
-#endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	, _VertexShaderImplD3D11
-#endif
->;
+	using ConstantBufferDetails = std::variant< std::monostate
+	#if( ORB_HAS_OPENGL )
+		, _ConstantBufferDetailsOpenGL20
+		, _ConstantBufferDetailsOpenGL31
+	#endif
+	#if( ORB_HAS_D3D11 )
+		, _ConstantBufferDetailsD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

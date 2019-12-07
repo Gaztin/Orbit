@@ -16,8 +16,8 @@
  */
 
 #pragma once
-#include <initializer_list>
 #include <string>
+#include <vector>
 
 #include "Orbit/Graphics/Graphics.h"
 
@@ -37,6 +37,6 @@ struct VertexComponent
 	Type        type;
 };
 
-using VertexLayout = std::initializer_list< VertexComponent >;
+using VertexLayout = std::vector< VertexComponent >;
 
 ORB_NAMESPACE_END

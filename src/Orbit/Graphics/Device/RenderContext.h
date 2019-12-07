@@ -16,30 +16,36 @@
  */
 
 #pragma once
+#include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Core/Widget/Window.h"
-#include "Orbit/Graphics/Impl/RenderContextImpl.h"
+#include "Orbit/Graphics/Private/RenderContextDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext
+class ORB_API_GRAPHICS RenderContext : public Singleton< RenderContext >
 {
 public:
-	RenderContext( Window& parent_window, GraphicsAPI api = kDefaultGraphicsApi );
-	~RenderContext();
 
-	bool MakeCurrent();
-	void Resize( uint32_t width, uint32_t height );
-	void SwapBuffers();
-	void Clear( BufferMask mask );
+	explicit RenderContext( GraphicsAPI api = default_graphics_api );
+	~RenderContext( void );
+
+public:
+
+	bool MakeCurrent  ( void );
+	void Resize       ( uint32_t width, uint32_t height );
+	void SwapBuffers  ( void );
+	void Clear        ( BufferMask mask );
 	void SetClearColor( float r, float g, float b );
 
-	RenderContextImpl* GetImplPtr() { return &m_impl; }
+public:
 
-	static RenderContext* GetCurrent();
+	Private::RenderContextDetails&       GetPrivateDetails( void )       { return m_details; }
+	const Private::RenderContextDetails& GetPrivateDetails( void ) const { return m_details; }
 
 private:
-	RenderContextImpl m_impl;
-	EventSubscription m_resize_subscription;
+
+	Private::RenderContextDetails m_details;
+	EventSubscription             m_resize_subscription;
 
 };
 

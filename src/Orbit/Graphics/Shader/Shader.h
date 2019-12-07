@@ -16,35 +16,29 @@
  */
 
 #pragma once
-#include <variant>
-
-#include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/Impl/GraphicsAPI.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/Private/ShaderDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _IndexBufferImplOpenGL
-{
-	GLuint id;
-};
-#endif
+class IndexBuffer;
+class VertexBuffer;
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _IndexBufferImplD3D11
+class ORB_API_GRAPHICS Shader
 {
-	ComPtr< ID3D11Buffer > buffer;
-};
-#endif
+public:
 
-using IndexBufferImpl = std::variant< std::monostate
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _IndexBufferImplOpenGL
-#endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	, _IndexBufferImplD3D11
-#endif
->;
+	explicit Shader( std::string_view source, const VertexLayout& vertex_layout );
+	~Shader( void );
+
+public:
+
+	void Bind  ( void );
+	void Unbind( void );
+
+private:
+
+	Private::ShaderDetails m_details;
+
+};
 
 ORB_NAMESPACE_END

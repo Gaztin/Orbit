@@ -22,7 +22,7 @@
 #include "Orbit/Core/Core.h"
 
 #define ORB_APP_DECL( APP_TYPE )                                                                       \
-    class APP_TYPE; /* Forward declaration */                                                          \
+    class APP_TYPE;                                                                                    \
     volatile int _orb_app_initializer_eval = ORB_NAMESPACE Application< APP_TYPE >::_initializer_eval; \
     class APP_TYPE final : public ORB_NAMESPACE Application< APP_TYPE >
 
@@ -31,27 +31,37 @@ ORB_NAMESPACE_BEGIN
 class ORB_API_CORE ApplicationBase
 {
 public:
-	ApplicationBase() = default;
-	virtual ~ApplicationBase() = default;
 
-	virtual void OnFrame() { }
-	virtual bool IsRunning() = 0;
+	ApplicationBase( void ) = default;
+	virtual ~ApplicationBase( void ) = default;
 
-	static void RunInstance();
+public:
+
+	virtual void OnFrame  ( float delta_time ) = 0;
+	virtual bool IsRunning( void ) = 0;
+
+public:
+
+	static void RunInstance( void );
+
 };
 
-extern ORB_API_CORE ApplicationBase*( *_application_initializer )();
+extern ORB_API_CORE ApplicationBase*( *_application_initializer )( void );
 
 template< typename Derived >
 class Application : private ApplicationBase
 {
 public:
-	virtual ~Application() = default;
+
+	virtual ~Application( void ) = default;
+
+public:
 
 	static volatile int _initializer_eval;
+
 };
 
 template< typename Derived >
-volatile int Application< Derived >::_initializer_eval = ( _application_initializer = []() -> ApplicationBase* { return new Derived(); }, 1 );
+volatile int Application< Derived >::_initializer_eval = ( _application_initializer = []( void ) -> ApplicationBase* { return new Derived(); }, 1 );
 
 ORB_NAMESPACE_END

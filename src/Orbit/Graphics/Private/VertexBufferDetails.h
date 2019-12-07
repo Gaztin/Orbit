@@ -19,33 +19,39 @@
 #include <variant>
 
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/Impl/GraphicsAPI.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _VertexBufferImplOpenGL
+namespace Private
 {
-	GLuint id;
-};
+
+#if( ORB_HAS_OPENGL )
+
+	struct _VertexBufferDetailsOpenGL
+	{
+		GLuint id;
+	};
+
+#endif
+#if( ORB_HAS_D3D11 )
+
+	struct _VertexBufferDetailsD3D11
+	{
+		ComPtr< ID3D11Buffer > buffer;
+		UINT                   stride;
+	};
+
 #endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _VertexBufferImplD3D11
-{
-	ComPtr< ID3D11Buffer > buffer;
-	UINT                   stride;
-};
-#endif
-
-using VertexBufferImpl = std::variant< std::monostate
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _VertexBufferImplOpenGL
-#endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	, _VertexBufferImplD3D11
-#endif
->;
+	using VertexBufferDetails = std::variant< std::monostate
+	#if( ORB_HAS_OPENGL )
+		, _VertexBufferDetailsOpenGL
+	#endif
+	#if( ORB_HAS_D3D11 )
+		, _VertexBufferDetailsD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

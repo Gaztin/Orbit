@@ -19,7 +19,6 @@
 #include <cstdint>
 
 #include "Orbit/Core/Utility/Bitmask.h"
-#include "Orbit.h"
 
 #if defined( ORB_BUILD_GRAPHICS )
 #  define ORB_API_GRAPHICS ORB_DLL_EXPORT
@@ -29,19 +28,66 @@
 
 /* Graphics API macros. */
 #if defined( ORB_OS_WINDOWS )
-#  define ORB_HAS_D3D11
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  1
+#  define ORB_HAS_OPENGL 1
 #elif defined( ORB_OS_LINUX )
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  0
+#  define ORB_HAS_OPENGL 1
 #elif defined( ORB_OS_MACOS )
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  0
+#  define ORB_HAS_OPENGL 1
 #elif defined( ORB_OS_ANDROID )
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  0
+#  define ORB_HAS_OPENGL 1
 #elif defined( ORB_OS_IOS )
-#  define ORB_HAS_OPENGL
+#  define ORB_HAS_D3D11  0
+#  define ORB_HAS_OPENGL 1
+#endif
+
+/* Direct3D includes */
+#if( ORB_HAS_D3D11 )
+#  include <d3d11.h>
+#endif
+
+/* OpenGL includes */
+#if( ORB_HAS_OPENGL )
+#  if defined( ORB_OS_WINDOWS )
+#    include <Windows.h>
+#    include <gl/GL.h>
+#  elif defined( ORB_OS_LINUX )
+#    include <GL/glx.h>
+#    include <GL/gl.h>
+#  elif defined( ORB_OS_MACOS )
+#    include <OpenGL/gl.h>
+#  elif defined( ORB_OS_ANDROID )
+#    include <EGL/egl.h>
+#    include <EGL/eglext.h>
+#    include <GLES3/gl3.h>
+#  elif defined( ORB_OS_IOS )
+#    include <OpenGLES/ES3/gl.h>
+#  endif
 #endif
 
 ORB_NAMESPACE_BEGIN
+
+enum class GraphicsAPI
+{
+	Null = 0,
+#if( ORB_HAS_D3D11 )
+	D3D11,
+#endif
+#if( ORB_HAS_OPENGL )
+	OpenGL,
+#endif
+};
+
+#if( ORB_HAS_D3D11 )
+constexpr GraphicsAPI default_graphics_api = GraphicsAPI::D3D11;
+#elif( ORB_HAS_OPENGL )
+constexpr GraphicsAPI default_graphics_api = GraphicsAPI::OpenGL;
+#else
+constexpr GraphicsAPI default_graphics_api = GraphicsAPI::Null;
+#endif
 
 /* Enumerators */
 
@@ -68,35 +114,35 @@ enum class IndexFormat
 template< typename T >
 struct IndexFormatTraits
 {
-	static constexpr bool        kEnabled = false;
-	static constexpr IndexFormat kFormat  = static_cast< IndexFormat >( 0 );
+	static constexpr bool        enabled = false;
+	static constexpr IndexFormat format  = static_cast< IndexFormat >( 0 );
 };
 
 template< typename T >
-constexpr auto is_index_format_v = IndexFormatTraits< T >::kEnabled;
+constexpr auto is_index_format_v = IndexFormatTraits< T >::enabled;
 
 template< typename T >
-constexpr auto index_format_v = IndexFormatTraits< T >::kFormat;
+constexpr auto index_format_v = IndexFormatTraits< T >::format;
 
 template<>
 struct IndexFormatTraits< uint8_t >
 {
-	static constexpr bool        kEnabled = true;
-	static constexpr IndexFormat kFormat  = IndexFormat::Byte;
+	static constexpr bool        enabled = true;
+	static constexpr IndexFormat format  = IndexFormat::Byte;
 };
 
 template<>
 struct IndexFormatTraits< uint16_t >
 {
-	static constexpr bool        kEnabled = true;
-	static constexpr IndexFormat kFormat  = IndexFormat::Word;
+	static constexpr bool        enabled = true;
+	static constexpr IndexFormat format  = IndexFormat::Word;
 };
 
 template<>
 struct IndexFormatTraits< uint32_t >
 {
-	static constexpr bool        kEnabled = true;
-	static constexpr IndexFormat kFormat  = IndexFormat::DoubleWord;
+	static constexpr bool        enabled = true;
+	static constexpr IndexFormat format  = IndexFormat::DoubleWord;
 };
 
 ORB_NAMESPACE_END

@@ -39,28 +39,41 @@ Matrix4::Matrix4( std::initializer_list< float > elements )
 	}
 }
 
-void Matrix4::Translate( const Vector3& t )
+void Matrix4::Translate( const Vector3& translation )
 {
-	const Vector4 t4( t[ 0 ], t[ 1 ], t[ 2 ], 1.f );
+	const Vector4 t4( translation[ 0 ], translation[ 1 ], translation[ 2 ], 1.f );
 	for( size_t i = 0; i < 4; ++i )
 		m_elements[ 3 * 4 + i ] = Vector4( m_elements[ 0 * 4 + i ], m_elements[ 1 * 4 + i ], m_elements[ 2 * 4 + i ], m_elements[ 3 * 4 + i ] ).DotProduct( t4 );
 }
 
-void Matrix4::Rotate( const Vector3& r )
+void Matrix4::Rotate( const Vector3& rotation )
 {
-	const float sinx = sinf( r.x );
-	const float cosx = cosf( r.x );
-	const float siny = sinf( r.y );
-	const float cosy = cosf( r.y );
-	const float sinz = sinf( r.z );
-	const float cosz = cosf( r.z );
+	const float xcos = cosf( rotation.x );
+	const float xsin = sinf( rotation.x );
+	const float ycos = cosf( rotation.y );
+	const float ysin = sinf( rotation.y );
+	const float zcos = cosf( rotation.z );
+	const float zsin = sinf( rotation.z );
+	Matrix4     rotx;
+	Matrix4     roty;
+	Matrix4     rotz;
 
-	*this *= {
-		( cosy * cosz ), sinz, siny, 0.f,
-		sinz, ( cosx* cosz ), sinx, 0.f,
-		siny, ( 0.f - sinx ), ( cosx * cosy ), 0.f,
-		0.f, 0.f, 0.f, 1.f,
-	};
+	rotx[ 1 * 4 + 1 ] = xcos;
+	rotx[ 2 * 4 + 1 ] = -xsin;
+	rotx[ 1 * 4 + 2 ] = xsin;
+	rotx[ 2 * 4 + 2 ] = xcos;
+
+	roty[ 0 * 4 + 0 ] = ycos;
+	roty[ 2 * 4 + 0 ] = -ysin;
+	roty[ 0 * 4 + 2 ] = ysin;
+	roty[ 2 * 4 + 2 ] = ycos;
+
+	rotz[ 0 * 4 + 0 ] = zcos;
+	rotz[ 1 * 4 + 0 ] = -zsin;
+	rotz[ 0 * 4 + 1 ] = zsin;
+	rotz[ 1 * 4 + 1 ] = zcos;
+
+	*this *= ( rotx * roty * rotz );
 }
 
 void Matrix4::Transpose()

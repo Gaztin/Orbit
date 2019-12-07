@@ -19,33 +19,39 @@
 #include <variant>
 
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/Impl/GraphicsAPI.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _Texture2DImplOpenGL
+namespace Private
 {
-	GLuint id;
-};
+
+#if( ORB_HAS_OPENGL )
+
+	struct _Texture2DDetailsOpenGL
+	{
+		GLuint id;
+	};
+
+#endif
+#if( ORB_HAS_D3D11 )
+
+	struct _Texture2DDetailsD3D11
+	{
+		ComPtr< ID3D11Texture2D >          texture_2d;
+		ComPtr< ID3D11ShaderResourceView > shader_resource_view;
+	};
+
 #endif
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _Texture2DImplD3D11
-{
-	ComPtr< ID3D11Texture2D >          texture_2d;
-	ComPtr< ID3D11ShaderResourceView > shader_resource_view;
-};
-#endif
-
-using Texture2DImpl = std::variant< std::monostate
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _Texture2DImplOpenGL
-#endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	, _Texture2DImplD3D11
-#endif
->;
+	using Texture2DDetails = std::variant< std::monostate
+	#if( ORB_HAS_OPENGL )
+		, _Texture2DDetailsOpenGL
+	#endif
+	#if( ORB_HAS_D3D11 )
+		, _Texture2DDetailsD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

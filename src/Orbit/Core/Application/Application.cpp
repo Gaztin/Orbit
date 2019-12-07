@@ -17,6 +17,8 @@
 
 #include "Application.h"
 
+#include <chrono>
+
 #if defined( ORB_OS_IOS )
 #  include <UIKit/UIKit.h>
 @interface OrbitApplicationDelegate : UIResponder< UIApplicationDelegate >
@@ -25,10 +27,11 @@
 
 ORB_NAMESPACE_BEGIN
 
-ApplicationBase*( *_application_initializer )() = nullptr;
+ApplicationBase*( *_application_initializer )( void ) = nullptr;
 
 void ApplicationBase::RunInstance()
 {
+
 #if defined( ORB_OS_IOS )
 
 	@autoreleasepool
@@ -43,15 +46,22 @@ void ApplicationBase::RunInstance()
 
 	/* Initialize application instance */
 	ApplicationBase* instance = _application_initializer();
+	auto             time     = std::chrono::high_resolution_clock::now();
 
 	while( instance->IsRunning() )
 	{
-		instance->OnFrame();
+		auto now   = std::chrono::high_resolution_clock::now();
+		auto delta = std::chrono::duration_cast< std::chrono::duration< float > >( now - time );
+
+		time = now;
+
+		instance->OnFrame( delta.count() );
 	}
 
 	delete instance;
 
 #endif
+
 }
 
 ORB_NAMESPACE_END
@@ -66,7 +76,7 @@ ORB_NAMESPACE_END
 	ORB_NAMESPACE log_info( "didFinishLaunchingWithOptions()" );
 
 	if( ORB_NAMESPACE _application_initializer && !ORB_NAMESPACE _application_instance )
-		ORB_NAMESPACE _application_instance = std::static_pointer_cast< ORB_NAMESPACE ApplicationBase >( ORB_NAMESPACE _application_initializer() );
+		ORB_NAMESPACE _application_instance = ORB_NAMESPACE _application_initializer();
 
 	CADisplayLink* display_link = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( frame: ) ];
 	[ display_link addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
@@ -100,10 +110,12 @@ ORB_NAMESPACE_END
 	ORB_NAMESPACE _application_instance.reset();
 }
 
--( void )frame:( CADisplayLink* )__unused displayLink
+-( void )frame:( CADisplayLink* ) displayLink
 {
+	float delta_time = static_cast< float >( [ displayLink duration ] );
+
 	if( ORB_NAMESPACE _application_instance )
-		ORB_NAMESPACE _application_instance->OnFrame();
+		ORB_NAMESPACE _application_instance->OnFrame( delta_time );
 }
 
 @end

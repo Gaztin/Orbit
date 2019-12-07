@@ -16,35 +16,23 @@
  */
 
 #pragma once
-#include <variant>
+#include <vector>
 
-#include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/Impl/GraphicsAPI.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/Renderer/RenderCommand.h"
 
 ORB_NAMESPACE_BEGIN
 
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-struct _FragmentShaderImplOpenGL
+class ORB_API_GRAPHICS BasicRenderer
 {
-	GLuint id;
-};
-#endif
+public:
 
-#if _ORB_HAS_GRAPHICS_API_D3D11
-struct _FragmentShaderImplD3D11
-{
-	ComPtr< ID3D11PixelShader > pixel_shader;
-};
-#endif
+	void QueueCommand( const RenderCommand& command );
+	void Render      ( void );
 
-using FragmentShaderImpl = std::variant< std::monostate
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-	, _FragmentShaderImplOpenGL
-#endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	, _FragmentShaderImplD3D11
-#endif
->;
+private:
+
+	std::vector< RenderCommand > m_commands;
+
+};
 
 ORB_NAMESPACE_END

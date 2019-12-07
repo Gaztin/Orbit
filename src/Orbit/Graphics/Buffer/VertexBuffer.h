@@ -16,13 +16,14 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Impl/VertexBufferImpl.h"
+#include "Orbit/Graphics/Private/VertexBufferDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
 class ORB_API_GRAPHICS VertexBuffer
 {
 public:
+
 	VertexBuffer( const void* data, size_t count, size_t stride );
 
 	template< typename Vertex,
@@ -32,15 +33,20 @@ public:
 	{
 	}
 
-	~VertexBuffer();
+	~VertexBuffer( void );
 
-	void Bind();
+public:
 
-	size_t GetCount() const { return m_count; }
+	void Bind( void );
+
+public:
+
+	size_t GetCount( void ) const { return m_count; }
 
 private:
-	VertexBufferImpl m_impl;
-	size_t           m_count;
+
+	Private::VertexBufferDetails m_details;
+	size_t                       m_count;
 
 };
 

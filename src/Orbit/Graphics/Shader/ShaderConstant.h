@@ -18,7 +18,7 @@
 #pragma once
 #include <string>
 
-#include "Orbit/Graphics.h"
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 

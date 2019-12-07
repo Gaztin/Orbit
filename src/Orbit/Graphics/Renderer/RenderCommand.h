@@ -16,32 +16,26 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Impl/GraphicsPipelineImpl.h"
+#include <vector>
+
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-class FragmentShader;
+class ConstantBuffer;
 class IndexBuffer;
+class Shader;
+class Texture2D;
 class VertexBuffer;
-class VertexShader;
 
-class ORB_API_GRAPHICS GraphicsPipeline
+struct ORB_API_GRAPHICS RenderCommand
 {
-public:
-	GraphicsPipeline();
-	~GraphicsPipeline();
+	std::vector< ConstantBuffer* > constant_buffers;
+	std::vector< Texture2D* >      textures;
 
-	void Bind();
-	void Unbind();
-	void SetShaders( const VertexShader& vert, const FragmentShader& frag );
-	void DescribeVertexLayout( VertexLayout layout );
-
-	void Draw( const VertexBuffer& vb );
-	void Draw( const IndexBuffer& ib );
-
-private:
-	GraphicsPipelineImpl m_impl;
-
+	VertexBuffer* vertex_buffer;
+	IndexBuffer*  index_buffer;
+	Shader*       shader;
 };
 
 ORB_NAMESPACE_END

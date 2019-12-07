@@ -30,8 +30,8 @@ public:
 	explicit Matrix4( float diagonal = 1.f );
 	Matrix4( std::initializer_list< float > elements );
 
-	void Translate( const Vector3& t );
-	void Rotate( const Vector3& r );
+	void Translate( const Vector3& translation );
+	void Rotate( const Vector3& rotation );
 	void Transpose();
 	void SetIdentity();
 	void SetPerspective( float aspect_ratio, float fov, float near_clip, float far_clip );

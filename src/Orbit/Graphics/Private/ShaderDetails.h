@@ -16,24 +16,49 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Impl/FragmentShaderImpl.h"
+#include <variant>
+#include <vector>
+
+#include "Orbit/Core/Platform/Windows/ComPtr.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/Shader/VertexLayout.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Asset;
-
-class ORB_API_GRAPHICS FragmentShader
+namespace Private
 {
-public:
-	explicit FragmentShader( const Asset& asset );
-	~FragmentShader();
 
-	FragmentShaderImpl*       GetImplPtr()       { return &m_impl; }
-	const FragmentShaderImpl* GetImplPtr() const { return &m_impl; }
+#if( ORB_HAS_OPENGL )
 
-private:
-	FragmentShaderImpl m_impl;
+	struct _ShaderDetailsOpenGL
+	{
+		VertexLayout layout;
+		GLuint       program;
+		GLsizei      vertex_stride;
+		GLuint       vao;
+	};
 
-};
+#endif
+#if( ORB_HAS_D3D11 )
+
+	struct _ShaderDetailsD3D11
+	{
+		ComPtr< ID3D11VertexShader > vertex_shader;
+		ComPtr< ID3D11PixelShader >  pixel_shader;
+		ComPtr< ID3D11InputLayout >  input_layout;
+		ComPtr< ID3D11SamplerState > sampler_state;
+	};
+
+#endif
+
+	using ShaderDetails = std::variant< std::monostate
+	#if( ORB_HAS_OPENGL )
+		, _ShaderDetailsOpenGL
+	#endif
+	#if( ORB_HAS_D3D11 )
+		, _ShaderDetailsD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

@@ -33,37 +33,37 @@ class EventDispatcher
 {
 public:
 
-	EventDispatcher() = default;
-	virtual ~EventDispatcher() = default;
+	EventDispatcher( void ) = default;
+	virtual ~EventDispatcher( void ) = default;
 
 	ORB_DISABLE_COPY_AND_MOVE( EventDispatcher );
 
+public:
+
 	template< typename Functor >
-	[[ nodiscard ]] EventSubscription Subscribe( Functor&& functor )
+	[[ nodiscard ]] EventSubscription Subscribe( Functor&& functor ) const
 	{
 		using Arg = std::remove_const_t< std::remove_reference_t< FirstArgument< Functor > > >;
 
 		const uint64_t unique_id = GenerateUniqueID();
 
 		{
-			Queue< Arg >&     queue      = std::get< Queue< Arg > >( m_queues );
-			Subscriber< Arg > subscriber = { unique_id, std::forward< Functor >( functor ) };
-			std::scoped_lock  lock       = std::scoped_lock( queue.mutex );
+			const Queue< Arg >& queue      = std::get< Queue< Arg > >( m_queues );
+			Subscriber< Arg >   subscriber = { unique_id, std::forward< Functor >( functor ) };
+			std::scoped_lock    lock       = std::scoped_lock( queue.mutex );
 			queue.subscribers.push_back( subscriber );
 		}
 
 		EventSubscription::Deleter deleter;
 		deleter.user_data = this;
-		deleter.functor   = []( uint64_t id, void* user_data )
+		deleter.functor   = []( uint64_t id, const void* user_data )
 		{
-			EventDispatcher* self = reinterpret_cast< EventDispatcher* >( user_data );
+			const EventDispatcher* self = reinterpret_cast< const EventDispatcher* >( user_data );
 			self->Unsubscribe< Arg >( id );
 		};
 
 		return EventSubscription( unique_id, deleter );
 	}
-
-protected:
 
 	template< typename T >
 	void QueueEvent( const T& e )
@@ -73,6 +73,8 @@ protected:
 
 		queue.events.push_back( e );
 	}
+
+protected:
 
 	void SendEvents()
 	{
@@ -91,10 +93,12 @@ private:
 	template< typename T >
 	struct Queue
 	{
-		std::mutex mutex;
 		std::vector< T > events;
-		std::list< Subscriber< T > > subscribers;
+		mutable std::list< Subscriber< T > > subscribers;
+		mutable std::mutex mutex;
 	};
+
+private:
 
 	uint64_t GenerateUniqueID() const
 	{
@@ -103,10 +107,10 @@ private:
 	}
 
 	template< typename T >
-	void Unsubscribe( uint64_t id )
+	void Unsubscribe( uint64_t id ) const
 	{
-		Queue< T >&      queue = std::get< Queue< T > >( m_queues );
-		std::scoped_lock lock  = std::scoped_lock( queue.mutex );
+		const Queue< T >& queue = std::get< Queue< T > >( m_queues );
+		std::scoped_lock  lock  = std::scoped_lock( queue.mutex );
 
 		for( auto it = queue.subscribers.begin(); it != queue.subscribers.end(); ++it )
 		{
@@ -131,6 +135,8 @@ private:
 
 		queue.events.clear();
 	}
+
+private:
 
 	std::tuple< Queue< Types >... > m_queues;
 

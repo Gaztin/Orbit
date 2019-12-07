@@ -16,20 +16,29 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Impl/Texture2DImpl.h"
+#include "Orbit/Graphics/Private/Texture2DDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
 class ORB_API_GRAPHICS Texture2D
 {
 public:
-	Texture2D( uint32_t width, uint32_t height, const void* data );
+
+	 Texture2D( uint32_t width, uint32_t height, const void* data );
 	~Texture2D();
+
+public:
 
 	void Bind( uint32_t slot );
 
+public:
+
+	Private::Texture2DDetails&       GetPrivateDetails( void )       { return m_details; }
+	const Private::Texture2DDetails& GetPrivateDetails( void ) const { return m_details; }
+
 private:
-	Texture2DImpl m_impl;
+
+	Private::Texture2DDetails m_details;
 
 };
 

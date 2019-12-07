@@ -27,6 +27,7 @@ namespace GLSL
 {
 	extern ORB_API_GRAPHICS std::string_view GetVersionDirective ( const Version& version, bool embedded );
 	extern ORB_API_GRAPHICS std::string_view GetGLSLDefine       ( void );
+	extern ORB_API_GRAPHICS std::string_view GetShaderTypeDefine ( ShaderType shader_type );
 	extern ORB_API_GRAPHICS std::string_view GetPrecision        ( bool embedded );
 	extern ORB_API_GRAPHICS std::string_view GetConstantsMacros  ( const Version& version, bool embedded );
 	extern ORB_API_GRAPHICS std::string_view GetVaryingMacro     ( const Version& version, bool embedded, ShaderType shader_type );

@@ -16,24 +16,41 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Impl/VertexShaderImpl.h"
+#include <variant>
+
+#include "Orbit/Core/Platform/Windows/ComPtr.h"
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Asset;
-
-class ORB_API_GRAPHICS VertexShader
+namespace Private
 {
-public:
-	explicit VertexShader( const Asset& asset );
-	~VertexShader();
 
-	VertexShaderImpl*       GetImplPtr()       { return &m_impl; }
-	const VertexShaderImpl* GetImplPtr() const { return &m_impl; }
+#if( ORB_HAS_OPENGL )
 
-private:
-	VertexShaderImpl m_impl;
+	struct _IndexBufferDetailsOpenGL
+	{
+		GLuint id;
+	};
 
-};
+#endif
+#if( ORB_HAS_D3D11 )
+
+	struct _IndexBufferDetailsD3D11
+	{
+		ComPtr< ID3D11Buffer > buffer;
+	};
+
+#endif
+
+	using IndexBufferDetails = std::variant< std::monostate
+	#if( ORB_HAS_OPENGL )
+		, _IndexBufferDetailsOpenGL
+	#endif
+	#if( ORB_HAS_D3D11 )
+		, _IndexBufferDetailsD3D11
+	#endif
+	>;
+}
 
 ORB_NAMESPACE_END

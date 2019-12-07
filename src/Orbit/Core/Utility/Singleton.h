@@ -16,41 +16,50 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Graphics.h"
+#include <cassert>
 
-/* Assume that OpenGL is always available */
-#define _ORB_HAS_GRAPHICS_API_OPENGL 1
-
-#if __has_include( <d3d11.h> )
-#  define _ORB_HAS_GRAPHICS_API_D3D11 1
-#else
-#  define _ORB_HAS_GRAPHICS_API_D3D11 0
-#endif
-
-#if _ORB_HAS_GRAPHICS_API_D3D11
-#  include <d3d11.h>
-#endif
+#include "Orbit/Core/Core.h"
 
 ORB_NAMESPACE_BEGIN
 
-enum class GraphicsAPI
+template< typename Derived >
+class Singleton
 {
-	Null = 0,
-#if _ORB_HAS_GRAPHICS_API_OPENGL
-	OpenGL,
-#endif
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	D3D11,
-#endif
+public:
+
+	static Derived& GetInstance( void )
+	{
+		assert( s_instance != nullptr );
+		return *s_instance;
+	}
+
+	static Derived* GetInstancePtr( void )
+	{
+		assert( s_instance != nullptr );
+		return s_instance;
+	}
+
+protected:
+
+	Singleton( void )
+	{
+		assert( s_instance == nullptr );
+		s_instance = static_cast< Derived* >( this );
+	}
+
+	~Singleton( void )
+	{
+		assert( s_instance == this );
+		s_instance = nullptr;
+	}
+
+private:
+
+	static Derived* s_instance;
+
 };
 
-constexpr GraphicsAPI kDefaultGraphicsApi =
-#if _ORB_HAS_GRAPHICS_API_D3D11
-	GraphicsAPI::D3D11;
-#elif _ORB_HAS_GRAPHICS_API_OPENGL
-	GraphicsAPI::OpenGL;
-#else
-	GraphicsAPI::Null;
-#endif
+template< typename Derived >
+Derived* Singleton< Derived >::s_instance = nullptr;
 
 ORB_NAMESPACE_END
