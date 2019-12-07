@@ -21,6 +21,7 @@
 #include "Orbit/Core/Utility/Utility.h"
 
 #if defined( ORB_OS_ANDROID )
+#  include <android/sensor.h>
 #  include <android_native_app_glue.h>
 #endif
 
@@ -47,7 +48,7 @@ static void AppCMD( android_app* state, int cmd );
 static int OnInput( android_app* state, AInputEvent* e );
 #endif
 
-Window::Window( uint32_t width, uint32_t height )
+Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height )
 	: m_details { }
 	, m_open    { true }
 {
@@ -104,27 +105,19 @@ Window::Window( uint32_t width, uint32_t height )
 	m_details.accelerometer_sensor = ASensorManager_getDefaultSensor( m_details.sensor_manager, ASENSOR_TYPE_ACCELEROMETER );
 	m_details.sensor_event_queue   = ASensorManager_createEventQueue( m_details.sensor_manager, AndroidOnly::app->looper, LOOPER_ID_USER, nullptr, nullptr );
 
-	/* Update until native window is initialized. */
-	{
-		bool initialized = false;
-		AndroidOnly::app->userDetails = &initialized;
-		AndroidOnly::app->onAppCmd = []( android_app* state, int cmd )
-		{
-			if( cmd == APP_CMD_INIT_WINDOW )
-			{
-				auto initialized = static_cast< bool* >( state->userDetails );
-				*initialized = true;
-			}
-		};
+	AndroidOnly::app->userData = this;
+	AndroidOnly::app->onAppCmd = AppCMD;
 
-		while( !initialized )
+	/* Update until native window is initialized */
+	while( !AndroidOnly::app->window )
+	{
+		android_poll_source* source;
+
+		if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
 		{
-			PollEvents();
+			source->process( AndroidOnly::app, source );
 		}
 	}
-
-	AndroidOnly::app->userDetails = this;
-	AndroidOnly::app->onAppCmd = AppCMD;
 
 #elif defined( ORB_OS_IOS )
 
@@ -164,7 +157,7 @@ Window::~Window( void )
 #elif defined( ORB_OS_ANDROID )
 
 	ASensorManager_destroyEventQueue( m_details.sensor_manager, m_details.sensor_event_queue );
-	AndroidOnly::app->userDetails = nullptr;
+	AndroidOnly::app->userData = nullptr;
 	AndroidOnly::app->onAppCmd = nullptr;
 
 #elif defined( ORB_OS_IOS )
@@ -209,15 +202,11 @@ void Window::PollEvents( void )
 
 #elif defined( ORB_OS_ANDROID )
 
-	int                  events;
 	android_poll_source* source;
 
-	if( ALooper_pollAll( 0, nullptr, &events, reinterpret_cast< void** >( &source ) ) >= 0 )
+	if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
 	{
-		if( source )
-		{
-			source->process( AndroidOnly::app, source );
-		}
+		source->process( AndroidOnly::app, source );
 	}
 
 #endif
@@ -246,12 +235,13 @@ void Window::SetTitle( std::string_view title )
 #elif defined( ORB_OS_ANDROID )
 
 	// #TODO: Activity.setTitle
+	( void )title;
 
 #endif
 
 }
 
-void Window::Move( int32_t x, int32_t y )
+void Window::Move( [[ maybe_unused ]] int32_t x, [[ maybe_unused ]] int32_t y )
 {
 
 #if defined( ORB_OS_WINDOWS )
@@ -282,7 +272,7 @@ void Window::Move( int32_t x, int32_t y )
 
 }
 
-void Window::Resize( uint32_t width, uint32_t height )
+void Window::Resize( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height )
 {
 
 #if defined( ORB_OS_WINDOWS )
@@ -537,7 +527,7 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 
 void AppCMD( android_app* state, int cmd )
 {
-	Window* w = static_cast< Window* >( state->userDetails );
+	Window* w = static_cast< Window* >( state->userData );
 
 	switch( cmd )
 	{
@@ -545,20 +535,15 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_INIT_WINDOW:
 		{
-			{
-				WindowResized e;
-				e.width  = static_cast< uint32_t >( ANativeWindow_getWidth( state->window ) );
-				e.height = static_cast< uint32_t >( ANativeWindow_getHeight( state->window ) );
+			WindowResized e1;
+			e1.width  = static_cast< uint32_t >( ANativeWindow_getWidth( state->window ) );
+			e1.height = static_cast< uint32_t >( ANativeWindow_getHeight( state->window ) );
 
-				w->QueueEvent( resize_event );
-			}
+			WindowStateChanged e2;
+			e2.state = WindowState::Restore;
 
-			{
-				WindowStateChanged e;
-				e.state = WindowState::Restore;
-
-				w->QueueEvent( e );
-			}
+			w->QueueEvent( e1 );
+			w->QueueEvent( e2 );
 
 			break;
 		}
@@ -575,7 +560,7 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_GAINED_FOCUS:
 		{
-			WindowDetails& data = w->GetPrivateDetails();
+			auto& data = w->GetPrivateDetails();
 			ASensorEventQueue_enableSensor( data.sensor_event_queue, data.accelerometer_sensor );
 			ASensorEventQueue_setEventRate( data.sensor_event_queue, data.accelerometer_sensor, ( 1000 * 1000 / 60 ) );
 
@@ -589,7 +574,7 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_LOST_FOCUS:
 		{
-			WindowDetails& data = w->GetPrivateDetails();
+			auto& data = w->GetPrivateDetails();
 			ASensorEventQueue_disableSensor( data.sensor_event_queue, data.accelerometer_sensor );
 
 			WindowStateChanged e;
@@ -603,6 +588,7 @@ void AppCMD( android_app* state, int cmd )
 		case APP_CMD_DESTROY:
 		{
 			w->Close();
+			
 			break;
 		}
 	}

@@ -236,9 +236,9 @@ public:
 				using namespace Orbit::UnitLiterals::Metric;
 
 				Orbit::Matrix4 view;
-				view.Translate( Orbit::Vector3( 0m, 0m, 5m ) );
+				view.Translate( Orbit::Vector3( 0_m, 0_m, 5_m ) );
 
-				m_model.Rotate( Orbit::Vector3( 0pi, 0.5pi * delta_time, 0pi ) );
+				m_model.Rotate( Orbit::Vector3( 0_pi, 0.5_pi * delta_time, 0_pi ) );
 
 				mvp = m_model * view * projection_matrix;
 			}
@@ -270,7 +270,7 @@ public:
 	{
 		using namespace Orbit::MathLiterals;
 
-		constexpr float fov       = 60pi / 180.f;
+		constexpr float fov       = 60_pi / 180.f;
 		constexpr float far_clip  = 100.f;
 		constexpr float near_clip = 0.1f;
 		const float     aspect    = static_cast< float >( e.width ) / e.height;

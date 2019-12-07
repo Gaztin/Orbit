@@ -20,6 +20,10 @@
 
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
+#elif defined( ORB_OS_ANDROID )
+struct ASensorEventQueue;
+struct ASensorManager;
+struct ASensor;
 #endif
 
 ORB_NAMESPACE_BEGIN

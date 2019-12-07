@@ -18,54 +18,45 @@
 #pragma once
 #include "Orbit/Math/Math.h"
 
-#if defined( ORB_CC_MSVC )
-#  pragma warning( push )
-#  pragma warning( disable: 4455 ) // "literal suffix identifiers that do not start with an underscore are reserved"
-#endif
-
 ORB_NAMESPACE_BEGIN
 
 namespace MathLiterals
 {
-	constexpr float operator ""pi( long double d )        { return ( static_cast< float >( d ) * Pi ); }
-	constexpr float operator ""pi( unsigned long long i ) { return ( static_cast< float >( i ) * Pi ); }
+	constexpr float operator ""_pi( long double d )        { return ( static_cast< float >( d ) * Pi ); }
+	constexpr float operator ""_pi( unsigned long long i ) { return ( static_cast< float >( i ) * Pi ); }
 }
 
 namespace UnitLiterals
 {
 	namespace Metric
 	{
-		constexpr float operator ""mm ( long double d        ) { return ( static_cast< float >( d * 0.001 ) ); }
-		constexpr float operator ""mm ( unsigned long long i ) { return ( static_cast< float >( i * 0.001 ) ); }
-		constexpr float operator ""cm ( long double d        ) { return ( static_cast< float >( d * 0.01 ) ); }
-		constexpr float operator ""cm ( unsigned long long i ) { return ( static_cast< float >( i * 0.01 ) ); }
-		constexpr float operator ""dm ( long double d        ) { return ( static_cast< float >( d * 0.1 ) ); }
-		constexpr float operator ""dm ( unsigned long long i ) { return ( static_cast< float >( i * 0.1 ) ); }
-		constexpr float operator ""m  ( long double d        ) { return ( static_cast< float >( d ) ); }
-		constexpr float operator ""m  ( unsigned long long i ) { return ( static_cast< float >( i ) ); }
-		constexpr float operator ""km ( long double d        ) { return ( static_cast< float >( d * 1000.0 ) ); }
-		constexpr float operator ""km ( unsigned long long i ) { return ( static_cast< float >( i * 1000.0 ) ); }
+		constexpr float operator ""_mm( long double d        ) { return ( static_cast< float >( d * 0.001 ) ); }
+		constexpr float operator ""_mm( unsigned long long i ) { return ( static_cast< float >( i * 0.001 ) ); }
+		constexpr float operator ""_cm( long double d        ) { return ( static_cast< float >( d * 0.01 ) ); }
+		constexpr float operator ""_cm( unsigned long long i ) { return ( static_cast< float >( i * 0.01 ) ); }
+		constexpr float operator ""_dm( long double d        ) { return ( static_cast< float >( d * 0.1 ) ); }
+		constexpr float operator ""_dm( unsigned long long i ) { return ( static_cast< float >( i * 0.1 ) ); }
+		constexpr float operator ""_m ( long double d        ) { return ( static_cast< float >( d ) ); }
+		constexpr float operator ""_m ( unsigned long long i ) { return ( static_cast< float >( i ) ); }
+		constexpr float operator ""_km( long double d        ) { return ( static_cast< float >( d * 1000.0 ) ); }
+		constexpr float operator ""_km( unsigned long long i ) { return ( static_cast< float >( i * 1000.0 ) ); }
 	}
 
 	namespace Imperial
 	{
-		constexpr float operator ""in  ( long double d )        { return ( static_cast< float >( d * 0.0254 ) ); }
-		constexpr float operator ""in  ( unsigned long long i ) { return ( static_cast< float >( i * 0.0254 ) ); }
-		constexpr float operator ""ft  ( long double d )        { return ( static_cast< float >( d * 0.3048 ) ); }
-		constexpr float operator ""ft  ( unsigned long long i ) { return ( static_cast< float >( i * 0.3048 ) ); }
-		constexpr float operator ""yd  ( long double d )        { return ( static_cast< float >( d * 0.9144 ) ); }
-		constexpr float operator ""yd  ( unsigned long long i ) { return ( static_cast< float >( i * 0.9144 ) ); }
-		constexpr float operator ""ch  ( long double d )        { return ( static_cast< float >( d * 20.1168 ) ); }
-		constexpr float operator ""ch  ( unsigned long long i ) { return ( static_cast< float >( i * 20.1168 ) ); }
-		constexpr float operator ""fur ( long double d )        { return ( static_cast< float >( d * 201.168 ) ); }
-		constexpr float operator ""fur ( unsigned long long i ) { return ( static_cast< float >( i * 201.168 ) ); }
-		constexpr float operator ""mi  ( long double d )        { return ( static_cast< float >( d * 1609.344 ) ); }
-		constexpr float operator ""mi  ( unsigned long long i ) { return ( static_cast< float >( i * 1609.344 ) ); }
+		constexpr float operator ""_in ( long double d )        { return ( static_cast< float >( d * 0.0254 ) ); }
+		constexpr float operator ""_in ( unsigned long long i ) { return ( static_cast< float >( i * 0.0254 ) ); }
+		constexpr float operator ""_ft ( long double d )        { return ( static_cast< float >( d * 0.3048 ) ); }
+		constexpr float operator ""_ft ( unsigned long long i ) { return ( static_cast< float >( i * 0.3048 ) ); }
+		constexpr float operator ""_yd ( long double d )        { return ( static_cast< float >( d * 0.9144 ) ); }
+		constexpr float operator ""_yd ( unsigned long long i ) { return ( static_cast< float >( i * 0.9144 ) ); }
+		constexpr float operator ""_ch ( long double d )        { return ( static_cast< float >( d * 20.1168 ) ); }
+		constexpr float operator ""_ch ( unsigned long long i ) { return ( static_cast< float >( i * 20.1168 ) ); }
+		constexpr float operator ""_fur( long double d )        { return ( static_cast< float >( d * 201.168 ) ); }
+		constexpr float operator ""_fur( unsigned long long i ) { return ( static_cast< float >( i * 201.168 ) ); }
+		constexpr float operator ""_mi ( long double d )        { return ( static_cast< float >( d * 1609.344 ) ); }
+		constexpr float operator ""_mi ( unsigned long long i ) { return ( static_cast< float >( i * 1609.344 ) ); }
 	}
 }
 
 ORB_NAMESPACE_END
-
-#if defined( ORB_CC_MSVC )
-#  pragma warning( pop )
-#endif

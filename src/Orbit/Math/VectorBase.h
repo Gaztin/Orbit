@@ -29,11 +29,11 @@ class VectorBase
 
 public:
 
-	float DotProduct( const VectorBase& v ) const
+	float DotProduct( const VectorBase& rhs ) const
 	{
 		float d = 0.f;
 		for( size_t i = 0; i < Size; ++i )
-			d += ( ( *this )[ i ] * v[ i ] );
+			d += ( ( *this )[ i ] * rhs[ i ] );
 		return d;
 	}
 
@@ -46,19 +46,19 @@ public:
 		return *this;
 	}
 
-	Derived operator+( const VectorBase& v ) const
+	Derived operator+( const VectorBase& rhs ) const
 	{
 		Derived v;
 		for( size_t i = 0; i < Size; ++i )
-			v[ i ] = ( *this )[ i ] + v[ i ];
+			v[ i ] = ( *this )[ i ] + rhs[ i ];
 		return v;
 	}
 
-	Derived operator-( const VectorBase& v ) const
+	Derived operator-( const VectorBase& rhs ) const
 	{
 		Derived v;
 		for( size_t i = 0; i < Size; ++i )
-			v[ i ] = ( *this )[ i ] - v[ i ];
+			v[ i ] = ( *this )[ i ] - rhs[ i ];
 		return v;
 	}
 
