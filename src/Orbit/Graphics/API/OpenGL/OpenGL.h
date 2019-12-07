@@ -27,12 +27,6 @@
 
 #include "Orbit/Core/Utility/Bitmask.h"
 
-#if defined( Bool )
-#  pragma push_macro( "Bool" )
-#  undef Bool
-#  define UNDEFINED_Bool
-#endif
-
 ORB_NAMESPACE_BEGIN
 
 using GLintptr   = ptrdiff_t;
@@ -46,10 +40,5 @@ extern ORB_API_GRAPHICS void* GetOpenGLProcAddress( std::string_view name );
 extern ORB_API_GRAPHICS void  HandleOpenGLError   ( GLenum err, std::string_view func );
 
 ORB_NAMESPACE_END
-
-#if defined( UNDEFINED_Bool )
-#  pragma pop_macro( "Bool" )
-#  undef UNDEFINED_Bool
-#endif
 
 #endif
