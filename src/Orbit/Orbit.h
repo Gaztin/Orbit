@@ -21,6 +21,7 @@
 #define ORB_NAMESPACE ::Orbit::
 #define ORB_NAMESPACE_BEGIN namespace Orbit {
 #define ORB_NAMESPACE_END }
+#define ORB_NAMESPACED_OBJC( X ) Orbit##X
 
 /* Utility macros */
 #define ORB_DISABLE_COPY( CLASS )              \
