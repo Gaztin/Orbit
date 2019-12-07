@@ -881,9 +881,10 @@ void RenderContext::SwapBuffers( void )
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
 
 		#if defined( ORB_OS_WINDOWS )
+
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
 
 			::SwapBuffers( details.hdc );
 
@@ -895,13 +896,19 @@ void RenderContext::SwapBuffers( void )
 
 		#elif defined( ORB_OS_MACOS )
 
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+
 			[ [ ( const NSOpenGLView* )details.view openGLContext ] flushBuffer ];
 
 		#elif defined( ORB_OS_ANDROID )
 
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+
 			eglSwapBuffers( details.display, details.surface );
 
 		#elif defined( ORB_OS_IOS )
+
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
 
 			[ ( GLKView* )details.view display ];
 

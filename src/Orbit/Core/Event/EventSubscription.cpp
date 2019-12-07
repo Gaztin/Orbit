@@ -15,14 +15,13 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#pragma once
 #include "EventSubscription.h"
 
 ORB_NAMESPACE_BEGIN
 
 EventSubscription::EventSubscription( void )
 	: m_id            { 0 }
-	, m_deleter       { nullptr }
+	, m_deleter       { nullptr, nullptr }
 	, m_control_block { nullptr }
 {
 }
