@@ -21,6 +21,7 @@
 #include "Orbit/Core/Utility/Utility.h"
 
 #if defined( ORB_OS_ANDROID )
+#  include <android/sensor.h>
 #  include <android_native_app_glue.h>
 #endif
 
@@ -123,7 +124,7 @@ Window::Window( uint32_t width, uint32_t height )
 		}
 	}
 
-	AndroidOnly::app->userDetails = this;
+	AndroidOnly::app->userData = this;
 	AndroidOnly::app->onAppCmd = AppCMD;
 
 #elif defined( ORB_OS_IOS )
@@ -164,7 +165,7 @@ Window::~Window( void )
 #elif defined( ORB_OS_ANDROID )
 
 	ASensorManager_destroyEventQueue( m_details.sensor_manager, m_details.sensor_event_queue );
-	AndroidOnly::app->userDetails = nullptr;
+	AndroidOnly::app->userData = nullptr;
 	AndroidOnly::app->onAppCmd = nullptr;
 
 #elif defined( ORB_OS_IOS )
@@ -537,7 +538,7 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 
 void AppCMD( android_app* state, int cmd )
 {
-	Window* w = static_cast< Window* >( state->userDetails );
+	Window* w = static_cast< Window* >( state->userData );
 
 	switch( cmd )
 	{
@@ -545,20 +546,16 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_INIT_WINDOW:
 		{
-			{
-				WindowResized e;
-				e.width  = static_cast< uint32_t >( ANativeWindow_getWidth( state->window ) );
-				e.height = static_cast< uint32_t >( ANativeWindow_getHeight( state->window ) );
 
-				w->QueueEvent( resize_event );
-			}
+			WindowResized e1;
+			e1.width  = static_cast< uint32_t >( ANativeWindow_getWidth( state->window ) );
+			e1.height = static_cast< uint32_t >( ANativeWindow_getHeight( state->window ) );
 
-			{
-				WindowStateChanged e;
-				e.state = WindowState::Restore;
+			WindowStateChanged e2;
+			e2.state = WindowState::Restore;
 
-				w->QueueEvent( e );
-			}
+			w->QueueEvent( e1 );
+			w->QueueEvent( e2 );
 
 			break;
 		}
@@ -575,7 +572,7 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_GAINED_FOCUS:
 		{
-			WindowDetails& data = w->GetPrivateDetails();
+			auto& data = w->GetPrivateDetails();
 			ASensorEventQueue_enableSensor( data.sensor_event_queue, data.accelerometer_sensor );
 			ASensorEventQueue_setEventRate( data.sensor_event_queue, data.accelerometer_sensor, ( 1000 * 1000 / 60 ) );
 
@@ -589,7 +586,7 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_LOST_FOCUS:
 		{
-			WindowDetails& data = w->GetPrivateDetails();
+			auto& data = w->GetPrivateDetails();
 			ASensorEventQueue_disableSensor( data.sensor_event_queue, data.accelerometer_sensor );
 
 			WindowStateChanged e;

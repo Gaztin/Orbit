@@ -17,6 +17,8 @@
 
 #include "Matrix4.h"
 
+#include <cmath>
+
 #include "Orbit/Math/Vector3.h"
 #include "Orbit/Math/Vector4.h"
 

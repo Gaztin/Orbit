@@ -249,20 +249,20 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			/* Initialize display */
 			{
-				details->display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
-				eglInitialize( details->display, nullptr, nullptr );
+				details.display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+				eglInitialize( details.display, nullptr, nullptr );
 			}
 
 			/* Choose config */
-			details->config = EGL_NO_CONFIG_KHR;
+			details.config = EGL_NO_CONFIG_KHR;
 			do
 			{
 				EGLint config_count = 0;
-				if( !eglGetConfigs( details->display, nullptr, 0, &config_count ) )
+				if( !eglGetConfigs( details.display, nullptr, 0, &config_count ) )
 					break;
 
 				std::vector< EGLConfig > configs( static_cast< size_t >( config_count ) );
-				if( !eglGetConfigs( details->display, configs.data(), configs.size(), &config_count ) )
+				if( !eglGetConfigs( details.display, configs.data(), configs.size(), &config_count ) )
 					break;
 
 				const EGLint required_conformant   = EGL_OPENGL_ES3_BIT_KHR;
@@ -278,42 +278,42 @@ RenderContext::RenderContext( GraphicsAPI api )
 				for( const EGLConfig& config : configs )
 				{
 					EGLint conformant = 0;
-					eglGetConfigAttrib( details->display, config, EGL_CONFORMANT, &conformant );
+					eglGetConfigAttrib( details.display, config, EGL_CONFORMANT, &conformant );
 					if( ( conformant & required_conformant ) == 0 )
 						continue;
 
 					EGLint surface_type = 0;
-					eglGetConfigAttrib( details->display, config, EGL_SURFACE_TYPE, &surface_type );
+					eglGetConfigAttrib( details.display, config, EGL_SURFACE_TYPE, &surface_type );
 					if( ( surface_type & required_surface_type ) == 0 )
 						continue;
 
 					EGLint red_size = 0;
-					eglGetConfigAttrib( details->display, config, EGL_RED_SIZE, &red_size );
+					eglGetConfigAttrib( details.display, config, EGL_RED_SIZE, &red_size );
 					if( red_size < best_red_size )
 						continue;
 
 					EGLint green_size = 0;
-					eglGetConfigAttrib( details->display, config, EGL_RED_SIZE, &green_size );
+					eglGetConfigAttrib( details.display, config, EGL_RED_SIZE, &green_size );
 					if( green_size < best_green_size )
 						continue;
 
 					EGLint blue_size = 0;
-					eglGetConfigAttrib( details->display, config, EGL_RED_SIZE, &blue_size );
+					eglGetConfigAttrib( details.display, config, EGL_RED_SIZE, &blue_size );
 					if( blue_size < best_blue_size )
 						continue;
 
 					EGLint alpha_size = 0;
-					eglGetConfigAttrib( details->display, config, EGL_RED_SIZE, &alpha_size );
+					eglGetConfigAttrib( details.display, config, EGL_RED_SIZE, &alpha_size );
 					if( alpha_size < best_alpha_size )
 						continue;
 
 					EGLint buffer_size = 0;
-					eglGetConfigAttrib( details->display, config, EGL_BUFFER_SIZE, &buffer_size );
+					eglGetConfigAttrib( details.display, config, EGL_BUFFER_SIZE, &buffer_size );
 					if( buffer_size < best_buffer_size )
 						continue;
 
 					EGLint depth_size = 0;
-					eglGetConfigAttrib( details->display, config, EGL_DEPTH_SIZE, &depth_size );
+					eglGetConfigAttrib( details.display, config, EGL_DEPTH_SIZE, &depth_size );
 					if( depth_size < best_depth_size )
 						continue;
 
@@ -323,17 +323,17 @@ RenderContext::RenderContext( GraphicsAPI api )
 					best_alpha_size  = alpha_size;
 					best_buffer_size = buffer_size;
 					best_depth_size  = depth_size;
-					details->config     = config;
+					details.config   = config;
 				}
 
 				EGLint visual_id = 0;
-				eglGetConfigAttrib( details->display, sub_data->config, EGL_NATIVE_VISUAL_ID, &visual_id );
+				eglGetConfigAttrib( details.display, details.config, EGL_NATIVE_VISUAL_ID, &visual_id );
 				ANativeWindow_setBuffersGeometry( AndroidOnly::app->window, 0, 0, visual_id );
 
 			} while( false );
 
 			/* Create window surface */
-			details->surface = eglCreateWindowSurface( details->display, details->config, AndroidOnly::app->window, nullptr );
+			details.surface = eglCreateWindowSurface( details.display, details.config, AndroidOnly::app->window, nullptr );
 
 			/* Create context */
 			{
@@ -343,7 +343,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 					EGL_NONE,
 				};
 
-				details->context = eglCreateContext( details->display, details->config, EGL_NO_CONTEXT, attribs );
+				details.context = eglCreateContext( details.display, details.config, EGL_NO_CONTEXT, attribs );
 			}
 
 		#elif defined( ORB_OS_IOS )
@@ -351,15 +351,15 @@ RenderContext::RenderContext( GraphicsAPI api )
 			OrbitGLKViewDelegate* delegate = [ OrbitGLKViewDelegate alloc ];
 			[ delegate init ];
 
-			details->context = [ EAGLContext alloc ];
-			[ ( EAGLContext* )details->context initWithAPI:kEAGLRenderingAPIOpenGLES3 ];
+			details.context = [ EAGLContext alloc ];
+			[ ( EAGLContext* )details.context initWithAPI:kEAGLRenderingAPIOpenGLES3 ];
 
-			details->view = [ GLKView alloc ];
-			[ ( GLKView* )details->view initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
-			( ( GLKView* )details->view ).context               = ( EAGLContext* )details->context;
-			( ( GLKView* )details->view ).delegate              = delegate;
-			( ( GLKView* )details->view ).enableSetNeedsDisplay = NO;
-			[ ( UIWindow* )window_details.ui_window addSubview:( GLKView* )details->view ];
+			details.view = [ GLKView alloc ];
+			[ ( GLKView* )details.view initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+			( ( GLKView* )details.view ).context               = ( EAGLContext* )details.context;
+			( ( GLKView* )details.view ).delegate              = delegate;
+			( ( GLKView* )details.view ).enableSetNeedsDisplay = NO;
+			[ ( UIWindow* )window_details.ui_window addSubview:( GLKView* )details.view ];
 
 		#endif
 
@@ -759,7 +759,7 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 			if( details.surface != EGL_NO_SURFACE )
 				eglDestroySurface( details.display, details.surface );
 
-			details.surface = eglCreateWindowSurface( details.display, details.eglConfig, AndroidOnly::app->window, nullptr );
+			details.surface = eglCreateWindowSurface( details.display, details.config, AndroidOnly::app->window, nullptr );
 
 		#elif defined( ORB_OS_IOS )
 
