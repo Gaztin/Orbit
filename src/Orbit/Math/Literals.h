@@ -60,9 +60,3 @@ namespace UnitLiterals
 }
 
 ORB_NAMESPACE_END
-
-#if defined( ORB_CC_MSVC )
-#  pragma warning( pop )
-#elif defined( ORB_CC_CLANG )
-#  pragma clang diagnostic pop
-#endif
