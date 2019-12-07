@@ -20,21 +20,23 @@
 
 #include "Orbit/Core/Core.h"
 
+ORB_NAMESPACE_BEGIN
+
 #define ORB_ENABLE_BITMASKING( ENUM )        \
     template<>                               \
-    struct _OrbitEnableBitMasking< ENUM >    \
+    struct EnableBitMasking< ENUM >          \
     {                                        \
         static constexpr bool enable = true; \
     }
 
 template< typename E >
-struct _OrbitEnableBitMasking
+struct EnableBitMasking
 {
 	static constexpr bool enable = false;
 };
 
 template< typename E >
-constexpr bool enable_bit_masking_v = _OrbitEnableBitMasking< E >::enable;
+constexpr bool enable_bit_masking_v = EnableBitMasking< E >::enable;
 
 template< typename E >
 typename std::enable_if_t< enable_bit_masking_v< E >, bool > operator!( E rhs )
@@ -83,3 +85,5 @@ typename std::enable_if_t< enable_bit_masking_v< E >, E& > operator^=( E& lhs, E
 {
 	return ( lhs = static_cast< E >( static_cast< std::underlying_type_t< E > >( lhs ) ^ static_cast< std::underlying_type_t< E > >( rhs ) ) );
 }
+
+ORB_NAMESPACE_END
