@@ -104,28 +104,21 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	m_details.sensor_manager       = ASensorManager_getInstance();
 	m_details.accelerometer_sensor = ASensorManager_getDefaultSensor( m_details.sensor_manager, ASENSOR_TYPE_ACCELEROMETER );
 	m_details.sensor_event_queue   = ASensorManager_createEventQueue( m_details.sensor_manager, AndroidOnly::app->looper, LOOPER_ID_USER, nullptr, nullptr );
-
-	/* Update until native window is initialized. */
-	{
-		bool initialized = false;
-		AndroidOnly::app->userDetails = &initialized;
-		AndroidOnly::app->onAppCmd = []( android_app* state, int cmd )
-		{
-			if( cmd == APP_CMD_INIT_WINDOW )
-			{
-				auto initialized = static_cast< bool* >( state->userDetails );
-				*initialized = true;
-			}
-		};
-
-		while( !initialized )
-		{
-			PollEvents();
-		}
-	}
+	m_details.initialized          = false;
 
 	AndroidOnly::app->userData = this;
 	AndroidOnly::app->onAppCmd = AppCMD;
+
+	/* Update until native window is initialized */
+	while( !m_details.initialized )
+	{
+		android_poll_source* source;
+
+		if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
+		{
+			source->process( AndroidOnly::app, source );
+		}
+	}
 
 #elif defined( ORB_OS_IOS )
 
@@ -210,15 +203,11 @@ void Window::PollEvents( void )
 
 #elif defined( ORB_OS_ANDROID )
 
-	int                  events;
 	android_poll_source* source;
 
-	if( ALooper_pollAll( 0, nullptr, &events, reinterpret_cast< void** >( &source ) ) >= 0 )
+	if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
 	{
-		if( source )
-		{
-			source->process( AndroidOnly::app, source );
-		}
+		source->process( AndroidOnly::app, source );
 	}
 
 #endif
@@ -547,6 +536,8 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_INIT_WINDOW:
 		{
+			auto& details = w->GetPrivateDetails();
+			details.initialized = true;
 
 			WindowResized e1;
 			e1.width  = static_cast< uint32_t >( ANativeWindow_getWidth( state->window ) );
@@ -600,7 +591,11 @@ void AppCMD( android_app* state, int cmd )
 
 		case APP_CMD_DESTROY:
 		{
+			auto& details = w->GetPrivateDetails();
+			details.initialized = false;
+
 			w->Close();
+			
 			break;
 		}
 	}

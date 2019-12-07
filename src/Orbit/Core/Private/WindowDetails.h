@@ -52,6 +52,7 @@ namespace Private
 		ASensorManager*    sensor_manager;
 		const ASensor*     accelerometer_sensor;
 		ASensorEventQueue* sensor_event_queue;
+		bool               initialized;
 
 #elif defined( ORB_OS_IOS )
 
