@@ -25,18 +25,6 @@
 #  include <android_native_app_glue.h>
 #endif
 
-#if defined( ORB_OS_MACOS )
-#  include <AppKit/AppKit.h>
-@interface OrbitWindowDelegate : NSObject< NSWindowDelegate >
-@end
-#endif
-
-#if defined( ORB_OS_IOS )
-#  include <UIKit/UIKit.h>
-@interface OrbitUIWindow : UIWindow
-@end
-#endif
-
 ORB_NAMESPACE_BEGIN
 
 #if defined( ORB_OS_WINDOWS )
@@ -618,89 +606,3 @@ static int OnInput( android_app* state, AInputEvent* e )
 #endif
 
 ORB_NAMESPACE_END
-
-#if defined( ORB_OS_MACOS )
-
-@implementation OrbitWindowDelegate
-
--( void )windowWillClose:( NSNotification* ) __unused notification
-{
-	Window::GetInstance().Close();
-}
-
--( void )windowDidMove:( NSNotification* ) __unused notification
-{
-	Window&        window  = Window::GetInstance();
-	WindowDetails& details = window.GetPrivateDetails();
-	const CGPoint  point   = ( ( const NSWindow* )details.ns_window ).frame.origin;
-
-	ORB_NAMESPACE WindowMoved e;
-	e.x = point.x;
-	e.y = point.y;
-
-	window.QueueEvent( e );
-}
-
--( NSSize )windowWillResize:( NSWindow* ) __unused sender toSize:( NSSize ) frameSize
-{
-	ORB_NAMESPACE WindowResized e;
-	e.width  = frameSize.width;
-	e.height = frameSize.height;
-
-	Window::GetInstance().QueueEvent( e );
-
-	return frameSize;
-}
-
--( void )windowDidMiniaturize:( NSNotification* ) __unused notification
-{
-	ORB_NAMESPACE WindowStateChanged e;
-	e.state = ORB_NAMESPACE WindowState::Suspend;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
--( void )windowDidDeminiaturize:( NSNotification* ) __unused notification
-{
-	ORB_NAMESPACE WindowStateChanged e;
-	e.state = ORB_NAMESPACE WindowState::Restore;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
--( void )windowDidBecomeMain:( NSNotification* ) __unused notification
-{
-	ORB_NAMESPACE WindowStateChanged e;
-	e.state = ORB_NAMESPACE WindowState::Focus;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
--( void )windowDidResignMain:( NSNotification* ) __unused notification
-{
-	ORB_NAMESPACE WindowStateChanged e;
-	e.state = ORB_NAMESPACE WindowState::Defocus;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
-@end
-
-#elif defined( ORB_OS_IOS )
-
-@implementation OrbitUIWindow
-
--( void )layoutSubviews
-{
-	[ super layoutSubviews ];
-
-	ORB_NAMESPACE WindowResized e;
-	e.width  = self.bounds.size.width;
-	e.height = self.bounds.size.height;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
-@end
-
-#endif
