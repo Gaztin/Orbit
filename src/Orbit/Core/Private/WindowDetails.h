@@ -30,7 +30,7 @@ struct ASensorEventQueue;
 struct ASensorManager;
 struct ASensor;
 #elif defined( ORB_OS_IOS )
-@class ORB_NAMESPACE_OBJC( UIWindow );
+@class ORB_NAMESPACED_OBJC( UIWindow );
 #endif
 
 ORB_NAMESPACE_BEGIN

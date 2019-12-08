@@ -23,7 +23,7 @@
 
 -( BOOL )application:( UIApplication* )__unused application didFinishLaunchingWithOptions:( NSDictionary* )__unused launchOptions
 {
-	_application_instance = std::static_pointer_cast< ORB_NAMESPACE ApplicationBase >( ORB_NAMESPACE _application_initializer() );
+	application_instance = std::static_pointer_cast< ORB_NAMESPACE ApplicationBase >( ORB_NAMESPACE _application_initializer() );
 
 	CADisplayLink* display_link = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( OnFrame: ) ];
 	[ display_link addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
@@ -55,7 +55,7 @@
 {
 	float delta_time = static_cast< float >( [ display_link duration ] );
 
-	_application_instance->OnFrame( delta_time );
+	application_instance->OnFrame( delta_time );
 }
 
 @end

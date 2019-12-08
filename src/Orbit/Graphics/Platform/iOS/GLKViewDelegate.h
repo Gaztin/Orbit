@@ -21,7 +21,7 @@
 #if defined( ORB_OS_IOS )
 #  include <GLKit/GLKit.h>
 
-@interface ORB_NAMESPACED_OBJC( OrbitGLKViewDelegate ) : UIResponder< GLKViewDelegate >
+@interface ORB_NAMESPACED_OBJC( GLKViewDelegate ) : UIResponder< GLKViewDelegate >
 {
 }
 @end

@@ -32,7 +32,7 @@ void ApplicationBase::RunInstance()
 
 	@autoreleasepool
 	{
-		UIApplicationMain( 0, nil, nil, NSStringFromClass( [ ORB_NAMESPACED_OBJC( ApplicationDelegate ) class ] ) );
+		UIApplicationMain( 0, nil, nil, NSStringFromClass( [ ORB_NAMESPACED_OBJC( UIApplicationDelegate ) class ] ) );
 	}
 
 #else

@@ -21,6 +21,8 @@
 #if defined( ORB_OS_IOS )
 #  include <UIKit/UIKit.h>
 
+#  include "Orbit/Core/Application/Application.h"
+
 @interface ORB_NAMESPACED_OBJC( UIApplicationDelegate ) : UIResponder< UIApplicationDelegate >
 {
 	std::shared_ptr< ORB_NAMESPACE ApplicationBase > application_instance;
