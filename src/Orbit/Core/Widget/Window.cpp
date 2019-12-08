@@ -204,9 +204,9 @@ void Window::PollEvents( void )
 
 	NSEvent* event;
 
-	while( ( event = [ m_details.window nextEventMatchingMask : NSEventMaskAny untilDate : nullptr inMode : NSDefaultRunLoopMode dequeue : YES ] ) != nullptr )
+	while( ( event = [ m_details.window nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
 	{
-		[ m_details.window sendEvent : event ];
+		[ m_details.window sendEvent:event ];
 	}
 
 #elif defined( ORB_OS_ANDROID )

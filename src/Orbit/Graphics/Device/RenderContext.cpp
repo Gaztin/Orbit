@@ -361,9 +361,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			details.view = [ GLKView alloc ];
 			[ details.view initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
-			( details.view ).context               = details.context;
-			( details.view ).delegate              = delegate;
-			( details.view ).enableSetNeedsDisplay = NO;
+			details.view.context               = details.context;
+			details.view.delegate              = delegate;
+			details.view.enableSetNeedsDisplay = NO;
 			[ window_details.ui_window addSubview:details.view ];
 
 		#endif
