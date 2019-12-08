@@ -21,7 +21,7 @@
 #if defined( ORB_OS_IOS )
 #  include <UIKit/UIKit.h>
 
-@interface ORB_NAMESPACED_OBJC( OrbitUIWindow ) : UIWindow
+@interface ORB_NAMESPACED_OBJC( UIWindow ) : UIWindow
 {
 }
 @end

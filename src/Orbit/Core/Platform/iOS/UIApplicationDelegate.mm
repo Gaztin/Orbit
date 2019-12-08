@@ -19,7 +19,7 @@
 
 #if defined( ORB_OS_IOS )
 
-@implementation OrbitApplicationDelegate
+@implementation ORB_NAMESPACED_OBJC( UIApplicationDelegate )
 
 -( BOOL )application:( UIApplication* )__unused application didFinishLaunchingWithOptions:( NSDictionary* )__unused launchOptions
 {

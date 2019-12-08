@@ -126,14 +126,14 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 	/* Initialize window */
 	m_details.ui_window = [ OrbitUIWindow alloc ];
-	[ ( OrbitUIWindow* )m_details.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
-	( ( OrbitUIWindow* )m_details.ui_window ).backgroundColor = [ UIColor whiteColor ];
-	[ ( OrbitUIWindow* )m_details.ui_window makeKeyAndVisible ];
+	[ m_details.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+	m_details.ui_window.backgroundColor = [ UIColor whiteColor ];
+	[ m_details.ui_window makeKeyAndVisible ];
 
 	/* Create view controller */
 	UIViewController* vc = [ UIViewController alloc ];
 	[ vc initWithNibName:nil bundle:nil ];
-	( ( OrbitUIWindow* )m_details.ui_window ).rootViewController = vc;
+	m_details.ui_window.rootViewController = vc;
 
 #endif
 
