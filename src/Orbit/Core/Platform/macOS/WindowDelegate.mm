@@ -20,7 +20,7 @@
 #if defined( ORB_OS_MACOS )
 #  include "Orbit/Core/Widget/Window.h"
 
-@implementation OrbitWindowDelegate
+@implementation ORB_NAMESPACED_OBJC( WindowDelegate )
 
 -( void )windowWillClose:( NSNotification* ) __unused notification
 {
