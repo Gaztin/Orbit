@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ *
+ * This software is provided 'as-is', without any express or implied warranty. In no event will
+ * the authors be held liable for any damages arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose, including commercial
+ * applications, and to alter it and redistribute it freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not claim that you wrote the
+ *    original software. If you use this software in a product, an acknowledgment in the product
+ *    documentation would be appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be misrepresented as
+ *    being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ */
+
+#include "Log.h"
+
+#include <cstdio>
+
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+#elif defined( ORB_OS_ANDROID )
+#  include <android/log.h>
+#endif
+
+ORB_NAMESPACE_BEGIN
+
+void LogInfo( std::string_view msg )
+{
+#if defined( ORB_OS_WINDOWS )
+
+	if( IsDebuggerPresent() )
+	{
+		OutputDebugStringA( msg.data() );
+		OutputDebugStringA( "\n" );
+	}
+	else
+	{
+		printf( "%s\n", msg.data() );
+	}
+
+#elif defined( ORB_OS_ANDROID )
+
+	__android_log_write( ANDROID_LOG_INFO, "Orbit", msg.data() );
+
+#else
+
+	printf( "%s\n", msg.data() );
+
+#endif
+}
+
+void LogWarning( std::string_view msg )
+{
+#if defined( ORB_OS_WINDOWS )
+
+	if( IsDebuggerPresent() )
+	{
+		OutputDebugStringA( msg.data() );
+		OutputDebugStringA( "\n" );
+	}
+	else
+	{
+		HANDLE                     h = GetStdHandle( STD_OUTPUT_HANDLE );
+		CONSOLE_SCREEN_BUFFER_INFO old_buffer_info;
+
+		GetConsoleScreenBufferInfo( h, &old_buffer_info );
+		SetConsoleTextAttribute( h, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN );
+		printf( "%s\n", msg.data() );
+		SetConsoleTextAttribute( h, old_buffer_info.wAttributes );
+	}
+
+#elif defined( ORB_OS_ANDROID )
+
+	__android_log_write( ANDROID_LOG_WARN, "Orbit", msg.data() );
+
+#else
+
+	printf( "\x1B[33m%s\x1B[0m\n", msg.data() );
+
+#endif
+}
+
+void LogError( std::string_view msg )
+{
+#if defined( ORB_OS_WINDOWS )
+
+	if( IsDebuggerPresent() )
+	{
+		OutputDebugStringA( msg.data() );
+		OutputDebugStringA( "\n" );
+	}
+	else
+	{
+		HANDLE                     h = GetStdHandle( STD_OUTPUT_HANDLE );
+		CONSOLE_SCREEN_BUFFER_INFO old_buffer_info;
+
+		GetConsoleScreenBufferInfo( h, &old_buffer_info );
+		SetConsoleTextAttribute( h, FOREGROUND_INTENSITY | FOREGROUND_RED );
+		printf( "%s\n", msg.data() );
+		SetConsoleTextAttribute( h, old_buffer_info.wAttributes );
+	}
+
+#elif defined( ORB_OS_ANDROID )
+
+	__android_log_write( ANDROID_LOG_ERROR, "Orbit", msg.data() );
+
+#else
+
+	printf( "\x1B[31m%s\x1B[0m\n", msg.data() );
+
+#endif
+}
+
+ORB_NAMESPACE_END
