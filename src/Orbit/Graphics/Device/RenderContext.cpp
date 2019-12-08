@@ -371,59 +371,10 @@ RenderContext::RenderContext( GraphicsAPI api )
 			glCullFace( GL_BACK );
 			glFrontFace( GL_CW );
 
-			const char* opengl_version = reinterpret_cast< const char* >( glGetString( GL_VERSION ) );
+			/* Create version */
+			details.version.Init();
 
-			auto check_digit = [ & ]( Version* out )
-			{
-				/* String begins with version number */
-				if( isdigit( opengl_version[ 0 ] ) )
-				{
-					uint32_t v[ 2 ]{ };
-					sscanf( opengl_version, "%u.%u", &v[ 0 ], &v[ 1 ] );
-					out->major = static_cast< uint8_t >( v[ 0 ] );
-					out->minor = static_cast< uint8_t >( v[ 1 ] );
-
-					return true;
-				}
-
-				return false;
-			};
-
-			auto parse_version = [ & ]
-			{
-				Version v;
-				if( check_digit( &v ) )
-					return v;
-
-				/* OpenGL ... */
-				if( std::strncmp( opengl_version, "OpenGL", 6 ) != 0 )
-					return Version( 0 );
-				if( check_digit( &v ) )
-					return v;
-
-				/* OpenGL ES ... */
-				opengl_version += 7;
-				if( std::strncmp( opengl_version, "ES", 2 ) != 0 )
-					return Version( 0 );
-				details.embedded = true;
-				opengl_version += 3;
-				if( check_digit( &v ) )
-					return v;
-
-				/* OpenGL ES-CM ... */
-				opengl_version -= 1;
-				if( std::strncmp( opengl_version, "-CM", 3 ) != 0 )
-					return Version( 0 );
-				opengl_version += 4;
-				if( check_digit( &v ) )
-					return v;
-
-				return Version( 0 );
-			};
-
-			details.opengl_version = parse_version();
-
-			LogInfo( Format( "OpenGL version: %s %d.%d", details.embedded ? "ES" : "", details.opengl_version.major, details.opengl_version.minor ) );
+			LogInfo( Format( "OpenGL version: %s%d.%d", details.version.IsEmbedded() ? "ES " : "", details.version.GetMajor(), details.version.GetMinor() ) );
 
 			break;
 		}
