@@ -86,7 +86,7 @@ ORB_VARYING vec2 v_texcoord;
 void main()
 {
 	vec4 tex_color = texture( diffuse_texture, v_texcoord );
-	vec4 out_color = tex_color * v_color;
+	vec4 out_color = tex_color + v_color;
 
 	ORB_SET_OUT_COLOR( out_color );
 }
@@ -131,7 +131,7 @@ PixelData VSMain( VertexData input )
 float4 PSMain( PixelData input ) : SV_TARGET
 {
 	float4 tex_color = diffuse_texture.Sample( texture_sampler, input.texcoord );
-	float4 out_color = tex_color * input.color;
+	float4 out_color = tex_color + input.color;
 
 	return out_color;
 }
