@@ -16,25 +16,17 @@
  */
 
 #pragma once
-#include <string>
 #include <vector>
 
 #include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-struct VertexComponent
+enum class VertexComponent : uint8_t
 {
-	enum Type
-	{
-		Float,
-		Vec2,
-		Vec3,
-		Vec4,
-	};
-
-	std::string semantic_name;
-	Type        type;
+	Position,
+	Color,
+	TexCoord,
 };
 
 using VertexLayout = std::vector< VertexComponent >;
