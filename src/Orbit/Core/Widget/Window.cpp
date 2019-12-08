@@ -100,6 +100,12 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	m_details.delegate = [ OrbitWindowDelegate alloc ];
 	[ m_details.window setDelegate:m_details.delegate ];
 
+	/* Send initial resize event */
+	WindowResized e;
+	e.width  = width;
+	e.height = height;
+	QueueEvent( e );
+
 #elif defined( ORB_OS_ANDROID )
 
 	AndroidOnly::app->onInputEvent = OnInput;
