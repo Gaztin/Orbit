@@ -20,8 +20,8 @@
 #include <cstring>
 
 #include "Orbit/Core/Utility/Utility.h"
-#include "Orbit/Core/Utility/Version.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGLVersion.h"
 #include "Orbit/Graphics/Device/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
@@ -40,12 +40,7 @@ ConstantBuffer::ConstantBuffer( size_t size )
 		{
 			auto& gl = std::get< Private::_RenderContextDetailsOpenGL >( context_details );
 
-			if( (  gl.embedded && gl.opengl_version < Version( 3 ) )||
-			    ( !gl.embedded && gl.opengl_version < Version( 3, 1 ) ) )
-			{
-				m_details.emplace< Private::_ConstantBufferDetailsOpenGL20 >();
-			}
-			else
+			if( gl.version.RequireGL( 3, 1 ) || gl.version.RequireGLES( 3 ) )
 			{
 				auto& details = m_details.emplace< Private::_ConstantBufferDetailsOpenGL31 >();
 
@@ -54,6 +49,11 @@ ConstantBuffer::ConstantBuffer( size_t size )
 				glBufferData( OpenGLBufferTarget::Uniform, size, nullptr, OpenGLBufferUsage::StreamDraw );
 				glBindBuffer( OpenGLBufferTarget::Uniform, 0 );
 			}
+			else
+			{
+				m_details.emplace< Private::_ConstantBufferDetailsOpenGL20 >();
+			}
+
 			break;
 		}
 

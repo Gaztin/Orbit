@@ -198,7 +198,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 			}
 
 			/* Create vertex array for GL 3.0+ or GLES 3+ */
-			if( ( gl.embedded && gl.opengl_version >= Version( 3 ) ) || ( !gl.embedded && gl.opengl_version >= Version( 3, 0 ) ) )
+			if( gl.version.RequireGL( 3, 0 ) || gl.version.RequireGLES( 3 ) )
 			{
 				glGenVertexArrays( 1, &details.vao );
 			}
@@ -448,14 +448,14 @@ GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShade
 {
 	auto& gl = std::get< Private::_RenderContextDetailsOpenGL >( RenderContext::GetInstance().GetPrivateDetails() );
 
-	const std::string_view version_directive  = GLSL::GetVersionDirective( gl.opengl_version, gl.embedded );
+	const std::string_view version_directive  = GLSL::GetVersionDirective( gl.version );
 	const std::string_view glsl_define        = GLSL::GetGLSLDefine();
 	const std::string_view shader_type_define = GLSL::GetShaderTypeDefine( shader_type );
-	const std::string_view precision          = GLSL::GetPrecision( gl.embedded );
-	const std::string_view constants_macros   = GLSL::GetConstantsMacros( gl.opengl_version, gl.embedded );
-	const std::string_view varying_macro      = GLSL::GetVaryingMacro( gl.opengl_version, gl.embedded, shader_type );
-	const std::string_view attribute_macro    = GLSL::GetAttributeMacro( gl.opengl_version, gl.embedded, shader_type );
-	const std::string_view out_color_macro    = GLSL::GetOutColorMacro( gl.opengl_version, gl.embedded );
+	const std::string_view precision          = GLSL::GetPrecision( gl.version );
+	const std::string_view constants_macros   = GLSL::GetConstantsMacros( gl.version );
+	const std::string_view varying_macro      = GLSL::GetVaryingMacro( gl.version, shader_type );
+	const std::string_view attribute_macro    = GLSL::GetAttributeMacro( gl.version, shader_type );
+	const std::string_view out_color_macro    = GLSL::GetOutColorMacro( gl.version );
 
 	const std::array< const GLchar*, 9 > sources
 	{

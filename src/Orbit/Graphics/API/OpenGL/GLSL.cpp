@@ -21,26 +21,26 @@ ORB_NAMESPACE_BEGIN
 
 namespace GLSL
 {
-	std::string_view GetVersionDirective( const Version& version, bool embedded )
+	std::string_view GetVersionDirective( OpenGLVersion version )
 	{
-		if( embedded )
+		if( version.IsEmbedded() )
 		{
-			/**/ if( version >= Version( 3, 2 ) ) return "#version 320 es\n";
-			else if( version >= Version( 3, 0 ) ) return "#version 300 es\n";
-			else                                  return "#version 100\n";
+			/**/ if( version.RequireGLES( 3, 2 ) ) return "#version 320 es\n";
+			else if( version.RequireGLES( 3, 0 ) ) return "#version 300 es\n";
+			else                                   return "#version 100\n";
 		}
 		else
 		{
-			/**/ if( version >= Version( 4, 3 ) ) return "#version 430\n";
-			else if( version >= Version( 4, 2 ) ) return "#version 420\n";
-			else if( version >= Version( 4, 1 ) ) return "#version 410\n";
-			else if( version >= Version( 4, 0 ) ) return "#version 400\n";
-			else if( version >= Version( 3, 3 ) ) return "#version 330\n";
-			else if( version >= Version( 3, 2 ) ) return "#version 150\n";
-			else if( version >= Version( 3, 1 ) ) return "#version 140\n";
-			else if( version >= Version( 3, 0 ) ) return "#version 130\n";
-			else if( version >= Version( 2, 1 ) ) return "#version 120\n";
-			else                                  return "#version 110\n";
+			/**/ if( version.RequireGL( 4, 3 ) ) return "#version 430\n";
+			else if( version.RequireGL( 4, 2 ) ) return "#version 420\n";
+			else if( version.RequireGL( 4, 1 ) ) return "#version 410\n";
+			else if( version.RequireGL( 4, 0 ) ) return "#version 400\n";
+			else if( version.RequireGL( 3, 3 ) ) return "#version 330\n";
+			else if( version.RequireGL( 3, 2 ) ) return "#version 150\n";
+			else if( version.RequireGL( 3, 1 ) ) return "#version 140\n";
+			else if( version.RequireGL( 3, 0 ) ) return "#version 130\n";
+			else if( version.RequireGL( 2, 1 ) ) return "#version 120\n";
+			else                                 return "#version 110\n";
 		}
 	}
 
@@ -59,23 +59,25 @@ namespace GLSL
 		}
 	}
 
-	std::string_view GetPrecision( bool embedded )
+	std::string_view GetPrecision( OpenGLVersion version )
 	{
-		return embedded ? "precision highp float;\n" : "";
+		return version.IsEmbedded() ? "precision highp float;\n" : "";
 	}
 
-	std::string_view GetConstantsMacros( const Version& version, bool embedded )
+	std::string_view GetConstantsMacros( OpenGLVersion version )
 	{
-		/* GLES 3 or GL 3.1+ supports uniform buffer objects */
-		if( ( embedded && version >= Version( 3 ) ) || ( !embedded && version >= Version( 3, 1 ) ) )
+		/* GL 3.1+ or GLES 3 supports uniform buffer objects */
+		if( version.RequireGL( 3 ) || version.RequireGLES( 3, 1 ) )
+		{
 			return "#define ORB_CONSTANTS_BEGIN(X) layout (std140) uniform X {\n#define ORB_CONSTANTS_END };\n#define ORB_CONSTANT(T, N) T N\n";
+		}
 
 		return "#define ORB_CONSTANTS_BEGIN(X)\n#define ORB_CONSTANTS_END\n#define ORB_CONSTANT(T, N) uniform T N\n";
 	}
 
-	std::string_view GetVaryingMacro( const Version& version, bool embedded, ShaderType shader_type )
+	std::string_view GetVaryingMacro( OpenGLVersion version, ShaderType shader_type )
 	{
-		if( ( embedded && version >= Version( 3 ) ) || ( !embedded && version >= Version( 3, 3 ) ) )
+		if( version.RequireGL( 3, 3 ) || version.RequireGLES( 3 ) )
 		{
 			switch( shader_type )
 			{
@@ -88,9 +90,9 @@ namespace GLSL
 		return "#define ORB_VARYING varying\n";
 	}
 
-	std::string_view GetAttributeMacro( const Version& version, bool embedded, ShaderType shader_type )
+	std::string_view GetAttributeMacro( OpenGLVersion version, ShaderType shader_type )
 	{
-		if( ( embedded && version >= Version( 3 ) ) || ( !embedded && version >= Version( 3, 3 ) ) )
+		if( version.RequireGL( 3, 3 ) || version.RequireGLES( 3 ) )
 		{
 			switch( shader_type )
 			{
@@ -102,11 +104,13 @@ namespace GLSL
 		return "#define ORB_ATTRIBUTE( INDEX ) attribute\n";
 	}
 
-	std::string_view GetOutColorMacro( const Version& version, bool embedded )
+	std::string_view GetOutColorMacro( OpenGLVersion version )
 	{
-		/* 'gl_FragColor' was deprecated in GLES 3 and GL 3.0 and replaced with output variables */
-		if( ( embedded && version >= Version( 3 ) ) || ( !embedded && version >= Version( 3, 3 ) ) )
+		/* 'gl_FragColor' was deprecated in GL 3.0 and GLES 3 and replaced with output variables */
+		if( version.RequireGL( 3, 3 ) || version.RequireGLES( 3 ) )
+		{
 			return "out vec4 _orb_outColor;\n#define ORB_SET_OUT_COLOR(X) _orb_outColor = X\n";
+		}
 
 		return "#define ORB_SET_OUT_COLOR(X) gl_FragColor = X\n";
 	}

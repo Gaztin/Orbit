@@ -18,21 +18,20 @@
 #pragma once
 #include <string_view>
 
-#include "Orbit/Core/Utility/Version.h"
-#include "Orbit/Graphics/Graphics.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGLVersion.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace GLSL
 {
-	extern ORB_API_GRAPHICS std::string_view GetVersionDirective ( const Version& version, bool embedded );
+	extern ORB_API_GRAPHICS std::string_view GetVersionDirective ( OpenGLVersion version );
 	extern ORB_API_GRAPHICS std::string_view GetGLSLDefine       ( void );
 	extern ORB_API_GRAPHICS std::string_view GetShaderTypeDefine ( ShaderType shader_type );
-	extern ORB_API_GRAPHICS std::string_view GetPrecision        ( bool embedded );
-	extern ORB_API_GRAPHICS std::string_view GetConstantsMacros  ( const Version& version, bool embedded );
-	extern ORB_API_GRAPHICS std::string_view GetVaryingMacro     ( const Version& version, bool embedded, ShaderType shader_type );
-	extern ORB_API_GRAPHICS std::string_view GetAttributeMacro   ( const Version& version, bool embedded, ShaderType shader_type );
-	extern ORB_API_GRAPHICS std::string_view GetOutColorMacro    ( const Version& version, bool embedded );
+	extern ORB_API_GRAPHICS std::string_view GetPrecision        ( OpenGLVersion version );
+	extern ORB_API_GRAPHICS std::string_view GetConstantsMacros  ( OpenGLVersion version );
+	extern ORB_API_GRAPHICS std::string_view GetVaryingMacro     ( OpenGLVersion version, ShaderType shader_type );
+	extern ORB_API_GRAPHICS std::string_view GetAttributeMacro   ( OpenGLVersion version, ShaderType shader_type );
+	extern ORB_API_GRAPHICS std::string_view GetOutColorMacro    ( OpenGLVersion version );
 }
 
 ORB_NAMESPACE_END

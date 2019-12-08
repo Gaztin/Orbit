@@ -23,7 +23,7 @@
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
 #include "Orbit/Core/Private/WindowDetails.h"
 #include "Orbit/Core/Utility/Color.h"
-#include "Orbit/Core/Utility/Version.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGLVersion.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"
 
 #if defined( ORB_OS_MACOS )
@@ -42,8 +42,7 @@ namespace Private
 
 	struct _RenderContextDetailsOpenGL
 	{
-		bool    embedded;
-		Version opengl_version;
+		OpenGLVersion version;
 
 	#if defined( ORB_OS_WINDOWS )
 
