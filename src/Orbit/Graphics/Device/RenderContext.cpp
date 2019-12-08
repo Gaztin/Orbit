@@ -25,18 +25,13 @@
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Core/Widget/Window.h"
+#include "Orbit/Graphics/Platform/iOS/GLKViewDelegate.h"
 
 #if defined( ORB_OS_MACOS )
 #  include <AppKit/AppKit.h>
 #elif defined( ORB_OS_ANDROID )
 #  include <android/native_window.h>
 #  include <android_native_app_glue.h>
-#endif
-
-#if _ORB_HAS_WINDOW_API_UIKIT
-#  include <GLKit/GLKit.h>
-@interface OrbitGLKViewDelegate : UIResponder< GLKViewDelegate >
-@end
 #endif
 
 ORB_NAMESPACE_BEGIN
@@ -358,18 +353,18 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
-			OrbitGLKViewDelegate* delegate = [ OrbitGLKViewDelegate alloc ];
+			ORB_NAMESPACED_OBJC( GLKViewDelegate )* delegate = [ ORB_NAMESPACED_OBJC( GLKViewDelegate ) alloc ];
 			[ delegate init ];
 
 			details.context = [ EAGLContext alloc ];
 			[ ( EAGLContext* )details.context initWithAPI:kEAGLRenderingAPIOpenGLES3 ];
 
 			details.view = [ GLKView alloc ];
-			[ ( GLKView* )details.view initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
-			( ( GLKView* )details.view ).context               = ( EAGLContext* )details.context;
-			( ( GLKView* )details.view ).delegate              = delegate;
-			( ( GLKView* )details.view ).enableSetNeedsDisplay = NO;
-			[ ( UIWindow* )window_details.ui_window addSubview:( GLKView* )details.view ];
+			[ details.view initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+			( details.view ).context               = details.context;
+			( details.view ).delegate              = delegate;
+			( details.view ).enableSetNeedsDisplay = NO;
+			[ window_details.ui_window addSubview:details.view ];
 
 		#endif
 
@@ -698,8 +693,8 @@ RenderContext::~RenderContext()
 		#elif defined( ORB_OS_IOS )
 
 			[ EAGLContext setCurrentContext:nullptr ];
-			[ ( GLKView* )details.view dealloc ];
-			[ ( EAGLContext* )details.context dealloc ];
+			[ details.view dealloc ];
+			[ details.context dealloc ];
 
 		#endif
 
@@ -742,7 +737,7 @@ bool RenderContext::MakeCurrent()
 
 	#elif defined( ORB_OS_IOS )
 
-		[ EAGLContext setCurrentContext:( EAGLContext* )details.context ];
+		[ EAGLContext setCurrentContext:details.context ];
 
 	#endif
 
@@ -779,7 +774,9 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 		#elif defined( ORB_OS_IOS )
 
-			( ( GLKView* )details.view ).layer.frame = CGRectMake( 0.f, 0.f, width, height );
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+
+			details.view.layer.frame = CGRectMake( 0.f, 0.f, width, height );
 
 		#endif
 
@@ -913,7 +910,7 @@ void RenderContext::SwapBuffers( void )
 
 			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
 
-			[ ( GLKView* )details.view display ];
+			[ details.view display ];
 
 		#endif
 
@@ -1012,18 +1009,3 @@ void RenderContext::SetClearColor( float r, float g, float b )
 }
 
 ORB_NAMESPACE_END
-
-#if defined( ORB_OS_IOS )
-
-@implementation OrbitGLKViewDelegate
-
--( void )glkView:( nonnull GLKView* )view drawInRect:( CGRect )rect
-{
-	/* Unused parameters */
-	( void )view;
-	( void )rect;
-}
-
-@end
-
-#endif

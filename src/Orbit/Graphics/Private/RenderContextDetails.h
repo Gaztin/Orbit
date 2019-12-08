@@ -28,6 +28,9 @@
 
 #if defined( ORB_OS_MACOS )
 @class NSOpenGLView;
+#elif defined( ORB_OS_IOS )
+@class EAGLContext;
+@class GLKView;
 #endif
 
 ORB_NAMESPACE_BEGIN
@@ -65,8 +68,8 @@ namespace Private
 
 	#elif defined( ORB_OS_IOS )
 
-		void* context;
-		void* view;
+		EAGLContext* context;
+		GLKView*     view;
 
 	#endif
 
