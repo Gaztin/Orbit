@@ -55,9 +55,9 @@ ORB_CONSTANTS_BEGIN( Constants )
 	ORB_CONSTANT( mat4, mvp );
 ORB_CONSTANTS_END
 
-ORB_ATTRIBUTE vec4 a_position;
-ORB_ATTRIBUTE vec4 a_color;
-ORB_ATTRIBUTE vec2 a_texcoord;
+ORB_ATTRIBUTE( 0 ) vec4 a_position;
+ORB_ATTRIBUTE( 1 ) vec4 a_color;
+ORB_ATTRIBUTE( 2 ) vec2 a_texcoord;
 
 ORB_VARYING vec4 v_position;
 ORB_VARYING vec4 v_color;
