@@ -94,12 +94,12 @@ namespace GLSL
 		{
 			switch( shader_type )
 			{
-				default:                  return "";
-				case ShaderType::Vertex: return "#define ORB_ATTRIBUTE in\n";
+				default:                 return "";
+				case ShaderType::Vertex: return "#define ORB_ATTRIBUTE( INDEX ) layout( location = INDEX ) in\n";
 			}
 		}
 
-		return "#define ORB_ATTRIBUTE attribute\n";
+		return "#define ORB_ATTRIBUTE( INDEX ) attribute\n";
 	}
 
 	std::string_view GetOutColorMacro( const Version& version, bool embedded )

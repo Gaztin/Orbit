@@ -15,47 +15,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Application.h"
-
-#include <chrono>
-
-#include "Orbit/Core/Platform/iOS/UIApplicationDelegate.h"
-
-ORB_NAMESPACE_BEGIN
-
-std::shared_ptr< void >( *_application_initializer )( void );
-
-void ApplicationBase::RunInstance()
-{
+#include "GLKViewDelegate.h"
 
 #if defined( ORB_OS_IOS )
 
-	@autoreleasepool
-	{
-		UIApplicationMain( 0, nil, nil, NSStringFromClass( [ ORB_NAMESPACED_OBJC( UIApplicationDelegate ) class ] ) );
-	}
+@implementation ORB_NAMESPACED_OBJC( GLKViewDelegate )
 
-#else
-
-	if( !_application_initializer )
-		return;
-
-	/* Initialize application instance */
-	auto instance = std::static_pointer_cast< ApplicationBase >( _application_initializer() );
-	auto time     = std::chrono::high_resolution_clock::now();
-
-	while( instance->IsRunning() )
-	{
-		auto now   = std::chrono::high_resolution_clock::now();
-		auto delta = std::chrono::duration_cast< std::chrono::duration< float > >( now - time );
-
-		time = now;
-
-		instance->OnFrame( delta.count() );
-	}
-
-#endif
-
+-( void )glkView:( nonnull GLKView* )view drawInRect:( CGRect )rect
+{
+	/* Unused parameters */
+	( void )view;
+	( void )rect;
 }
 
-ORB_NAMESPACE_END
+@end
+
+#endif

@@ -18,23 +18,15 @@
 #include "Window.h"
 
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
+#include "Orbit/Core/Platform/iOS/UIWindow.h"
+#include "Orbit/Core/Platform/MacOS/WindowDelegate.h"
 #include "Orbit/Core/Utility/Utility.h"
-
-#if defined( ORB_OS_ANDROID )
-#  include <android/sensor.h>
-#  include <android_native_app_glue.h>
-#endif
 
 #if defined( ORB_OS_MACOS )
 #  include <AppKit/AppKit.h>
-@interface OrbitWindowDelegate : NSObject< NSWindowDelegate >
-@end
-#endif
-
-#if defined( ORB_OS_IOS )
-#  include <UIKit/UIKit.h>
-@interface OrbitUIWindow : UIWindow
-@end
+#elif defined( ORB_OS_ANDROID )
+#  include <android/sensor.h>
+#  include <android_native_app_glue.h>
 #endif
 
 ORB_NAMESPACE_BEGIN
@@ -101,12 +93,18 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	NSBackingStoreType backing    = ( NSBackingStoreBuffered );
 
 	/* Create window */
-	m_details.ns_window = [ NSWindow alloc ];
-	[ ( NSWindow* )m_details.ns_window initWithContentRect:frame styleMask:style_mask backing:backing defer:NO ];
+	m_details.window = [ NSWindow alloc ];
+	[ m_details.window initWithContentRect:frame styleMask:style_mask backing:backing defer:NO ];
 
 	/* Create window delegate */
 	m_details.delegate = [ OrbitWindowDelegate alloc ];
-	[ ( NSWindow* )m_details.ns_window setDelegate:( OrbitWindowDelegate* )m_details.delegate ];
+	[ m_details.window setDelegate:m_details.delegate ];
+
+	/* Send initial resize event */
+	WindowResized e;
+	e.width  = width;
+	e.height = height;
+	QueueEvent( e );
 
 #elif defined( ORB_OS_ANDROID )
 
@@ -134,14 +132,14 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 	/* Initialize window */
 	m_details.ui_window = [ OrbitUIWindow alloc ];
-	[ ( OrbitUIWindow* )m_details.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
-	( ( OrbitUIWindow* )m_details.ui_window ).backgroundColor = [ UIColor whiteColor ];
-	[ ( OrbitUIWindow* )m_details.ui_window makeKeyAndVisible ];
+	[ m_details.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+	m_details.ui_window.backgroundColor = [ UIColor whiteColor ];
+	[ m_details.ui_window makeKeyAndVisible ];
 
 	/* Create view controller */
 	UIViewController* vc = [ UIViewController alloc ];
 	[ vc initWithNibName:nil bundle:nil ];
-	( ( OrbitUIWindow* )m_details.ui_window ).rootViewController = vc;
+	m_details.ui_window.rootViewController = vc;
 
 #endif
 
@@ -161,9 +159,9 @@ Window::~Window( void )
 
 #elif defined( ORB_OS_MACOS )
 
-	[ ( NSWindow* )m_details.ns_window close ];
-	[ ( OrbitWindowDelegate* )m_details.delegate dealloc ];
-	[ ( NSWindow* )m_details.nsWindow dealloc ];
+	[ m_details.window close ];
+	[ m_details.delegate dealloc ];
+	[ m_details.window dealloc ];
 
 #elif defined( ORB_OS_ANDROID )
 
@@ -173,7 +171,7 @@ Window::~Window( void )
 
 #elif defined( ORB_OS_IOS )
 
-	[ ( OrbitUIWindow* )m_details.ui_window dealloc ];
+	[ m_details.ui_window dealloc ];
 
 #endif
 
@@ -204,11 +202,11 @@ void Window::PollEvents( void )
 
 #elif defined( ORB_OS_MACOS )
 
-	NSEvent* ns_event;
+	NSEvent* event;
 
-	while( ( ns_event = [ ( const NSWindow* )m_details.ns_window nextEventMatchingMask : NSEventMaskAny untilDate : nullptr inMode : NSDefaultRunLoopMode dequeue : YES ] ) != nullptr )
+	while( ( event = [ m_details.window nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
 	{
-		[ ( const NSWindow* )m_details.ns_window sendEvent : ns_event ];
+		[ m_details.window sendEvent:event ];
 	}
 
 #elif defined( ORB_OS_ANDROID )
@@ -239,9 +237,9 @@ void Window::SetTitle( std::string_view title )
 
 #elif defined( ORB_OS_MACOS )
 
-	NSString* ns_title = [ NSString stringWithUTF8String:title.data() ];
-	[ ( const NSWindow* )m_details.ns_window setTitle:ns_title ];
-	[ nsTitle release ];
+	NSString* title_objc = [ NSString stringWithUTF8String:title.data() ];
+	[ m_details.window setTitle:title_objc ];
+	[ title_objc release ];
 
 #elif defined( ORB_OS_ANDROID )
 
@@ -273,11 +271,11 @@ void Window::Move( [[ maybe_unused ]] int32_t x, [[ maybe_unused ]] int32_t y )
 
 #elif defined( ORB_OS_MACOS )
 
-	NSRect frame   = [ ( const NSWindow* )m_details.ns_window frame ];
+	NSRect frame   = [ m_details.window frame ];
 	frame.origin.x = x;
 	frame.origin.y = y;
 
-	[ ( const NSWindow* )m_details.ns_window setFrame:frame display:YES ];
+	[ m_details.window setFrame:frame display:YES ];
 
 #endif
 
@@ -301,11 +299,11 @@ void Window::Resize( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint3
 
 #elif defined( ORB_OS_MACOS )
 
-	NSRect frame      = [ ( const NSWindow* )m_details.ns_window frame ];
+	NSRect frame      = [ m_details.window frame ];
 	frame.size.width  = width;
 	frame.size.height = height;
 
-	[ ( const NSWindow* )m_details.ns_window setFrame:frame display:YES ];
+	[ m_details.window setFrame:frame display:YES ];
 
 #endif
 
@@ -324,7 +322,7 @@ void Window::Show( void )
 
 #elif defined( ORB_OS_MACOS )
 
-	[ ( const NSWindow* )m_details.ns_window setIsVisible:YES ];
+	[ m_details.window setIsVisible:YES ];
 
 #elif defined( ORB_OS_ANDROID )
 
@@ -351,7 +349,7 @@ void Window::Hide( void )
 
 #elif defined( ORB_OS_MACOS )
 
-	[ ( const NSWindow* )m_details.ns_window setIsVisible:NO ];
+	[ m_details.window setIsVisible:NO ];
 
 #elif defined( ORB_OS_ANDROID )
 
@@ -359,7 +357,7 @@ void Window::Hide( void )
 
 #elif defined( ORB_OS_IOS )
 
-	[ ( OrbitUIWindow* )m_details.ui_window setHidden:YES ];
+	[ m_details.ui_window setHidden:YES ];
 
 #endif
 
@@ -618,89 +616,3 @@ static int OnInput( android_app* state, AInputEvent* e )
 #endif
 
 ORB_NAMESPACE_END
-
-#if defined( ORB_OS_MACOS )
-
-@implementation OrbitWindowDelegate
-
--( void )windowWillClose:( NSNotification* ) __unused notification
-{
-	Window::GetInstance().Close();
-}
-
--( void )windowDidMove:( NSNotification* ) __unused notification
-{
-	Window&        window  = Window::GetInstance();
-	WindowDetails& details = window.GetPrivateDetails();
-	const CGPoint  point   = ( ( const NSWindow* )details.ns_window ).frame.origin;
-
-	ORB_NAMESPACE WindowMoved e;
-	e.x = point.x;
-	e.y = point.y;
-
-	window.QueueEvent( e );
-}
-
--( NSSize )windowWillResize:( NSWindow* ) __unused sender toSize:( NSSize ) frameSize
-{
-	ORB_NAMESPACE WindowResized e;
-	e.width  = frameSize.width;
-	e.height = frameSize.height;
-
-	Window::GetInstance().QueueEvent( e );
-
-	return frameSize;
-}
-
--( void )windowDidMiniaturize:( NSNotification* ) __unused notification
-{
-	ORB_NAMESPACE WindowStateChanged e;
-	e.state = ORB_NAMESPACE WindowState::Suspend;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
--( void )windowDidDeminiaturize:( NSNotification* ) __unused notification
-{
-	ORB_NAMESPACE WindowStateChanged e;
-	e.state = ORB_NAMESPACE WindowState::Restore;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
--( void )windowDidBecomeMain:( NSNotification* ) __unused notification
-{
-	ORB_NAMESPACE WindowStateChanged e;
-	e.state = ORB_NAMESPACE WindowState::Focus;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
--( void )windowDidResignMain:( NSNotification* ) __unused notification
-{
-	ORB_NAMESPACE WindowStateChanged e;
-	e.state = ORB_NAMESPACE WindowState::Defocus;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
-@end
-
-#elif defined( ORB_OS_IOS )
-
-@implementation OrbitUIWindow
-
--( void )layoutSubviews
-{
-	[ super layoutSubviews ];
-
-	ORB_NAMESPACE WindowResized e;
-	e.width  = self.bounds.size.width;
-	e.height = self.bounds.size.height;
-
-	Window::GetInstance().QueueEvent( e );
-}
-
-@end
-
-#endif

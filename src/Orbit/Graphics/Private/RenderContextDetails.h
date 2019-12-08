@@ -26,6 +26,13 @@
 #include "Orbit/Core/Utility/Version.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"
 
+#if defined( ORB_OS_MACOS )
+@class NSOpenGLView;
+#elif defined( ORB_OS_IOS )
+@class EAGLContext;
+@class GLKView;
+#endif
+
 ORB_NAMESPACE_BEGIN
 
 namespace Private
@@ -50,7 +57,7 @@ namespace Private
 
 	#elif defined( ORB_OS_MACOS )
 
-		void* view;
+		NSOpenGLView* view;
 
 	#elif defined( ORB_OS_ANDROID )
 
@@ -61,8 +68,8 @@ namespace Private
 
 	#elif defined( ORB_OS_IOS )
 
-		void* context;
-		void* view;
+		EAGLContext* context;
+		GLKView*     view;
 
 	#endif
 

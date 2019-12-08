@@ -15,47 +15,21 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Application.h"
-
-#include <chrono>
-
-#include "Orbit/Core/Platform/iOS/UIApplicationDelegate.h"
-
-ORB_NAMESPACE_BEGIN
-
-std::shared_ptr< void >( *_application_initializer )( void );
-
-void ApplicationBase::RunInstance()
-{
+#pragma once
+#include "Orbit/Core/Core.h"
 
 #if defined( ORB_OS_IOS )
+#  include <UIKit/UIKit.h>
 
-	@autoreleasepool
-	{
-		UIApplicationMain( 0, nil, nil, NSStringFromClass( [ ORB_NAMESPACED_OBJC( UIApplicationDelegate ) class ] ) );
-	}
+#  include "Orbit/Core/Application/Application.h"
 
-#else
-
-	if( !_application_initializer )
-		return;
-
-	/* Initialize application instance */
-	auto instance = std::static_pointer_cast< ApplicationBase >( _application_initializer() );
-	auto time     = std::chrono::high_resolution_clock::now();
-
-	while( instance->IsRunning() )
-	{
-		auto now   = std::chrono::high_resolution_clock::now();
-		auto delta = std::chrono::duration_cast< std::chrono::duration< float > >( now - time );
-
-		time = now;
-
-		instance->OnFrame( delta.count() );
-	}
-
-#endif
-
+@interface ORB_NAMESPACED_OBJC( UIApplicationDelegate ) : UIResponder< UIApplicationDelegate >
+{
+	std::shared_ptr< ORB_NAMESPACE ApplicationBase > application_instance;
 }
 
-ORB_NAMESPACE_END
+-( void )OnFrame:( CADisplayLink* )display_link;
+
+@end
+
+#endif
