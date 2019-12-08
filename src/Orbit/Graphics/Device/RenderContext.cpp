@@ -26,7 +26,9 @@
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Core/Widget/Window.h"
 
-#if defined( ORB_OS_ANDROID )
+#if defined( ORB_OS_MACOS )
+#  include <AppKit/AppKit.h>
+#elif defined( ORB_OS_ANDROID )
 #  include <android/native_window.h>
 #  include <android_native_app_glue.h>
 #endif
@@ -243,14 +245,13 @@ RenderContext::RenderContext( GraphicsAPI api )
 				0
 			};
 
-			NSWindow*            ns_indow     = ( NSWindow* )window_details->ns_window;
 			NSOpenGLPixelFormat* pixel_format = [ NSOpenGLPixelFormat alloc ];
 			[ pixel_format initWithAttributes:attribs ];
 
-			sub_data->view = [ NSOpenGLView alloc ];
-			[ ( NSOpenGLView* )sub_data->view initWithFrame:ns_window.contentView.frame pixelFormat:pixel_format ];
-			[ ( NSOpenGLView* )sub_data->view prepareOpenGL ];
-			[ ns_window.contentView addSubview:( NSOpenGLView* )sub_data->view ];
+			details.view = [ NSOpenGLView alloc ];
+			[ details.view initWithFrame:window_details.window.contentView.frame pixelFormat:pixel_format ];
+			[ details.view prepareOpenGL ];
+			[ window_details.window.contentView addSubview:details.view ];
 
 		#elif defined( ORB_OS_ANDROID )
 
@@ -684,8 +685,8 @@ RenderContext::~RenderContext()
 		#elif defined( ORB_OS_MACOS )
 
 			[ NSOpenGLContext clearCurrentContext ];
-			[ ( const NSOpenGLView* )details.view removeFromSuperview ];
-			[ ( const NSOpenGLView* )details.view dealloc ];
+			[ details.view removeFromSuperview ];
+			[ details.view dealloc ];
 
 		#elif defined( ORB_OS_ANDROID )
 

@@ -46,7 +46,7 @@
 	e.width  = frame_size.width;
 	e.height = frame_size.height;
 
-	Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
 
 	return frame_size;
 }
@@ -56,7 +56,7 @@
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Suspend;
 
-	Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
 }
 
 -( void )windowDidDeminiaturize:( NSNotification* ) __unused notification
@@ -64,7 +64,7 @@
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Restore;
 
-	Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
 }
 
 -( void )windowDidBecomeMain:( NSNotification* ) __unused notification
@@ -72,7 +72,7 @@
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Focus;
 
-	Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
 }
 
 -( void )windowDidResignMain:( NSNotification* ) __unused notification
@@ -80,7 +80,7 @@
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Defocus;
 
-	Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
 }
 
 @end
