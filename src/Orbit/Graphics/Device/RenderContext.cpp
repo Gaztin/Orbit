@@ -36,11 +36,6 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if( ORB_HAS_D3D11 )
-constexpr DXGI_FORMAT back_buffer_format  = DXGI_FORMAT_R8G8B8A8_UNORM;
-constexpr DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-#endif
-
 RenderContext::RenderContext( GraphicsAPI api )
 	: m_details              { }
 	, m_window_resized       { }
@@ -441,6 +436,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 			auto& details        = m_details.emplace< Private::_RenderContextDetailsD3D11 >();
 			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
+			constexpr DXGI_FORMAT back_buffer_format  = DXGI_FORMAT_R8G8B8A8_UNORM;
+			constexpr DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
 			/* Find the monitor refresh rate */
 			DXGI_RATIONAL refreshRate = { 60000, 1000 };
 			{
@@ -492,12 +490,12 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			/* Create the swap chain */
 			{
-				constexpr UINT kDeviceFlags = 0
+				constexpr UINT device_flags = 0
 				#if !defined( NDEBUG )
 					| D3D11_CREATE_DEVICE_DEBUG
 				#endif
 					;
-				constexpr std::array kFeatureLevels
+				constexpr std::array feature_levels
 				{
 					D3D_FEATURE_LEVEL_11_1,
 					D3D_FEATURE_LEVEL_11_0,
@@ -524,7 +522,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 				desc.SwapEffect             = DXGI_SWAP_EFFECT_DISCARD;
 
 				IDXGISwapChain* swap_chain;
-				D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, kDeviceFlags, kFeatureLevels.data(), static_cast< UINT >( kFeatureLevels.size() ), D3D11_SDK_VERSION, &desc, &swap_chain, NULL, NULL, NULL );
+				D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, device_flags, feature_levels.data(), static_cast< UINT >( feature_levels.size() ), D3D11_SDK_VERSION, &desc, &swap_chain, NULL, NULL, NULL );
 				details.swap_chain.reset( swap_chain );
 			}
 

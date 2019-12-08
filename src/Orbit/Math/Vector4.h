@@ -20,10 +20,11 @@
 
 ORB_NAMESPACE_BEGIN
 
-class Vector4 final : public VectorBase< 4, Vector4 >
+class Vector4 final : public VectorBase< Vector4, 4 >
 {
 public:
-	Vector4()
+
+	Vector4( void )
 		: x( 0.f )
 		, y( 0.f )
 		, z( 0.f )
@@ -46,6 +47,8 @@ public:
 		, w( w )
 	{
 	}
+
+public:
 
 	float x;
 	float y;

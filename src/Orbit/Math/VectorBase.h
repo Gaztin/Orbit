@@ -16,17 +16,15 @@
  */
 
 #pragma once
-#include "Orbit/Math/Math.h"
+#include <type_traits>
 
-#include <array>
+#include "Orbit/Math/Math.h"
 
 ORB_NAMESPACE_BEGIN
 
-template< size_t Size, typename Derived >
+template< typename Derived, size_t Size >
 class VectorBase
 {
-	using ElementArray = std::array< float, Size >;
-
 public:
 
 	float DotProduct( const VectorBase& rhs ) const
@@ -37,7 +35,12 @@ public:
 		return d;
 	}
 
-	float DotProduct() const { return DotProduct( *this ); }
+	float DotProduct( void ) const
+	{
+		return DotProduct( *this );
+	}
+
+public:
 
 	VectorBase& operator=( const VectorBase& other )
 	{
@@ -78,13 +81,24 @@ public:
 		return v;
 	}
 
-	float*       begin ( void )       { return &( reinterpret_cast< float*       >( this )[ 0 ] ); }
-	const float* begin ( void ) const { return &( reinterpret_cast< const float* >( this )[ 0 ] ); }
-	float*       end   ( void )       { return &( reinterpret_cast< float*       >( this )[ Size ] ); }
-	const float* end   ( void ) const { return &( reinterpret_cast< const float* >( this )[ Size ] ); }
+	float& operator[]( size_t i )
+	{
+		float* ptr = reinterpret_cast< float* >( this );
+		return ptr[ i ];
+	}
 
-	float&       operator[]( size_t i )       { return ( reinterpret_cast< float*       >( this )[ i ] ); }
-	const float& operator[]( size_t i ) const { return ( reinterpret_cast< const float* >( this )[ i ] ); }
+	const float& operator[]( size_t i ) const
+	{
+		const float* ptr = reinterpret_cast< const float* >( this );
+		return ptr[ i ];
+	}
+
+public:
+
+	float*       begin ( void )       { return &( *this )[ 0 ]; }
+	const float* begin ( void ) const { return &( *this )[ 0 ]; }
+	float*       end   ( void )       { return &( *this )[ Size ]; }
+	const float* end   ( void ) const { return &( *this )[ Size ]; }
 
 };
 

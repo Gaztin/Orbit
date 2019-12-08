@@ -20,10 +20,11 @@
 
 ORB_NAMESPACE_BEGIN
 
-class Vector3 final : public VectorBase< 3, Vector3 >
+class Vector3 final : public VectorBase< Vector3, 3 >
 {
 public:
-	Vector3()
+
+	Vector3( void )
 		: x( 0.f )
 		, y( 0.f )
 		, z( 0.f )
@@ -44,13 +45,15 @@ public:
 	{
 	}
 
-	Vector3 cross_product( const Vector3& v ) const
+	Vector3 CrossProduct( const Vector3& v ) const
 	{
 		return Vector3( ( y * v.z ) - ( z * v.y ),
 		                ( z * v.x ) - ( x * v.z ),
 		                ( x * v.y ) - ( y * v.x )
 		);
 	}
+
+public:
 
 	float x;
 	float y;

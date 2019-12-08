@@ -20,10 +20,11 @@
 
 ORB_NAMESPACE_BEGIN
 
-class Vector2 final : public VectorBase< 2, Vector2 >
+class Vector2 final : public VectorBase< Vector2, 2 >
 {
 public:
-	Vector2()
+
+	Vector2( void )
 		: x( 0.f )
 		, y( 0.f )
 	{
@@ -40,6 +41,8 @@ public:
 		, y( y )
 	{
 	}
+
+public:
 
 	float x;
 	float y;

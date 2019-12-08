@@ -47,10 +47,10 @@ ConstantBuffer::ConstantBuffer( size_t size )
 			}
 			else
 			{
-				auto& data = m_details.emplace< Private::_ConstantBufferDetailsOpenGL31 >();
+				auto& details = m_details.emplace< Private::_ConstantBufferDetailsOpenGL31 >();
 
-				glGenBuffers( 1, &data.id );
-				glBindBuffer( OpenGLBufferTarget::Uniform, data.id );
+				glGenBuffers( 1, &details.id );
+				glBindBuffer( OpenGLBufferTarget::Uniform, details.id );
 				glBufferData( OpenGLBufferTarget::Uniform, size, nullptr, OpenGLBufferUsage::StreamDraw );
 				glBindBuffer( OpenGLBufferTarget::Uniform, 0 );
 			}

@@ -25,17 +25,8 @@
 
 ORB_NAMESPACE_BEGIN
 
-template< typename T >
-struct false_type : std::false_type { };
-
-template< typename T >
-struct in_place_type { };
-
-template< typename T >
-constexpr in_place_type< T > in_place_type_v { };
-
 template< typename T, size_t C >
-constexpr size_t count_of( T( & )[ C ] )
+constexpr size_t CountOf( T( & )[ C ] )
 {
 	return C;
 }
@@ -54,10 +45,10 @@ struct MakeSequence< 0, Is... > : Sequence< Is... > { };
 /* Get type index within variant. Courtesy of https://stackoverflow.com/a/52303687 */
 
 template< typename >
-struct tag { };
+struct Tag { };
 
 template< typename T, typename... Ts >
-constexpr size_t variant_index_v = std::variant< tag< Ts >... >( tag< T >{ } ).index();
+constexpr size_t variant_index_v = std::variant< Tag< Ts >... >( Tag< T >{ } ).index();
 
 template< typename T, typename Variant >
 struct UniqueIndex;

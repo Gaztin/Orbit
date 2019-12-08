@@ -68,16 +68,26 @@ void* GetOpenGLProcAddress( std::string_view name )
 {
 
 #if defined( ORB_OS_WINDOWS )
+
 	return static_cast< void* >( wglGetProcAddress( name.data() ) );
+
 #elif defined( ORB_OS_LINUX )
+
 	return reinterpret_cast< void* >( glXGetProcAddress( reinterpret_cast< const GLubyte* >( name.data() ) ) );
+
 #elif defined( ORB_OS_MACOS )
+
 	static void* lib = dlopen( "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_LAZY );
 	return dlsym( lib, name.data() );
+
 #elif defined( ORB_OS_ANDROID )
+
 	return reinterpret_cast< void* >( eglGetProcAddress( name.data() ) );
+
 #elif defined( ORB_OS_IOS )
+
 	return dlsym( RTLD_DEFAULT, name.data() );
+
 #endif
 
 }
