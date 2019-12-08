@@ -22,6 +22,8 @@
 #  include <UIKit/UIKit.h>
 
 @interface ORB_NAMESPACED_OBJC( OrbitUIWindow ) : UIWindow
+{
+}
 @end
 
 #endif

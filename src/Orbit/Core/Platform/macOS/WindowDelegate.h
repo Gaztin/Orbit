@@ -22,6 +22,8 @@
 #  include <AppKit/AppKit.h>
 
 @interface ORB_NAMESPACED_OBJC( WindowDelegate ) : NSObject< NSWindowDelegate >
+{
+}
 @end
 
 #endif
