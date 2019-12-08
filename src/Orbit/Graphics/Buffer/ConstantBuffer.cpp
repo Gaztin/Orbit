@@ -22,7 +22,7 @@
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLVersion.h"
-#include "Orbit/Graphics/Device/RenderContext.h"
+#include "Orbit/Graphics/Context/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
 

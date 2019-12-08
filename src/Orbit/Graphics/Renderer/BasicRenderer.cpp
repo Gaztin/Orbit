@@ -22,7 +22,7 @@
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/Texture2D.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Device/RenderContext.h"
+#include "Orbit/Graphics/Context/RenderContext.h"
 #include "Orbit/Graphics/Shader/Shader.h"
 
 ORB_NAMESPACE_BEGIN

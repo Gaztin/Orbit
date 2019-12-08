@@ -23,7 +23,7 @@
 #include "Orbit/Graphics/API/OpenGL/GLSL.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Device/RenderContext.h"
+#include "Orbit/Graphics/Context/RenderContext.h"
 
 #if( ORB_HAS_D3D11 )
 #  include <d3dcompiler.h>

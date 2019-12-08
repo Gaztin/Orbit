@@ -18,7 +18,7 @@
 #include "Texture2D.h"
 
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
-#include "Orbit/Graphics/Device/RenderContext.h"
+#include "Orbit/Graphics/Context/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
 

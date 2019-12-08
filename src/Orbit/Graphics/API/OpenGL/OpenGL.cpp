@@ -22,7 +22,7 @@
 
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Utility/Utility.h"
-#include "Orbit/Graphics/Device/RenderContext.h"
+#include "Orbit/Graphics/Context/RenderContext.h"
 
 #if defined( ORB_OS_LINUX )
 #  include <GL/glx.h>
