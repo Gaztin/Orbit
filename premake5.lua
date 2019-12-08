@@ -136,6 +136,8 @@ local function decl_sample( name )
 
 	filter { 'system:linux' }
 		linkoptions { '-Wl,-rpath=\\$$ORIGIN' }
+	filter { 'system:macosx or ios', 'files:**.cpp' }
+		language( 'ObjCpp' )
 	filter { 'system:ios' }
 		files { 'res/Info.plist', 'assets' }
 	filter { 'system:android' }
