@@ -105,7 +105,9 @@ local function decl_module( name )
 
 	filter { 'toolset:msc' }
 		defines { '_CRT_SECURE_NO_WARNINGS' }
-	filter { 'system:macosx or ios', 'files:**' }
+	filter { 'system:macosx or ios' }
+		files { 'src/Orbit/' .. name .. '/**.mm' }
+	filter { 'system:macosx or ios', 'files:**.cpp' }
 		language( 'ObjCpp' )
 	filter { 'system:android' }
 		includedirs { ANDROID_NATIVE_APP_GLUE_DIR }
