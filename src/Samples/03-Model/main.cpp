@@ -35,13 +35,6 @@
 
 #include "ModelData.h"
 
-struct Vertex
-{
-	Orbit::Vector4 pos;
-	Orbit::Color   color;
-	Orbit::Vector2 texcoord;
-};
-
 const Orbit::VertexLayout vertex_layout
 {
 	Orbit::VertexComponent::Position,
