@@ -47,11 +47,19 @@ void BasicRenderer::Render( void )
 		command.shader->Bind();
 		command.index_buffer->Bind();
 
-		for( auto& constant_buffers : command.constant_buffers )
 		{
-			for( size_t i = 0; i < constant_buffers.second.size(); ++i )
+			uint32_t global_slot = 0;
+
+			for( auto& constant_buffers : command.constant_buffers )
 			{
-				constant_buffers.second[ i ]->Bind( constant_buffers.first, static_cast< uint32_t >( i ) );
+				for( size_t i = 0; i < constant_buffers.second.size(); ++i )
+				{
+					const uint32_t local_slot = static_cast< uint32_t >( i );
+
+					constant_buffers.second[ i ]->Bind( constant_buffers.first, local_slot, global_slot );
+
+					++global_slot;
+				}
 			}
 		}
 

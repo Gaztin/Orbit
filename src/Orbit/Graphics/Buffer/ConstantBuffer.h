@@ -41,7 +41,7 @@ public:
 
 public:
 
-	void Bind  ( ShaderType type, uint32_t slot );
+	void Bind  ( ShaderType type, uint32_t local_slot, uint32_t global_slot );
 	void Update( void* dst, size_t location, const void* data, size_t size );
 
 	template< typename... Types >

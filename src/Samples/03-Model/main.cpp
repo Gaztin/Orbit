@@ -48,7 +48,7 @@ constexpr std::string_view shader_source = R"(
 
 #  if defined( VERTEX )
 
-ORB_CONSTANTS_BEGIN( Constants )
+ORB_CONSTANTS_BEGIN( VertexConstants )
 	ORB_CONSTANT( mat4, mvp );
 ORB_CONSTANTS_END
 
@@ -74,6 +74,10 @@ void main()
 
 #  elif defined( FRAGMENT )
 
+ORB_CONSTANTS_BEGIN( FragmentConstants )
+	ORB_CONSTANT( vec3, light_dir );
+ORB_CONSTANTS_END
+
 uniform sampler2D diffuse_texture;
 
 ORB_VARYING vec4 v_position;
@@ -86,7 +90,7 @@ void main()
 	vec4 tex_color = texture( diffuse_texture, v_texcoord );
 	vec4 out_color = tex_color + v_color;
 
-	out_color.rgb *= dot( v_normal, vec3( 0.3, -0.7, 0.3 ) );
+	out_color.rgb *= dot( v_normal, light_dir );
 
 	ORB_SET_OUT_COLOR( out_color );
 }
@@ -99,9 +103,14 @@ Texture2D diffuse_texture;
 
 SamplerState texture_sampler;
 
-cbuffer Constants
+cbuffer VertexConstants
 {
 	matrix mvp;
+};
+
+cbuffer PixelConstants
+{
+	float3 light_dir;
 };
 
 struct VertexData
@@ -136,7 +145,7 @@ float4 PSMain( PixelData input ) : SV_TARGET
 	float4 tex_color = diffuse_texture.Sample( texture_sampler, input.texcoord );
 	float4 out_color = tex_color + input.color;
 
-	out_color.rgb *= dot( input.normal, float3( 0.3, -0.7, 0.3 ) );
+	out_color.rgb *= dot( input.normal, light_dir );
 
 	return out_color;
 }
@@ -145,6 +154,7 @@ float4 PSMain( PixelData input ) : SV_TARGET
 )";
 
 std::tuple     vertex_constant_data   = std::make_tuple( Orbit::Matrix4() );
+std::tuple     fragment_constant_data = std::make_tuple( Orbit::Vector3() );
 Orbit::Matrix4 projection_matrix;
 
 const uint32_t texture_data[]
@@ -165,6 +175,7 @@ public:
 		, m_shader( shader_source, vertex_layout )
 		, m_model( model_data, vertex_layout )
 		, m_vertex_constant_buffer( vertex_constant_data )
+		, m_fragment_constant_buffer( fragment_constant_data )
 		, m_texture( 4, 4, texture_data )
 	{
 		m_window.SetTitle( "Orbit Sample (03-Model)" );
@@ -177,9 +188,10 @@ public:
 
 	void OnFrame( float delta_time ) override
 	{
-		/* Update constant buffer */
+		/* Update constant buffers */
 		{
 			auto& [ mvp ]       = vertex_constant_data;
+			auto& [ light_dir ] = fragment_constant_data;
 
 			/* Calculate model-view-projection matrix */
 			{
@@ -194,7 +206,16 @@ public:
 				mvp = m_model_matrix * view * projection_matrix;
 			}
 
+			/* Light direction */
+			{
+				using namespace Orbit::MathLiterals;
+
+				light_dir = Orbit::Vector3( 0.2f, -0.7f, 0.2f );
+				light_dir.Normalize();
+			}
+
 			m_vertex_constant_buffer.Update( vertex_constant_data );
+			m_fragment_constant_buffer.Update( fragment_constant_data );
 		}
 
 		m_window.PollEvents();
@@ -203,6 +224,7 @@ public:
 		Orbit::RenderCommand command = m_model.MakeRenderCommand();
 		command.shader = &m_shader;
 		command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &m_vertex_constant_buffer );
+		command.constant_buffers[ Orbit::ShaderType::Fragment ].push_back( &m_fragment_constant_buffer );
 		command.textures.push_back( &m_texture );
 
 		m_renderer.QueueCommand( command );
@@ -235,6 +257,7 @@ private:
 	Orbit::Shader            m_shader;
 	Orbit::Model             m_model;
 	Orbit::ConstantBuffer    m_vertex_constant_buffer;
+	Orbit::ConstantBuffer    m_fragment_constant_buffer;
 	Orbit::Texture2D         m_texture;
 	Orbit::BasicRenderer     m_renderer;
 	Orbit::Matrix4           m_model_matrix;
