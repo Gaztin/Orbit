@@ -92,6 +92,38 @@ public:
 		return v;
 	}
 
+	Derived& operator+=( const VectorBase& rhs )
+	{
+		for( size_t i = 0; i < Size; ++i )
+			( *this )[ i ] += rhs[ i ];
+
+		return Self();
+	}
+
+	Derived& operator-=( const VectorBase& rhs )
+	{
+		for( size_t i = 0; i < Size; ++i )
+			( *this )[ i ] -= rhs[ i ];
+
+		return Self();
+	}
+
+	Derived& operator*=( float scalar )
+	{
+		for( size_t i = 0; i < Size; ++i )
+			( *this )[ i ] *= scalar;
+
+		return Self();
+	}
+
+	Derived& operator/=( float scalar )
+	{
+		for( size_t i = 0; i < Size; ++i )
+			( *this )[ i ] /= scalar;
+
+		return Self();
+	}
+
 	float& operator[]( size_t i )
 	{
 		float* ptr = reinterpret_cast< float* >( this );
@@ -110,6 +142,11 @@ public:
 	const float* begin ( void ) const { return &( *this )[ 0 ]; }
 	float*       end   ( void )       { return &( *this )[ Size ]; }
 	const float* end   ( void ) const { return &( *this )[ Size ]; }
+
+private:
+
+	const Derived& Self( void ) const { return *reinterpret_cast< const Derived* >( this ); }
+	Derived&       Self( void )       { return *reinterpret_cast< Derived*       >( this ); }
 
 };
 
