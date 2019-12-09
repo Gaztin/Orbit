@@ -47,6 +47,7 @@ const Orbit::VertexLayout vertex_layout
 	Orbit::VertexComponent::Position,
 	Orbit::VertexComponent::Color,
 	Orbit::VertexComponent::TexCoord,
+	Orbit::VertexComponent::Normal,
 };
 
 constexpr std::string_view shader_source = R"(
@@ -61,16 +62,19 @@ ORB_CONSTANTS_END
 ORB_ATTRIBUTE( 0 ) vec4 a_position;
 ORB_ATTRIBUTE( 1 ) vec4 a_color;
 ORB_ATTRIBUTE( 2 ) vec2 a_texcoord;
+ORB_ATTRIBUTE( 3 ) vec3 a_normal;
 
 ORB_VARYING vec4 v_position;
 ORB_VARYING vec4 v_color;
 ORB_VARYING vec2 v_texcoord;
+ORB_VARYING vec3 v_normal;
 
 void main()
 {
 	v_position = mvp * a_position;
 	v_color    = a_color;
 	v_texcoord = a_texcoord;
+	v_normal   = a_normal;
 
 	gl_Position = v_position;
 }
@@ -82,11 +86,14 @@ uniform sampler2D diffuse_texture;
 ORB_VARYING vec4 v_position;
 ORB_VARYING vec4 v_color;
 ORB_VARYING vec2 v_texcoord;
+ORB_VARYING vec3 v_normal;
 
 void main()
 {
 	vec4 tex_color = texture( diffuse_texture, v_texcoord );
 	vec4 out_color = tex_color + v_color;
+
+	out_color.rgb *= dot( v_normal, vec3( 0.3, -0.7, 0.3 ) );
 
 	ORB_SET_OUT_COLOR( out_color );
 }
@@ -109,6 +116,7 @@ struct VertexData
 	float4 position : POSITION;
 	float4 color    : COLOR;
 	float2 texcoord : TEXCOORD;
+	float3 normal   : NORMAL;
 };
 
 struct PixelData
@@ -116,6 +124,7 @@ struct PixelData
 	float4 position : SV_POSITION;
 	float4 color    : COLOR;
 	float2 texcoord : TEXCOORD;
+	float3 normal   : NORMAL;
 };
 
 PixelData VSMain( VertexData input )
@@ -124,6 +133,7 @@ PixelData VSMain( VertexData input )
 	output.position = mul( input.position, mvp );
 	output.color    = input.color;
 	output.texcoord = input.texcoord;
+	output.normal   = input.normal;
 
 	return output;
 }
@@ -132,6 +142,8 @@ float4 PSMain( PixelData input ) : SV_TARGET
 {
 	float4 tex_color = diffuse_texture.Sample( texture_sampler, input.texcoord );
 	float4 out_color = tex_color + input.color;
+
+	out_color.rgb *= dot( input.normal, vec3( 0.3, -0.7, 0.3 ) );
 
 	return out_color;
 }

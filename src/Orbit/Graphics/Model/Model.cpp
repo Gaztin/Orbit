@@ -22,6 +22,7 @@
 
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
+#include "Orbit/Math/Vector3.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -65,6 +66,7 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 	uint32_t index_size     = 2;
 	uint32_t stride         = 0;
 	uint32_t pos_index      = 0;
+	uint32_t normal_index   = 0;
 	uint32_t color_index    = 0;
 	uint32_t texcoord_index = 0;
 
@@ -73,16 +75,17 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 		switch( vc )
 		{
 			case VertexComponent::Position: { pos_index      = stride; stride += sizeof( float ) * 4; } break;
+			case VertexComponent::Normal:   { normal_index   = stride; stride += sizeof( float ) * 3; } break;
 			case VertexComponent::Color:    { color_index    = stride; stride += sizeof( float ) * 4; } break;
 			case VertexComponent::TexCoord: { texcoord_index = stride; stride += sizeof( float ) * 2; } break;
 			default:                        {                                                         } break;
 		}
 	}
 
-	auto     vertex_data    = std::unique_ptr< uint8_t[] >( new uint8_t[ stride * vertex_count ] );
-	auto     index_data     = std::unique_ptr< uint16_t[] >( new uint16_t[ index_size * face_count * 3 ] );
-	uint32_t positions_read = 0;
-	uint32_t faces_read     = 0;
+	auto     vertex_data   = std::unique_ptr< uint8_t[] >( new uint8_t[ stride * vertex_count ] );
+	auto     index_data    = std::unique_ptr< uint16_t[] >( new uint16_t[ index_size * face_count * 3 ] );
+	uint32_t vertices_read = 0;
+	uint32_t faces_read    = 0;
 
 	for( size_t i = 0; i < vertex_count; ++i )
 	{
@@ -115,13 +118,13 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 			if( std::sscanf( it, "v %f %f %f\n%n", &pos[ 0 ], &pos[ 1 ], &pos[ 2 ], &bytes_read ) == 3 )
 			{
-				float* pos_write = reinterpret_cast< float* >( &vertex_data[ stride * positions_read + pos_index ] );
+				float* pos_write = reinterpret_cast< float* >( &vertex_data[ stride * vertices_read + pos_index ] );
 				pos_write[ 0 ] = pos[ 0 ];
 				pos_write[ 1 ] = pos[ 1 ];
 				pos_write[ 2 ] = pos[ 2 ];
 				pos_write[ 3 ] = 1.0f;
 
-				++positions_read;
+				++vertices_read;
 				it += bytes_read;
 
 				continue;
@@ -147,6 +150,32 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 		/* Seek to next line */
 		while( it < end && *( it++ ) != '\n' );
+	}
+
+	/* Generate normals */
+	for( uint32_t face = 0; face < face_count; ++face )
+	{
+		const uint16_t index0 = index_data[ face * 3 + 0 ];
+		const uint16_t index1 = index_data[ face * 3 + 1 ];
+		const uint16_t index2 = index_data[ face * 3 + 2 ];
+
+		const Orbit::Vector3* pos0 = reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * index0 + pos_index ] );
+		const Orbit::Vector3* pos1 = reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * index1 + pos_index ] );
+		const Orbit::Vector3* pos2 = reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * index2 + pos_index ] );
+
+		const Orbit::Vector3 pos0_to_pos1 = ( *pos1 - *pos0 );
+		const Orbit::Vector3 pos0_to_pos2 = ( *pos2 - *pos0 );
+
+		Orbit::Vector3 normal = pos0_to_pos2.CrossProduct( pos0_to_pos1 );
+		normal.Normalize();
+
+		Orbit::Vector3* normal0_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * index0 + normal_index ] );
+		Orbit::Vector3* normal1_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * index1 + normal_index ] );
+		Orbit::Vector3* normal2_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * index2 + normal_index ] );
+
+		*normal0_write = normal;
+		*normal1_write = normal;
+		*normal2_write = normal;
 	}
 
 	/* Create buffers */

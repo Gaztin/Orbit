@@ -25,6 +25,7 @@ ORB_NAMESPACE_BEGIN
 enum class VertexComponent : uint8_t
 {
 	Position,
+	Normal,
 	Color,
 	TexCoord,
 };

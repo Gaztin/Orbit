@@ -119,6 +119,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 					{
 						default:                        { desc.SemanticName = "";         desc.Format = DXGI_FORMAT_UNKNOWN;            } break;
 						case VertexComponent::Position: { desc.SemanticName = "POSITION"; desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; } break;
+						case VertexComponent::Normal:   { desc.SemanticName = "NORMAL";   desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;    } break;
 						case VertexComponent::Color:    { desc.SemanticName = "COLOR";    desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; } break;
 						case VertexComponent::TexCoord: { desc.SemanticName = "TEXCOORD"; desc.Format = DXGI_FORMAT_R32G32_FLOAT;       } break;
 					}
@@ -215,6 +216,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 				switch( component )
 				{
 					case VertexComponent::Position: { details.vertex_stride += sizeof( float ) * 4; } break;
+					case VertexComponent::Normal:   { details.vertex_stride += sizeof( float ) * 3; } break;
 					case VertexComponent::Color:    { details.vertex_stride += sizeof( float ) * 4; } break;
 					case VertexComponent::TexCoord: { details.vertex_stride += sizeof( float ) * 2; } break;
 				}
@@ -305,18 +307,25 @@ void Shader::Bind( void )
 						continue;
 					}
 
+					case VertexComponent::TexCoord:
+					{
+						data_type   = OpenGLVertexAttribDataType::Float;
+						data_length = 2;
+						break;
+					}
+
+					case VertexComponent::Normal:
+					{
+						data_type   = OpenGLVertexAttribDataType::Float;
+						data_length = 3;
+						break;
+					}
+
 					case VertexComponent::Position:
 					case VertexComponent::Color:
 					{
 						data_type   = OpenGLVertexAttribDataType::Float;
 						data_length = 4;
-						break;
-					}
-
-					case VertexComponent::TexCoord:
-					{
-						data_type   = OpenGLVertexAttribDataType::Float;
-						data_length = 2;
 						break;
 					}
 				}
@@ -327,6 +336,7 @@ void Shader::Bind( void )
 				switch( details.layout[ i ] )
 				{
 					case VertexComponent::Position: { ptr += sizeof( float ) * 4; } break;
+					case VertexComponent::Normal:   { ptr += sizeof( float ) * 3; } break;
 					case VertexComponent::Color:    { ptr += sizeof( float ) * 4; } break;
 					case VertexComponent::TexCoord: { ptr += sizeof( float ) * 2; } break;
 				}
