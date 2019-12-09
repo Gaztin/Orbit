@@ -16,6 +16,7 @@
  */
 
 #pragma once
+#include <cmath>
 #include <type_traits>
 
 #include "Orbit/Math/Math.h"
@@ -38,6 +39,16 @@ public:
 	float DotProduct( void ) const
 	{
 		return DotProduct( *this );
+	}
+
+	float Length( void ) const
+	{
+		return std::sqrtf( DotProduct() );
+	}
+
+	void Normalize( void )
+	{
+		*this /= Length();
 	}
 
 public:
