@@ -136,7 +136,7 @@ float4 PSMain( PixelData input ) : SV_TARGET
 	float4 tex_color = diffuse_texture.Sample( texture_sampler, input.texcoord );
 	float4 out_color = tex_color + input.color;
 
-	out_color.rgb *= dot( input.normal, vec3( 0.3, -0.7, 0.3 ) );
+	out_color.rgb *= dot( input.normal, float3( 0.3, -0.7, 0.3 ) );
 
 	return out_color;
 }
