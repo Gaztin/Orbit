@@ -60,7 +60,7 @@ private:
 	template< typename Tup, size_t... Is >
 	void UpdateSequencial( void* dst, const Tup& tup, Sequence< Is... > )
 	{
-		[[ maybe_unused ]] auto l = { ( Update( reinterpret_cast< uint8_t* >( dst ) + std::distance( &std::get< 0 >( tup ), &std::get< Is >( tup ) ), Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
+		[[ maybe_unused ]] auto l = { ( Update( reinterpret_cast< uint8_t* >( dst ) + std::distance( reinterpret_cast< const uint8_t* >( &std::get< 0 >( tup ) ), reinterpret_cast< const uint8_t* >( &std::get< Is >( tup ) ) ), Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
 	}
 
 private:
