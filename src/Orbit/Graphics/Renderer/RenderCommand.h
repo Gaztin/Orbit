@@ -16,6 +16,7 @@
  */
 
 #pragma once
+#include <map>
 #include <vector>
 
 #include "Orbit/Graphics/Graphics.h"
@@ -30,8 +31,9 @@ class VertexBuffer;
 
 struct ORB_API_GRAPHICS RenderCommand
 {
-	std::vector< ConstantBuffer* > constant_buffers;
-	std::vector< Texture2D* >      textures;
+	std::map< ShaderType, std::vector< ConstantBuffer* > > constant_buffers;
+
+	std::vector< Texture2D* > textures;
 
 	VertexBuffer* vertex_buffer;
 	IndexBuffer*  index_buffer;

@@ -253,7 +253,7 @@ public:
 		command.vertex_buffer = &m_vertex_buffer;
 		command.index_buffer  = &m_index_buffer;
 		command.shader        = &m_shader;
-		command.constant_buffers.push_back( &m_constant_buffer );
+		command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &m_constant_buffer );
 		command.textures.push_back( &m_texture );
 
 		m_renderer.QueueCommand( command );

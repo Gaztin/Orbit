@@ -139,9 +139,8 @@ float4 PSMain( PixelData input ) : SV_TARGET
 #endif
 )";
 
-std::tuple constant_data = std::make_tuple( Orbit::Matrix4() );
-
-Orbit::Matrix4 projection_matrix( 0.f );
+std::tuple     vertex_constant_data   = std::make_tuple( Orbit::Matrix4() );
+Orbit::Matrix4 projection_matrix;
 
 const uint32_t texture_data[]
 {
@@ -160,7 +159,7 @@ public:
 		, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
 		, m_shader( shader_source, vertex_layout )
 		, m_model( model_data, vertex_layout )
-		, m_constant_buffer( constant_data )
+		, m_vertex_constant_buffer( vertex_constant_data )
 		, m_texture( 4, 4, texture_data )
 	{
 		m_window.SetTitle( "Orbit Sample (03-Model)" );
@@ -175,7 +174,7 @@ public:
 	{
 		/* Update constant buffer */
 		{
-			auto& [ mvp ] = constant_data;
+			auto& [ mvp ]       = vertex_constant_data;
 
 			/* Calculate model-view-projection matrix */
 			{
@@ -190,7 +189,7 @@ public:
 				mvp = m_model_matrix * view * projection_matrix;
 			}
 
-			m_constant_buffer.Update( constant_data );
+			m_vertex_constant_buffer.Update( vertex_constant_data );
 		}
 
 		m_window.PollEvents();
@@ -198,7 +197,7 @@ public:
 
 		Orbit::RenderCommand command = m_model.MakeRenderCommand();
 		command.shader = &m_shader;
-		command.constant_buffers.push_back( &m_constant_buffer );
+		command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &m_vertex_constant_buffer );
 		command.textures.push_back( &m_texture );
 
 		m_renderer.QueueCommand( command );
@@ -230,7 +229,7 @@ private:
 	Orbit::RenderContext     m_render_context;
 	Orbit::Shader            m_shader;
 	Orbit::Model             m_model;
-	Orbit::ConstantBuffer    m_constant_buffer;
+	Orbit::ConstantBuffer    m_vertex_constant_buffer;
 	Orbit::Texture2D         m_texture;
 	Orbit::BasicRenderer     m_renderer;
 	Orbit::Matrix4           m_model_matrix;

@@ -47,9 +47,12 @@ void BasicRenderer::Render( void )
 		command.shader->Bind();
 		command.index_buffer->Bind();
 
-		for( size_t i = 0; i < command.constant_buffers.size(); ++i )
+		for( auto& constant_buffers : command.constant_buffers )
 		{
-			command.constant_buffers[ i ]->Bind( ShaderType::Vertex, static_cast< uint32_t >( i ) );
+			for( size_t i = 0; i < constant_buffers.second.size(); ++i )
+			{
+				constant_buffers.second[ i ]->Bind( constant_buffers.first, static_cast< uint32_t >( i ) );
+			}
 		}
 
 		switch( context_details.index() )
