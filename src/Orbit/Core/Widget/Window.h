@@ -52,7 +52,7 @@ struct ORB_API_CORE WindowStateChanged
 
 class ORB_API_CORE Window
 	: public EventDispatcher< WindowResized, WindowMoved, WindowStateChanged >
-	, public Singleton< Window >
+	, public Singleton< Window, false >
 {
 public:
 

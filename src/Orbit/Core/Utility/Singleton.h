@@ -22,8 +22,11 @@
 
 ORB_NAMESPACE_BEGIN
 
+template< typename Derived, bool AutomaticInitialization >
+class Singleton;
+
 template< typename Derived >
-class Singleton
+class Singleton< Derived, false >
 {
 public:
 
@@ -60,6 +63,19 @@ private:
 };
 
 template< typename Derived >
-Derived* Singleton< Derived >::s_instance = nullptr;
+class Singleton< Derived, true >
+{
+public:
+
+	static Derived& GetInstance( void )
+	{
+		static Derived instance { };
+		return instance;
+	}
+
+};
+
+template< typename Derived >
+Derived* Singleton< Derived, false >::s_instance = nullptr;
 
 ORB_NAMESPACE_END

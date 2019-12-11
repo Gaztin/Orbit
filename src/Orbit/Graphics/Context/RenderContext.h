@@ -22,7 +22,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext : public Singleton< RenderContext >
+class ORB_API_GRAPHICS RenderContext : public Singleton< RenderContext, false >
 {
 public:
 
