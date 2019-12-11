@@ -30,13 +30,13 @@ class Singleton< Derived, false >
 {
 public:
 
-	static Derived& GetInstance( void )
+	static Derived& Get( void )
 	{
 		assert( s_instance != nullptr );
 		return *s_instance;
 	}
 
-	static Derived* GetInstancePtr( void )
+	static Derived* GetPtr( void )
 	{
 		assert( s_instance != nullptr );
 		return s_instance;
@@ -67,7 +67,7 @@ class Singleton< Derived, true >
 {
 public:
 
-	static Derived& GetInstance( void )
+	static Derived& Get( void )
 	{
 		static Derived instance { };
 		return instance;

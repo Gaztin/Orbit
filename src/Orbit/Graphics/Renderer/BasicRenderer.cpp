@@ -34,7 +34,7 @@ void BasicRenderer::QueueCommand( const RenderCommand& command )
 
 void BasicRenderer::Render( void )
 {
-	Private::RenderContextDetails& context_details = RenderContext::GetInstance().GetPrivateDetails();
+	Private::RenderContextDetails& context_details = RenderContext::Get().GetPrivateDetails();
 
 	for( RenderCommand& command : m_commands )
 	{

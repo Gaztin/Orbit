@@ -39,7 +39,7 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 	, m_format  { format }
 	, m_count   { count }
 {
-	auto&        context_details = RenderContext::GetInstance().GetPrivateDetails();
+	auto&        context_details = RenderContext::Get().GetPrivateDetails();
 	const size_t total_size      = ( count * GetFormatSize( format ) );
 
 	switch( context_details.index() )
@@ -148,7 +148,7 @@ void IndexBuffer::Bind( void )
 		case( unique_index_v< Private::_IndexBufferDetailsD3D11, Private::IndexBufferDetails > ):
 		{
 			auto& details = std::get< Private::_IndexBufferDetailsD3D11 >( m_details );
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
 
 			/* Translate format to DXGI_FORMAT */
 			DXGI_FORMAT format;
