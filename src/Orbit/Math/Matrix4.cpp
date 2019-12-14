@@ -94,6 +94,39 @@ void Matrix4::Transpose( void )
 	}
 }
 
+void Matrix4::Invert( void )
+{
+	Matrix4 minors;
+	for( size_t column = 0; column < 4; ++column )
+	{
+		for( size_t row = 0; row < 4; ++row )
+		{
+			minors( column, row ) = GetDeterminant3x3( column, row );
+		}
+	}
+
+	Matrix4 cofactors;
+	for( size_t row = 0; row < 4; ++row )
+	{
+		for( size_t column = 0; column < 4; ++column )
+		{
+			float sign = ( ( column & 1 ) != ( row & 1 ) ) ? -1.0f : 1.0f;
+			cofactors[ 4 * row + column ] = minors[ 4 * row + column ] * sign;
+		}
+	}
+
+	cofactors.Transpose();
+
+	const float one_over_determinant = 1.0f / ( m_elements[ 0 ] * minors[ 0 ] -
+	                                            m_elements[ 1 ] * minors[ 1 ] +
+	                                            m_elements[ 2 ] * minors[ 2 ] -
+	                                            m_elements[ 3 ] * minors[ 3 ] );
+	for( size_t i = 0; i < 16; ++i )
+	{
+		m_elements[ i ] = cofactors[ i ] * one_over_determinant;
+	}
+}
+
 void Matrix4::SetIdentity( void )
 {
 	for( size_t i = 0; i < 16; ++i )

@@ -36,6 +36,7 @@ public:
 	void Translate     ( const Vector3& translation );
 	void Rotate        ( const Vector3& rotation );
 	void Transpose     ( void );
+	void Invert        ( void );
 	void SetIdentity   ( void );
 	void SetPerspective( float aspect_ratio, float fov, float near_clip, float far_clip );
 
