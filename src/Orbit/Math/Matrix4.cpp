@@ -124,6 +124,28 @@ void Matrix4::SetPerspective( float aspect_ratio, float fov, float near_clip, fl
 	m_elements[ 15 ] = 0.0f;
 }
 
+float Matrix4::GetDeterminant( void ) const
+{
+	return ( m_elements[ 0 ] * GetDeterminant3x3( 0, 0 ) -
+	         m_elements[ 1 ] * GetDeterminant3x3( 1, 0 ) +
+	         m_elements[ 2 ] * GetDeterminant3x3( 2, 0 ) -
+	         m_elements[ 3 ] * GetDeterminant3x3( 3, 0 ) );
+}
+
+float Matrix4::GetDeterminant3x3( size_t column, size_t row ) const
+{
+	const size_t c1 = ( column <= 0 ) ? 1 : 0;
+	const size_t c2 = ( column <= 1 ) ? 2 : 1;
+	const size_t c3 = ( column <= 2 ) ? 3 : 2;
+	const size_t r1 = ( row    <= 0 ) ? 1 : 0;
+	const size_t r2 = ( row    <= 1 ) ? 2 : 1;
+	const size_t r3 = ( row    <= 2 ) ? 3 : 2;
+
+	return m_elements[ 4 * r1 + c1 ] * ( m_elements[ 4 * r2 + c2 ] * m_elements[ 4 * r3 + c3 ] - m_elements[ 4 * r2 + c3 ] * m_elements[ 4 * r3 + c2 ] ) -
+	       m_elements[ 4 * r1 + c2 ] * ( m_elements[ 4 * r2 + c1 ] * m_elements[ 4 * r3 + c3 ] - m_elements[ 4 * r2 + c3 ] * m_elements[ 4 * r3 + c1 ] ) +
+	       m_elements[ 4 * r1 + c3 ] * ( m_elements[ 4 * r2 + c1 ] * m_elements[ 4 * r3 + c2 ] - m_elements[ 4 * r2 + c2 ] * m_elements[ 4 * r3 + c1 ] );
+}
+
 Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
 {
 	return ( Matrix4( *this ) *= rhs );

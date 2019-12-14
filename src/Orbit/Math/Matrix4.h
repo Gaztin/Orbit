@@ -41,6 +41,11 @@ public:
 
 public:
 
+	float GetDeterminant   ( void ) const;
+	float GetDeterminant3x3( size_t column, size_t row ) const;
+
+public:
+
 	Matrix4  operator* ( const Matrix4& rhs ) const;
 	Matrix4& operator*=( const Matrix4& rhs );
 
