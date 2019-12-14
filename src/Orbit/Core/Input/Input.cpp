@@ -28,7 +28,14 @@ namespace Input
 		bool released : 1;
 	};
 
-	static std::map< Key, KeyState > key_states;
+	struct Pointer
+	{
+		Pos current;
+		Pos previous;
+	};
+
+	static std::map< Key, KeyState >   key_states;
+	static std::map< size_t, Pointer > pointers;
 
 	void SetKeyPressed( Key key )
 	{
@@ -78,12 +85,60 @@ namespace Input
 		return false;
 	}
 
-	void ResetKeyStates( void )
+	void SetPointerPos( size_t index, Pos pos )
+	{
+		if( auto it = pointers.find( index ); it != pointers.end() )
+		{
+			it->second.previous = it->second.current;
+			it->second.current  = pos;
+		}
+		else
+		{
+			Pointer& pointer = pointers[ index ];
+
+			pointer.current  = pos;
+			pointer.previous = pos;
+		}
+	}
+
+	Pos GetPointerPos( size_t index )
+	{
+		if( auto it = pointers.find( index ); it != pointers.end() )
+		{
+			return it->second.current;
+		}
+
+		return { };
+	}
+
+	Pos GetPointerMove( size_t index )
+	{
+		if( auto it = pointers.find( index ); it != pointers.end() )
+		{
+			const auto& [ curr_x, curr_y ] = it->second.current;
+			const auto& [ prev_x, prev_y ] = it->second.previous;
+
+			return std::make_tuple( curr_x - prev_x, curr_y - prev_y );
+		}
+
+		return { };
+	}
+
+	void ResetStates( void )
 	{
 		for( auto& it : key_states )
 		{
 			it.second.pressed  = false;
 			it.second.released = false;
+		}
+
+		for( auto& it : pointers )
+		{
+			const auto& [ curr_x, curr_y ] = it.second.current;
+			auto&       [ prev_x, prev_y ] = it.second.previous;
+
+			prev_x = curr_x;
+			prev_y = curr_y;
 		}
 	}
 }

@@ -17,6 +17,7 @@
 
 #pragma once
 #include <map>
+#include <tuple>
 
 #include "Orbit/Core/Utility/Singleton.h"
 
@@ -32,12 +33,19 @@ enum class Key
 
 namespace Input
 {
+	using Pos = std::tuple< int, int >;
+
 	extern ORB_API_CORE void SetKeyPressed ( Key key );
 	extern ORB_API_CORE void SetKeyReleased( Key key );
 	extern ORB_API_CORE bool GetKeyPressed ( Key key );
 	extern ORB_API_CORE bool GetKeyReleased( Key key );
 	extern ORB_API_CORE bool GetKeyHeld    ( Key key );
-	extern ORB_API_CORE void ResetKeyStates( void );
+
+	extern ORB_API_CORE void SetPointerPos ( size_t index, Pos pos );
+	extern ORB_API_CORE Pos  GetPointerPos ( size_t index );
+	extern ORB_API_CORE Pos  GetPointerMove( size_t index );
+
+	extern ORB_API_CORE void ResetStates( void );
 };
 
 ORB_NAMESPACE_END
