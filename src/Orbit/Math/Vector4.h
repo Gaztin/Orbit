@@ -24,29 +24,9 @@ class Vector4 final : public VectorBase< Vector4, 4 >
 {
 public:
 
-	Vector4( void )
-		: x( 0.f )
-		, y( 0.f )
-		, z( 0.f )
-		, w( 0.f )
-	{
-	}
-
-	explicit Vector4( float scalar )
-		: x( scalar )
-		, y( scalar )
-		, z( scalar )
-		, w( scalar )
-	{
-	}
-
-	Vector4( float x, float y, float z, float w )
-		: x( x )
-		, y( y )
-		, z( z )
-		, w( w )
-	{
-	}
+	Vector4         ( void );
+	explicit Vector4( float scalar );
+	Vector4         ( float x, float y, float z, float w );
 
 public:
 

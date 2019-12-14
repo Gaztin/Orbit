@@ -15,24 +15,26 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Math/VectorBase.h"
+#include "Vector2.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Vector2 final : public VectorBase< Vector2, 2 >
+Vector2::Vector2( void )
+	: x( 0.0f )
+	, y( 0.0f )
 {
-public:
+}
 
-	Vector2         ( void );
-	explicit Vector2( float scalar );
-	Vector2         ( float x, float y );
+Vector2::Vector2( float scalar )
+	: x( scalar )
+	, y( scalar )
+{
+}
 
-public:
-
-	float x;
-	float y;
-
-};
+Vector2::Vector2( float x, float y )
+	: x( x )
+	, y( y )
+{
+}
 
 ORB_NAMESPACE_END
