@@ -41,9 +41,14 @@ namespace Input
 	extern ORB_API_CORE bool GetKeyReleased( Key key );
 	extern ORB_API_CORE bool GetKeyHeld    ( Key key );
 
-	extern ORB_API_CORE void SetPointerPos ( size_t index, Pos pos );
-	extern ORB_API_CORE Pos  GetPointerPos ( size_t index );
-	extern ORB_API_CORE Pos  GetPointerMove( size_t index );
+	extern ORB_API_CORE void SetPointerPressed ( size_t index, Pos pos );
+	extern ORB_API_CORE void SetPointerReleased( size_t index, Pos pos );
+	extern ORB_API_CORE void SetPointerPos     ( size_t index, Pos pos );
+	extern ORB_API_CORE bool GetPointerPressed ( size_t index );
+	extern ORB_API_CORE bool GetPointerReleased( size_t index );
+	extern ORB_API_CORE bool GetPointerHeld    ( size_t index );
+	extern ORB_API_CORE Pos  GetPointerPos     ( size_t index );
+	extern ORB_API_CORE Pos  GetPointerMove    ( size_t index );
 
 	extern ORB_API_CORE void ResetStates( void );
 };

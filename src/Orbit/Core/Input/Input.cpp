@@ -30,8 +30,11 @@ namespace Input
 
 	struct Pointer
 	{
-		Pos current;
-		Pos previous;
+		Pos current_pos;
+		Pos previous_pos;
+		bool held     : 1;
+		bool pressed  : 1;
+		bool released : 1;
 	};
 
 	static std::map< Key, KeyState >   key_states;
@@ -83,27 +86,66 @@ namespace Input
 		return false;
 	}
 
+	void SetPointerPressed( size_t index, Pos pos )
+	{
+		Pointer& pointer = pointers[ index ];
+
+		pointer.current_pos  = pos;
+		pointer.previous_pos = pos;
+		pointer.held         = true;
+		pointer.pressed      = true;
+	}
+
+	void SetPointerReleased( size_t index, Pos pos )
+	{
+		Pointer& pointer = pointers[ index ];
+
+		pointer.current_pos  = pos;
+		pointer.previous_pos = pos;
+		pointer.held         = false;
+		pointer.released     = true;
+	}
+
 	void SetPointerPos( size_t index, Pos pos )
+	{
+		pointers[ index ].current_pos = pos;
+	}
+
+	bool GetPointerPressed( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
 		{
-			it->second.previous = it->second.current;
-			it->second.current  = pos;
+			return it->second.pressed;
 		}
-		else
-		{
-			Pointer& pointer = pointers[ index ];
 
-			pointer.current  = pos;
-			pointer.previous = pos;
+		return false;
+	}
+
+	bool GetPointerReleased( size_t index )
+	{
+		if( auto it = pointers.find( index ); it != pointers.end() )
+		{
+			return it->second.released;
 		}
+
+		return false;
+	}
+
+	bool GetPointerHeld( size_t index )
+	{
+		if( auto it = pointers.find( index ); it != pointers.end() )
+		{
+			return it->second.held;
+		}
+
+		return false;
 	}
 
 	Pos GetPointerPos( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
 		{
-			return it->second.current;
+			return it->second.current_pos;
 		}
 
 		return { };
@@ -113,8 +155,8 @@ namespace Input
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
 		{
-			const auto& [ curr_x, curr_y ] = it->second.current;
-			const auto& [ prev_x, prev_y ] = it->second.previous;
+			const auto& [ curr_x, curr_y ] = it->second.current_pos;
+			const auto& [ prev_x, prev_y ] = it->second.previous_pos;
 
 			return std::make_tuple( curr_x - prev_x, curr_y - prev_y );
 		}
@@ -132,11 +174,9 @@ namespace Input
 
 		for( auto& it : pointers )
 		{
-			const auto& [ curr_x, curr_y ] = it.second.current;
-			auto&       [ prev_x, prev_y ] = it.second.previous;
-
-			prev_x = curr_x;
-			prev_y = curr_y;
+			it.second.previous_pos = it.second.current_pos;
+			it.second.pressed      = false;
+			it.second.released     = false;
 		}
 	}
 }
