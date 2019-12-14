@@ -17,6 +17,7 @@
 
 #include "Window.h"
 
+#include "Orbit/Core/Input/Input.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
 #include "Orbit/Core/Platform/Android/AndroidNativeAppGlue.h"
 #include "Orbit/Core/Platform/iOS/UIWindow.h"
@@ -179,6 +180,7 @@ Window::~Window( void )
 
 void Window::PollEvents( void )
 {
+	Input::Get().Update();
 
 #if defined( ORB_OS_WINDOWS )
 
@@ -441,6 +443,35 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 
 			w->QueueEvent( e );
 			w->Close();
+
+			break;
+		}
+
+		case WM_KEYDOWN:
+		{
+			if( ( HIWORD( lparam ) & KF_REPEAT ) == 0 )
+			{
+				switch( wparam )
+				{
+					case 'W': { Input::Get().SetKeyState( Key::W, KeyState{ true, false, true } ); } break;
+					case 'A': { Input::Get().SetKeyState( Key::A, KeyState{ true, false, true } ); } break;
+					case 'S': { Input::Get().SetKeyState( Key::S, KeyState{ true, false, true } ); } break;
+					case 'D': { Input::Get().SetKeyState( Key::D, KeyState{ true, false, true } ); } break;
+				}
+			}
+
+			break;
+		}
+
+		case WM_KEYUP:
+		{
+			switch( wparam )
+			{
+				case 'W': { Input::Get().SetKeyState( Key::W, KeyState{ false, true, false } ); } break;
+				case 'A': { Input::Get().SetKeyState( Key::A, KeyState{ false, true, false } ); } break;
+				case 'S': { Input::Get().SetKeyState( Key::S, KeyState{ false, true, false } ); } break;
+				case 'D': { Input::Get().SetKeyState( Key::D, KeyState{ false, true, false } ); } break;
+			}
 
 			break;
 		}
