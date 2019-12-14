@@ -492,16 +492,6 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 				Input::SetPointerPos( 1, pos );
 			}
 
-			if( wparam & MK_XBUTTON1 )
-			{
-				Input::SetPointerPos( 2, pos );
-			}
-
-			if( wparam & MK_XBUTTON2 )
-			{
-				Input::SetPointerPos( 3, pos );
-			}
-
 			break;
 		}
 	}
