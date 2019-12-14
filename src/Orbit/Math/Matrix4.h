@@ -27,23 +27,35 @@ class Vector3;
 class ORB_API_MATH Matrix4
 {
 public:
-	explicit Matrix4( float diagonal = 1.f );
-	Matrix4( std::initializer_list< float > elements );
 
-	void Translate( const Vector3& translation );
-	void Rotate( const Vector3& rotation );
-	void Transpose();
-	void SetIdentity();
+	explicit Matrix4( float diagonal = 1.0f );
+	Matrix4         ( std::initializer_list< float > elements );
+
+public:
+
+	void Translate     ( const Vector3& translation );
+	void Rotate        ( const Vector3& rotation );
+	void Transpose     ( void );
+	void Invert        ( void );
+	void SetIdentity   ( void );
 	void SetPerspective( float aspect_ratio, float fov, float near_clip, float far_clip );
 
-	Matrix4 operator*( const Matrix4& rhs ) const;
+public:
+
+	float GetDeterminant   ( void ) const;
+	float GetDeterminant3x3( size_t column, size_t row ) const;
+
+public:
+
+	Matrix4  operator* ( const Matrix4& rhs ) const;
 	Matrix4& operator*=( const Matrix4& rhs );
 
-	float& operator[]( size_t i ) { return m_elements[ i ]; }
-	const float& operator[]( size_t i ) const { return m_elements[ i ]; }
+public:
 
-	float& operator()( size_t column, size_t row );
-	const float& operator()( size_t column, size_t row ) const;
+	float&       operator[]( size_t i )                        { return m_elements[ i ]; }
+	const float& operator[]( size_t i ) const                  { return m_elements[ i ]; }
+	float&       operator()( size_t column, size_t row )       { return m_elements[ row * 4 + column ]; }
+	const float& operator()( size_t column, size_t row ) const { return m_elements[ row * 4 + column ]; };
 
 private:
 

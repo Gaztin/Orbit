@@ -15,24 +15,32 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Math/VectorBase.h"
+#include "Vector4.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_MATH Vector2 final : public VectorBase< Vector2, 2 >
+Vector4::Vector4( void )
+	: x( 0.0f )
+	, y( 0.0f )
+	, z( 0.0f )
+	, w( 0.0f )
 {
-public:
+}
 
-	Vector2         ( void );
-	explicit Vector2( float scalar );
-	Vector2         ( float x, float y );
+Vector4::Vector4( float scalar )
+	: x( scalar )
+	, y( scalar )
+	, z( scalar )
+	, w( scalar )
+{
+}
 
-public:
-
-	float x;
-	float y;
-
-};
+Vector4::Vector4( float x, float y, float z, float w )
+	: x( x )
+	, y( y )
+	, z( z )
+	, w( w )
+{
+}
 
 ORB_NAMESPACE_END
