@@ -220,6 +220,7 @@ public:
 		m_window.SetTitle( "Orbit Sample (02-Cube)" );
 		m_window.Show();
 		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
+		m_view.Translate( Orbit::Vector3( 0, 0, -5 ) );
 	}
 
 public:
@@ -233,14 +234,13 @@ public:
 			/* Calculate model-view-projection matrix */
 			{
 				using namespace Orbit::MathLiterals;
-				using namespace Orbit::UnitLiterals::Metric;
 
-				Orbit::Matrix4 view;
-				view.Translate( Orbit::Vector3( 0_m, 0_m, 5_m ) );
+				Orbit::Matrix4 view_inverse( m_view );
+				view_inverse.Invert();
 
-				m_model.Rotate( Orbit::Vector3( 0_pi, 0.5_pi * delta_time, 0_pi ) );
+				m_model.Rotate( Orbit::Vector3( 0, 0.5_pi * delta_time, 0 ) );
 
-				mvp = m_model * view * projection_matrix;
+				mvp = m_model * view_inverse * projection_matrix;
 			}
 
 			m_constant_buffer.Update( constant_data );
@@ -289,6 +289,7 @@ private:
 	Orbit::ConstantBuffer    m_constant_buffer;
 	Orbit::Texture2D         m_texture;
 	Orbit::BasicRenderer     m_renderer;
+	Orbit::Matrix4           m_view;
 	Orbit::Matrix4           m_model;
 
 };
