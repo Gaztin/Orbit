@@ -24,7 +24,9 @@
 #include "Orbit/Core/Platform/macOS/WindowDelegate.h"
 #include "Orbit/Core/Utility/Utility.h"
 
-#if defined( ORB_OS_MACOS )
+#if defined( ORB_OS_WINDOWS )
+#  include <windowsx.h>
+#elif defined( ORB_OS_MACOS )
 #  include <AppKit/AppKit.h>
 #elif defined( ORB_OS_ANDROID )
 #  include <android/sensor.h>
@@ -180,7 +182,7 @@ Window::~Window( void )
 
 void Window::PollEvents( void )
 {
-	Input::ResetKeyStates();
+	Input::ResetStates();
 
 #if defined( ORB_OS_WINDOWS )
 
@@ -471,6 +473,33 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 				case 'A': { Input::SetKeyReleased( Key::A ); } break;
 				case 'S': { Input::SetKeyReleased( Key::S ); } break;
 				case 'D': { Input::SetKeyReleased( Key::D ); } break;
+			}
+
+			break;
+		}
+
+		case WM_MOUSEMOVE:
+		{
+			Input::Pos pos = std::make_tuple( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+
+			if( wparam & MK_LBUTTON )
+			{
+				Input::SetPointerPos( 0, pos );
+			}
+
+			if( wparam & MK_RBUTTON )
+			{
+				Input::SetPointerPos( 1, pos );
+			}
+
+			if( wparam & MK_XBUTTON1 )
+			{
+				Input::SetPointerPos( 2, pos );
+			}
+
+			if( wparam & MK_XBUTTON2 )
+			{
+				Input::SetPointerPos( 3, pos );
 			}
 
 			break;
