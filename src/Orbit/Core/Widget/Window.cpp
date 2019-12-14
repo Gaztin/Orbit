@@ -478,6 +478,38 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 			break;
 		}
 
+		case WM_LBUTTONDOWN:
+		{
+			Input::Pos pos = std::make_tuple( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerPressed( 0, pos );
+
+			break;
+		}
+
+		case WM_LBUTTONUP:
+		{
+			Input::Pos pos = std::make_tuple( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerReleased( 0, pos );
+
+			break;
+		}
+
+		case WM_RBUTTONDOWN:
+		{
+			Input::Pos pos = std::make_tuple( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerPressed( 1, pos );
+
+			break;
+		}
+
+		case WM_RBUTTONUP:
+		{
+			Input::Pos pos = std::make_tuple( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerReleased( 1, pos );
+
+			break;
+		}
+
 		case WM_MOUSEMOVE:
 		{
 			Input::Pos pos = std::make_tuple( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
