@@ -35,6 +35,7 @@ Matrix4::Matrix4( float diagonal )
 Matrix4::Matrix4( std::initializer_list< float > elements )
 {
 	const size_t size = std::min( static_cast< size_t >( 16u ), elements.size() );
+
 	for( size_t i = 0; i < size; ++i )
 	{
 		m_elements[ i ] = *( elements.begin() + i );
@@ -44,8 +45,11 @@ Matrix4::Matrix4( std::initializer_list< float > elements )
 void Matrix4::Translate( const Vector3& translation )
 {
 	const Vector4 t4( translation[ 0 ], translation[ 1 ], translation[ 2 ], 1.f );
+
 	for( size_t i = 0; i < 4; ++i )
+	{
 		m_elements[ 3 * 4 + i ] = Vector4( m_elements[ 0 * 4 + i ], m_elements[ 1 * 4 + i ], m_elements[ 2 * 4 + i ], m_elements[ 3 * 4 + i ] ).DotProduct( t4 );
+	}
 }
 
 void Matrix4::Rotate( const Vector3& rotation )
@@ -78,7 +82,7 @@ void Matrix4::Rotate( const Vector3& rotation )
 	*this *= ( rotx * roty * rotz );
 }
 
-void Matrix4::Transpose()
+void Matrix4::Transpose( void )
 {
 	Matrix4 temp( *this );
 	for( size_t x = 0; x < 4; ++x )
@@ -90,7 +94,7 @@ void Matrix4::Transpose()
 	}
 }
 
-void Matrix4::SetIdentity()
+void Matrix4::SetIdentity( void )
 {
 	for( size_t i = 0; i < 16; ++i )
 	{
@@ -128,28 +132,27 @@ Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
 Matrix4& Matrix4::operator*=( const Matrix4& rhs )
 {
 	std::array< Vector4, 4 > columns;
-	for( size_t i = 0; i < 4; ++i )
-		columns[ i ] = Vector4( m_elements[ i * 4 + 0 ], m_elements[ i * 4 + 1 ], m_elements[ i * 4 + 2 ], m_elements[ i * 4 + 3 ] );
-
 	std::array< Vector4, 4 > rows;
+
 	for( size_t i = 0; i < 4; ++i )
+	{
+		columns[ i ] = Vector4( m_elements[ i * 4 + 0 ], m_elements[ i * 4 + 1 ], m_elements[ i * 4 + 2 ], m_elements[ i * 4 + 3 ] );
+	}
+
+	for( size_t i = 0; i < 4; ++i )
+	{
 		rows[ i ] = Vector4( rhs.m_elements[ 0 * 4 + i ], rhs.m_elements[ 1 * 4 + i ], rhs.m_elements[ 2 * 4 + i ], rhs.m_elements[ 3 * 4 + i ] );
+	}
 
 	for( size_t row = 0; row < 4; ++row )
+	{
 		for( size_t col = 0; col < 4; ++col )
+		{
 			m_elements[ row * 4 + col ] = columns[ row ].DotProduct( rows[ col ] );
+		}
+	}
 
 	return *this;
-}
-
-float& Matrix4::operator()( size_t column, size_t row )
-{
-	return m_elements[ row * 4 + column ];
-}
-
-const float& Matrix4::operator()( size_t column, size_t row ) const
-{
-	return m_elements[ row * 4 + column ];
 }
 
 ORB_NAMESPACE_END
