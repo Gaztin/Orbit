@@ -20,7 +20,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-class Vector2 final : public VectorBase< Vector2, 2 >
+class ORB_API_MATH Vector2 final : public VectorBase< Vector2, 2 >
 {
 public:
 
