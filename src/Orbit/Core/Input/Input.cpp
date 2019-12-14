@@ -43,7 +43,6 @@ namespace Input
 
 		state.held     = true;
 		state.pressed  = true;
-		state.released = false;
 	}
 
 	void SetKeyReleased( Key key )
@@ -51,7 +50,6 @@ namespace Input
 		KeyState& state = key_states[ key ];
 
 		state.held     = false;
-		state.pressed  = false;
 		state.released = true;
 	}
 
