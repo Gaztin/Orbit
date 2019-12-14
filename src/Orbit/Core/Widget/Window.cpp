@@ -180,7 +180,7 @@ Window::~Window( void )
 
 void Window::PollEvents( void )
 {
-	Input::Get().Update();
+	Input::ResetKeyStates();
 
 #if defined( ORB_OS_WINDOWS )
 
@@ -453,10 +453,10 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 			{
 				switch( wparam )
 				{
-					case 'W': { Input::Get().SetKeyState( Key::W, KeyState{ true, false, true } ); } break;
-					case 'A': { Input::Get().SetKeyState( Key::A, KeyState{ true, false, true } ); } break;
-					case 'S': { Input::Get().SetKeyState( Key::S, KeyState{ true, false, true } ); } break;
-					case 'D': { Input::Get().SetKeyState( Key::D, KeyState{ true, false, true } ); } break;
+					case 'W': { Input::SetKeyPressed( Key::W ); } break;
+					case 'A': { Input::SetKeyPressed( Key::A ); } break;
+					case 'S': { Input::SetKeyPressed( Key::S ); } break;
+					case 'D': { Input::SetKeyPressed( Key::D ); } break;
 				}
 			}
 
@@ -467,10 +467,10 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 		{
 			switch( wparam )
 			{
-				case 'W': { Input::Get().SetKeyState( Key::W, KeyState{ false, true, false } ); } break;
-				case 'A': { Input::Get().SetKeyState( Key::A, KeyState{ false, true, false } ); } break;
-				case 'S': { Input::Get().SetKeyState( Key::S, KeyState{ false, true, false } ); } break;
-				case 'D': { Input::Get().SetKeyState( Key::D, KeyState{ false, true, false } ); } break;
+				case 'W': { Input::SetKeyReleased( Key::W ); } break;
+				case 'A': { Input::SetKeyReleased( Key::A ); } break;
+				case 'S': { Input::SetKeyReleased( Key::S ); } break;
+				case 'D': { Input::SetKeyReleased( Key::D ); } break;
 			}
 
 			break;

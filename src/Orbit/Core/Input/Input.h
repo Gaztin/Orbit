@@ -30,28 +30,14 @@ enum class Key
 	D,
 };
 
-struct KeyState
+namespace Input
 {
-	bool down     : 1;
-	bool released : 1;
-	bool pressed  : 1;
-};
-
-class ORB_API_CORE Input : public Singleton< Input, true >
-{
-public:
-
-	void Update( void );
-
-public:
-
-	KeyState GetKeyState( Key key ) const;
-	void     SetKeyState( Key key, KeyState state );
-
-private:
-
-	std::map< Key, KeyState > m_key_states;
-
+	extern ORB_API_CORE void SetKeyPressed ( Key key );
+	extern ORB_API_CORE void SetKeyReleased( Key key );
+	extern ORB_API_CORE bool GetKeyPressed ( Key key );
+	extern ORB_API_CORE bool GetKeyReleased( Key key );
+	extern ORB_API_CORE bool GetKeyHeld    ( Key key );
+	extern ORB_API_CORE void ResetKeyStates( void );
 };
 
 ORB_NAMESPACE_END

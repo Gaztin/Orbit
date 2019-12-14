@@ -19,28 +19,73 @@
 
 ORB_NAMESPACE_BEGIN
 
-void Input::Update( void )
+namespace Input
 {
-	for( auto& it : m_key_states )
+	struct KeyState
 	{
-		it.second.pressed  = false;
-		it.second.released = false;
-	}
-}
+		bool held     : 1;
+		bool pressed  : 1;
+		bool released : 1;
+	};
 
-KeyState Input::GetKeyState( Key key ) const
-{
-	if( auto it = m_key_states.find( key ); it != m_key_states.end() )
+	static std::map< Key, KeyState > key_states;
+
+	void SetKeyPressed( Key key )
 	{
-		return it->second;
+		KeyState& state = key_states[ key ];
+
+		state.held     = true;
+		state.pressed  = true;
+		state.released = false;
 	}
 
-	return { };
-}
+	void SetKeyReleased( Key key )
+	{
+		KeyState& state = key_states[ key ];
 
-void Input::SetKeyState( Key key, KeyState state )
-{
-	m_key_states[ key ] = state;
+		state.held     = false;
+		state.pressed  = false;
+		state.released = true;
+	}
+
+	bool GetKeyPressed( Key key )
+	{
+		if( auto it = key_states.find( key ); it != key_states.end() )
+		{
+			return it->second.pressed;
+		}
+
+		return false;
+	}
+
+	bool GetKeyReleased( Key key )
+	{
+		if( auto it = key_states.find( key ); it != key_states.end() )
+		{
+			return it->second.released;
+		}
+
+		return false;
+	}
+
+	bool GetKeyHeld( Key key )
+	{
+		if( auto it = key_states.find( key ); it != key_states.end() )
+		{
+			return it->second.held;
+		}
+
+		return false;
+	}
+
+	void ResetKeyStates( void )
+	{
+		for( auto& it : key_states )
+		{
+			it.second.pressed  = false;
+			it.second.released = false;
+		}
+	}
 }
 
 ORB_NAMESPACE_END
