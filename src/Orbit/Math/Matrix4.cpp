@@ -167,12 +167,12 @@ float Matrix4::GetDeterminant( void ) const
 
 float Matrix4::GetDeterminant3x3( size_t column, size_t row ) const
 {
-	const size_t c1 = ( column <= 0 ) ? 1 : 0;
-	const size_t c2 = ( column <= 1 ) ? 2 : 1;
-	const size_t c3 = ( column <= 2 ) ? 3 : 2;
-	const size_t r1 = ( row    <= 0 ) ? 1 : 0;
-	const size_t r2 = ( row    <= 1 ) ? 2 : 1;
-	const size_t r3 = ( row    <= 2 ) ? 3 : 2;
+	const size_t c1 = ( column > 0 ) ? 0 : 1;
+	const size_t c2 = ( column > 1 ) ? 1 : 2;
+	const size_t c3 = ( column > 2 ) ? 2 : 3;
+	const size_t r1 = ( row    > 0 ) ? 0 : 1;
+	const size_t r2 = ( row    > 1 ) ? 1 : 2;
+	const size_t r3 = ( row    > 2 ) ? 2 : 3;
 
 	return m_elements[ 4 * r1 + c1 ] * ( m_elements[ 4 * r2 + c2 ] * m_elements[ 4 * r3 + c3 ] - m_elements[ 4 * r2 + c3 ] * m_elements[ 4 * r3 + c2 ] ) -
 	       m_elements[ 4 * r1 + c2 ] * ( m_elements[ 4 * r2 + c1 ] * m_elements[ 4 * r3 + c3 ] - m_elements[ 4 * r2 + c3 ] * m_elements[ 4 * r3 + c1 ] ) +
