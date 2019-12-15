@@ -30,8 +30,8 @@ namespace Input
 
 	struct Pointer
 	{
-		Pos current_pos;
-		Pos previous_pos;
+		Pos  current_pos;
+		Pos  previous_pos;
 		bool held     : 1;
 		bool pressed  : 1;
 		bool released : 1;
