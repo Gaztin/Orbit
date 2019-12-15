@@ -45,6 +45,7 @@ namespace Input
 
 	struct FPSCursor
 	{
+		Pos  pos;
 		Pos  offset_from_origin;
 		bool enabled = false;
 	};
@@ -125,6 +126,8 @@ namespace Input
 		{
 			std::get< 0 >( pos ) += std::get< 0 >( fps_cursor.offset_from_origin );
 			std::get< 1 >( pos ) += std::get< 1 >( fps_cursor.offset_from_origin );
+
+			fps_cursor.pos = pos;
 		}
 
 		pointers[ index ].current_pos = pos;
@@ -193,6 +196,31 @@ namespace Input
 	#endif
 
 		fps_cursor.enabled = enable;
+
+	#if defined( ORB_OS_WINDOWS )
+
+		Window* window = Window::GetPtr();
+
+		if( window != nullptr )
+		{
+			HWND  window_handle = window->GetPrivateDetails().hwnd;
+			POINT cursor_pos;
+
+			if( GetCursorPos( &cursor_pos ) && ScreenToClient( window_handle, &cursor_pos ) )
+			{
+				auto&[ fps_x, fps_y ] = fps_cursor.pos;
+
+				fps_x = cursor_pos.x;
+				fps_y = cursor_pos.y;
+			}
+		}
+
+	#else
+
+	#  error Grab cursor pos
+
+	#endif
+
 	}
 
 	void ResetStates( void )
@@ -212,8 +240,7 @@ namespace Input
 				GetClientRect( hwnd, &client_rect );
 				SetCursorPos( ( window_rect.left + window_rect.right  ) / 2, ( window_rect.top  + window_rect.bottom ) / 2 );
 
-				/* TODO: Get global cursor pos */
-				const auto& [ cur_x, cur_y ] = pointers[ 1 ].current_pos;
+				const auto& [ cur_x, cur_y ] = fps_cursor.pos;
 
 				/* TODO: Calculate seemingly arbitrary Y offset (11) */
 				fps_cursor.offset_from_origin = std::make_tuple( -( ( ( client_rect.left + client_rect.right  ) / 2      ) - cur_x ),
