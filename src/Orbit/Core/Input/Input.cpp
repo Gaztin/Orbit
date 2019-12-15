@@ -188,14 +188,14 @@ namespace Input
 
 	void SetFPSCursor( bool enable )
 	{
+		fps_cursor.enabled = enable;
+
 		/* Toggle cursor visibility */
 	#if defined( ORB_OS_WINDOWS )
 		ShowCursor( !enable );
 	#else
 	#  error Implement cursor visibility
 	#endif
-
-		fps_cursor.enabled = enable;
 
 	#if defined( ORB_OS_WINDOWS )
 
