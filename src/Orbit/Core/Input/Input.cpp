@@ -234,17 +234,21 @@ namespace Input
 			{
 				HWND hwnd = window->GetPrivateDetails().hwnd;
 				RECT window_rect;
-				RECT client_rect;
 
-				GetWindowRect( hwnd, &window_rect );
-				GetClientRect( hwnd, &client_rect );
-				SetCursorPos( ( window_rect.left + window_rect.right  ) / 2, ( window_rect.top  + window_rect.bottom ) / 2 );
+				if( GetWindowRect( hwnd, &window_rect ) && SetCursorPos( ( window_rect.left + window_rect.right  ) / 2, ( window_rect.top  + window_rect.bottom ) / 2 ) )
+				{
+					auto [ cur_x, cur_y ] = fps_cursor.pos;
+					RECT client_rect;
 
-				const auto& [ cur_x, cur_y ] = fps_cursor.pos;
+					if( GetClientRect( hwnd, &client_rect ) )
+					{
+						const int caption_height = GetSystemMetrics( SM_CYCAPTION );
+						const int border_height  = GetSystemMetrics( SM_CYBORDER );
 
-				/* TODO: Calculate seemingly arbitrary Y offset (11) */
-				fps_cursor.offset_from_origin = std::make_tuple( -( ( ( client_rect.left + client_rect.right  ) / 2      ) - cur_x ),
-				                                                 -( ( ( client_rect.top  + client_rect.bottom ) / 2 - 11 ) - cur_y ) );
+						fps_cursor.offset_from_origin = std::make_tuple( -( ( ( client_rect.left + client_rect.right                                       ) / 2 ) - cur_x ),
+						                                                 -( ( ( client_rect.top  + client_rect.bottom - ( caption_height - border_height ) ) / 2 ) - cur_y ) );
+					}
+				}
 			}
 
 		#endif
