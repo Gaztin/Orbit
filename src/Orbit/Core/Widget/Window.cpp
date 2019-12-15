@@ -18,6 +18,7 @@
 #include "Window.h"
 
 #include "Orbit/Core/Input/Input.h"
+#include "Orbit/Core/Input/Key.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
 #include "Orbit/Core/Platform/Android/AndroidNativeAppGlue.h"
 #include "Orbit/Core/Platform/iOS/UIWindow.h"
@@ -453,13 +454,9 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 		{
 			if( ( HIWORD( lparam ) & KF_REPEAT ) == 0 )
 			{
-				switch( wparam )
-				{
-					case 'W': { Input::SetKeyPressed( Key::W ); } break;
-					case 'A': { Input::SetKeyPressed( Key::A ); } break;
-					case 'S': { Input::SetKeyPressed( Key::S ); } break;
-					case 'D': { Input::SetKeyPressed( Key::D ); } break;
-				}
+				const Key key = ConvertSystemKey( static_cast< uint32_t >( wparam ) );
+
+				Input::SetKeyPressed( key );
 			}
 
 			break;
@@ -467,13 +464,8 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 
 		case WM_KEYUP:
 		{
-			switch( wparam )
-			{
-				case 'W': { Input::SetKeyReleased( Key::W ); } break;
-				case 'A': { Input::SetKeyReleased( Key::A ); } break;
-				case 'S': { Input::SetKeyReleased( Key::S ); } break;
-				case 'D': { Input::SetKeyReleased( Key::D ); } break;
-			}
+			const Key key = ConvertSystemKey( static_cast< uint32_t >( wparam ) );
+			Input::SetKeyReleased( key );
 
 			break;
 		}

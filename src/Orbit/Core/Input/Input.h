@@ -19,17 +19,10 @@
 #include <map>
 #include <tuple>
 
+#include "Orbit/Core/Input/Key.h"
 #include "Orbit/Core/Utility/Singleton.h"
 
 ORB_NAMESPACE_BEGIN
-
-enum class Key
-{
-	W,
-	A,
-	S,
-	D,
-};
 
 namespace Input
 {
