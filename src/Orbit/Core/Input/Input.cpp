@@ -124,7 +124,7 @@ namespace Input
 		if( fps_cursor.enabled )
 		{
 			std::get< 0 >( pos ) += std::get< 0 >( fps_cursor.offset_from_origin );
-			std::get< 1 >( pos ) += std::get< 1 >( fps_cursor.offset_from_origin ) + 11; /* TODO: Calculate this extra offset */
+			std::get< 1 >( pos ) += std::get< 1 >( fps_cursor.offset_from_origin );
 		}
 
 		pointers[ index ].current_pos = pos;
@@ -215,8 +215,9 @@ namespace Input
 				/* TODO: Get global cursor pos */
 				const auto& [ cur_x, cur_y ] = pointers[ 1 ].current_pos;
 
-				fps_cursor.offset_from_origin = std::make_tuple( -( ( ( client_rect.left + client_rect.right  ) / 2 ) - cur_x ),
-				                                                 -( ( ( client_rect.top  + client_rect.bottom ) / 2 ) - cur_y ) );
+				/* TODO: Calculate seemingly arbitrary Y offset (11) */
+				fps_cursor.offset_from_origin = std::make_tuple( -( ( ( client_rect.left + client_rect.right  ) / 2      ) - cur_x ),
+				                                                 -( ( ( client_rect.top  + client_rect.bottom ) / 2 - 11 ) - cur_y ) );
 			}
 
 		#endif
