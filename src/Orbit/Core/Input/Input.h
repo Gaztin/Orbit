@@ -50,6 +50,8 @@ namespace Input
 	extern ORB_API_CORE Pos  GetPointerPos     ( size_t index );
 	extern ORB_API_CORE Pos  GetPointerMove    ( size_t index );
 
+	extern ORB_API_CORE void SetFPSCursor( bool enable );
+
 	extern ORB_API_CORE void ResetStates( void );
 };
 

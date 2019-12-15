@@ -17,6 +17,12 @@
 
 #include "Input.h"
 
+#include "Orbit/Core/Widget/Window.h"
+
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+#endif
+
 ORB_NAMESPACE_BEGIN
 
 namespace Input
@@ -37,8 +43,15 @@ namespace Input
 		bool released : 1;
 	};
 
+	struct FPSCursor
+	{
+		Pos  offset_from_origin;
+		bool enabled = false;
+	};
+
 	static std::map< Key, KeyState >   key_states;
 	static std::map< size_t, Pointer > pointers;
+	static FPSCursor                   fps_cursor;
 
 	void SetKeyPressed( Key key )
 	{
@@ -108,6 +121,12 @@ namespace Input
 
 	void SetPointerPos( size_t index, Pos pos )
 	{
+		if( fps_cursor.enabled )
+		{
+			std::get< 0 >( pos ) += std::get< 0 >( fps_cursor.offset_from_origin );
+			std::get< 1 >( pos ) += std::get< 1 >( fps_cursor.offset_from_origin ) + 11; /* TODO: Calculate this extra offset */
+		}
+
 		pointers[ index ].current_pos = pos;
 	}
 
@@ -164,8 +183,46 @@ namespace Input
 		return { };
 	}
 
+	void SetFPSCursor( bool enable )
+	{
+		/* Toggle cursor visibility */
+	#if defined( ORB_OS_WINDOWS )
+		ShowCursor( !enable );
+	#else
+	#  error Implement cursor visibility
+	#endif
+
+		fps_cursor.enabled = enable;
+	}
+
 	void ResetStates( void )
 	{
+		if( fps_cursor.enabled )
+		{
+
+		#if defined( ORB_OS_WINDOWS )
+
+			if( Window* window = Window::GetPtr(); window != nullptr )
+			{
+				HWND hwnd = window->GetPrivateDetails().hwnd;
+				RECT window_rect;
+				RECT client_rect;
+
+				GetWindowRect( hwnd, &window_rect );
+				GetClientRect( hwnd, &client_rect );
+				SetCursorPos( ( window_rect.left + window_rect.right  ) / 2, ( window_rect.top  + window_rect.bottom ) / 2 );
+
+				/* TODO: Get global cursor pos */
+				const auto& [ cur_x, cur_y ] = pointers[ 1 ].current_pos;
+
+				fps_cursor.offset_from_origin = std::make_tuple( -( ( ( client_rect.left + client_rect.right  ) / 2 ) - cur_x ),
+				                                                 -( ( ( client_rect.top  + client_rect.bottom ) / 2 ) - cur_y ) );
+			}
+
+		#endif
+
+		}
+
 		for( auto& it : key_states )
 		{
 			it.second.pressed  = false;
