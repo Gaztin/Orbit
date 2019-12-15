@@ -127,6 +127,8 @@ namespace Input
 			std::get< 0 >( pos ) += std::get< 0 >( fps_cursor.offset_from_origin );
 			std::get< 1 >( pos ) += std::get< 1 >( fps_cursor.offset_from_origin );
 
+			/* FPS cursors only work on desktop systems where all pointers are going to have the same position in the
+			 * end, so setting the position regardless of the pointer index like this should be fine */
 			fps_cursor.pos = pos;
 		}
 
@@ -245,6 +247,8 @@ namespace Input
 						const int caption_height = GetSystemMetrics( SM_CYCAPTION );
 						const int border_height  = GetSystemMetrics( SM_CYBORDER );
 
+						/* I am a little confused as to why we need to subtract the caption height (excluding border thickness)
+						 * from the Y position, but it seems to work the way we want it to for now */
 						fps_cursor.offset_from_origin = std::make_tuple( -( ( ( client_rect.left + client_rect.right                                       ) / 2 ) - cur_x ),
 						                                                 -( ( ( client_rect.top  + client_rect.bottom - ( caption_height - border_height ) ) / 2 ) - cur_y ) );
 					}
