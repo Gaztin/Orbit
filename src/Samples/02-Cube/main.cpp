@@ -17,7 +17,10 @@
 
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
+#include <Orbit/Core/Input/Input.h>
+#include <Orbit/Core/Input/Key.h>
 #include <Orbit/Core/IO/Asset.h>
+#include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
@@ -31,6 +34,8 @@
 #include <Orbit/Math/Vector2.h>
 #include <Orbit/Math/Vector3.h>
 #include <Orbit/Math/Vector4.h>
+
+#include "Framework/Camera.h"
 
 struct Vertex
 {
@@ -194,8 +199,6 @@ const std::initializer_list< uint16_t > index_data
 
 std::tuple constant_data = std::make_tuple( Orbit::Matrix4() );
 
-Orbit::Matrix4 projection_matrix( 0.f );
-
 const uint32_t texture_data[]
 {
 	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
@@ -210,7 +213,6 @@ public:
 
 	SampleApp( void )
 		: m_window( 800, 600 )
-		, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
 		, m_shader( shader_source, vertex_layout )
 		, m_vertex_buffer( vertex_data )
 		, m_index_buffer( index_data )
@@ -220,7 +222,6 @@ public:
 		m_window.SetTitle( "Orbit Sample (02-Cube)" );
 		m_window.Show();
 		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
-		m_view.Translate( Orbit::Vector3( 0, 0, -5 ) );
 	}
 
 public:
@@ -235,12 +236,9 @@ public:
 			{
 				using namespace Orbit::MathLiterals;
 
-				Orbit::Matrix4 view_inverse( m_view );
-				view_inverse.Invert();
-
 				m_model.Rotate( Orbit::Vector3( 0, 0.5_pi * delta_time, 0 ) );
 
-				mvp = m_model * view_inverse * projection_matrix;
+				mvp = m_model * m_camera.GetViewProjection();
 			}
 
 			m_constant_buffer.Update( constant_data );
@@ -248,6 +246,8 @@ public:
 
 		m_window.PollEvents();
 		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
+
+		m_camera.Update( delta_time );
 
 		Orbit::RenderCommand command;
 		command.vertex_buffer = &m_vertex_buffer;
@@ -262,26 +262,11 @@ public:
 		m_render_context.SwapBuffers();
 	}
 
-	bool IsRunning() override { return m_window.IsOpen(); }
-
-public:
-
-	static void OnWindowResize( const Orbit::WindowResized& e )
-	{
-		using namespace Orbit::MathLiterals;
-
-		constexpr float fov       = 60_pi / 180.f;
-		constexpr float far_clip  = 100.f;
-		constexpr float near_clip = 0.1f;
-		const float     aspect    = static_cast< float >( e.width ) / e.height;
-
-		projection_matrix.SetPerspective( aspect, fov, near_clip, far_clip );
-	}
+	bool IsRunning( void ) override { return m_window.IsOpen(); }
 
 private:
 
 	Orbit::Window            m_window;
-	Orbit::EventSubscription m_resize_subscription;
 	Orbit::RenderContext     m_render_context;
 	Orbit::Shader            m_shader;
 	Orbit::VertexBuffer      m_vertex_buffer;
@@ -289,7 +274,8 @@ private:
 	Orbit::ConstantBuffer    m_constant_buffer;
 	Orbit::Texture2D         m_texture;
 	Orbit::BasicRenderer     m_renderer;
-	Orbit::Matrix4           m_view;
 	Orbit::Matrix4           m_model;
+
+	Camera m_camera;
 
 };
