@@ -86,9 +86,9 @@ Key ConvertSystemKey( uint32_t system_key )
 		case VK_ESCAPE:   return Key::Escape;
 		case VK_TAB:      return Key::Tab;
 		case VK_CAPITAL:  return Key::CapsLock;
-		case VK_LSHIFT:   return Key::LeftShift;
-		case VK_LCONTROL: return Key::LeftControl;
-		case VK_LMENU:    return Key::LeftAlt;
+		case VK_SHIFT:    return Key::Shift;
+		case VK_CONTROL:  return Key::Control;
+		case VK_MENU:     return Key::Alt;
 		case VK_SPACE:    return Key::Space;
 		case VK_RMENU:    return Key::RightAlt;
 		case VK_RCONTROL: return Key::RightControl;

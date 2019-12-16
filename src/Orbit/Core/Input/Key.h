@@ -80,9 +80,9 @@ enum class Key
 	Escape,
 	Tab,
 	CapsLock,
-	LeftShift,
-	LeftControl,
-	LeftAlt,
+	Shift,
+	Control,
+	Alt,
 	Space,
 	RightAlt,
 	RightControl,
@@ -108,11 +108,6 @@ enum class Key
 	ArrowLeft,
 	ArrowRight,
 	ArrowUp,
-
-	/* Aliases */
-	Shift   = LeftShift,
-	Alt     = LeftAlt,
-	Control = LeftControl,
 };
 
 extern ORB_API_CORE Key ConvertSystemKey( uint32_t system_key );
