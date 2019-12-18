@@ -72,7 +72,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	Visual*                 visual      = DefaultVisual( m_details.display, screen );
 	constexpr unsigned long value_mask  = ( CWBackPixel | CWEventMask );
 	XSetWindowAttributes    attribs     = { };
-	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask | KeyPressMask | KeyReleaseMask );
+	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask );
 	m_details.window                    = XCreateWindow( m_details.display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, value_mask, &attribs );
 
 	/* Allow us to capture the window close event */
@@ -618,6 +618,42 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 			Key key = ConvertSystemKey( xevent.xkey.keycode );
 			
 			Input::SetKeyReleased( key );
+			
+			break;
+		}
+		
+		case ButtonPress:
+		{
+			Input::Pos pos = std::make_pair( xevent.xbutton.x, xevent.xbutton.y );
+			
+			switch( xevent.xbutton.button )
+			{
+				case Button1: { Input::SetPointerPressed( 0, pos ); } break;
+				case Button3: { Input::SetPointerPressed( 1, pos ); } break;
+			}
+			
+			break;
+		}
+		
+		case ButtonRelease:
+		{
+			Input::Pos pos = std::make_pair( xevent.xbutton.x, xevent.xbutton.y );
+			
+			switch( xevent.xbutton.button )
+			{
+				case Button1: { Input::SetPointerReleased( 0, pos ); } break;
+				case Button3: { Input::SetPointerReleased( 1, pos ); } break;
+			}
+			
+			break;
+		}
+		
+		case MotionNotify:
+		{
+			Input::Pos pos = std::make_pair( xevent.xmotion.x, xevent.xmotion.y );
+			
+			if( xevent.xmotion.state & Button1MotionMask ) { Input::SetPointerPos( 0, pos ); }
+			if( xevent.xmotion.state & Button3MotionMask ) { Input::SetPointerPos( 1, pos ); }
 			
 			break;
 		}
