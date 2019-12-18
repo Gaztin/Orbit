@@ -90,9 +90,6 @@ Key ConvertSystemKey( uint32_t system_key )
 		case VK_CONTROL:  return Key::Control;
 		case VK_MENU:     return Key::Alt;
 		case VK_SPACE:    return Key::Space;
-		case VK_RMENU:    return Key::RightAlt;
-		case VK_RCONTROL: return Key::RightControl;
-		case VK_RSHIFT:   return Key::RightShift;
 		case VK_RETURN:   return Key::Return;
 		case VK_BACK:     return Key::Backspace;
 		case VK_SNAPSHOT: return Key::PrintScreen;
