@@ -72,7 +72,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	Visual*                 visual      = DefaultVisual( m_details.display, screen );
 	constexpr unsigned long value_mask  = ( CWBackPixel | CWEventMask );
 	XSetWindowAttributes    attribs     = { };
-	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask );
+	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask | KeyPressMask | KeyReleaseMask );
 	m_details.window                    = XCreateWindow( m_details.display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, value_mask, &attribs );
 
 	/* Allow us to capture the window close event */
@@ -601,6 +601,24 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		{
 			w->Close();
 
+			break;
+		}
+		
+		case KeyPress:
+		{
+			Key key = ConvertSystemKey( xevent.xkey.keycode );
+			
+			Input::SetKeyPressed( key );
+			
+			break;
+		}
+		
+		case KeyRelease:
+		{
+			Key key = ConvertSystemKey( xevent.xkey.keycode );
+			
+			Input::SetKeyReleased( key );
+			
 			break;
 		}
 	}
