@@ -178,11 +178,38 @@ namespace Input
 	{
 		fps_cursor.enabled = enable;
 
-		/* Toggle cursor visibility */
 	#if defined( ORB_OS_WINDOWS )
+		
+		/* Toggle cursor visibility */
 		ShowCursor( !enable );
+
 	#else
-	#  error Implement cursor visibility
+
+		if( Window* window = Window::GetPtr(); window != nullptr )
+		{
+			auto& details = window->GetPrivateDetails();
+			
+			static Cursor invisible_cursor = [ & ]( void ) -> Cursor
+			{
+				char   data[ 1 ] { 0x00 };
+				Pixmap pixmap;
+				
+				if( ( pixmap = XCreateBitmapFromData( details.display, details.window, data, 1, 1 ) ) == None )
+				{
+					return 0;
+				}
+				
+				XColor color;
+				Cursor cursor = XCreatePixmapCursor( details.display, pixmap, pixmap, &color, &color, 0, 0 );
+				
+				XFreePixmap( details.display, pixmap );
+				
+				return cursor;
+			}();
+			
+			XDefineCursor( details.display, details.window, enable ? invisible_cursor : None );
+		}
+
 	#endif
 
 	}
