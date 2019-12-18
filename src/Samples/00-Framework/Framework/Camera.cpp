@@ -58,8 +58,8 @@ void Camera::UpdateView( float delta_time )
 
 		if( Orbit::Input::GetKeyHeld( Orbit::Key::A       ) ) { direction.x -= 1.0f; }
 		if( Orbit::Input::GetKeyHeld( Orbit::Key::D       ) ) { direction.x += 1.0f; }
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::C       ) ) { direction.y -= 1.0f; }
 		if( Orbit::Input::GetKeyHeld( Orbit::Key::Space   ) ) { direction.y += 1.0f; }
-		if( Orbit::Input::GetKeyHeld( Orbit::Key::C       ) ) { direction.y += 1.0f; }
 		if( Orbit::Input::GetKeyHeld( Orbit::Key::S       ) ) { direction.z -= 1.0f; }
 		if( Orbit::Input::GetKeyHeld( Orbit::Key::W       ) ) { direction.z += 1.0f; }
 		if( Orbit::Input::GetKeyHeld( Orbit::Key::Shift   ) ) { speed_modifier *= 10.0f; }
