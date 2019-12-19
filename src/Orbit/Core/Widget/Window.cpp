@@ -75,9 +75,9 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask );
 	m_details.window                    = XCreateWindow( m_details.display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, value_mask, &attribs );
 
-	/* Allow us to capture the window close event */
-	Atom close_atom = XInternAtom( m_details.display, "WM_DELETE_WINDOW", True );
-	XSetWMProtocols( m_details.display, m_details.window, &close_atom, 1 );
+	/* Allows us to capture the window close event */
+	m_details.wm_delete_window = XInternAtom( m_details.display, "WM_DELETE_WINDOW", True );
+	XSetWMProtocols( m_details.display, m_details.window, &m_details.wm_delete_window, 1 );
 	
 	/* Send initial resize event */
 	XEvent xevent;
@@ -599,7 +599,13 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 
 		case ClientMessage:
 		{
-			w->Close();
+			auto& details = w->GetPrivateDetails();
+			Atom  atom    = *reinterpret_cast< const Atom* >( xevent.xclient.data.l );
+			
+			if( atom == details.wm_delete_window )
+			{
+				w->Close();
+			}
 
 			break;
 		}

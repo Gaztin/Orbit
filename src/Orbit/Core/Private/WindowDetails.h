@@ -48,6 +48,7 @@ namespace Private
 
 		_XDisplay* display;
 		XID        window;
+		Atom       wm_delete_window;
 
 #elif defined( ORB_OS_MACOS )
 
