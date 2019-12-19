@@ -241,7 +241,29 @@ namespace Input
 
 	#else
 
-	#error Set center var and cursor pos
+		if( Window* window = Window::GetPtr(); window != nullptr )
+		{
+			auto&    details = window->GetPrivateDetails();
+			XID      root_window;
+			int32_t  x;
+			int32_t  y;
+			uint32_t width;
+			uint32_t height;
+			uint32_t border;
+			uint32_t depth;
+			
+			if( XGetGeometry( details.display, details.window, &root_window, &x, &y, &width, &height, &border, &depth ) != 0 )
+			{
+				center.x = width / 2;
+				center.y = height / 2;
+			
+				if( fps_cursor.enabled )
+				{
+					XWarpPointer( details.display, None, details.window, 0, 0, 0, 0, center.x, center.y );
+					XFlush( details.display );
+				}
+			}
+		}
 
 	#endif
 
