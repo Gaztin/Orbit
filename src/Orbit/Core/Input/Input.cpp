@@ -36,8 +36,8 @@ namespace Input
 
 	struct Pointer
 	{
-		Pos  current_pos;
-		Pos  previous_pos;
+		Pos  offset_from_center;
+		Pos  movement_since_last_frame;
 		bool held     : 1;
 		bool pressed  : 1;
 		bool released : 1;
@@ -45,14 +45,21 @@ namespace Input
 
 	struct FPSCursor
 	{
-		Pos  pos;
-		Pos  offset_from_origin;
 		bool enabled = false;
 	};
 
 	static std::map< Key, KeyState >   key_states;
 	static std::map< size_t, Pointer > pointers;
 	static FPSCursor                   fps_cursor;
+	static Pos                         center;
+
+	static Pos CalcOffset( Pos from, Pos to )
+	{
+		const auto& [ fx, fy ] = from;
+		const auto& [ tx, ty ] = to;
+
+		return std::make_pair( tx - fx, ty - fy );
+	}
 
 	void SetKeyPressed( Key key )
 	{
@@ -104,35 +111,25 @@ namespace Input
 	{
 		Pointer& pointer = pointers[ index ];
 
-		pointer.current_pos  = pos;
-		pointer.previous_pos = pos;
-		pointer.held         = true;
-		pointer.pressed      = true;
+		pointer.offset_from_center        = CalcOffset( center, pos );
+		pointer.movement_since_last_frame = std::make_pair( 0, 0 );
+		pointer.held                      = true;
+		pointer.pressed                   = true;
 	}
 
 	void SetPointerReleased( size_t index, Pos pos )
 	{
 		Pointer& pointer = pointers[ index ];
 
-		pointer.current_pos  = pos;
-		pointer.previous_pos = pos;
-		pointer.held         = false;
-		pointer.released     = true;
+		pointer.offset_from_center        = CalcOffset( center, pos );
+		pointer.movement_since_last_frame = std::make_pair( 0, 0 );
+		pointer.held                      = false;
+		pointer.released                  = true;
 	}
 
 	void SetPointerPos( size_t index, Pos pos )
 	{
-		if( fps_cursor.enabled )
-		{
-			std::get< 0 >( pos ) += std::get< 0 >( fps_cursor.offset_from_origin );
-			std::get< 1 >( pos ) += std::get< 1 >( fps_cursor.offset_from_origin );
-
-			/* FPS cursors only work on desktop systems where all pointers are going to have the same position in the
-			 * end, so setting the position regardless of the pointer index like this should be fine */
-			fps_cursor.pos = pos;
-		}
-
-		pointers[ index ].current_pos = pos;
+		pointers[ index ].movement_since_last_frame = CalcOffset( center, pos );
 	}
 
 	bool GetPointerPressed( size_t index )
@@ -169,7 +166,7 @@ namespace Input
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
 		{
-			return it->second.current_pos;
+			return it->second.offset_from_center;
 		}
 
 		return { };
@@ -179,10 +176,9 @@ namespace Input
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
 		{
-			const auto& [ curr_x, curr_y ] = it->second.current_pos;
-			const auto& [ prev_x, prev_y ] = it->second.previous_pos;
+			auto [ mx, my ] = it->second.movement_since_last_frame;
 
-			return std::make_tuple( curr_x - prev_x, curr_y - prev_y );
+			return std::make_tuple( mx, my );
 		}
 
 		return { };
@@ -199,65 +195,41 @@ namespace Input
 	#  error Implement cursor visibility
 	#endif
 
+	}
+
+	void ResetStates( void )
+	{
+
 	#if defined( ORB_OS_WINDOWS )
 
-		Window* window = Window::GetPtr();
-
-		if( window != nullptr )
+		if( Window* window = Window::GetPtr(); window != nullptr )
 		{
-			HWND  window_handle = window->GetPrivateDetails().hwnd;
-			POINT cursor_pos;
+			HWND hwnd = window->GetPrivateDetails().hwnd;
+			RECT client_rect;
 
-			if( GetCursorPos( &cursor_pos ) && ScreenToClient( window_handle, &cursor_pos ) )
+			if( GetClientRect( hwnd, &client_rect ) )
 			{
-				auto&[ fps_x, fps_y ] = fps_cursor.pos;
+				auto& [ cx, cy ] = center;
+				cx = ( client_rect.left + client_rect.right  ) / 2;
+				cy = ( client_rect.top  + client_rect.bottom ) / 2;
 
-				fps_x = cursor_pos.x;
-				fps_y = cursor_pos.y;
+				if( fps_cursor.enabled )
+				{
+					POINT cursor_pos;
+					cursor_pos.x = cx;
+					cursor_pos.y = cy;
+
+					ClientToScreen( hwnd, &cursor_pos );
+					SetCursorPos( cursor_pos.x, cursor_pos.y );
+				}
 			}
 		}
 
 	#else
 
-	#  error Grab cursor pos
+	#error Set center var and cursor pos
 
 	#endif
-
-	}
-
-	void ResetStates( void )
-	{
-		if( fps_cursor.enabled )
-		{
-
-		#if defined( ORB_OS_WINDOWS )
-
-			if( Window* window = Window::GetPtr(); window != nullptr )
-			{
-				HWND hwnd = window->GetPrivateDetails().hwnd;
-				RECT window_rect;
-
-				if( GetWindowRect( hwnd, &window_rect ) && SetCursorPos( ( window_rect.left + window_rect.right  ) / 2, ( window_rect.top  + window_rect.bottom ) / 2 ) )
-				{
-					auto [ cur_x, cur_y ] = fps_cursor.pos;
-					RECT client_rect;
-
-					if( GetClientRect( hwnd, &client_rect ) )
-					{
-						const int caption_height = GetSystemMetrics( SM_CYCAPTION );
-						const int border_height  = GetSystemMetrics( SM_CYBORDER );
-
-						/* I am a little confused as to why we need to subtract the caption height (excluding border thickness)
-						 * from the Y position, but it seems to work the way we want it to for now */
-						fps_cursor.offset_from_origin = std::make_tuple( -( ( ( client_rect.left + client_rect.right                                       ) / 2 ) - cur_x ),
-						                                                 -( ( ( client_rect.top  + client_rect.bottom - ( caption_height - border_height ) ) / 2 ) - cur_y ) );
-					}
-				}
-			}
-
-		#endif
-
-		}
 
 		for( auto& it : key_states )
 		{
@@ -267,7 +239,14 @@ namespace Input
 
 		for( auto& it : pointers )
 		{
-			it.second.previous_pos = it.second.current_pos;
+			auto& [ ox, oy ] = it.second.offset_from_center;
+			auto& [ mx, my ] = it.second.movement_since_last_frame;
+
+			ox += mx;
+			oy += my;
+			mx  = 0;
+			my  = 0;
+
 			it.second.pressed      = false;
 			it.second.released     = false;
 		}
