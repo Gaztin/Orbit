@@ -88,6 +88,15 @@ void Camera::UpdateView( float delta_time )
 			rotation  *= Orbit::Pi;
 			rotation  /= static_cast< float >( m_height );
 		}
+		else if( Orbit::Input::GetPointerHeld( 0 ) )
+		{
+			auto [ x, y ] = Orbit::Input::GetPointerMove( 0 );
+
+			rotation.x =  static_cast< float >( y );
+			rotation.y = -static_cast< float >( x );
+			rotation  *= Orbit::Pi;
+			rotation  /= static_cast< float >( m_height );
+		}
 
 		rotate.Rotate( rotation );
 	}
