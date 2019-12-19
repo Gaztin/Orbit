@@ -21,27 +21,26 @@
 
 #include "Orbit/Core/Input/Key.h"
 #include "Orbit/Core/Utility/Singleton.h"
+#include "Orbit/Core/Widget/Point.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace Input
 {
-	using Pos = std::tuple< int, int >;
-
 	extern ORB_API_CORE void SetKeyPressed ( Key key );
 	extern ORB_API_CORE void SetKeyReleased( Key key );
 	extern ORB_API_CORE bool GetKeyPressed ( Key key );
 	extern ORB_API_CORE bool GetKeyReleased( Key key );
 	extern ORB_API_CORE bool GetKeyHeld    ( Key key );
 
-	extern ORB_API_CORE void SetPointerPressed ( size_t index, Pos pos );
-	extern ORB_API_CORE void SetPointerReleased( size_t index, Pos pos );
-	extern ORB_API_CORE void SetPointerPos     ( size_t index, Pos pos );
-	extern ORB_API_CORE bool GetPointerPressed ( size_t index );
-	extern ORB_API_CORE bool GetPointerReleased( size_t index );
-	extern ORB_API_CORE bool GetPointerHeld    ( size_t index );
-	extern ORB_API_CORE Pos  GetPointerPos     ( size_t index );
-	extern ORB_API_CORE Pos  GetPointerMove    ( size_t index );
+	extern ORB_API_CORE void  SetPointerPressed ( size_t index, Point pos );
+	extern ORB_API_CORE void  SetPointerReleased( size_t index, Point pos );
+	extern ORB_API_CORE void  SetPointerPos     ( size_t index, Point pos );
+	extern ORB_API_CORE bool  GetPointerPressed ( size_t index );
+	extern ORB_API_CORE bool  GetPointerReleased( size_t index );
+	extern ORB_API_CORE bool  GetPointerHeld    ( size_t index );
+	extern ORB_API_CORE Point GetPointerPos     ( size_t index );
+	extern ORB_API_CORE Point GetPointerMove    ( size_t index );
 
 	extern ORB_API_CORE void SetFPSCursor( bool enable );
 

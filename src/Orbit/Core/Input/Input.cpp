@@ -36,11 +36,11 @@ namespace Input
 
 	struct Pointer
 	{
-		Pos  offset_from_center;
-		Pos  movement_since_last_frame;
-		bool held     : 1;
-		bool pressed  : 1;
-		bool released : 1;
+		Point offset_from_center;
+		Point movement_since_last_frame;
+		bool  held     : 1;
+		bool  pressed  : 1;
+		bool  released : 1;
 	};
 
 	struct FPSCursor
@@ -51,15 +51,7 @@ namespace Input
 	static std::map< Key, KeyState >   key_states;
 	static std::map< size_t, Pointer > pointers;
 	static FPSCursor                   fps_cursor;
-	static Pos                         center;
-
-	static Pos CalcOffset( Pos from, Pos to )
-	{
-		const auto& [ fx, fy ] = from;
-		const auto& [ tx, ty ] = to;
-
-		return std::make_pair( tx - fx, ty - fy );
-	}
+	static Point                       center;
 
 	void SetKeyPressed( Key key )
 	{
@@ -107,29 +99,29 @@ namespace Input
 		return false;
 	}
 
-	void SetPointerPressed( size_t index, Pos pos )
+	void SetPointerPressed( size_t index, Point pos )
 	{
 		Pointer& pointer = pointers[ index ];
 
-		pointer.offset_from_center        = CalcOffset( center, pos );
-		pointer.movement_since_last_frame = std::make_pair( 0, 0 );
+		pointer.offset_from_center        = pos - center;
+		pointer.movement_since_last_frame = Point();
 		pointer.held                      = true;
 		pointer.pressed                   = true;
 	}
 
-	void SetPointerReleased( size_t index, Pos pos )
+	void SetPointerReleased( size_t index, Point pos )
 	{
 		Pointer& pointer = pointers[ index ];
 
-		pointer.offset_from_center        = CalcOffset( center, pos );
-		pointer.movement_since_last_frame = std::make_pair( 0, 0 );
+		pointer.offset_from_center        = pos - center;
+		pointer.movement_since_last_frame = Point();
 		pointer.held                      = false;
 		pointer.released                  = true;
 	}
 
-	void SetPointerPos( size_t index, Pos pos )
+	void SetPointerPos( size_t index, Point pos )
 	{
-		pointers[ index ].movement_since_last_frame = CalcOffset( center, pos );
+		pointers[ index ].movement_since_last_frame = pos - center;
 	}
 
 	bool GetPointerPressed( size_t index )
@@ -162,26 +154,24 @@ namespace Input
 		return false;
 	}
 
-	Pos GetPointerPos( size_t index )
+	Point GetPointerPos( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
 		{
-			return it->second.offset_from_center;
+			return center + it->second.offset_from_center;
 		}
 
-		return { };
+		return Point();
 	}
 
-	Pos GetPointerMove( size_t index )
+	Point GetPointerMove( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
 		{
-			auto [ mx, my ] = it->second.movement_since_last_frame;
-
-			return std::make_tuple( mx, my );
+			return it->second.movement_since_last_frame;
 		}
 
-		return { };
+		return Point();
 	}
 
 	void SetFPSCursor( bool enable )
@@ -209,15 +199,12 @@ namespace Input
 
 			if( GetClientRect( hwnd, &client_rect ) )
 			{
-				auto& [ cx, cy ] = center;
-				cx = ( client_rect.left + client_rect.right  ) / 2;
-				cy = ( client_rect.top  + client_rect.bottom ) / 2;
+				center.x = ( client_rect.left + client_rect.right  ) / 2;
+				center.y = ( client_rect.top  + client_rect.bottom ) / 2;
 
 				if( fps_cursor.enabled )
 				{
-					POINT cursor_pos;
-					cursor_pos.x = cx;
-					cursor_pos.y = cy;
+					POINT cursor_pos { center.x, center.y };
 
 					ClientToScreen( hwnd, &cursor_pos );
 					SetCursorPos( cursor_pos.x, cursor_pos.y );
@@ -239,16 +226,10 @@ namespace Input
 
 		for( auto& it : pointers )
 		{
-			auto& [ ox, oy ] = it.second.offset_from_center;
-			auto& [ mx, my ] = it.second.movement_since_last_frame;
-
-			ox += mx;
-			oy += my;
-			mx  = 0;
-			my  = 0;
-
-			it.second.pressed      = false;
-			it.second.released     = false;
+			it.second.offset_from_center       += it.second.movement_since_last_frame;
+			it.second.movement_since_last_frame = Point();
+			it.second.pressed                   = false;
+			it.second.released                  = false;
 		}
 	}
 }
