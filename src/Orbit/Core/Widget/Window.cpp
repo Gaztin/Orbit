@@ -624,7 +624,7 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		
 		case ButtonPress:
 		{
-			Input::Pos pos = std::make_pair( xevent.xbutton.x, xevent.xbutton.y );
+			Point pos( xevent.xbutton.x, xevent.xbutton.y );
 			
 			switch( xevent.xbutton.button )
 			{
@@ -637,7 +637,7 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		
 		case ButtonRelease:
 		{
-			Input::Pos pos = std::make_pair( xevent.xbutton.x, xevent.xbutton.y );
+			Point pos( xevent.xbutton.x, xevent.xbutton.y );
 			
 			switch( xevent.xbutton.button )
 			{
@@ -650,7 +650,7 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		
 		case MotionNotify:
 		{
-			Input::Pos pos = std::make_pair( xevent.xmotion.x, xevent.xmotion.y );
+			Point pos( xevent.xmotion.x, xevent.xmotion.y );
 			
 			if( xevent.xmotion.state & Button1MotionMask ) { Input::SetPointerPos( 0, pos ); }
 			if( xevent.xmotion.state & Button3MotionMask ) { Input::SetPointerPos( 1, pos ); }
