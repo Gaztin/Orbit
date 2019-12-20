@@ -120,6 +120,10 @@ local function decl_framework()
 		string.format( 'src/Samples/%s/**', FRAMEWORK_NAME ),
 	}
 
+	filter { 'system:macosx or ios', 'files:**.cpp' }
+		language( 'ObjCpp' )
+	filter { }
+
 	project()
 	group()
 end
