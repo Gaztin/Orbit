@@ -472,32 +472,55 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 
 		case WM_LBUTTONDOWN:
 		{
-			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
-			Input::SetPointerPressed( 0, pos );
+			Input::SetButtonPressed( Button::MouseLeft );
 
 			break;
 		}
 
 		case WM_LBUTTONUP:
 		{
-			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
-			Input::SetPointerReleased( 0, pos );
+			Input::SetButtonReleased( Button::MouseLeft );
+
+			break;
+		}
+
+		case WM_MBUTTONDOWN:
+		{
+			Input::SetButtonPressed( Button::MouseMiddle );
+
+			break;
+		}
+
+		case WM_MBUTTONUP:
+		{
+			Input::SetButtonReleased( Button::MouseMiddle );
 
 			break;
 		}
 
 		case WM_RBUTTONDOWN:
 		{
-			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
-			Input::SetPointerPressed( 1, pos );
+			Input::SetButtonPressed( Button::MouseRight );
 
 			break;
 		}
 
 		case WM_RBUTTONUP:
 		{
-			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
-			Input::SetPointerReleased( 1, pos );
+			Input::SetButtonReleased( Button::MouseRight );
+
+			break;
+		}
+
+		case WM_XBUTTONDOWN:
+		{
+			WORD which = HIWORD( wparam );
+
+			switch( which )
+			{
+				case XBUTTON1: { Input::SetButtonPressed( Button::MouseExtra1 ); } break;
+				case XBUTTON2: { Input::SetButtonPressed( Button::MouseExtra2 ); } break;
+			}
 
 			break;
 		}
@@ -505,16 +528,7 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 		case WM_MOUSEMOVE:
 		{
 			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
-
-			if( wparam & MK_LBUTTON )
-			{
-				Input::SetPointerPos( 0, pos );
-			}
-
-			if( wparam & MK_RBUTTON )
-			{
-				Input::SetPointerPos( 1, pos );
-			}
+			Input::SetPointerPos( 0, pos );
 
 			break;
 		}
@@ -613,7 +627,6 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		case KeyPress:
 		{
 			Key key = ConvertSystemKey( xevent.xkey.keycode );
-			
 			Input::SetKeyPressed( key );
 			
 			break;
@@ -622,7 +635,6 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		case KeyRelease:
 		{
 			Key key = ConvertSystemKey( xevent.xkey.keycode );
-			
 			Input::SetKeyReleased( key );
 			
 			break;
@@ -630,12 +642,13 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		
 		case ButtonPress:
 		{
-			Point pos( xevent.xbutton.x, xevent.xbutton.y );
-			
 			switch( xevent.xbutton.button )
 			{
-				case Button1: { Input::SetPointerPressed( 0, pos ); } break;
-				case Button3: { Input::SetPointerPressed( 1, pos ); } break;
+				case Button1: { Input::SetButtonPressed( Button::MouseLeft );   } break;
+				case Button2: { Input::SetButtonPressed( Button::MouseMiddle ); } break;
+				case Button3: { Input::SetButtonPressed( Button::MouseRight );  } break;
+				case Button4: { Input::SetButtonPressed( Button::MouseExtra1 ); } break;
+				case Button5: { Input::SetButtonPressed( Button::MouseExtra2 ); } break;
 			}
 			
 			break;
@@ -643,12 +656,13 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		
 		case ButtonRelease:
 		{
-			Point pos( xevent.xbutton.x, xevent.xbutton.y );
-			
 			switch( xevent.xbutton.button )
 			{
-				case Button1: { Input::SetPointerReleased( 0, pos ); } break;
-				case Button3: { Input::SetPointerReleased( 1, pos ); } break;
+				case Button1: { Input::SetButtonReleased( Button::MouseLeft );   } break;
+				case Button2: { Input::SetButtonReleased( Button::MouseMiddle ); } break;
+				case Button3: { Input::SetButtonReleased( Button::MouseRight );  } break;
+				case Button4: { Input::SetButtonReleased( Button::MouseExtra1 ); } break;
+				case Button5: { Input::SetButtonReleased( Button::MouseExtra2 ); } break;
 			}
 			
 			break;
@@ -657,10 +671,8 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		case MotionNotify:
 		{
 			Point pos( xevent.xmotion.x, xevent.xmotion.y );
-			
-			if( xevent.xmotion.state & Button1MotionMask ) { Input::SetPointerPos( 0, pos ); }
-			if( xevent.xmotion.state & Button3MotionMask ) { Input::SetPointerPos( 1, pos ); }
-			
+			Input::SetButtonPressed( 0, pos );
+
 			break;
 		}
 	}

@@ -27,20 +27,20 @@ ORB_NAMESPACE_BEGIN
 
 namespace Input
 {
-	struct KeyState
+	struct BinaryState
 	{
 		bool held     : 1;
 		bool pressed  : 1;
 		bool released : 1;
 	};
 
+	using ButtonState = BinaryState;
+	using KeyState    = BinaryState;
+
 	struct Pointer
 	{
-		Point offset_from_center;
-		Point movement_since_last_frame;
-		bool  held     : 1;
-		bool  pressed  : 1;
-		bool  released : 1;
+		Point current_pos;
+		Point previous_pos;
 	};
 
 	struct FPSCursor
@@ -48,14 +48,15 @@ namespace Input
 		bool enabled = false;
 	};
 
-	static std::map< Key, KeyState >   key_states;
-	static std::map< size_t, Pointer > pointers;
-	static FPSCursor                   fps_cursor;
-	static Point                       center;
+	static std::map< Key, KeyState >       key_states;
+	static std::map< Button, ButtonState > button_states;
+	static std::map< size_t, Pointer >     pointers;
+	static FPSCursor                       fps_cursor;
+	static Point                           center;
 
 	void SetKeyPressed( Key key )
 	{
-		KeyState& state = key_states[ key ];
+		ButtonState& state = key_states[ key ];
 
 		state.held     = true;
 		state.pressed  = true;
@@ -63,7 +64,7 @@ namespace Input
 
 	void SetKeyReleased( Key key )
 	{
-		KeyState& state = key_states[ key ];
+		ButtonState& state = key_states[ key ];
 
 		state.held     = false;
 		state.released = true;
@@ -99,34 +100,25 @@ namespace Input
 		return false;
 	}
 
-	void SetPointerPressed( size_t index, Point pos )
+	void SetButtonPressed( Button button )
 	{
-		Pointer& pointer = pointers[ index ];
+		ButtonState& state = button_states[ button ];
 
-		pointer.offset_from_center        = pos - center;
-		pointer.movement_since_last_frame = Point();
-		pointer.held                      = true;
-		pointer.pressed                   = true;
+		state.held    = true;
+		state.pressed = true;
 	}
 
-	void SetPointerReleased( size_t index, Point pos )
+	void SetButtonReleased( Button button )
 	{
-		Pointer& pointer = pointers[ index ];
+		ButtonState& state = button_states[ button ];
 
-		pointer.offset_from_center        = pos - center;
-		pointer.movement_since_last_frame = Point();
-		pointer.held                      = false;
-		pointer.released                  = true;
+		state.held     = false;
+		state.released = true;
 	}
 
-	void SetPointerPos( size_t index, Point pos )
+	bool GetButtonPressed( Button button )
 	{
-		pointers[ index ].movement_since_last_frame = pos - center;
-	}
-
-	bool GetPointerPressed( size_t index )
-	{
-		if( auto it = pointers.find( index ); it != pointers.end() )
+		if( auto it = button_states.find( button ); it != button_states.end() )
 		{
 			return it->second.pressed;
 		}
@@ -134,9 +126,9 @@ namespace Input
 		return false;
 	}
 
-	bool GetPointerReleased( size_t index )
+	bool GetButtonReleased( Button button )
 	{
-		if( auto it = pointers.find( index ); it != pointers.end() )
+		if( auto it = button_states.find( button ); it != button_states.end() )
 		{
 			return it->second.released;
 		}
@@ -144,9 +136,9 @@ namespace Input
 		return false;
 	}
 
-	bool GetPointerHeld( size_t index )
+	bool GetButtonHeld( Button button )
 	{
-		if( auto it = pointers.find( index ); it != pointers.end() )
+		if( auto it = button_states.find( button ); it != button_states.end() )
 		{
 			return it->second.held;
 		}
@@ -154,11 +146,23 @@ namespace Input
 		return false;
 	}
 
+	void SetPointerPos( size_t index, Point pos )
+	{
+		Pointer& pointer = pointers[ index ];
+
+		pointer.current_pos = pos;
+
+		if( fps_cursor.enabled )
+		{
+			pointer.previous_pos = center;
+		}
+	}
+
 	Point GetPointerPos( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
 		{
-			return center + it->second.offset_from_center;
+			return it->second.current_pos;
 		}
 
 		return Point();
@@ -168,7 +172,7 @@ namespace Input
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
 		{
-			return it->second.movement_since_last_frame;
+			return ( it->second.current_pos - it->second.previous_pos );
 		}
 
 		return Point();
@@ -219,19 +223,21 @@ namespace Input
 
 	#if defined( ORB_OS_WINDOWS )
 
-		if( Window* window = Window::GetPtr(); window != nullptr )
+		if( fps_cursor.enabled )
 		{
-			HWND hwnd = window->GetPrivateDetails().hwnd;
-			RECT client_rect;
-
-			if( GetClientRect( hwnd, &client_rect ) )
+			if( Window* window = Window::GetPtr(); window != nullptr )
 			{
-				center.x = ( client_rect.left + client_rect.right  ) / 2;
-				center.y = ( client_rect.top  + client_rect.bottom ) / 2;
+				HWND hwnd = window->GetPrivateDetails().hwnd;
+				RECT client_rect;
 
-				if( fps_cursor.enabled )
+				if( GetClientRect( hwnd, &client_rect ) )
 				{
-					POINT cursor_pos { center.x, center.y };
+					POINT cursor_pos;
+
+					center.x     = ( client_rect.left + client_rect.right ) / 2;
+					center.y     = ( client_rect.top + client_rect.bottom ) / 2;
+					cursor_pos.x = center.x;
+					cursor_pos.y = center.y;
 
 					ClientToScreen( hwnd, &cursor_pos );
 					SetCursorPos( cursor_pos.x, cursor_pos.y );
@@ -273,12 +279,15 @@ namespace Input
 			it.second.released = false;
 		}
 
+		for( auto& it : button_states )
+		{
+			it.second.pressed  = false;
+			it.second.released = false;
+		}
+
 		for( auto& it : pointers )
 		{
-			it.second.offset_from_center       += it.second.movement_since_last_frame;
-			it.second.movement_since_last_frame = Point();
-			it.second.pressed                   = false;
-			it.second.released                  = false;
+			it.second.previous_pos = it.second.current_pos;
 		}
 	}
 }
