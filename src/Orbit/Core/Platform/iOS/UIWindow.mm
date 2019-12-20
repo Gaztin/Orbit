@@ -30,7 +30,7 @@
 	e.width  = self.bounds.size.width;
 	e.height = self.bounds.size.height;
 
-	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::Get().QueueEvent( e );
 }
 
 @end
