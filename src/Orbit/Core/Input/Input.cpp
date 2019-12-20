@@ -21,6 +21,9 @@
 
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
+#elif defined( ORB_OS_MACOS )
+#  include <AppKit/AppKit.h>
+#  include <CoreGraphics/CoreGraphics.h>
 #endif
 
 ORB_NAMESPACE_BEGIN
@@ -187,7 +190,7 @@ namespace Input
 		/* Toggle cursor visibility */
 		ShowCursor( !enable );
 
-	#else
+	#elif defined( ORB_OS_LINUX )
 
 		if( Window* window = Window::GetPtr(); window != nullptr )
 		{
@@ -212,6 +215,17 @@ namespace Input
 			}();
 			
 			XDefineCursor( details.display, details.window, enable ? invisible_cursor : None );
+		}
+
+	#elif defined( ORB_OS_MACOS )
+
+		if( enable )
+		{
+			[ NSCursor hide ];
+		}
+		else
+		{
+			[ NSCursor unhide ];
 		}
 
 	#endif
@@ -245,7 +259,7 @@ namespace Input
 			}
 		}
 
-	#else
+	#elif defined( ORB_OS_LINUX )
 
 		if( Window* window = Window::GetPtr(); window != nullptr )
 		{
@@ -269,6 +283,20 @@ namespace Input
 					XFlush( details.display );
 				}
 			}
+		}
+
+	#elif defined( ORB_OS_MACOS )
+
+		if( Window* window = Window::GetPtr(); window != nullptr )
+		{
+			auto&   details    = window->GetPrivateDetails();
+			CGSize  size       = details.window.frame.size;
+			CGPoint cursor_pos = CGPointMake( size.width / 2, size.height / 2 );
+
+			center.x = lroundf( cursor_pos.x );
+			center.y = lroundf( cursor_pos.y );
+
+			CGWarpMouseCursorPosition( cursor_pos );
 		}
 
 	#endif

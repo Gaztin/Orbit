@@ -39,6 +39,8 @@ ORB_NAMESPACE_BEGIN
 static ATOM RegisterWindowClass( LPCSTR name );
 #elif defined( ORB_OS_LINUX )
 static void HandleXEvent( Window* w, const XEvent& xevent );
+#elif defined( ORB_OS_MACOS )
+static void HandleNSEvent( NSEvent* nsevent );
 #elif defined( ORB_OS_ANDROID )
 static void AppCMD ( AndroidApp* state, AndroidAppCommand cmd );
 static int  OnInput( AndroidApp* state, AInputEvent* e );
@@ -211,6 +213,8 @@ void Window::PollEvents( void )
 
 	while( ( event = [ m_details.window nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
 	{
+		HandleNSEvent( event );
+
 		[ m_details.window sendEvent:event ];
 	}
 
@@ -672,6 +676,82 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		{
 			Point pos( xevent.xmotion.x, xevent.xmotion.y );
 			Input::SetButtonPressed( 0, pos );
+
+			break;
+		}
+	}
+}
+
+#elif defined( ORB_OS_MACOS )
+
+void HandleNSEvent( NSEvent* nsevent )
+{
+	switch( nsevent.type )
+	{
+		default: break;
+
+		case NSEventTypeKeyDown:
+		{
+			Key key = ConvertSystemKey( nsevent.keyCode );
+			Input::SetKeyPressed( key );
+
+			break;
+		}
+
+		case NSEventTypeKeyUp:
+		{
+			Key key = ConvertSystemKey( nsevent.keyCode );
+			Input::SetKeyReleased( key );
+
+			break;
+		}
+
+		case NSEventTypeLeftMouseDown:
+		{
+			Input::SetButtonPressed( Button::MouseLeft );
+
+			break;
+		}
+
+		case NSEventTypeLeftMouseUp:
+		{
+			Input::SetButtonReleased( Button::MouseLeft );
+
+			break;
+		}
+
+		case NSEventTypeRightMouseDown:
+		{
+			Input::SetButtonPressed( Button::MouseRight );
+
+			break;
+		}
+
+		case NSEventTypeRightMouseUp:
+		{
+			Input::SetButtonReleased( Button::MouseRight );
+
+			break;
+		}
+
+		case NSEventTypeOtherMouseDown:
+		{
+			Input::SetButtonPressed( Button::MouseMiddle );
+
+			break;
+		}
+
+		case NSEventTypeOtherMouseUp:
+		{
+			Input::SetButtonReleased( Button::MouseMiddle );
+
+			break;
+		}
+
+		case NSEventTypeMouseMoved:
+		{
+			Point pos( nsevent.absoluteX, nsevent.absoluteY );
+			Input::SetPointerPos( 0, pos );
 
 			break;
 		}
