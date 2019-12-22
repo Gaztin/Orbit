@@ -23,6 +23,9 @@
 #  include <Windows.h>
 #elif defined( ORB_OS_LINUX )
 #  include <X11/keysym.h>
+#elif defined( ORB_OS_MACOS )
+#  include <AppKit/AppKit.h>
+#  include <Carbon/Carbon.h>
 #endif
 
 ORB_NAMESPACE_BEGIN
@@ -218,6 +221,93 @@ Key ConvertSystemKey( uint32_t system_key )
 	
 	return key;
 	
+#elif defined( ORB_OS_MACOS )
+
+	switch( system_key )
+	{
+		default: return Key::Unknown;
+
+		case kVK_ANSI_0: return Key::_0;
+		case kVK_ANSI_1: return Key::_1;
+		case kVK_ANSI_2: return Key::_2;
+		case kVK_ANSI_3: return Key::_3;
+		case kVK_ANSI_4: return Key::_4;
+		case kVK_ANSI_5: return Key::_5;
+		case kVK_ANSI_6: return Key::_6;
+		case kVK_ANSI_7: return Key::_7;
+		case kVK_ANSI_8: return Key::_8;
+		case kVK_ANSI_9: return Key::_9;
+
+		case kVK_ANSI_A: return Key::A;
+		case kVK_ANSI_B: return Key::B;
+		case kVK_ANSI_C: return Key::C;
+		case kVK_ANSI_D: return Key::D;
+		case kVK_ANSI_E: return Key::E;
+		case kVK_ANSI_F: return Key::F;
+		case kVK_ANSI_G: return Key::G;
+		case kVK_ANSI_H: return Key::H;
+		case kVK_ANSI_I: return Key::I;
+		case kVK_ANSI_J: return Key::J;
+		case kVK_ANSI_K: return Key::K;
+		case kVK_ANSI_L: return Key::L;
+		case kVK_ANSI_M: return Key::M;
+		case kVK_ANSI_N: return Key::N;
+		case kVK_ANSI_O: return Key::O;
+		case kVK_ANSI_P: return Key::P;
+		case kVK_ANSI_Q: return Key::Q;
+		case kVK_ANSI_R: return Key::R;
+		case kVK_ANSI_S: return Key::S;
+		case kVK_ANSI_T: return Key::T;
+		case kVK_ANSI_U: return Key::U;
+		case kVK_ANSI_V: return Key::V;
+		case kVK_ANSI_W: return Key::W;
+		case kVK_ANSI_X: return Key::X;
+		case kVK_ANSI_Y: return Key::Y;
+		case kVK_ANSI_Z: return Key::Z;
+
+		case kVK_F1:  return Key::F1;
+		case kVK_F2:  return Key::F2;
+		case kVK_F3:  return Key::F3;
+		case kVK_F4:  return Key::F4;
+		case kVK_F5:  return Key::F5;
+		case kVK_F6:  return Key::F6;
+		case kVK_F7:  return Key::F7;
+		case kVK_F8:  return Key::F8;
+		case kVK_F9:  return Key::F9;
+		case kVK_F10: return Key::F10;
+		case kVK_F11: return Key::F11;
+		case kVK_F12: return Key::F12;
+
+		case kVK_Escape:               return Key::Escape;
+		case kVK_Tab:                  return Key::Tab;
+		case kVK_CapsLock:             return Key::CapsLock;
+		case kVK_Shift:                return Key::Shift;
+		case kVK_Control:              return Key::Control;
+		case optionKey:                return Key::Alt;
+		case kVK_Space:                return Key::Space;
+		case kVK_Return:               return Key::Return;
+		case NSDeleteFunctionKey:      return Key::Backspace;
+		case NSPrintScreenFunctionKey: return Key::PrintScreen;
+		case NSScrollLockFunctionKey:  return Key::ScrollLock;
+		case NSPauseFunctionKey:       return Key::Pause;
+		case NSInsertFunctionKey:      return Key::Insert;
+		case kVK_Home:                 return Key::Home;
+		case kVK_PageUp:               return Key::PageUp;
+		case kVK_Delete:               return Key::Delete;
+		case kVK_End:                  return Key::End;
+		case kVK_PageDown:             return Key::PageDown;
+		case NSClearLineFunctionKey:   return Key::NumLock;
+		case kVK_ANSI_KeypadDivide:    return Key::Divide;
+		case kVK_ANSI_KeypadMultiply:  return Key::Multiply;
+		case kVK_ANSI_KeypadMinus:     return Key::Subtract;
+		case kVK_ANSI_KeypadPlus:      return Key::Add;
+		case kVK_ANSI_KeypadDecimal:   return Key::DecimalPoint;
+		case kVK_DownArrow:            return Key::ArrowDown;
+		case kVK_LeftArrow:            return Key::ArrowLeft;
+		case kVK_RightArrow:           return Key::ArrowRight;
+		case kVK_UpArrow:              return Key::ArrowUp;
+	}
+
 #endif
 
 }

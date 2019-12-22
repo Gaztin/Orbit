@@ -177,7 +177,7 @@ workspace( workspace_name )
 
 decl_module( 'Core' )
 	filter { 'system:macosx' }
-		links { 'Cocoa.framework' }
+		links { 'Cocoa.framework', 'Carbon.framework' }
 	filter { 'system:android' }
 		links { 'log', 'android' }
 	filter { 'system:ios' }
