@@ -296,7 +296,10 @@ namespace Input
 			center.x = lroundf( cursor_pos.x );
 			center.y = lroundf( cursor_pos.y );
 
-			CGWarpMouseCursorPosition( cursor_pos );
+			if( fps_cursor.enabled )
+			{
+				CGWarpMouseCursorPosition( cursor_pos );
+			}
 		}
 
 	#endif
