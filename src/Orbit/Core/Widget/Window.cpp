@@ -675,7 +675,7 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		case MotionNotify:
 		{
 			Point pos( xevent.xmotion.x, xevent.xmotion.y );
-			Input::SetButtonPressed( 0, pos );
+			Input::SetPointerPos( 0, pos );
 
 			break;
 		}
