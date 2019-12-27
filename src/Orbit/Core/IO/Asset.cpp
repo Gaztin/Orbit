@@ -19,6 +19,9 @@
 
 #include <algorithm>
 
+#include "Orbit/Core/Platform/Android/AndroidApp.h"
+#include "Orbit/Core/Platform/Android/android_native_app_glue.h"
+
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
 #elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS )
@@ -26,8 +29,6 @@
 #  include <unistd.h>
 #elif defined( ORB_OS_ANDROID )
 #  include <android/asset_manager.h>
-#  include <android_native_app_glue.h>
-#  include "Orbit/Core/Platform/Android/AndroidApp.h"
 #elif defined( ORB_OS_IOS )
 #  include <Foundation/Foundation.h>
 #endif

@@ -22,6 +22,7 @@
 
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
+#include "Orbit/Core/Platform/Android/android_native_app_glue.h"
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Core/Widget/Window.h"
@@ -31,7 +32,6 @@
 #  include <AppKit/AppKit.h>
 #elif defined( ORB_OS_ANDROID )
 #  include <android/native_window.h>
-#  include <android_native_app_glue.h>
 #endif
 
 ORB_NAMESPACE_BEGIN

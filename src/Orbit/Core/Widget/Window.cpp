@@ -18,6 +18,7 @@
 #include "Window.h"
 
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
+#include "Orbit/Core/Platform/Android/android_native_app_glue.h"
 #include "Orbit/Core/Platform/iOS/UIWindow.h"
 #include "Orbit/Core/Platform/MacOS/WindowDelegate.h"
 #include "Orbit/Core/Utility/Utility.h"
@@ -26,7 +27,6 @@
 #  include <AppKit/AppKit.h>
 #elif defined( ORB_OS_ANDROID )
 #  include <android/sensor.h>
-#  include <android_native_app_glue.h>
 #endif
 
 ORB_NAMESPACE_BEGIN

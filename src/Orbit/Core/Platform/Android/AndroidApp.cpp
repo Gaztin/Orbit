@@ -18,7 +18,7 @@
 #include "AndroidApp.h"
 
 #if defined( ORB_OS_ANDROID )
-#  include <android_native_app_glue.h>
+#  include "Orbit/Core/Platform/Android/android_native_app_glue.h"
 
 ORB_NAMESPACE_BEGIN
 
