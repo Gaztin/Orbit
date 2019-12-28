@@ -47,8 +47,6 @@ enum class AndroidAppCommand : int8_t
 	InitWindow,
 	TermWindow,
 	WindowResized,
-	RedrawNeeded,
-	RectChanged,
 	GainedFocus,
 	LostFocus,
 	ConfigChanged,
@@ -83,7 +81,6 @@ struct ORB_API_CORE AndroidApp
 	ALooper*                looper;
 	AInputQueue*            input_queue;
 	ANativeWindow*          window;
-	ARect                   content_rect;
 	AndroidAppCommand       activity_state;
 	int                     destroy_requested;
 	std::mutex              mutex;
@@ -96,10 +93,8 @@ struct ORB_API_CORE AndroidApp
 	int                     running;
 	int                     state_saved;
 	int                     destroyed;
-	int                     redraw_needed;
 	AInputQueue*            pending_input_queue;
 	ANativeWindow*          pending_window;
-	ARect                   pending_content_rect;
 };
 
 extern void AndroidMain( AndroidApp* app );
