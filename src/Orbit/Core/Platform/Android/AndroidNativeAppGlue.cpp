@@ -27,17 +27,20 @@
 #  include <jni.h>
 #  include <unistd.h>
 
-#  include "Orbit/Core/IO/Log.h" 
+#  include "Orbit/Core/IO/Log.h"
+
+#  pragma clang diagnostic push
+#  pragma ide diagnostic ignored "hicpp-use-auto"
 
 ORB_NAMESPACE_BEGIN
 
 static void FreeSavedState( AndroidApp* android_app )
 {
 	android_app->mutex.lock();
-	if( android_app->saved_state != NULL )
+	if( android_app->saved_state != nullptr )
 	{
 		free( android_app->saved_state );
-		android_app->saved_state = NULL;
+		android_app->saved_state = nullptr;
 		android_app->saved_state_size = 0;
 	}
 	android_app->mutex.unlock();
@@ -86,15 +89,15 @@ static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand
 		case AndroidAppCommand::InputChanged:
 			LogInfo( "APP_CMD_INPUT_CHANGED\n" );
 			android_app->mutex.lock();
-			if( android_app->input_queue != NULL )
+			if( android_app->input_queue != nullptr )
 			{
 				AInputQueue_detachLooper( android_app->input_queue );
 			}
 			android_app->input_queue = android_app->pending_input_queue;
-			if( android_app->input_queue != NULL )
+			if( android_app->input_queue != nullptr )
 			{
 				LogInfo( "Attaching input queue to looper" );
-				AInputQueue_attachLooper( android_app->input_queue, android_app->looper, static_cast< int >( AndroidLooperID::Input ), NULL, &android_app->input_poll_source );
+				AInputQueue_attachLooper( android_app->input_queue, android_app->looper, static_cast< int >( AndroidLooperID::Input ), nullptr, &android_app->input_poll_source );
 			}
 			android_app->cond.notify_all();
 			android_app->mutex.unlock();
@@ -146,7 +149,7 @@ static void AndroidAppPostExecCommand( AndroidApp* android_app, AndroidAppComman
 		case AndroidAppCommand::TermWindow:
 			LogInfo( "APP_CMD_TERM_WINDOW\n" );
 			android_app->mutex.lock();
-			android_app->window = NULL;
+			android_app->window = nullptr;
 			android_app->cond.notify_all();
 			android_app->mutex.unlock();
 			break;
@@ -170,7 +173,7 @@ static void AndroidAppDestroy( AndroidApp* android_app )
 	LogInfo( "android_app_destroy!" );
 	FreeSavedState( android_app );
 	android_app->mutex.lock();
-	if( android_app->input_queue != NULL )
+	if( android_app->input_queue != nullptr )
 	{
 		AInputQueue_detachLooper( android_app->input_queue );
 	}
@@ -183,7 +186,7 @@ static void AndroidAppDestroy( AndroidApp* android_app )
 
 static void ProcessInput( AndroidApp* app, AndroidPollSource* /*source*/ )
 {
-	AInputEvent* event = NULL;
+	AInputEvent* event = nullptr;
 	while( AInputQueue_getEvent( app->input_queue, &event ) >= 0 )
 	{
 		LogInfo( "New input event: type=%d\n", AInputEvent_getType( event ) );
@@ -192,7 +195,7 @@ static void ProcessInput( AndroidApp* app, AndroidPollSource* /*source*/ )
 			continue;
 		}
 		int32_t handled = 0;
-		if( app->on_input_event != NULL ) handled = app->on_input_event( app, event );
+		if( app->on_input_event != nullptr ) handled = app->on_input_event( app, event );
 		AInputQueue_finishEvent( app->input_queue, event, handled );
 	}
 }
@@ -201,7 +204,7 @@ static void ProcessCommand( AndroidApp* app, AndroidPollSource* /*source*/ )
 {
 	AndroidAppCommand cmd = AndroidAppReadCommand( app );
 	AndroidAppPreExecCommand( app, cmd );
-	if( app->on_app_cmd != NULL ) app->on_app_cmd( app, cmd );
+	if( app->on_app_cmd != nullptr ) app->on_app_cmd( app, cmd );
 	AndroidAppPostExecCommand( app, cmd );
 }
 
@@ -220,7 +223,7 @@ static void AndroidAppEntry( AndroidApp* android_app )
 	android_app->input_poll_source.process = ProcessInput;
 
 	ALooper* looper = ALooper_prepare( ALOOPER_PREPARE_ALLOW_NON_CALLBACKS );
-	ALooper_addFd( looper, android_app->msgread, static_cast< int >( AndroidLooperID::Main ), ALOOPER_EVENT_INPUT, NULL, &android_app->cmd_poll_source );
+	ALooper_addFd( looper, android_app->msgread, static_cast< int >( AndroidLooperID::Main ), ALOOPER_EVENT_INPUT, nullptr, &android_app->cmd_poll_source );
 	android_app->looper = looper;
 
 	android_app->mutex.lock();
@@ -254,12 +257,12 @@ static void AndroidAppSetActivityState( AndroidApp* android_app, AndroidAppComma
 static void AndroidAppSetWindow( AndroidApp* android_app, ANativeWindow* window )
 {
 	std::unique_lock lock( android_app->mutex );
-	if( android_app->pending_window != NULL )
+	if( android_app->pending_window != nullptr )
 	{
 		AndroidAppWriteCommand( android_app, AndroidAppCommand::TermWindow );
 	}
 	android_app->pending_window = window;
-	if( window != NULL )
+	if( window != nullptr )
 	{
 		AndroidAppWriteCommand( android_app, AndroidAppCommand::InitWindow );
 	}
@@ -298,25 +301,25 @@ static void AndroidAppFree( AndroidApp* android_app )
 static void OnDestroy( ANativeActivity* activity )
 {
 	LogInfo( "Destroy: %p\n", activity );
-	AndroidAppFree( ( AndroidApp* )activity->instance );
+	AndroidAppFree( static_cast< AndroidApp* >( activity->instance ) );
 }
 
 static void OnStart( ANativeActivity* activity )
 {
 	LogInfo( "Start: %p\n", activity );
-	AndroidAppSetActivityState( ( AndroidApp* )activity->instance, AndroidAppCommand::Start );
+	AndroidAppSetActivityState( static_cast< AndroidApp* >( activity->instance ), AndroidAppCommand::Start );
 }
 
 static void OnResume( ANativeActivity* activity )
 {
 	LogInfo( "Resume: %p\n", activity );
-	AndroidAppSetActivityState( ( AndroidApp* )activity->instance, AndroidAppCommand::Resume );
+	AndroidAppSetActivityState( static_cast< AndroidApp* >( activity->instance ), AndroidAppCommand::Resume );
 }
 
 static void* OnSaveInstanceState( ANativeActivity* activity, size_t* outLen )
 {
-	AndroidApp* android_app = ( AndroidApp* )activity->instance;
-	void* saved_state = NULL;
+	AndroidApp* android_app = static_cast< AndroidApp* >( activity->instance );
+	void* saved_state = nullptr;
 
 	LogInfo( "SaveInstanceState: %p\n", activity );
 	std::unique_lock lock( android_app->mutex );
@@ -327,11 +330,11 @@ static void* OnSaveInstanceState( ANativeActivity* activity, size_t* outLen )
 		android_app->cond.wait( lock );
 	}
 
-	if( android_app->saved_state != NULL )
+	if( android_app->saved_state != nullptr )
 	{
 		saved_state = android_app->saved_state;
 		*outLen = android_app->saved_state_size;
-		android_app->saved_state = NULL;
+		android_app->saved_state = nullptr;
 		android_app->saved_state_size = 0;
 	}
 
@@ -341,25 +344,25 @@ static void* OnSaveInstanceState( ANativeActivity* activity, size_t* outLen )
 static void OnPause( ANativeActivity* activity )
 {
 	LogInfo( "Pause: %p\n", activity );
-	AndroidAppSetActivityState( ( AndroidApp* )activity->instance, AndroidAppCommand::Pause );
+	AndroidAppSetActivityState( static_cast< AndroidApp* >( activity->instance ), AndroidAppCommand::Pause );
 }
 
 static void OnStop( ANativeActivity* activity )
 {
 	LogInfo( "Stop: %p\n", activity );
-	AndroidAppSetActivityState( ( AndroidApp* )activity->instance, AndroidAppCommand::Stop );
+	AndroidAppSetActivityState( static_cast< AndroidApp* >( activity->instance ), AndroidAppCommand::Stop );
 }
 
 static void OnConfigurationChanged( ANativeActivity* activity )
 {
-	AndroidApp* android_app = ( AndroidApp* )activity->instance;
+	AndroidApp* android_app = static_cast< AndroidApp* >( activity->instance );
 	LogInfo( "ConfigurationChanged: %p\n", activity );
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::ConfigChanged );
 }
 
 static void OnLowMemory( ANativeActivity* activity )
 {
-	AndroidApp* android_app = ( AndroidApp* )activity->instance;
+	AndroidApp* android_app = static_cast< AndroidApp* >( activity->instance );
 	LogInfo( "LowMemory: %p\n", activity );
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::LowMemory );
 }
@@ -367,7 +370,7 @@ static void OnLowMemory( ANativeActivity* activity )
 static void OnWindowFocusChanged( ANativeActivity* activity, int focused )
 {
 	LogInfo( "WindowFocusChanged: %p -- %d\n", activity, focused );
-	AndroidAppWriteCommand( ( AndroidApp* )activity->instance, focused
+	AndroidAppWriteCommand( static_cast< AndroidApp* >( activity->instance ), focused
 															   ? AndroidAppCommand::GainedFocus
 															   : AndroidAppCommand::LostFocus );
 }
@@ -375,25 +378,25 @@ static void OnWindowFocusChanged( ANativeActivity* activity, int focused )
 static void OnNativeWindowCreated( ANativeActivity* activity, ANativeWindow* window )
 {
 	LogInfo( "NativeWindowCreated: %p -- %p\n", activity, window );
-	AndroidAppSetWindow( ( AndroidApp* )activity->instance, window );
+	AndroidAppSetWindow( static_cast< AndroidApp* >( activity->instance ), window );
 }
 
 static void OnNativeWindowDestroyed( ANativeActivity* activity, ANativeWindow* window )
 {
 	LogInfo( "NativeWindowDestroyed: %p -- %p\n", activity, window );
-	AndroidAppSetWindow( ( AndroidApp* )activity->instance, NULL );
+	AndroidAppSetWindow( static_cast< AndroidApp* >( activity->instance ), nullptr );
 }
 
 static void OnInputQueueCreated( ANativeActivity* activity, AInputQueue* queue )
 {
 	LogInfo( "InputQueueCreated: %p -- %p\n", activity, queue );
-	AndroidAppSetInput( ( AndroidApp* )activity->instance, queue );
+	AndroidAppSetInput( static_cast< AndroidApp* >( activity->instance ), queue );
 }
 
 static void OnInputQueueDestroyed( ANativeActivity* activity, AInputQueue* queue )
 {
 	LogInfo( "InputQueueDestroyed: %p -- %p\n", activity, queue );
-	AndroidAppSetInput( ( AndroidApp* ) activity->instance, NULL );
+	AndroidAppSetInput( ( AndroidApp* ) activity->instance, nullptr );
 }
 
 AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
@@ -401,7 +404,7 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 	AndroidApp* android_app = new AndroidApp { };
 	android_app->activity = activity;
 
-	if( saved_state != NULL )
+	if( saved_state != nullptr )
 	{
 		android_app->saved_state = malloc( saved_state_size );
 		android_app->saved_state_size = saved_state_size;
@@ -412,7 +415,7 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 	if( pipe( msgpipe ) )
 	{
 		LogError( "could not create pipe: %s", strerror( errno ) );
-		return NULL;
+		return nullptr;
 	}
 	android_app->msgread = msgpipe[ 0 ];
 	android_app->msgwrite = msgpipe[ 1 ];
@@ -447,5 +450,7 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 }
 
 ORB_NAMESPACE_END
+
+#pragma clang diagnostic pop
 
 #endif
