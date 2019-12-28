@@ -18,13 +18,13 @@
 #include "AndroidApp.h"
 
 #if defined( ORB_OS_ANDROID )
-#  include "Orbit/Core/Platform/Android/android_native_app_glue.h"
+#  include "Orbit/Core/Platform/Android/AndroidNativeAppGlue.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace AndroidOnly
 {
-	android_app* app = nullptr;
+	AndroidApp* app = nullptr;
 }
 
 ORB_NAMESPACE_END

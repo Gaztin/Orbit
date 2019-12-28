@@ -16,17 +16,15 @@
  */
 
 #pragma once
-#include "Orbit/Core/Core.h"
+#include "Orbit/Core/Platform/Android/AndroidNativeAppGlue.h"
 
 #if defined( ORB_OS_ANDROID )
-
-struct android_app;
 
 ORB_NAMESPACE_BEGIN
 
 namespace AndroidOnly
 {
-	extern ORB_API_CORE android_app* app;
+	extern ORB_API_CORE AndroidApp* app;
 }
 
 ORB_NAMESPACE_END

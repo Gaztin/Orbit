@@ -20,7 +20,6 @@
 #include <algorithm>
 
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
-#include "Orbit/Core/Platform/Android/android_native_app_glue.h"
 
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
