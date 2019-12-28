@@ -27,7 +27,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-void LogInfo( std::string_view msg )
+void LogInfoString( std::string_view msg )
 {
 #if defined( ORB_OS_WINDOWS )
 
@@ -52,7 +52,7 @@ void LogInfo( std::string_view msg )
 #endif
 }
 
-void LogWarning( std::string_view msg )
+void LogWarningString( std::string_view msg )
 {
 #if defined( ORB_OS_WINDOWS )
 
@@ -83,7 +83,7 @@ void LogWarning( std::string_view msg )
 #endif
 }
 
-void LogError( std::string_view msg )
+void LogErrorString( std::string_view msg )
 {
 #if defined( ORB_OS_WINDOWS )
 

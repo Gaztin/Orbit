@@ -373,7 +373,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 			/* Create version */
 			details.version.Init();
 
-			LogInfo( Format( "OpenGL version: %s%d.%d", details.version.IsEmbedded() ? "ES " : "", details.version.GetMajor(), details.version.GetMinor() ) );
+			LogInfo( "OpenGL version: %s%d.%d", details.version.IsEmbedded() ? "ES " : "", details.version.GetMajor(), details.version.GetMinor() );
 
 			break;
 		}
