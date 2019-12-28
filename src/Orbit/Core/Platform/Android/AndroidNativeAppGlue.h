@@ -97,6 +97,8 @@ struct ORB_API_CORE AndroidApp
 	ANativeWindow*          pending_window;
 };
 
+AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size );
+
 extern void AndroidMain( AndroidApp* app );
 
 ORB_NAMESPACE_END

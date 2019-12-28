@@ -18,7 +18,6 @@
 #include "AndroidNativeAppGlue.h"
 
 #if defined( ORB_OS_ANDROID )
-
 #  include <cerrno>
 #  include <cstdlib>
 #  include <cstring>
@@ -28,15 +27,6 @@
 #  include <jni.h>
 #  include <unistd.h>
 
-#define LOGI( ... ) ( ( void )__android_log_print( ANDROID_LOG_INFO, "threaded_app", __VA_ARGS__ ) )
-#define LOGE( ... ) ( ( void )__android_log_print( ANDROID_LOG_ERROR, "threaded_app", __VA_ARGS__ ) )
-
-/* For debug builds, always enable the debug traces in this library */
-#ifndef NDEBUG
-#  define LOGV( ... ) ( ( void )__android_log_print( ANDROID_LOG_VERBOSE, "threaded_app", __VA_ARGS__ ) )
-#else
-#  define LOGV( ... ) ( ( void )0 )
-#endif
 #  include "Orbit/Core/IO/Log.h" 
 
 ORB_NAMESPACE_BEGIN
@@ -243,42 +233,6 @@ static void AndroidAppEntry( AndroidApp* android_app )
 	AndroidAppDestroy( android_app );
 }
 
-static AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
-{
-	AndroidApp* android_app = new AndroidApp { };
-	android_app->activity = activity;
-
-	if( saved_state != NULL )
-	{
-		android_app->saved_state = malloc( saved_state_size );
-		android_app->saved_state_size = saved_state_size;
-		memcpy( android_app->saved_state, saved_state, saved_state_size );
-	}
-
-	int msgpipe[ 2 ];
-	if( pipe( msgpipe ) )
-	{
-		LOGE( "could not create pipe: %s", strerror( errno ) );
-		return NULL;
-	}
-	android_app->msgread = msgpipe[ 0 ];
-	android_app->msgwrite = msgpipe[ 1 ];
-
-	android_app->thread = std::thread( AndroidAppEntry, android_app );
-	android_app->thread.detach();
-
-	// Wait for thread to start.
-	{
-		std::unique_lock lock( android_app->mutex );
-		while( !android_app->running )
-		{
-			android_app->cond.wait( lock );
-		}
-	}
-
-	return android_app;
-}
-
 static void AndroidAppWriteCommand( AndroidApp* android_app, AndroidAppCommand cmd )
 {
 	if( write( android_app->msgwrite, &cmd, sizeof( cmd ) ) != sizeof( cmd ) )
@@ -287,12 +241,11 @@ static void AndroidAppWriteCommand( AndroidApp* android_app, AndroidAppCommand c
 	}
 }
 
-static void AndroidAppSetInput( AndroidApp* android_app, AInputQueue* input_queue )
+static void AndroidAppSetActivityState( AndroidApp* android_app, AndroidAppCommand cmd )
 {
 	std::unique_lock lock( android_app->mutex );
-	android_app->pending_input_queue = input_queue;
-	AndroidAppWriteCommand( android_app, AndroidAppCommand::InputChanged );
-	while( android_app->input_queue != android_app->pending_input_queue )
+	AndroidAppWriteCommand( android_app, cmd );
+	while( android_app->activity_state != cmd )
 	{
 		android_app->cond.wait( lock );
 	}
@@ -316,11 +269,12 @@ static void AndroidAppSetWindow( AndroidApp* android_app, ANativeWindow* window 
 	}
 }
 
-static void AndroidAppSetActivityState( AndroidApp* android_app, AndroidAppCommand cmd )
+static void AndroidAppSetInput( AndroidApp* android_app, AInputQueue* input_queue )
 {
 	std::unique_lock lock( android_app->mutex );
-	AndroidAppWriteCommand( android_app, cmd );
-	while( android_app->activity_state != cmd )
+	android_app->pending_input_queue = input_queue;
+	AndroidAppWriteCommand( android_app, AndroidAppCommand::InputChanged );
+	while( android_app->input_queue != android_app->pending_input_queue )
 	{
 		android_app->cond.wait( lock );
 	}
@@ -414,8 +368,8 @@ static void OnWindowFocusChanged( ANativeActivity* activity, int focused )
 {
 	LogInfo( "WindowFocusChanged: %p -- %d\n", activity, focused );
 	AndroidAppWriteCommand( ( AndroidApp* )activity->instance, focused
-																	  ? AndroidAppCommand::GainedFocus
-																	  : AndroidAppCommand::LostFocus );
+															   ? AndroidAppCommand::GainedFocus
+															   : AndroidAppCommand::LostFocus );
 }
 
 static void OnNativeWindowCreated( ANativeActivity* activity, ANativeWindow* window )
@@ -442,26 +396,56 @@ static void OnInputQueueDestroyed( ANativeActivity* activity, AInputQueue* queue
 	AndroidAppSetInput( ( AndroidApp* ) activity->instance, NULL );
 }
 
-ORB_NAMESPACE_END
-
-extern "C" JNIEXPORT void ANativeActivity_onCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
+AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
 {
-	LOGV( "Creating: %p\n", activity );
-	activity->callbacks->onDestroy               = ORB_NAMESPACE OnDestroy;
-	activity->callbacks->onStart                 = ORB_NAMESPACE OnStart;
-	activity->callbacks->onResume                = ORB_NAMESPACE OnResume;
-	activity->callbacks->onSaveInstanceState     = ORB_NAMESPACE OnSaveInstanceState;
-	activity->callbacks->onPause                 = ORB_NAMESPACE OnPause;
-	activity->callbacks->onStop                  = ORB_NAMESPACE OnStop;
-	activity->callbacks->onConfigurationChanged  = ORB_NAMESPACE OnConfigurationChanged;
-	activity->callbacks->onLowMemory             = ORB_NAMESPACE OnLowMemory;
-	activity->callbacks->onWindowFocusChanged    = ORB_NAMESPACE OnWindowFocusChanged;
-	activity->callbacks->onNativeWindowCreated   = ORB_NAMESPACE OnNativeWindowCreated;
-	activity->callbacks->onNativeWindowDestroyed = ORB_NAMESPACE OnNativeWindowDestroyed;
-	activity->callbacks->onInputQueueCreated     = ORB_NAMESPACE OnInputQueueCreated;
-	activity->callbacks->onInputQueueDestroyed   = ORB_NAMESPACE OnInputQueueDestroyed;
+	AndroidApp* android_app = new AndroidApp { };
+	android_app->activity = activity;
 
-	activity->instance = ORB_NAMESPACE AndroidAppCreate( activity, saved_state, saved_state_size );
+	if( saved_state != NULL )
+	{
+		android_app->saved_state = malloc( saved_state_size );
+		android_app->saved_state_size = saved_state_size;
+		memcpy( android_app->saved_state, saved_state, saved_state_size );
+	}
+
+	int msgpipe[ 2 ];
+	if( pipe( msgpipe ) )
+	{
+		LogError( "could not create pipe: %s", strerror( errno ) );
+		return NULL;
+	}
+	android_app->msgread = msgpipe[ 0 ];
+	android_app->msgwrite = msgpipe[ 1 ];
+
+	android_app->thread = std::thread( AndroidAppEntry, android_app );
+	android_app->thread.detach();
+
+	// Wait for thread to start.
+	{
+		std::unique_lock lock( android_app->mutex );
+		while( !android_app->running )
+		{
+			android_app->cond.wait( lock );
+		}
+	}
+
+	activity->callbacks->onDestroy               = OnDestroy;
+	activity->callbacks->onStart                 = OnStart;
+	activity->callbacks->onResume                = OnResume;
+	activity->callbacks->onSaveInstanceState     = OnSaveInstanceState;
+	activity->callbacks->onPause                 = OnPause;
+	activity->callbacks->onStop                  = OnStop;
+	activity->callbacks->onConfigurationChanged  = OnConfigurationChanged;
+	activity->callbacks->onLowMemory             = OnLowMemory;
+	activity->callbacks->onWindowFocusChanged    = OnWindowFocusChanged;
+	activity->callbacks->onNativeWindowCreated   = OnNativeWindowCreated;
+	activity->callbacks->onNativeWindowDestroyed = OnNativeWindowDestroyed;
+	activity->callbacks->onInputQueueCreated     = OnInputQueueCreated;
+	activity->callbacks->onInputQueueDestroyed   = OnInputQueueDestroyed;
+
+	return android_app;
 }
+
+ORB_NAMESPACE_END
 
 #endif

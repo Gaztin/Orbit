@@ -45,4 +45,9 @@ void ORB_NAMESPACE AndroidMain( AndroidApp* app )
 	ORB_NAMESPACE ApplicationBase::RunInstance();
 }
 
+extern "C" JNIEXPORT void ANativeActivity_onCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
+{
+	activity->instance = ORB_NAMESPACE AndroidAppCreate( activity, saved_state, saved_state_size );
+}
+
 #endif
