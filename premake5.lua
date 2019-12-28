@@ -103,8 +103,6 @@ local function decl_module( name )
 		language( 'ObjCpp' )
 	filter { 'system:android' }
 		includedirs { ANDROID_NATIVE_APP_GLUE_DIR }
-	filter { 'action:android-studio' }
-		removefiles { '**.h' }
 	filter { }
 
 	group()
@@ -137,8 +135,6 @@ local function decl_sample( name )
 		files { 'src/Samples/' .. fullname .. '/Android/**', 'res/**' }
 	filter { 'system:android' }
 		assetdirs { 'assets/' }
-	filter { 'action:android-studio' }
-		removefiles { '**.h' }
 	filter { }
 
 	group()
