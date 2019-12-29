@@ -52,23 +52,22 @@ static AndroidAppCommand AndroidAppReadCommand( AndroidApp* android_app )
 				break;
 		}
 		return cmd;
-	} else
+	}
+	else
 	{
 		LogError( "No data on command pipe!" );
+		return static_cast< AndroidAppCommand >( -1 );
 	}
-	return static_cast< AndroidAppCommand >( -1 );
 }
 
 static void PrintCurrentConfig( AndroidApp* android_app )
 {
-	char lang[2];
-	char country[2];
+	char lang[ 2 ];
+	char country[ 2 ];
+
 	AConfiguration_getLanguage( android_app->config, lang );
 	AConfiguration_getCountry( android_app->config, country );
-
-	LogInfo( "Config: mcc=%d mnc=%d lang=%c%c cnt=%c%c orien=%d touch=%d dens=%d "
-		  "keys=%d nav=%d keysHid=%d navHid=%d sdk=%d size=%d long=%d "
-		  "modetype=%d modenight=%d", AConfiguration_getMcc( android_app->config ), AConfiguration_getMnc( android_app->config ), lang[ 0 ], lang[ 1 ], country[ 0 ], country[ 1 ], AConfiguration_getOrientation( android_app->config ), AConfiguration_getTouchscreen( android_app->config ), AConfiguration_getDensity( android_app->config ), AConfiguration_getKeyboard( android_app->config ), AConfiguration_getNavigation( android_app->config ), AConfiguration_getKeysHidden( android_app->config ), AConfiguration_getNavHidden( android_app->config ), AConfiguration_getSdkVersion( android_app->config ), AConfiguration_getScreenSize( android_app->config ), AConfiguration_getScreenLong( android_app->config ), AConfiguration_getUiModeType( android_app->config ), AConfiguration_getUiModeNight( android_app->config ) );
+	LogInfo( "Config: mcc=%d mnc=%d lang=%c%c cnt=%c%c orien=%d touch=%d dens=%d keys=%d nav=%d keysHid=%d navHid=%d sdk=%d size=%d long=%d modetype=%d modenight=%d", AConfiguration_getMcc( android_app->config ), AConfiguration_getMnc( android_app->config ), lang[ 0 ], lang[ 1 ], country[ 0 ], country[ 1 ], AConfiguration_getOrientation( android_app->config ), AConfiguration_getTouchscreen( android_app->config ), AConfiguration_getDensity( android_app->config ), AConfiguration_getKeyboard( android_app->config ), AConfiguration_getNavigation( android_app->config ), AConfiguration_getKeysHidden( android_app->config ), AConfiguration_getNavHidden( android_app->config ), AConfiguration_getSdkVersion( android_app->config ), AConfiguration_getScreenSize( android_app->config ), AConfiguration_getScreenLong( android_app->config ), AConfiguration_getUiModeType( android_app->config ), AConfiguration_getUiModeNight( android_app->config ) );
 }
 
 static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand cmd )
@@ -78,7 +77,7 @@ static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand
 		default: break;
 
 		case AndroidAppCommand::InputChanged:
-			LogInfo( "APP_CMD_INPUT_CHANGED\n" );
+		{
 			android_app->mutex.lock();
 			if( android_app->input_queue != nullptr )
 			{
@@ -87,47 +86,52 @@ static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand
 			android_app->input_queue = android_app->pending_input_queue;
 			if( android_app->input_queue != nullptr )
 			{
-				LogInfo( "Attaching input queue to looper" );
 				AInputQueue_attachLooper( android_app->input_queue, android_app->looper, static_cast< int >( AndroidLooperID::Input ), nullptr, &android_app->input_poll_source );
 			}
 			android_app->cond.notify_all();
 			android_app->mutex.unlock();
 			break;
+		}
 
 		case AndroidAppCommand::InitWindow:
-			LogInfo( "APP_CMD_INIT_WINDOW\n" );
+		{
 			android_app->mutex.lock();
 			android_app->window = android_app->pending_window;
 			android_app->cond.notify_all();
 			android_app->mutex.unlock();
 			break;
+		}
 
 		case AndroidAppCommand::TermWindow:
-			LogInfo( "APP_CMD_TERM_WINDOW\n" );
+		{
 			android_app->cond.notify_all();
 			break;
+		}
 
 		case AndroidAppCommand::Resume:
 		case AndroidAppCommand::Start:
 		case AndroidAppCommand::Pause:
 		case AndroidAppCommand::Stop:
-			LogInfo( "activity_state=%d\n", static_cast< int >( cmd ) );
+		{
 			android_app->mutex.lock();
 			android_app->activity_state = cmd;
 			android_app->cond.notify_all();
 			android_app->mutex.unlock();
 			break;
+		}
 
 		case AndroidAppCommand::ConfigChanged:
-			LogInfo( "APP_CMD_CONFIG_CHANGED\n" );
+		{
 			AConfiguration_fromAssetManager( android_app->config, android_app->activity->assetManager );
 			PrintCurrentConfig( android_app );
 			break;
+		}
 
 		case AndroidAppCommand::Destroy:
-			LogInfo( "APP_CMD_DESTROY\n" );
+		{
 			android_app->destroy_requested = 1;
 			break;
+		}
 	}
 }
 
@@ -138,55 +142,65 @@ static void AndroidAppPostExecCommand( AndroidApp* android_app, AndroidAppComman
 		default: break;
 
 		case AndroidAppCommand::TermWindow:
-			LogInfo( "APP_CMD_TERM_WINDOW\n" );
+		{
 			android_app->mutex.lock();
 			android_app->window = nullptr;
 			android_app->cond.notify_all();
 			android_app->mutex.unlock();
 			break;
+		}
 
 		case AndroidAppCommand::SaveState:
-			LogInfo( "APP_CMD_SAVE_STATE\n" );
+		{
 			android_app->mutex.lock();
 			android_app->state_saved = 1;
 			android_app->cond.notify_all();
 			android_app->mutex.unlock();
 			break;
+		}
 
 		case AndroidAppCommand::Resume:
+		{
 			FreeSavedState( android_app );
 			break;
+		}
 	}
 }
 
 static void AndroidAppDestroy( AndroidApp* android_app )
 {
-	LogInfo( "android_app_destroy!" );
 	FreeSavedState( android_app );
-	android_app->mutex.lock();
+
+	std::unique_lock lock( android_app->mutex );
+
 	if( android_app->input_queue != nullptr )
 	{
 		AInputQueue_detachLooper( android_app->input_queue );
 	}
+
 	AConfiguration_delete( android_app->config );
+
 	android_app->destroyed = 1;
 	android_app->cond.notify_all();
-	android_app->mutex.unlock();
-	// Can't touch android_app object after this.
 }
 
 static void ProcessInput( AndroidApp* app, AndroidPollSource* /*source*/ )
 {
 	AInputEvent* event = nullptr;
+
 	while( AInputQueue_getEvent( app->input_queue, &event ) >= 0 )
 	{
-		LogInfo( "New input event: type=%d\n", AInputEvent_getType( event ) );
 		if( AInputQueue_preDispatchEvent( app->input_queue, event ) )
 		{
 			continue;
 		}
+
 		int32_t handled = 0;
-		if( app->on_input_event != nullptr ) handled = app->on_input_event( app, event );
+		if( app->on_input_event != nullptr )
+		{
+			handled = app->on_input_event( app, event );
+		}
+
 		AInputQueue_finishEvent( app->input_queue, event, handled );
 	}
 }
@@ -194,8 +208,14 @@ static void ProcessInput( AndroidApp* app, AndroidPollSource* /*source*/ )
 static void ProcessCommand( AndroidApp* app, AndroidPollSource* /*source*/ )
 {
 	AndroidAppCommand cmd = AndroidAppReadCommand( app );
+
 	AndroidAppPreExecCommand( app, cmd );
-	if( app->on_app_cmd != nullptr ) app->on_app_cmd( app, cmd );
+
+	if( app->on_app_cmd != nullptr )
+	{
+		app->on_app_cmd( app, cmd );
+	}
+
 	AndroidAppPostExecCommand( app, cmd );
 }
 
@@ -206,21 +226,22 @@ static void AndroidAppEntry( AndroidApp* android_app )
 
 	PrintCurrentConfig( android_app );
 
-	android_app->cmd_poll_source.id = AndroidLooperID::Main;
-	android_app->cmd_poll_source.app = android_app;
-	android_app->cmd_poll_source.process = ProcessCommand;
-	android_app->input_poll_source.id = AndroidLooperID::Input;
-	android_app->input_poll_source.app = android_app;
+	android_app->cmd_poll_source.id        = AndroidLooperID::Main;
+	android_app->cmd_poll_source.app       = android_app;
+	android_app->cmd_poll_source.process   = ProcessCommand;
+	android_app->input_poll_source.id      = AndroidLooperID::Input;
+	android_app->input_poll_source.app     = android_app;
 	android_app->input_poll_source.process = ProcessInput;
 
 	ALooper* looper = ALooper_prepare( ALOOPER_PREPARE_ALLOW_NON_CALLBACKS );
 	ALooper_addFd( looper, android_app->msgread, static_cast< int >( AndroidLooperID::Main ), ALOOPER_EVENT_INPUT, nullptr, &android_app->cmd_poll_source );
 	android_app->looper = looper;
 
-	android_app->mutex.lock();
-	android_app->running = 1;
-	android_app->cond.notify_all();
-	android_app->mutex.unlock();
+	{
+		std::unique_lock lock( android_app->mutex );
+		android_app->running = 1;
+		android_app->cond.notify_all();
+	}
 
 	AndroidMain( android_app );
 
@@ -238,7 +259,9 @@ static void AndroidAppWriteCommand( AndroidApp* android_app, AndroidAppCommand c
 static void AndroidAppSetActivityState( AndroidApp* android_app, AndroidAppCommand cmd )
 {
 	std::unique_lock lock( android_app->mutex );
+
 	AndroidAppWriteCommand( android_app, cmd );
+
 	while( android_app->activity_state != cmd )
 	{
 		android_app->cond.wait( lock );
@@ -248,15 +271,19 @@ static void AndroidAppSetActivityState( AndroidApp* android_app, AndroidAppComma
 static void AndroidAppSetWindow( AndroidApp* android_app, ANativeWindow* window )
 {
 	std::unique_lock lock( android_app->mutex );
+
 	if( android_app->pending_window != nullptr )
 	{
 		AndroidAppWriteCommand( android_app, AndroidAppCommand::TermWindow );
 	}
+
 	android_app->pending_window = window;
+
 	if( window != nullptr )
 	{
 		AndroidAppWriteCommand( android_app, AndroidAppCommand::InitWindow );
 	}
+
 	while( android_app->window != android_app->pending_window )
 	{
 		android_app->cond.wait( lock );
@@ -266,8 +293,11 @@ static void AndroidAppSetWindow( AndroidApp* android_app, ANativeWindow* window 
 static void AndroidAppSetInput( AndroidApp* android_app, AInputQueue* input_queue )
 {
 	std::unique_lock lock( android_app->mutex );
+
 	android_app->pending_input_queue = input_queue;
+
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::InputChanged );
+
 	while( android_app->input_queue != android_app->pending_input_queue )
 	{
 		android_app->cond.wait( lock );
@@ -277,7 +307,9 @@ static void AndroidAppSetInput( AndroidApp* android_app, AInputQueue* input_queu
 static void AndroidAppFree( AndroidApp* android_app )
 {
 	std::unique_lock lock( android_app->mutex );
+
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::Destroy );
+
 	while( !android_app->destroyed )
 	{
 		android_app->cond.wait( lock );
@@ -291,19 +323,16 @@ static void AndroidAppFree( AndroidApp* android_app )
 
 static void OnDestroy( ANativeActivity* activity )
 {
-	LogInfo( "Destroy: %p\n", activity );
 	AndroidAppFree( static_cast< AndroidApp* >( activity->instance ) );
 }
 
 static void OnStart( ANativeActivity* activity )
 {
-	LogInfo( "Start: %p\n", activity );
 	AndroidAppSetActivityState( static_cast< AndroidApp* >( activity->instance ), AndroidAppCommand::Start );
 }
 
 static void OnResume( ANativeActivity* activity )
 {
-	LogInfo( "Resume: %p\n", activity );
 	AndroidAppSetActivityState( static_cast< AndroidApp* >( activity->instance ), AndroidAppCommand::Resume );
 }
 
@@ -332,60 +361,49 @@ static void* OnSaveInstanceState( ANativeActivity* activity, size_t* outLen )
 
 static void OnPause( ANativeActivity* activity )
 {
-	LogInfo( "Pause: %p\n", activity );
 	AndroidAppSetActivityState( static_cast< AndroidApp* >( activity->instance ), AndroidAppCommand::Pause );
 }
 
 static void OnStop( ANativeActivity* activity )
 {
-	LogInfo( "Stop: %p\n", activity );
 	AndroidAppSetActivityState( static_cast< AndroidApp* >( activity->instance ), AndroidAppCommand::Stop );
 }
 
 static void OnConfigurationChanged( ANativeActivity* activity )
 {
 	AndroidApp* android_app = static_cast< AndroidApp* >( activity->instance );
-	LogInfo( "ConfigurationChanged: %p\n", activity );
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::ConfigChanged );
 }
 
 static void OnLowMemory( ANativeActivity* activity )
 {
 	AndroidApp* android_app = static_cast< AndroidApp* >( activity->instance );
-	LogInfo( "LowMemory: %p\n", activity );
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::LowMemory );
 }
 
 static void OnWindowFocusChanged( ANativeActivity* activity, int focused )
 {
-	LogInfo( "WindowFocusChanged: %p -- %d\n", activity, focused );
-	AndroidAppWriteCommand( static_cast< AndroidApp* >( activity->instance ), focused
-															   ? AndroidAppCommand::GainedFocus
-															   : AndroidAppCommand::LostFocus );
+	AndroidAppWriteCommand( static_cast< AndroidApp* >( activity->instance ), focused ? AndroidAppCommand::GainedFocus : AndroidAppCommand::LostFocus );
 }
 
 static void OnNativeWindowCreated( ANativeActivity* activity, ANativeWindow* window )
 {
-	LogInfo( "NativeWindowCreated: %p -- %p\n", activity, window );
 	AndroidAppSetWindow( static_cast< AndroidApp* >( activity->instance ), window );
 }
 
-static void OnNativeWindowDestroyed( ANativeActivity* activity, ANativeWindow* window )
+static void OnNativeWindowDestroyed( ANativeActivity* activity, ANativeWindow* /*window*/ )
 {
-	LogInfo( "NativeWindowDestroyed: %p -- %p\n", activity, window );
 	AndroidAppSetWindow( static_cast< AndroidApp* >( activity->instance ), nullptr );
 }
 
 static void OnInputQueueCreated( ANativeActivity* activity, AInputQueue* queue )
 {
-	LogInfo( "InputQueueCreated: %p -- %p\n", activity, queue );
 	AndroidAppSetInput( static_cast< AndroidApp* >( activity->instance ), queue );
 }
 
-static void OnInputQueueDestroyed( ANativeActivity* activity, AInputQueue* queue )
+static void OnInputQueueDestroyed( ANativeActivity* activity, AInputQueue* /*queue*/ )
 {
-	LogInfo( "InputQueueDestroyed: %p -- %p\n", activity, queue );
-	AndroidAppSetInput( ( AndroidApp* ) activity->instance, nullptr );
+	AndroidAppSetInput( static_cast< AndroidApp* >( activity->instance ), nullptr );
 }
 
 AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
@@ -406,7 +424,7 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 		LogError( "could not create pipe: %s", strerror( errno ) );
 		return nullptr;
 	}
-	android_app->msgread = msgpipe[ 0 ];
+	android_app->msgread  = msgpipe[ 0 ];
 	android_app->msgwrite = msgpipe[ 1 ];
 
 	android_app->thread = std::thread( AndroidAppEntry, android_app );
