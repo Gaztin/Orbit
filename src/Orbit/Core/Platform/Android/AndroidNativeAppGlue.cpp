@@ -33,14 +33,8 @@ ORB_NAMESPACE_BEGIN
 
 static void FreeSavedState( AndroidApp* android_app )
 {
-	android_app->mutex.lock();
-	if( android_app->saved_state != nullptr )
-	{
-		free( android_app->saved_state );
-		android_app->saved_state = nullptr;
-		android_app->saved_state_size = 0;
-	}
-	android_app->mutex.unlock();
+	std::unique_lock lock( android_app->mutex );
+	android_app->saved_state.reset();
 }
 
 static AndroidAppCommand AndroidAppReadCommand( AndroidApp* android_app )
@@ -315,27 +309,25 @@ static void OnResume( ANativeActivity* activity )
 
 static void* OnSaveInstanceState( ANativeActivity* activity, size_t* outLen )
 {
-	AndroidApp* android_app = static_cast< AndroidApp* >( activity->instance );
-	void* saved_state = nullptr;
-
-	LogInfo( "SaveInstanceState: %p\n", activity );
+	AndroidApp*      android_app = static_cast< AndroidApp* >( activity->instance );
 	std::unique_lock lock( android_app->mutex );
+
 	android_app->state_saved = 0;
+
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::SaveState );
+
 	while( !android_app->state_saved )
 	{
 		android_app->cond.wait( lock );
 	}
 
-	if( android_app->saved_state != nullptr )
+	if( android_app->saved_state )
 	{
-		saved_state = android_app->saved_state;
 		*outLen = android_app->saved_state_size;
-		android_app->saved_state = nullptr;
-		android_app->saved_state_size = 0;
+		return android_app->saved_state.release();
 	}
 
-	return saved_state;
+	return nullptr;
 }
 
 static void OnPause( ANativeActivity* activity )
@@ -403,9 +395,9 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 
 	if( saved_state != nullptr )
 	{
-		android_app->saved_state = malloc( saved_state_size );
+		android_app->saved_state.reset( new uint8_t[ saved_state_size ] );
 		android_app->saved_state_size = saved_state_size;
-		memcpy( android_app->saved_state, saved_state, saved_state_size );
+		memcpy( &android_app->saved_state[ 0 ], saved_state, saved_state_size );
 	}
 
 	int msgpipe[ 2 ];
