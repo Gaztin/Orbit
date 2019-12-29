@@ -26,9 +26,6 @@
 #  include <android/configuration.h>
 #  include <android/looper.h>
 #  include <android/native_activity.h>
-#  include <poll.h>
-#  include <pthread.h>
-#  include <sched.h>
 
 ORB_NAMESPACE_BEGIN
 

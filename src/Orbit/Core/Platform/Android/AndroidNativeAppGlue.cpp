@@ -22,9 +22,6 @@
 #  include <cstdlib>
 #  include <cstring>
 
-#  include <android/log.h>
-#  include <sys/resource.h>
-#  include <jni.h>
 #  include <unistd.h>
 
 #  include "Orbit/Core/IO/Log.h"
