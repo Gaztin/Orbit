@@ -27,6 +27,8 @@
 #  include <android/looper.h>
 #  include <android/native_activity.h>
 
+#  include "Orbit/Core/IO/Pipe.h"
+
 ORB_NAMESPACE_BEGIN
 
 struct AndroidApp;
@@ -82,8 +84,7 @@ struct ORB_API_CORE AndroidApp
 	int                          destroy_requested;
 	std::mutex                   mutex;
 	std::condition_variable      cond;
-	int                          msgread;
-	int                          msgwrite;
+	Pipe                         pipe;
 	std::thread                  thread;
 	AndroidPollSource            cmd_poll_source;
 	AndroidPollSource            input_poll_source;

@@ -31,32 +31,20 @@ ORB_NAMESPACE_BEGIN
 static void FreeSavedState( AndroidApp* android_app )
 {
 	std::unique_lock lock( android_app->mutex );
+
 	android_app->saved_state.reset();
 }
 
 static AndroidAppCommand AndroidAppReadCommand( AndroidApp* android_app )
 {
-	AndroidAppCommand cmd;
+	auto cmd = android_app->pipe.Read< AndroidAppCommand >();
 
-	if( read( android_app->msgread, &cmd, sizeof( cmd ) ) == sizeof( cmd ) )
+	if( cmd == AndroidAppCommand::SaveState )
 	{
-		switch( cmd )
-		{
-			default: break;
+		FreeSavedState( android_app );
+	}
 
-			case AndroidAppCommand::SaveState:
-			{
-				FreeSavedState( android_app );
-				break;
-			}
-		}
-		return cmd;
-	}
-	else
-	{
-		LogError( "No data on command pipe!" );
-		return static_cast< AndroidAppCommand >( -1 );
-	}
+	return cmd;
 }
 
 static void PrintCurrentConfig( AndroidApp* android_app )
@@ -174,17 +162,19 @@ static void AndroidAppDestroy( AndroidApp* android_app )
 {
 	FreeSavedState( android_app );
 
-	std::unique_lock lock( android_app->mutex );
-
-	if( android_app->input_queue != nullptr )
 	{
-		AInputQueue_detachLooper( android_app->input_queue );
+		std::unique_lock lock( android_app->mutex );
+
+		if( android_app->input_queue != nullptr )
+		{
+			AInputQueue_detachLooper( android_app->input_queue );
+		}
+
+		AConfiguration_delete( android_app->config );
+
+		android_app->destroyed = 1;
+		android_app->cond.notify_all();
 	}
-
-	AConfiguration_delete( android_app->config );
-
-	android_app->destroyed = 1;
-	android_app->cond.notify_all();
 }
 
 static void ProcessInput( AndroidApp* app, AndroidPollSource* /*source*/ )
@@ -238,7 +228,7 @@ static void AndroidAppEntry( AndroidApp* android_app )
 	android_app->input_poll_source.process = ProcessInput;
 
 	android_app->looper = ALooper_prepare( ALOOPER_PREPARE_ALLOW_NON_CALLBACKS );
-	ALooper_addFd( android_app->looper, android_app->msgread, static_cast< int >( AndroidLooperID::Main ), ALOOPER_EVENT_INPUT, nullptr, &android_app->cmd_poll_source );
+	ALooper_addFd( android_app->looper, android_app->pipe.GetFileHandleRead(), static_cast< int >( AndroidLooperID::Main ), ALOOPER_EVENT_INPUT, nullptr, &android_app->cmd_poll_source );
 
 	{
 		std::unique_lock lock( android_app->mutex );
@@ -254,10 +244,7 @@ static void AndroidAppEntry( AndroidApp* android_app )
 
 static void AndroidAppWriteCommand( AndroidApp* android_app, AndroidAppCommand cmd )
 {
-	if( write( android_app->msgwrite, &cmd, sizeof( cmd ) ) != sizeof( cmd ) )
-	{
-		LogError( "Failure writing android_app cmd: %s\n", strerror( errno ) );
-	}
+	android_app->pipe.Write( cmd );
 }
 
 static void AndroidAppSetActivityState( AndroidApp* android_app, AndroidAppCommand cmd )
@@ -318,9 +305,6 @@ static void AndroidAppFree( AndroidApp* android_app )
 	{
 		android_app->cond.wait( lock );
 	}
-
-	close( android_app->msgread );
-	close( android_app->msgwrite );
 
 	delete android_app;
 }
@@ -415,8 +399,7 @@ static void OnInputQueueDestroyed( ANativeActivity* activity, AInputQueue* /*que
 AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
 {
 	auto* android_app = new AndroidApp { };
-	int   msgpipe[ 2 ];
-	
+
 	android_app->activity = activity;
 
 	if( saved_state != nullptr )
@@ -425,15 +408,6 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 		android_app->saved_state_size = saved_state_size;
 		memcpy( &android_app->saved_state[ 0 ], saved_state, saved_state_size );
 	}
-
-	if( pipe( msgpipe ) )
-	{
-		LogError( "could not create pipe: %s", strerror( errno ) );
-		return nullptr;
-	}
-
-	android_app->msgread  = msgpipe[ 0 ];
-	android_app->msgwrite = msgpipe[ 1 ];
 
 	android_app->thread = std::thread( AndroidAppEntry, android_app );
 	android_app->thread.detach();
