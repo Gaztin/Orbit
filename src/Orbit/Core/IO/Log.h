@@ -18,12 +18,48 @@
 #pragma once
 #include <string_view>
 
-#include "Orbit/Core/Core.h"
+#include "Orbit/Core/Utility/Utility.h"
 
 ORB_NAMESPACE_BEGIN
 
-extern ORB_API_CORE void LogInfo    ( std::string_view msg );
-extern ORB_API_CORE void LogWarning ( std::string_view msg );
-extern ORB_API_CORE void LogError   ( std::string_view msg );
+extern ORB_API_CORE void LogInfoString    ( std::string_view msg );
+extern ORB_API_CORE void LogWarningString ( std::string_view msg );
+extern ORB_API_CORE void LogErrorString   ( std::string_view msg );
+
+template< typename... Args >
+inline void LogInfo( const char* format, Args&&... args )
+{
+	return LogInfoString( Format( format, args... ) );
+}
+
+template<>
+inline void LogInfo<>( const char* format )
+{
+	return LogInfoString( format );
+}
+
+template< typename... Args >
+inline void LogWarning( const char* format, Args&&... args )
+{
+	return LogWarningString( Format( format, args... ) );
+}
+
+template<>
+inline void LogWarning<>( const char* format )
+{
+	return LogWarningString( format );
+}
+
+template< typename... Args >
+inline void LogError( const char* format, Args&&... args )
+{
+	return LogErrorString( Format( format, args... ) );
+}
+
+template<>
+inline void LogError<>( const char* format )
+{
+	return LogErrorString( format );
+}
 
 ORB_NAMESPACE_END

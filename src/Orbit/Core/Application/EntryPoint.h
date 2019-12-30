@@ -37,11 +37,17 @@ int main( int, char*[] )
 
 #elif defined( ORB_OS_ANDROID )
 #  include "Orbit/Core/Platform/Android/AndroidApp.h"
+#  include "Orbit/Core/Platform/Android/AndroidNativeAppGlue.h"
 
-extern "C" void android_main( android_app* app )
+void ORB_NAMESPACE AndroidMain( AndroidApp* app )
 {
 	ORB_NAMESPACE AndroidOnly::app = app;
 	ORB_NAMESPACE ApplicationBase::RunInstance();
+}
+
+extern "C" JNIEXPORT void ANativeActivity_onCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
+{
+	activity->instance = ORB_NAMESPACE AndroidAppCreate( activity, saved_state, saved_state_size );
 }
 
 #endif

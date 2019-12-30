@@ -1,21 +1,9 @@
-require 'third_party/premake-android-studio/android_studio'
+require 'third_party/premake-android-studio'
 
 OUTDIR = 'build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/'
-ANDROID_NDK = '${ANDROID_NDK}'
-ANDROID_NATIVE_APP_GLUE_DIR = ANDROID_NDK .. '/sources/android/native_app_glue'
 
 -- Allow Objective C++ files on macOS and iOS
 premake.api.addAllowed( 'language', 'ObjCpp' )
-
-premake.field.override( 'file', 'store', function( base, f, current, value )
-	-- '${ANDROID_NDK}' is not resolved until it is passed into the build environment.
-	-- Which means that the file doesn't exist as far as premake knows.
-	if( value:startswith( ANDROID_NDK ) ) then
-		return value
-	else
-		return base( f, current, value )
-	end
-end )
 
 -- Set system to android
 if( _ACTION == 'android-studio' ) then
@@ -57,6 +45,8 @@ local function base_config()
 	warnings( 'Extra' )
 	rtti( 'Off' )
 	exceptionhandling( 'Off' )
+	minsdkversion( '23' )
+	maxsdkversion( '28' )
 	includedirs { 'src/' }
 	sysincludedirs { 'src/' }
 	flags { 'MultiProcessorCompile' }
@@ -97,6 +87,7 @@ local function decl_module( name )
 	kind( 'SharedLib' )
 	defines { 'ORB_BUILD', 'ORB_BUILD_' .. up }
 	links( modules )
+	appid( 'com.gaztin.orbit.libs.' .. name:lower() )
 	base_config()
 	files {
 		'src/Orbit/' .. name .. '/**.cpp',
@@ -111,8 +102,6 @@ local function decl_module( name )
 		language( 'ObjCpp' )
 	filter { 'system:android' }
 		includedirs { ANDROID_NATIVE_APP_GLUE_DIR }
-	filter { 'action:android-studio' }
-		removefiles { '**.h' }
 	filter { }
 
 	group()
@@ -128,6 +117,7 @@ local function decl_sample( name )
 	kind( 'WindowedApp' )
 	links( modules )
 	xcodebuildresources( 'assets' )
+	appid( 'com.gaztin.orbit.samples.' .. name:lower() )
 	base_config()
 	files {
 		'src/Samples/' .. fullname .. '/*.cpp',
@@ -141,11 +131,9 @@ local function decl_sample( name )
 	filter { 'system:ios' }
 		files { 'res/Info.plist', 'assets' }
 	filter { 'system:android' }
-		files { 'src/Samples/' .. fullname .. '/Android/**', 'res/**', ANDROID_NATIVE_APP_GLUE_DIR .. '/android_native_app_glue.c' }
+		files { 'src/Samples/' .. fullname .. '/Android/**', 'res/**' }
 	filter { 'system:android' }
 		assetdirs { 'assets/' }
-	filter { 'action:android-studio' }
-		removefiles { '**.h' }
 	filter { }
 
 	group()
@@ -157,7 +145,7 @@ local workspace_name = 'Orbit'
 workspace( workspace_name )
 	platforms( get_platforms() )
 	configurations { 'Debug', 'Release' }
-	gradleversion( 'com.android.tools.build:gradle:3.1.4' )
+	gradleversion( '3.1.4' )
 
 decl_module( 'Core' )
 	filter { 'system:macosx' }

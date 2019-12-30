@@ -18,15 +18,15 @@
 #include "Window.h"
 
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
+#include "Orbit/Core/Platform/Android/AndroidNativeAppGlue.h"
 #include "Orbit/Core/Platform/iOS/UIWindow.h"
-#include "Orbit/Core/Platform/MacOS/WindowDelegate.h"
+#include "Orbit/Core/Platform/macOS/WindowDelegate.h"
 #include "Orbit/Core/Utility/Utility.h"
 
 #if defined( ORB_OS_MACOS )
 #  include <AppKit/AppKit.h>
 #elif defined( ORB_OS_ANDROID )
 #  include <android/sensor.h>
-#  include <android_native_app_glue.h>
 #endif
 
 ORB_NAMESPACE_BEGIN
@@ -36,8 +36,8 @@ static ATOM RegisterWindowClass( LPCSTR name );
 #elif defined( ORB_OS_LINUX )
 static void HandleXEvent( Window* w, const XEvent& xevent );
 #elif defined( ORB_OS_ANDROID )
-static void AppCMD( android_app* state, int cmd );
-static int OnInput( android_app* state, AInputEvent* e );
+static void AppCMD ( AndroidApp* state, AndroidAppCommand cmd );
+static int  OnInput( AndroidApp* state, AInputEvent* e );
 #endif
 
 Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height )
@@ -108,19 +108,19 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 
 #elif defined( ORB_OS_ANDROID )
 
-	AndroidOnly::app->onInputEvent = OnInput;
+	AndroidOnly::app->on_input_event = OnInput;
 
 	m_details.sensor_manager       = ASensorManager_getInstance();
 	m_details.accelerometer_sensor = ASensorManager_getDefaultSensor( m_details.sensor_manager, ASENSOR_TYPE_ACCELEROMETER );
-	m_details.sensor_event_queue   = ASensorManager_createEventQueue( m_details.sensor_manager, AndroidOnly::app->looper, LOOPER_ID_USER, nullptr, nullptr );
+	m_details.sensor_event_queue   = ASensorManager_createEventQueue( m_details.sensor_manager, AndroidOnly::app->looper, static_cast< int >( AndroidLooperID::User ), nullptr, nullptr );
 
-	AndroidOnly::app->userData = this;
-	AndroidOnly::app->onAppCmd = AppCMD;
+	AndroidOnly::app->user_data  = this;
+	AndroidOnly::app->on_app_cmd = AppCMD;
 
 	/* Update until native window is initialized */
 	while( !AndroidOnly::app->window )
 	{
-		android_poll_source* source;
+		AndroidPollSource* source;
 
 		if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
 		{
@@ -166,8 +166,8 @@ Window::~Window( void )
 #elif defined( ORB_OS_ANDROID )
 
 	ASensorManager_destroyEventQueue( m_details.sensor_manager, m_details.sensor_event_queue );
-	AndroidOnly::app->userData = nullptr;
-	AndroidOnly::app->onAppCmd = nullptr;
+	AndroidOnly::app->user_data  = nullptr;
+	AndroidOnly::app->on_app_cmd = nullptr;
 
 #elif defined( ORB_OS_IOS )
 
@@ -211,7 +211,7 @@ void Window::PollEvents( void )
 
 #elif defined( ORB_OS_ANDROID )
 
-	android_poll_source* source;
+	AndroidPollSource* source;
 
 	if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
 	{
@@ -534,15 +534,15 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 
 #elif defined( ORB_OS_ANDROID )
 
-void AppCMD( android_app* state, int cmd )
+void AppCMD( AndroidApp* state, AndroidAppCommand cmd )
 {
-	Window* w = static_cast< Window* >( state->userData );
+	Window* w = static_cast< Window* >( state->user_data );
 
 	switch( cmd )
 	{
 		default: break;
 
-		case APP_CMD_INIT_WINDOW:
+		case AndroidAppCommand::InitWindow:
 		{
 			WindowResized e1;
 			e1.width  = static_cast< uint32_t >( ANativeWindow_getWidth( state->window ) );
@@ -557,7 +557,7 @@ void AppCMD( android_app* state, int cmd )
 			break;
 		}
 
-		case APP_CMD_TERM_WINDOW:
+		case AndroidAppCommand::TermWindow:
 		{
 			WindowStateChanged e;
 			e.state = WindowState::Suspend;
@@ -567,7 +567,7 @@ void AppCMD( android_app* state, int cmd )
 			break;
 		}
 
-		case APP_CMD_GAINED_FOCUS:
+		case AndroidAppCommand::GainedFocus:
 		{
 			auto& data = w->GetPrivateDetails();
 			ASensorEventQueue_enableSensor( data.sensor_event_queue, data.accelerometer_sensor );
@@ -581,7 +581,7 @@ void AppCMD( android_app* state, int cmd )
 			break;
 		}
 
-		case APP_CMD_LOST_FOCUS:
+		case AndroidAppCommand::LostFocus:
 		{
 			auto& data = w->GetPrivateDetails();
 			ASensorEventQueue_disableSensor( data.sensor_event_queue, data.accelerometer_sensor );
@@ -594,7 +594,7 @@ void AppCMD( android_app* state, int cmd )
 			break;
 		}
 
-		case APP_CMD_DESTROY:
+		case AndroidAppCommand::Destroy:
 		{
 			w->Close();
 			
@@ -603,7 +603,7 @@ void AppCMD( android_app* state, int cmd )
 	}
 };
 
-static int OnInput( android_app* state, AInputEvent* e )
+static int OnInput( AndroidApp* /*state*/, AInputEvent* e )
 {
 	switch( AInputEvent_getType( e ) )
 	{

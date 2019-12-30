@@ -72,7 +72,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 
 				if( FAILED( D3DCompile( source.data(), source.size(), nullptr, macros, nullptr, "VSMain", "vs_5_0", flags, 0, &vertex_data, &errors ) ) )
 				{
-					LogError( Format( "%s", errors->GetBufferPointer() ) );
+					LogError( "%s", errors->GetBufferPointer() );
 					errors->Release();
 				}
 
@@ -91,7 +91,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 
 				if( FAILED( D3DCompile( source.data(), source.size(), nullptr, macros, nullptr, "PSMain", "ps_5_0", flags, 0, &pixel_data, &errors ) ) )
 				{
-					LogError( Format( "%s", errors->GetBufferPointer() ) );
+					LogError( "%s", errors->GetBufferPointer() );
 					errors->Release();
 				}
 
@@ -189,7 +189,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 					{
 						std::string logbuf( static_cast< size_t >( loglen ), '\0' );
 						glGetProgramInfoLog( details.program, loglen, nullptr, &logbuf[ 0 ] );
-						LogError( logbuf );
+						LogErrorString( logbuf );
 					}
 				}
 
@@ -497,7 +497,7 @@ GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShade
 		{
 			std::string logbuf( static_cast< size_t >( loglen ), '\0' );
 			glGetShaderInfoLog( shader, loglen, nullptr, &logbuf[ 0 ] );
-			LogError( logbuf );
+			LogErrorString( logbuf );
 		}
 
 		return 0;

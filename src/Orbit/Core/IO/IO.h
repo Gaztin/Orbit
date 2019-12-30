@@ -16,17 +16,26 @@
  */
 
 #pragma once
-#include "Orbit/Core/Platform/Android/AndroidNativeAppGlue.h"
+#include "Orbit/Core/Core.h"
 
-#if defined( ORB_OS_ANDROID )
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+#endif
 
 ORB_NAMESPACE_BEGIN
 
-namespace AndroidOnly
-{
-	extern ORB_API_CORE AndroidApp* app;
-}
+#if defined( ORB_OS_WINDOWS )
 
-ORB_NAMESPACE_END
+using NativeFileHandle = HANDLE;
+
+inline const NativeFileHandle invalid_file_handle = INVALID_HANDLE_VALUE;
+
+#else
+
+using NativeFileHandle = int;
+
+constexpr NativeFileHandle invalid_file_handle = -1;
 
 #endif
+
+ORB_NAMESPACE_END

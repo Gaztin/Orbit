@@ -31,7 +31,6 @@
 #  include <AppKit/AppKit.h>
 #elif defined( ORB_OS_ANDROID )
 #  include <android/native_window.h>
-#  include <android_native_app_glue.h>
 #endif
 
 ORB_NAMESPACE_BEGIN
@@ -374,7 +373,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 			/* Create version */
 			details.version.Init();
 
-			LogInfo( Format( "OpenGL version: %s%d.%d", details.version.IsEmbedded() ? "ES " : "", details.version.GetMajor(), details.version.GetMinor() ) );
+			LogInfo( "OpenGL version: %s%d.%d", details.version.IsEmbedded() ? "ES " : "", details.version.GetMajor(), details.version.GetMinor() );
 
 			break;
 		}
