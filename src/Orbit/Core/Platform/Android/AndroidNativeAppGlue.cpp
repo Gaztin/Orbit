@@ -45,8 +45,10 @@ static AndroidAppCommand AndroidAppReadCommand( AndroidApp* android_app )
 			default: break;
 
 			case AndroidAppCommand::SaveState:
+			{
 				FreeSavedState( android_app );
 				break;
+			}
 		}
 		return cmd;
 	}
@@ -80,13 +82,17 @@ static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand
 			{
 				AInputQueue_detachLooper( android_app->input_queue );
 			}
+
 			android_app->input_queue = android_app->pending_input_queue;
+
 			if( android_app->input_queue != nullptr )
 			{
 				AInputQueue_attachLooper( android_app->input_queue, android_app->looper, static_cast< int >( AndroidLooperID::Input ), nullptr, &android_app->input_poll_source );
 			}
+
 			android_app->cond.notify_all();
 			android_app->mutex.unlock();
+
 			break;
 		}
 
@@ -187,12 +193,13 @@ static void ProcessInput( AndroidApp* app, AndroidPollSource* /*source*/ )
 
 	while( AInputQueue_getEvent( app->input_queue, &event ) >= 0 )
 	{
+		int32_t handled = 0;
+
 		if( AInputQueue_preDispatchEvent( app->input_queue, event ) )
 		{
 			continue;
 		}
 
-		int32_t handled = 0;
 		if( app->on_input_event != nullptr )
 		{
 			handled = app->on_input_event( app, event );
@@ -230,12 +237,12 @@ static void AndroidAppEntry( AndroidApp* android_app )
 	android_app->input_poll_source.app     = android_app;
 	android_app->input_poll_source.process = ProcessInput;
 
-	ALooper* looper = ALooper_prepare( ALOOPER_PREPARE_ALLOW_NON_CALLBACKS );
-	ALooper_addFd( looper, android_app->msgread, static_cast< int >( AndroidLooperID::Main ), ALOOPER_EVENT_INPUT, nullptr, &android_app->cmd_poll_source );
-	android_app->looper = looper;
+	android_app->looper = ALooper_prepare( ALOOPER_PREPARE_ALLOW_NON_CALLBACKS );
+	ALooper_addFd( android_app->looper, android_app->msgread, static_cast< int >( AndroidLooperID::Main ), ALOOPER_EVENT_INPUT, nullptr, &android_app->cmd_poll_source );
 
 	{
 		std::unique_lock lock( android_app->mutex );
+
 		android_app->running = 1;
 		android_app->cond.notify_all();
 	}
@@ -408,6 +415,8 @@ static void OnInputQueueDestroyed( ANativeActivity* activity, AInputQueue* /*que
 AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
 {
 	auto* android_app = new AndroidApp { };
+	int   msgpipe[ 2 ];
+	
 	android_app->activity = activity;
 
 	if( saved_state != nullptr )
@@ -417,12 +426,12 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 		memcpy( &android_app->saved_state[ 0 ], saved_state, saved_state_size );
 	}
 
-	int msgpipe[ 2 ];
 	if( pipe( msgpipe ) )
 	{
 		LogError( "could not create pipe: %s", strerror( errno ) );
 		return nullptr;
 	}
+
 	android_app->msgread  = msgpipe[ 0 ];
 	android_app->msgwrite = msgpipe[ 1 ];
 
