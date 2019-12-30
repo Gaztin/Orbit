@@ -26,9 +26,6 @@
 
 #  include "Orbit/Core/IO/Log.h"
 
-#  pragma clang diagnostic push
-#  pragma ide diagnostic ignored "hicpp-use-auto"
-
 ORB_NAMESPACE_BEGIN
 
 static void FreeSavedState( AndroidApp* android_app )
@@ -338,7 +335,7 @@ static void OnResume( ANativeActivity* activity )
 
 static void* OnSaveInstanceState( ANativeActivity* activity, size_t* outLen )
 {
-	AndroidApp*      android_app = static_cast< AndroidApp* >( activity->instance );
+	auto*            android_app = static_cast< AndroidApp* >( activity->instance );
 	std::unique_lock lock( android_app->mutex );
 
 	android_app->state_saved = 0;
@@ -371,13 +368,15 @@ static void OnStop( ANativeActivity* activity )
 
 static void OnConfigurationChanged( ANativeActivity* activity )
 {
-	AndroidApp* android_app = static_cast< AndroidApp* >( activity->instance );
+	auto* android_app = static_cast< AndroidApp* >( activity->instance );
+
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::ConfigChanged );
 }
 
 static void OnLowMemory( ANativeActivity* activity )
 {
-	AndroidApp* android_app = static_cast< AndroidApp* >( activity->instance );
+	auto* android_app = static_cast< AndroidApp* >( activity->instance );
+
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::LowMemory );
 }
 
@@ -408,7 +407,7 @@ static void OnInputQueueDestroyed( ANativeActivity* activity, AInputQueue* /*que
 
 AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size )
 {
-	AndroidApp* android_app = new AndroidApp { };
+	auto* android_app = new AndroidApp { };
 	android_app->activity = activity;
 
 	if( saved_state != nullptr )
@@ -457,7 +456,5 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 }
 
 ORB_NAMESPACE_END
-
-#pragma clang diagnostic pop
 
 #endif
