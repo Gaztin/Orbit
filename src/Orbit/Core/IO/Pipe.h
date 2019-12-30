@@ -46,7 +46,7 @@ public:
 	    typename = typename std::enable_if_t< std::is_trivially_copyable_v< T > && std::is_default_constructible_v< T > > >
 	T Read( void )
 	{
-		if( T val; Read( &val, sizeof( T ) ) == sizeof( T ) )
+		if( T val; Read( std::addressof( val ), sizeof( T ) ) == sizeof( T ) )
 		{
 			return val;
 		}
@@ -55,7 +55,7 @@ public:
 	}
 
 	template< typename T,
-		typename = typename std::enable_if_t< std::is_trivially_copyable_v< T > && std::is_default_constructible_v< T > > >
+		typename = typename std::enable_if_t< std::is_trivially_copyable_v< T > > >
 	void Write( const T& val )
 	{
 		Write( std::addressof( val ), sizeof( T ) );

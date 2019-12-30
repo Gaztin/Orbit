@@ -47,16 +47,6 @@ static AndroidAppCommand AndroidAppReadCommand( AndroidApp* android_app )
 	return cmd;
 }
 
-static void PrintCurrentConfig( AndroidApp* android_app )
-{
-	char lang[ 2 ];
-	char country[ 2 ];
-
-	AConfiguration_getLanguage( android_app->config, lang );
-	AConfiguration_getCountry( android_app->config, country );
-	LogInfo( "Config: mcc=%d mnc=%d lang=%c%c cnt=%c%c orien=%d touch=%d dens=%d keys=%d nav=%d keysHid=%d navHid=%d sdk=%d size=%d long=%d modetype=%d modenight=%d", AConfiguration_getMcc( android_app->config ), AConfiguration_getMnc( android_app->config ), lang[ 0 ], lang[ 1 ], country[ 0 ], country[ 1 ], AConfiguration_getOrientation( android_app->config ), AConfiguration_getTouchscreen( android_app->config ), AConfiguration_getDensity( android_app->config ), AConfiguration_getKeyboard( android_app->config ), AConfiguration_getNavigation( android_app->config ), AConfiguration_getKeysHidden( android_app->config ), AConfiguration_getNavHidden( android_app->config ), AConfiguration_getSdkVersion( android_app->config ), AConfiguration_getScreenSize( android_app->config ), AConfiguration_getScreenLong( android_app->config ), AConfiguration_getUiModeType( android_app->config ), AConfiguration_getUiModeNight( android_app->config ) );
-}
-
 static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand cmd )
 {
 	switch( cmd )
@@ -114,7 +104,6 @@ static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand
 		case AndroidAppCommand::ConfigChanged:
 		{
 			AConfiguration_fromAssetManager( android_app->config, android_app->activity->assetManager );
-			PrintCurrentConfig( android_app );
 			break;
 		}
 
@@ -217,8 +206,6 @@ static void AndroidAppEntry( AndroidApp* android_app )
 {
 	android_app->config = AConfiguration_new();
 	AConfiguration_fromAssetManager( android_app->config, android_app->activity->assetManager );
-
-	PrintCurrentConfig( android_app );
 
 	android_app->cmd_poll_source.id        = AndroidLooperID::Main;
 	android_app->cmd_poll_source.app       = android_app;
@@ -415,6 +402,7 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 	// Wait for thread to start.
 	{
 		std::unique_lock lock( android_app->mutex );
+
 		while( !android_app->running )
 		{
 			android_app->cond.wait( lock );

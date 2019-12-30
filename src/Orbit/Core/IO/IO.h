@@ -34,7 +34,7 @@ inline const NativeFileHandle invalid_file_handle = INVALID_HANDLE_VALUE;
 
 using NativeFileHandle = int;
 
-constexpr int invalid_file_handle = -1;
+constexpr NativeFileHandle invalid_file_handle = -1;
 
 #endif
 

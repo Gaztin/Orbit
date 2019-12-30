@@ -36,12 +36,12 @@ Pipe::Pipe( void )
 
 #else
 
-	int msgpipe[ 2 ];
+	int fds[ 2 ];
 
-	if( pipe( msgpipe ) == 0 )
+	if( pipe( fds ) == 0 )
 	{
-		m_handle_read  = msgpipe[ 0 ];
-		m_handle_write = msgpipe[ 1 ];
+		m_handle_read  = fds[ 0 ];
+		m_handle_write = fds[ 1 ];
 	}
 
 #endif

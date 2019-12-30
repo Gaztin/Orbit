@@ -73,29 +73,33 @@ struct ORB_API_CORE AndroidApp
 	void    ( *on_app_cmd     )( AndroidApp* app, AndroidAppCommand cmd );
 	int32_t ( *on_input_event )( AndroidApp* app, AInputEvent* event );
 
-	ANativeActivity*             activity;
-	AConfiguration*              config;
 	std::unique_ptr< uint8_t[] > saved_state;
-	size_t                       saved_state_size;
-	ALooper*                     looper;
-	AInputQueue*                 input_queue;
-	ANativeWindow*               window;
-	AndroidAppCommand            activity_state;
-	int                          destroy_requested;
 	std::mutex                   mutex;
 	std::condition_variable      cond;
-	Pipe                         pipe;
 	std::thread                  thread;
-	AndroidPollSource            cmd_poll_source;
-	AndroidPollSource            input_poll_source;
-	int                          running;
-	int                          state_saved;
-	int                          destroyed;
-	AInputQueue*                 pending_input_queue;
-	ANativeWindow*               pending_window;
+
+	Pipe              pipe;
+	AndroidAppCommand activity_state;
+	AndroidPollSource cmd_poll_source;
+	AndroidPollSource input_poll_source;
+
+	ANativeActivity* activity;
+	AConfiguration*  config;
+	ALooper*         looper;
+	AInputQueue*     input_queue;
+	ANativeWindow*   window;
+	AInputQueue*     pending_input_queue;
+	ANativeWindow*   pending_window;
+
+	size_t saved_state_size;
+
+	int destroy_requested;
+	int running;
+	int state_saved;
+	int destroyed;
 };
 
-AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size );
+extern ORB_API_CORE AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size_t saved_state_size );
 
 extern void AndroidMain( AndroidApp* app );
 
