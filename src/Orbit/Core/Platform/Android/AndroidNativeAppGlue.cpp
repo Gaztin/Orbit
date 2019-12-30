@@ -77,7 +77,8 @@ static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand
 
 		case AndroidAppCommand::InputChanged:
 		{
-			android_app->mutex.lock();
+			std::unique_lock lock( android_app->mutex );
+
 			if( android_app->input_queue != nullptr )
 			{
 				AInputQueue_detachLooper( android_app->input_queue );
@@ -91,17 +92,16 @@ static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand
 			}
 
 			android_app->cond.notify_all();
-			android_app->mutex.unlock();
 
 			break;
 		}
 
 		case AndroidAppCommand::InitWindow:
 		{
-			android_app->mutex.lock();
+			std::unique_lock lock( android_app->mutex );
+
 			android_app->window = android_app->pending_window;
 			android_app->cond.notify_all();
-			android_app->mutex.unlock();
 			break;
 		}
 
@@ -116,10 +116,10 @@ static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand
 		case AndroidAppCommand::Pause:
 		case AndroidAppCommand::Stop:
 		{
-			android_app->mutex.lock();
+			std::unique_lock lock( android_app->mutex );
+
 			android_app->activity_state = cmd;
 			android_app->cond.notify_all();
-			android_app->mutex.unlock();
 			break;
 		}
 
@@ -146,19 +146,19 @@ static void AndroidAppPostExecCommand( AndroidApp* android_app, AndroidAppComman
 
 		case AndroidAppCommand::TermWindow:
 		{
-			android_app->mutex.lock();
+			std::unique_lock lock( android_app->mutex );
+
 			android_app->window = nullptr;
 			android_app->cond.notify_all();
-			android_app->mutex.unlock();
 			break;
 		}
 
 		case AndroidAppCommand::SaveState:
 		{
-			android_app->mutex.lock();
+			std::unique_lock lock( android_app->mutex );
+
 			android_app->state_saved = 1;
 			android_app->cond.notify_all();
-			android_app->mutex.unlock();
 			break;
 		}
 
