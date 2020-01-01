@@ -115,6 +115,7 @@ local function decl_framework()
 	group( 'Samples' )
 	project( FRAMEWORK_NAME )
 	kind( 'StaticLib' )
+	appid( 'com.gaztin.orbit.libs.framework')
 	base_config()
 	files {
 		string.format( 'src/Samples/%s/**', FRAMEWORK_NAME ),
