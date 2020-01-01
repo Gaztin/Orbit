@@ -26,6 +26,8 @@ public:
 
 	Point( void );
 	Point( int x, int y );
+	Point( float fx, float fy );
+	Point( double dx, double dy );
 
 public:
 

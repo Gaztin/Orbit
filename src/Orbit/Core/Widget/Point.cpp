@@ -17,6 +17,8 @@
 
 #include "Point.h"
 
+#include <cmath>
+
 ORB_NAMESPACE_BEGIN
 
 Point::Point( void )
@@ -28,6 +30,18 @@ Point::Point( void )
 Point::Point( int x, int y )
 	: x( x )
 	, y( y )
+{
+}
+
+Point::Point( float fx, float fy )
+	: x( static_cast< int >( std::round( fx ) ) )
+	, y( static_cast< int >( std::round( fy ) ) )
+{
+}
+
+Point::Point( double dx, double dy )
+	: x( static_cast< int >( std::round( dx ) ) )
+	, y( static_cast< int >( std::round( dy ) ) )
 {
 }
 
