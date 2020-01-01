@@ -26,6 +26,8 @@
 #elif defined( ORB_OS_MACOS )
 #  include <AppKit/AppKit.h>
 #  include <Carbon/Carbon.h>
+#elif defined( ORB_OS_ANDROID )
+#  include <android/keycodes.h>
 #endif
 
 ORB_NAMESPACE_BEGIN
@@ -306,6 +308,97 @@ Key ConvertSystemKey( uint32_t system_key )
 		case kVK_LeftArrow:            return Key::ArrowLeft;
 		case kVK_RightArrow:           return Key::ArrowRight;
 		case kVK_UpArrow:              return Key::ArrowUp;
+	}
+
+#elif defined( ORB_OS_ANDROID )
+
+	switch( system_key )
+	{
+		default: return Key::Unknown;
+
+		case AKEYCODE_0: return Key::_0;
+		case AKEYCODE_1: return Key::_1;
+		case AKEYCODE_2: return Key::_2;
+		case AKEYCODE_3: return Key::_3;
+		case AKEYCODE_4: return Key::_4;
+		case AKEYCODE_5: return Key::_5;
+		case AKEYCODE_6: return Key::_6;
+		case AKEYCODE_7: return Key::_7;
+		case AKEYCODE_8: return Key::_8;
+		case AKEYCODE_9: return Key::_9;
+
+		case AKEYCODE_A: return Key::A;
+		case AKEYCODE_B: return Key::B;
+		case AKEYCODE_C: return Key::C;
+		case AKEYCODE_D: return Key::D;
+		case AKEYCODE_E: return Key::E;
+		case AKEYCODE_F: return Key::F;
+		case AKEYCODE_G: return Key::G;
+		case AKEYCODE_H: return Key::H;
+		case AKEYCODE_I: return Key::I;
+		case AKEYCODE_J: return Key::J;
+		case AKEYCODE_K: return Key::K;
+		case AKEYCODE_L: return Key::L;
+		case AKEYCODE_M: return Key::M;
+		case AKEYCODE_N: return Key::N;
+		case AKEYCODE_O: return Key::O;
+		case AKEYCODE_P: return Key::P;
+		case AKEYCODE_Q: return Key::Q;
+		case AKEYCODE_R: return Key::R;
+		case AKEYCODE_S: return Key::S;
+		case AKEYCODE_T: return Key::T;
+		case AKEYCODE_U: return Key::U;
+		case AKEYCODE_V: return Key::V;
+		case AKEYCODE_W: return Key::W;
+		case AKEYCODE_X: return Key::X;
+		case AKEYCODE_Y: return Key::Y;
+		case AKEYCODE_Z: return Key::Z;
+
+		case AKEYCODE_F1:  return Key::F1;
+		case AKEYCODE_F2:  return Key::F2;
+		case AKEYCODE_F3:  return Key::F3;
+		case AKEYCODE_F4:  return Key::F4;
+		case AKEYCODE_F5:  return Key::F5;
+		case AKEYCODE_F6:  return Key::F6;
+		case AKEYCODE_F7:  return Key::F7;
+		case AKEYCODE_F8:  return Key::F8;
+		case AKEYCODE_F9:  return Key::F9;
+		case AKEYCODE_F10: return Key::F10;
+		case AKEYCODE_F11: return Key::F11;
+		case AKEYCODE_F12: return Key::F12;
+
+		case AKEYCODE_ESCAPE:          return Key::Escape;
+		case AKEYCODE_TAB:             return Key::Tab;
+		case AKEYCODE_CAPS_LOCK:       return Key::CapsLock;
+		case AKEYCODE_SHIFT_LEFT:      return Key::Shift;
+		case AKEYCODE_SHIFT_RIGHT:     return Key::Shift;
+		case AKEYCODE_CTRL_LEFT:       return Key::Control;
+		case AKEYCODE_CTRL_RIGHT:      return Key::Control;
+		case AKEYCODE_ALT_RIGHT:       return Key::Alt;
+		case AKEYCODE_ALT_LEFT:        return Key::Alt;
+		case AKEYCODE_SPACE:           return Key::Space;
+		case AKEYCODE_ENTER:           return Key::Return;
+		case AKEYCODE_DEL:             return Key::Backspace;
+		case AKEYCODE_SYSRQ:           return Key::PrintScreen;
+		case AKEYCODE_SCROLL_LOCK:     return Key::ScrollLock;
+		case AKEYCODE_BREAK:           return Key::Pause;
+		case AKEYCODE_INSERT:          return Key::Insert;
+		case AKEYCODE_MOVE_HOME:       return Key::Home;
+		case AKEYCODE_PAGE_UP:         return Key::PageUp;
+		case AKEYCODE_FORWARD_DEL:     return Key::Delete;
+		case AKEYCODE_MOVE_END:        return Key::End;
+		case AKEYCODE_PAGE_DOWN:       return Key::PageDown;
+		case AKEYCODE_NUM_LOCK:        return Key::NumLock;
+		case AKEYCODE_NUMPAD_DIVIDE:   return Key::Divide;
+		case AKEYCODE_NUMPAD_MULTIPLY: return Key::Multiply;
+		case AKEYCODE_NUMPAD_SUBTRACT: return Key::Subtract;
+		case AKEYCODE_NUMPAD_ADD:      return Key::Add;
+		case AKEYCODE_NUMPAD_DOT:      return Key::DecimalPoint;
+		case AKEYCODE_NUMPAD_COMMA:    return Key::DecimalPoint;
+		case AKEYCODE_DPAD_DOWN:       return Key::ArrowDown;
+		case AKEYCODE_DPAD_LEFT:       return Key::ArrowLeft;
+		case AKEYCODE_DPAD_RIGHT:      return Key::ArrowRight;
+		case AKEYCODE_DPAD_UP:         return Key::ArrowUp;
 	}
 
 #endif
