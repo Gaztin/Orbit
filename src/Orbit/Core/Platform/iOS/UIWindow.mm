@@ -18,6 +18,8 @@
 #include "UIWindow.h"
 
 #if defined( ORB_OS_IOS )
+#  include "Orbit/Core/Input/Input.h"
+#  include "Orbit/Core/Widget/Point.h"
 #  include "Orbit/Core/Widget/Window.h"
 
 @implementation ORB_NAMESPACED_OBJC( UIWindow )
@@ -31,6 +33,50 @@
 	e.height = self.bounds.size.height;
 
 	ORB_NAMESPACE Window::Get().QueueEvent( e );
+}
+
+-( void )touchesBegan:( NSSet< UITouch* >* )touches withEvent:( UIEvent* )event
+{
+	for( UITouch* touch in touches )
+	{
+		CGPoint   point = [ touch locationInView:self ];
+		NSInteger index = [ touch.estimationUpdateIndex integerValue ];
+
+		ORB_NAMESPACE Input::SetPointerPressed( index, ORB_NAMESPACE Point( point.x, point.y ) );
+	}
+}
+
+-( void )touchesMoved:( NSSet< UITouch* >* )touches withEvent:( UIEvent* )event
+{
+	for( UITouch* touch in touches )
+	{
+		CGPoint   point = [ touch locationInView:self ];
+		NSInteger index = [ touch.estimationUpdateIndex integerValue ];
+
+		ORB_NAMESPACE Input::SetPointerPos( index, ORB_NAMESPACE Point( point.x, point.y ) );
+	}
+}
+
+-( void )touchesEnded:( NSSet< UITouch* >* )touches withEvent:( UIEvent* )event
+{
+	for( UITouch* touch in touches )
+	{
+		CGPoint   point = [ touch locationInView:self ];
+		NSInteger index = [ touch.estimationUpdateIndex integerValue ];
+
+		ORB_NAMESPACE Input::SetPointerReleased( index, ORB_NAMESPACE Point( point.x, point.y ) );
+	}
+}
+
+-( void )touchesCancelled:( NSSet< UITouch* >* )touches withEvent:( UIEvent* )event
+{
+	for( UITouch* touch in touches )
+	{
+		CGPoint   point = [ touch locationInView:self ];
+		NSInteger index = [ touch.estimationUpdateIndex integerValue ];
+
+		ORB_NAMESPACE Input::SetPointerReleased( index, ORB_NAMESPACE Point( point.x, point.y ) );
+	}
 }
 
 @end
