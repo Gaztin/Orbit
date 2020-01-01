@@ -17,6 +17,8 @@
 
 #include "Window.h"
 
+#include <cmath>
+
 #include "Orbit/Core/Input/Input.h"
 #include "Orbit/Core/Input/Key.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
@@ -834,6 +836,67 @@ static int OnInput( AndroidApp* /*state*/, AInputEvent* e )
 	switch( AInputEvent_getType( e ) )
 	{
 		default: break;
+
+		case AINPUT_EVENT_TYPE_KEY:
+		{
+			Key key = ConvertSystemKey( AKeyEvent_getKeyCode( e ) );
+
+			switch( AKeyEvent_getAction( e ) )
+			{
+				default: break;
+
+				case AKEY_EVENT_ACTION_DOWN:
+				{
+					Input::SetKeyPressed( key );
+					break;
+				}
+
+				case AKEY_EVENT_ACTION_UP:
+				{
+					Input::SetKeyReleased( key );
+					break;
+				}
+			}
+
+			break;
+		}
+
+		case AINPUT_EVENT_TYPE_MOTION:
+		{
+			uint32_t action_and_pointer_index = static_cast< uint32_t >( AMotionEvent_getAction( e ) );
+			uint32_t action                   = ( action_and_pointer_index & 0xff );
+			uint32_t pointer_index            = ( action_and_pointer_index & 0xffffff00 ) >> 8;
+			int32_t x                         = static_cast< int32_t >( std::round( AMotionEvent_getX( e, pointer_index ) ) );
+			int32_t y                         = static_cast< int32_t >( std::round( AMotionEvent_getY( e, pointer_index ) ) );
+
+			switch( action )
+			{
+				default: break;
+
+				case AMOTION_EVENT_ACTION_DOWN:
+				case AMOTION_EVENT_ACTION_POINTER_DOWN:
+				{
+					Input::SetPointerPressed( pointer_index, Point( x, y ) );
+					break;
+				}
+
+				case AMOTION_EVENT_ACTION_CANCEL:
+				case AMOTION_EVENT_ACTION_UP:
+				case AMOTION_EVENT_ACTION_POINTER_UP:
+				{
+					Input::SetPointerReleased( pointer_index, Point( x, y ) );
+					break;
+				}
+
+				case AMOTION_EVENT_ACTION_MOVE:
+				{
+					Input::SetPointerPos( pointer_index, Point( x, y ) );
+					break;
+				}
+			}
+
+			break;
+		}
 	}
 
 	return 0;
