@@ -19,7 +19,6 @@
 #include <map>
 #include <tuple>
 
-#include "Orbit/Core/Input/Button.h"
 #include "Orbit/Core/Input/Key.h"
 #include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Core/Widget/Point.h"
@@ -34,19 +33,24 @@ namespace Input
 	extern ORB_API_CORE bool GetKeyReleased( Key key );
 	extern ORB_API_CORE bool GetKeyHeld    ( Key key );
 
-	extern ORB_API_CORE void SetButtonPressed ( Button button );
-	extern ORB_API_CORE void SetButtonReleased( Button button );
-	extern ORB_API_CORE bool GetButtonPressed ( Button button );
-	extern ORB_API_CORE bool GetButtonReleased( Button button );
-	extern ORB_API_CORE bool GetButtonHeld    ( Button button );
-
+	extern ORB_API_CORE void  SetPointerPressed ( size_t index, Point pos );
+	extern ORB_API_CORE void  SetPointerReleased( size_t index, Point pos );
 	extern ORB_API_CORE void  SetPointerPos     ( size_t index, Point pos );
+	extern ORB_API_CORE bool  GetPointerPressed ( size_t index );
+	extern ORB_API_CORE bool  GetPointerReleased( size_t index );
+	extern ORB_API_CORE bool  GetPointerHeld    ( size_t index );
 	extern ORB_API_CORE Point GetPointerPos     ( size_t index );
 	extern ORB_API_CORE Point GetPointerMove    ( size_t index );
 
 	extern ORB_API_CORE void SetFPSCursor( bool enable );
 
 	extern ORB_API_CORE void ResetStates( void );
+
+	constexpr size_t pointer_index_mouse_left    = 0;
+	constexpr size_t pointer_index_mouse_right   = 1;
+	constexpr size_t pointer_index_mouse_middle  = 2;
+	constexpr size_t pointer_index_mouse_extra_1 = 3;
+	constexpr size_t pointer_index_mouse_extra_2 = 4;
 };
 
 ORB_NAMESPACE_END

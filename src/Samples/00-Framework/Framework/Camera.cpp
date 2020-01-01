@@ -33,11 +33,15 @@ void Camera::Update( float delta_time )
 {
 	UpdateView( delta_time );
 
-	/* Toggle FPS cursor */
-	if( Orbit::Input::GetButtonPressed( Orbit::Button::MouseRight ) )
+	if( Orbit::Input::GetPointerPressed( Orbit::Input::pointer_index_mouse_right ) )
+	{
 		Orbit::Input::SetFPSCursor( true );
-	if( Orbit::Input::GetButtonReleased( Orbit::Button::MouseRight ) )
+	}
+
+	if( Orbit::Input::GetPointerReleased( Orbit::Input::pointer_index_mouse_right ) )
+	{
 		Orbit::Input::SetFPSCursor( false );
+	}
 }
 
 void Camera::OnResized( const Orbit::WindowResized& e )
@@ -79,7 +83,7 @@ void Camera::UpdateView( float delta_time )
 	{
 		Orbit::Vector3 rotation;
 
-		if( Orbit::Input::GetButtonHeld( Orbit::Button::MouseRight ) || Orbit::Input::GetButtonHeld( Orbit::Button::MouseLeft ) )
+		if( Orbit::Input::GetPointerHeld( Orbit::Input::pointer_index_mouse_left ) || Orbit::Input::GetPointerHeld( Orbit::Input::pointer_index_mouse_right ) )
 		{
 			auto [ x, y ] = Orbit::Input::GetPointerMove( 0 );
 

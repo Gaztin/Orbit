@@ -30,20 +30,19 @@ ORB_NAMESPACE_BEGIN
 
 namespace Input
 {
-	struct BinaryState
+	struct KeyState
 	{
 		bool held     : 1;
 		bool pressed  : 1;
 		bool released : 1;
 	};
 
-	using ButtonState = BinaryState;
-	using KeyState    = BinaryState;
-
 	struct Pointer
 	{
 		Point current_pos;
 		Point previous_pos;
+
+		KeyState state;
 	};
 
 	struct FPSCursor
@@ -51,15 +50,14 @@ namespace Input
 		bool enabled = false;
 	};
 
-	static std::map< Key, KeyState >       key_states;
-	static std::map< Button, ButtonState > button_states;
-	static std::map< size_t, Pointer >     pointers;
-	static FPSCursor                       fps_cursor;
-	static Point                           center;
+	static std::map< Key, KeyState >   key_states;
+	static std::map< size_t, Pointer > pointers;
+	static FPSCursor                   fps_cursor;
+	static Point                       center;
 
 	void SetKeyPressed( Key key )
 	{
-		ButtonState& state = key_states[ key ];
+		KeyState& state = key_states[ key ];
 
 		state.held     = true;
 		state.pressed  = true;
@@ -67,7 +65,7 @@ namespace Input
 
 	void SetKeyReleased( Key key )
 	{
-		ButtonState& state = key_states[ key ];
+		KeyState& state = key_states[ key ];
 
 		state.held     = false;
 		state.released = true;
@@ -103,50 +101,23 @@ namespace Input
 		return false;
 	}
 
-	void SetButtonPressed( Button button )
+	void SetPointerPressed( size_t index, Point pos )
 	{
-		ButtonState& state = button_states[ button ];
+		Pointer& pointer = pointers[ index ];
 
-		state.held    = true;
-		state.pressed = true;
+		pointer.current_pos   = pos;
+		pointer.previous_pos  = pos;
+		pointer.state.held    = true;
+		pointer.state.pressed = true;
 	}
 
-	void SetButtonReleased( Button button )
+	void SetPointerReleased( size_t index, Point pos )
 	{
-		ButtonState& state = button_states[ button ];
+		Pointer& pointer = pointers[ index ];
 
-		state.held     = false;
-		state.released = true;
-	}
-
-	bool GetButtonPressed( Button button )
-	{
-		if( auto it = button_states.find( button ); it != button_states.end() )
-		{
-			return it->second.pressed;
-		}
-
-		return false;
-	}
-
-	bool GetButtonReleased( Button button )
-	{
-		if( auto it = button_states.find( button ); it != button_states.end() )
-		{
-			return it->second.released;
-		}
-
-		return false;
-	}
-
-	bool GetButtonHeld( Button button )
-	{
-		if( auto it = button_states.find( button ); it != button_states.end() )
-		{
-			return it->second.held;
-		}
-
-		return false;
+		pointer.current_pos    = pos;
+		pointer.state.held     = false;
+		pointer.state.released = true;
 	}
 
 	void SetPointerPos( size_t index, Point pos )
@@ -169,6 +140,36 @@ namespace Input
 		}
 
 		return Point();
+	}
+
+	bool GetPointerPressed( size_t index )
+	{
+		if( auto it = pointers.find( index ); it != pointers.end() )
+		{
+			return it->second.state.pressed;
+		}
+
+		return false;
+	}
+
+	bool GetPointerReleased( size_t index )
+	{
+		if( auto it = pointers.find( index ); it != pointers.end() )
+		{
+			return it->second.state.released;
+		}
+
+		return false;
+	}
+
+	bool GetPointerHeld( size_t index )
+	{
+		if( auto it = pointers.find( index ); it != pointers.end() )
+		{
+			return it->second.state.held;
+		}
+
+		return false;
 	}
 
 	Point GetPointerMove( size_t index )
@@ -305,12 +306,6 @@ namespace Input
 	#endif
 
 		for( auto& it : key_states )
-		{
-			it.second.pressed  = false;
-			it.second.released = false;
-		}
-
-		for( auto& it : button_states )
 		{
 			it.second.pressed  = false;
 			it.second.released = false;
