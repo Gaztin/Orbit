@@ -355,6 +355,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			details.view = [ GLKView alloc ];
 			[ details.view initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+			details.view.drawableColorFormat   = GLKViewDrawableColorFormatRGBA8888;
+			details.view.drawableDepthFormat   = GLKViewDrawableDepthFormat24;
+			details.view.drawableStencilFormat = GLKViewDrawableStencilFormat8;
 			details.view.context               = details.context;
 			details.view.delegate              = delegate;
 			details.view.enableSetNeedsDisplay = NO;
