@@ -399,6 +399,9 @@ Key ConvertSystemKey( uint32_t system_key )
 		case AKEYCODE_DPAD_LEFT:       return Key::ArrowLeft;
 		case AKEYCODE_DPAD_RIGHT:      return Key::ArrowRight;
 		case AKEYCODE_DPAD_UP:         return Key::ArrowUp;
+
+		case AKEYCODE_BACK:   return Key::Back;
+		case AKEYCODE_SEARCH: return Key::Search;
 	}
 
 #endif

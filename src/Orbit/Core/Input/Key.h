@@ -105,6 +105,9 @@ enum class Key
 	ArrowLeft,
 	ArrowRight,
 	ArrowUp,
+
+	Back,
+	Search,
 };
 
 extern ORB_API_CORE Key ConvertSystemKey( uint32_t system_key );
