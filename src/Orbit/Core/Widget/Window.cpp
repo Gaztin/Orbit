@@ -143,6 +143,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	[ m_details.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
 	m_details.ui_window.backgroundColor = [ UIColor whiteColor ];
 	[ m_details.ui_window makeKeyAndVisible ];
+	[ m_details.ui_window setMultipleTouchEnabled:YES ];
 
 	/* Create view controller */
 	UIViewController* vc = [ UIViewController alloc ];
