@@ -181,7 +181,7 @@ namespace Input
 		return Point();
 	}
 
-	void SetFPSCursor( bool enable )
+	void SetFPSCursor( [[ maybe_unused ]] bool enable )
 	{
 		fps_cursor.enabled = enable;
 
