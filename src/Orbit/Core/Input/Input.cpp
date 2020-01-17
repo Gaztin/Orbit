@@ -321,7 +321,9 @@ namespace Input
 
 		for( auto& it : pointers )
 		{
-			it.second.previous_pos = it.second.current_pos;
+			it.second.previous_pos   = it.second.current_pos;
+			it.second.state.pressed  = false;
+			it.second.state.released = false;
 		}
 	}
 }
