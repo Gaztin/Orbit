@@ -665,27 +665,31 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		
 		case ButtonPress:
 		{
+			Point pos( xevent.xbutton.x, xevent.xbutton.y );
+
 			switch( xevent.xbutton.button )
 			{
-				case Button1: { Input::SetButtonPressed( Button::MouseLeft );   } break;
-				case Button2: { Input::SetButtonPressed( Button::MouseMiddle ); } break;
-				case Button3: { Input::SetButtonPressed( Button::MouseRight );  } break;
-				case Button4: { Input::SetButtonPressed( Button::MouseExtra1 ); } break;
-				case Button5: { Input::SetButtonPressed( Button::MouseExtra2 ); } break;
+				case Button1: { Input::SetPointerPressed( Input::pointer_index_mouse_left, pos );    } break;
+				case Button2: { Input::SetPointerPressed( Input::pointer_index_mouse_middle, pos );  } break;
+				case Button3: { Input::SetPointerPressed( Input::pointer_index_mouse_right, pos );   } break;
+				case Button4: { Input::SetPointerPressed( Input::pointer_index_mouse_extra_1, pos ); } break;
+				case Button5: { Input::SetPointerPressed( Input::pointer_index_mouse_extra_2, pos ); } break;
 			}
-			
+
 			break;
 		}
 		
 		case ButtonRelease:
 		{
+			Point pos( xevent.xbutton.x, xevent.xbutton.y );
+
 			switch( xevent.xbutton.button )
 			{
-				case Button1: { Input::SetButtonReleased( Button::MouseLeft );   } break;
-				case Button2: { Input::SetButtonReleased( Button::MouseMiddle ); } break;
-				case Button3: { Input::SetButtonReleased( Button::MouseRight );  } break;
-				case Button4: { Input::SetButtonReleased( Button::MouseExtra1 ); } break;
-				case Button5: { Input::SetButtonReleased( Button::MouseExtra2 ); } break;
+				case Button1: { Input::SetPointerReleased( Input::pointer_index_mouse_left, pos );    } break;
+				case Button2: { Input::SetPointerReleased( Input::pointer_index_mouse_middle, pos );  } break;
+				case Button3: { Input::SetPointerReleased( Input::pointer_index_mouse_right, pos );   } break;
+				case Button4: { Input::SetPointerReleased( Input::pointer_index_mouse_extra_1, pos ); } break;
+				case Button5: { Input::SetPointerReleased( Input::pointer_index_mouse_extra_2, pos ); } break;
 			}
 			
 			break;
@@ -730,42 +734,60 @@ void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
 
 		case NSEventTypeLeftMouseDown:
 		{
-			Input::SetButtonPressed( Button::MouseLeft );
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerPressed( Input::pointer_index_mouse_left, pos );
 
 			break;
 		}
 
 		case NSEventTypeLeftMouseUp:
 		{
-			Input::SetButtonReleased( Button::MouseLeft );
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerReleased( Input::pointer_index_mouse_left, pos );
 
 			break;
 		}
 
 		case NSEventTypeRightMouseDown:
 		{
-			Input::SetButtonPressed( Button::MouseRight );
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerPressed( Input::pointer_index_mouse_right, pos );
 
 			break;
 		}
 
 		case NSEventTypeRightMouseUp:
 		{
-			Input::SetButtonReleased( Button::MouseRight );
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerReleased( Input::pointer_index_mouse_right, pos );
 
 			break;
 		}
 
 		case NSEventTypeOtherMouseDown:
 		{
-			Input::SetButtonPressed( Button::MouseMiddle );
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerPressed( Input::pointer_index_mouse_middle, pos );
 
 			break;
 		}
 
 		case NSEventTypeOtherMouseUp:
 		{
-			Input::SetButtonReleased( Button::MouseMiddle );
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerReleased( Input::pointer_index_mouse_middle, pos );
 
 			break;
 		}
