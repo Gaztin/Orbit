@@ -42,7 +42,7 @@ static ATOM RegisterWindowClass( LPCSTR name );
 #elif defined( ORB_OS_LINUX )
 static void HandleXEvent( Window* w, const XEvent& xevent );
 #elif defined( ORB_OS_MACOS )
-static void HandleNSEvent( NSEvent* nsevent );
+static void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow );
 #elif defined( ORB_OS_ANDROID )
 static void AppCMD ( AndroidApp* state, AndroidAppCommand cmd );
 static int  OnInput( AndroidApp* state, AInputEvent* e );
@@ -214,7 +214,7 @@ void Window::PollEvents( void )
 
 	while( ( event = [ m_details.window nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
 	{
-		HandleNSEvent( event );
+		HandleNSEvent( event, m_details.window );
 
 		[ m_details.window sendEvent:event ];
 	}
@@ -706,7 +706,7 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 
 #elif defined( ORB_OS_MACOS )
 
-void HandleNSEvent( NSEvent* nsevent )
+void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
 {
 	switch( nsevent.type )
 	{
@@ -772,7 +772,8 @@ void HandleNSEvent( NSEvent* nsevent )
 
 		case NSEventTypeMouseMoved:
 		{
-			Point pos( nsevent.absoluteX, nsevent.absoluteY );
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
 
 			/* FIXME: Mouse pos won't be tracked until any mouse button has been pressed */
 			for( size_t index : Input::GetPointerIndices() )
