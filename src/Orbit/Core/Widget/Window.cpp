@@ -479,54 +479,75 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 
 		case WM_LBUTTONDOWN:
 		{
-			Input::SetButtonPressed( Button::MouseLeft );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerPressed( Input::pointer_index_mouse_left, pos );
 
 			break;
 		}
 
 		case WM_LBUTTONUP:
 		{
-			Input::SetButtonReleased( Button::MouseLeft );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerReleased( Input::pointer_index_mouse_left, pos );
 
 			break;
 		}
 
 		case WM_MBUTTONDOWN:
 		{
-			Input::SetButtonPressed( Button::MouseMiddle );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerPressed( Input::pointer_index_mouse_middle, pos );
 
 			break;
 		}
 
 		case WM_MBUTTONUP:
 		{
-			Input::SetButtonReleased( Button::MouseMiddle );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerReleased( Input::pointer_index_mouse_middle, pos );
 
 			break;
 		}
 
 		case WM_RBUTTONDOWN:
 		{
-			Input::SetButtonPressed( Button::MouseRight );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerPressed( Input::pointer_index_mouse_right, pos );
 
 			break;
 		}
 
 		case WM_RBUTTONUP:
 		{
-			Input::SetButtonReleased( Button::MouseRight );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerReleased( Input::pointer_index_mouse_right, pos );
 
 			break;
 		}
 
 		case WM_XBUTTONDOWN:
 		{
-			WORD which = HIWORD( wparam );
+			WORD  which = HIWORD( wparam );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
 
 			switch( which )
 			{
-				case XBUTTON1: { Input::SetButtonPressed( Button::MouseExtra1 ); } break;
-				case XBUTTON2: { Input::SetButtonPressed( Button::MouseExtra2 ); } break;
+				case XBUTTON1: { Input::SetPointerPressed( Input::pointer_index_mouse_extra_1, pos ); } break;
+				case XBUTTON2: { Input::SetPointerPressed( Input::pointer_index_mouse_extra_2, pos ); } break;
+			}
+
+			break;
+		}
+
+		case WM_XBUTTONUP:
+		{
+			WORD  which = HIWORD( wparam );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+
+			switch( which )
+			{
+				case XBUTTON1: { Input::SetPointerReleased( Input::pointer_index_mouse_extra_1, pos ); } break;
+				case XBUTTON2: { Input::SetPointerReleased( Input::pointer_index_mouse_extra_2, pos ); } break;
 			}
 
 			break;
