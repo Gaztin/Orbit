@@ -1,12 +1,18 @@
 # Orbit
 This is a Work-In-Progress game engine using C++17
 
-## Platforms
+## Samples
 
-Platform | Tested | Untested
--- | -- | --
-Windows | `x86`, `x86_64` |
-Linux | `x86`, `x86_64` | `ARM-v7`, `ARM64-v8a`
-macOS | `x86_64` | `x86`
-Android | `ARM-v7a`, `ARM64-v8a` | `x86`, `x86_64`, `MIPS`, `MIPS64`
-iOS | `ARM-v7`, `ARM64-v8a` | `ARM-v6`, `ARM-v7s`
+**Triangle**
+
+![](res/readme/triangle.png)
+
+Obligatory triangle example (textured)
+
+**Cube**
+
+![](res/readme/cube.gif)
+
+This is the first 3D sample.
+
+Introduces a first-person free-flight camera and the usage of constant buffers and matrices.
