@@ -55,6 +55,37 @@ namespace Input
 	static FPSCursor                   fps_cursor;
 	static Point                       center;
 
+	PointerIterator& PointerIterator::operator++( void )
+	{
+		if( auto it = pointers.find( index ); it != pointers.end() )
+			index = ( ++it )->first;
+
+		return *this;
+	}
+
+	bool PointerIterator::operator!=( PointerIterator other ) const
+	{
+		return ( pointers.find( index ) != pointers.find( other.index ) );
+	}
+
+	size_t PointerIterator::operator*( void ) const
+	{
+		return index;
+	}
+
+	PointerIterator PointerIndices::begin( void ) const
+	{
+		if( !pointers.empty() )
+			return { pointers.begin()->first };
+
+		return end();
+	}
+
+	PointerIterator PointerIndices::end( void ) const
+	{
+		return { ~0ul };
+	}
+
 	void SetKeyPressed( Key key )
 	{
 		KeyState& state = key_states[ key ];
@@ -180,6 +211,11 @@ namespace Input
 		}
 
 		return Point();
+	}
+
+	PointerIndices GetPointerIndices( void )
+	{
+		return PointerIndices{ };
 	}
 
 	void SetFPSCursor( [[ maybe_unused ]] bool enable )
