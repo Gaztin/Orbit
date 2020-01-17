@@ -556,7 +556,10 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 		case WM_MOUSEMOVE:
 		{
 			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
-			Input::SetPointerPos( 0, pos );
+
+			/* FIXME: Mouse pos won't be tracked until any mouse button has been pressed */
+			for( size_t index : Input::GetPointerIndices() )
+				Input::SetPointerPos( index, pos );
 
 			break;
 		}
@@ -699,7 +702,10 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 		case MotionNotify:
 		{
 			Point pos( xevent.xmotion.x, xevent.xmotion.y );
-			Input::SetPointerPos( 0, pos );
+
+			/* FIXME: Mouse pos won't be tracked until any mouse button has been pressed */
+			for( size_t index : Input::GetPointerIndices() )
+				Input::SetPointerPos( index, pos );
 
 			break;
 		}
@@ -775,7 +781,10 @@ void HandleNSEvent( NSEvent* nsevent )
 		case NSEventTypeMouseMoved:
 		{
 			Point pos( nsevent.absoluteX, nsevent.absoluteY );
-			Input::SetPointerPos( 0, pos );
+
+			/* FIXME: Mouse pos won't be tracked until any mouse button has been pressed */
+			for( size_t index : Input::GetPointerIndices() )
+				Input::SetPointerPos( index, pos );
 
 			break;
 		}
