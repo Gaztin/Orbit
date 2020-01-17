@@ -47,6 +47,17 @@ public:
 
 public:
 
+	Vector3&       Right   ( void )       { return *reinterpret_cast<       Vector3* >( &m_elements[  0 ] ); }
+	const Vector3& Right   ( void ) const { return *reinterpret_cast< const Vector3* >( &m_elements[  0 ] ); }
+	Vector3&       Up      ( void )       { return *reinterpret_cast<       Vector3* >( &m_elements[  4 ] ); }
+	const Vector3& Up      ( void ) const { return *reinterpret_cast< const Vector3* >( &m_elements[  4 ] ); }
+	Vector3&       Forward ( void )       { return *reinterpret_cast<       Vector3* >( &m_elements[  8 ] ); }
+	const Vector3& Forward ( void ) const { return *reinterpret_cast< const Vector3* >( &m_elements[  8 ] ); }
+	Vector3&       Position( void )       { return *reinterpret_cast<       Vector3* >( &m_elements[ 12 ] ); }
+	const Vector3& Position( void ) const { return *reinterpret_cast< const Vector3* >( &m_elements[ 12 ] ); }
+
+public:
+
 	Matrix4  operator* ( const Matrix4& rhs ) const;
 	Matrix4& operator*=( const Matrix4& rhs );
 

@@ -44,11 +44,12 @@ Matrix4::Matrix4( std::initializer_list< float > elements )
 
 void Matrix4::Translate( const Vector3& translation )
 {
-	const Vector4 t4( translation[ 0 ], translation[ 1 ], translation[ 2 ], 1.f );
+	Matrix4&      self = *this;
+	const Vector4 t4( translation.x, translation.y, translation.z, 1.f );
 
 	for( size_t i = 0; i < 4; ++i )
 	{
-		m_elements[ 3 * 4 + i ] = Vector4( m_elements[ 0 * 4 + i ], m_elements[ 1 * 4 + i ], m_elements[ 2 * 4 + i ], m_elements[ 3 * 4 + i ] ).DotProduct( t4 );
+		self( i, 3 ) = Vector4( self( i, 0 ), self( i, 1 ), self( i, 2 ), self( i, 3 ) ).DotProduct( t4 );
 	}
 }
 
@@ -64,32 +65,34 @@ void Matrix4::Rotate( const Vector3& rotation )
 	Matrix4     roty;
 	Matrix4     rotz;
 
-	rotx[ 1 * 4 + 1 ] = xcos;
-	rotx[ 2 * 4 + 1 ] = -xsin;
-	rotx[ 1 * 4 + 2 ] = xsin;
-	rotx[ 2 * 4 + 2 ] = xcos;
+	rotx( 1, 1 ) =  xcos;
+	rotx( 1, 2 ) = -xsin;
+	rotx( 2, 1 ) =  xsin;
+	rotx( 2, 2 ) =  xcos;
 
-	roty[ 0 * 4 + 0 ] = ycos;
-	roty[ 2 * 4 + 0 ] = -ysin;
-	roty[ 0 * 4 + 2 ] = ysin;
-	roty[ 2 * 4 + 2 ] = ycos;
+	roty( 0, 0 ) =  ycos;
+	roty( 0, 2 ) = -ysin;
+	roty( 2, 0 ) =  ysin;
+	roty( 2, 2 ) =  ycos;
 
-	rotz[ 0 * 4 + 0 ] = zcos;
-	rotz[ 1 * 4 + 0 ] = -zsin;
-	rotz[ 0 * 4 + 1 ] = zsin;
-	rotz[ 1 * 4 + 1 ] = zcos;
+	rotz( 0, 0 ) =  zcos;
+	rotz( 0, 1 ) = -zsin;
+	rotz( 1, 0 ) =  zsin;
+	rotz( 1, 1 ) =  zcos;
 
 	*this *= ( rotx * roty * rotz );
 }
 
 void Matrix4::Transpose( void )
 {
-	Matrix4 temp( *this );
+	Matrix4& self = *this;
+	Matrix4  temp( self );
+
 	for( size_t x = 0; x < 4; ++x )
 	{
 		for( size_t y = 0; y < 4; ++y )
 		{
-			m_elements[ y * 4 + x ] = temp.m_elements[ x * 4 + y ];
+			self( x, y ) = temp( y, x );
 		}
 	}
 }
@@ -111,7 +114,7 @@ void Matrix4::Invert( void )
 		for( size_t column = 0; column < 4; ++column )
 		{
 			float sign = ( ( column & 1 ) != ( row & 1 ) ) ? -1.0f : 1.0f;
-			cofactors[ 4 * row + column ] = minors[ 4 * row + column ] * sign;
+			cofactors( column, row ) = minors( column, row ) * sign;
 		}
 	}
 
@@ -167,16 +170,17 @@ float Matrix4::GetDeterminant( void ) const
 
 float Matrix4::GetDeterminant3x3( size_t column, size_t row ) const
 {
-	const size_t c1 = ( column > 0 ) ? 0 : 1;
-	const size_t c2 = ( column > 1 ) ? 1 : 2;
-	const size_t c3 = ( column > 2 ) ? 2 : 3;
-	const size_t r1 = ( row    > 0 ) ? 0 : 1;
-	const size_t r2 = ( row    > 1 ) ? 1 : 2;
-	const size_t r3 = ( row    > 2 ) ? 2 : 3;
+	const Matrix4& self = *this;
+	const size_t   c1   = ( column > 0 ) ? 0 : 1;
+	const size_t   c2   = ( column > 1 ) ? 1 : 2;
+	const size_t   c3   = ( column > 2 ) ? 2 : 3;
+	const size_t   r1   = ( row    > 0 ) ? 0 : 1;
+	const size_t   r2   = ( row    > 1 ) ? 1 : 2;
+	const size_t   r3   = ( row    > 2 ) ? 2 : 3;
 
-	return m_elements[ 4 * r1 + c1 ] * ( m_elements[ 4 * r2 + c2 ] * m_elements[ 4 * r3 + c3 ] - m_elements[ 4 * r2 + c3 ] * m_elements[ 4 * r3 + c2 ] ) -
-	       m_elements[ 4 * r1 + c2 ] * ( m_elements[ 4 * r2 + c1 ] * m_elements[ 4 * r3 + c3 ] - m_elements[ 4 * r2 + c3 ] * m_elements[ 4 * r3 + c1 ] ) +
-	       m_elements[ 4 * r1 + c3 ] * ( m_elements[ 4 * r2 + c1 ] * m_elements[ 4 * r3 + c2 ] - m_elements[ 4 * r2 + c2 ] * m_elements[ 4 * r3 + c1 ] );
+	return self( c1, r1 ) * ( self( c2, r2 ) * self( c3, r3 ) - self( c3, r2 ) * self( c2, r3 ) ) -
+	       self( c2, r1 ) * ( self( c1, r2 ) * self( c3, r3 ) - self( c3, r2 ) * self( c1, r3 ) ) +
+	       self( c3, r1 ) * ( self( c1, r2 ) * self( c2, r3 ) - self( c2, r2 ) * self( c1, r3 ) );
 }
 
 Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
@@ -186,28 +190,32 @@ Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
 
 Matrix4& Matrix4::operator*=( const Matrix4& rhs )
 {
+	Matrix4& self = *this;
+
+	/* Columns */
 	std::array< Vector4, 4 > columns;
+	for( size_t i = 0; i < 4; ++i )
+	{
+		columns[ i ] = Vector4( self( 0, i ), self( 1, i ), self( 2, i ), self( 3, i ) );
+	}
+
+	/* Rows */
 	std::array< Vector4, 4 > rows;
-
 	for( size_t i = 0; i < 4; ++i )
 	{
-		columns[ i ] = Vector4( m_elements[ i * 4 + 0 ], m_elements[ i * 4 + 1 ], m_elements[ i * 4 + 2 ], m_elements[ i * 4 + 3 ] );
+		rows[ i ] = Vector4( rhs( i, 0 ), rhs( i, 1 ), rhs( i, 2 ), rhs( i, 3 ) );
 	}
 
-	for( size_t i = 0; i < 4; ++i )
-	{
-		rows[ i ] = Vector4( rhs.m_elements[ 0 * 4 + i ], rhs.m_elements[ 1 * 4 + i ], rhs.m_elements[ 2 * 4 + i ], rhs.m_elements[ 3 * 4 + i ] );
-	}
-
+	/* Calculate dot products */
 	for( size_t row = 0; row < 4; ++row )
 	{
 		for( size_t col = 0; col < 4; ++col )
 		{
-			m_elements[ row * 4 + col ] = columns[ row ].DotProduct( rows[ col ] );
+			self( col, row ) = columns[ row ].DotProduct( rows[ col ] );
 		}
 	}
 
-	return *this;
+	return self;
 }
 
 ORB_NAMESPACE_END

@@ -52,7 +52,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		#if defined( ORB_OS_WINDOWS )
 
-			auto& window_details = Window::GetInstance().GetPrivateDetails();
+			auto& window_details = Window::Get().GetPrivateDetails();
 
 			/* Set pixel format */
 			{
@@ -129,7 +129,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		#elif defined( ORB_OS_LINUX )
 
-			auto& window_details = Window::GetInstance().GetPrivateDetails();
+			auto& window_details = Window::Get().GetPrivateDetails();
 
 			details.gc      = XCreateGC( window_details.display, window_details.window, 0, nullptr );
 			details.context = [ & ]
@@ -223,7 +223,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		#elif defined( ORB_OS_MACOS )
 
-			auto& window_details = Window::GetInstance().GetPrivateDetails();
+			auto& window_details = Window::Get().GetPrivateDetails();
 
 			const NSOpenGLPixelFormatAttribute attribs[]
 			{
@@ -345,7 +345,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		#elif defined( ORB_OS_IOS )
 
-			auto& window_details = Window::GetInstance().GetPrivateDetails();
+			auto& window_details = Window::Get().GetPrivateDetails();
 
 			ORB_NAMESPACED_OBJC( GLKViewDelegate )* delegate = [ ORB_NAMESPACED_OBJC( GLKViewDelegate ) alloc ];
 			[ delegate init ];
@@ -355,6 +355,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			details.view = [ GLKView alloc ];
 			[ details.view initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+			details.view.drawableColorFormat   = GLKViewDrawableColorFormatRGBA8888;
+			details.view.drawableDepthFormat   = GLKViewDrawableDepthFormat24;
+			details.view.drawableStencilFormat = GLKViewDrawableStencilFormat8;
 			details.view.context               = details.context;
 			details.view.delegate              = delegate;
 			details.view.enableSetNeedsDisplay = NO;
@@ -384,7 +387,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 		case GraphicsAPI::D3D11:
 		{
 			auto& details        = m_details.emplace< Private::_RenderContextDetailsD3D11 >();
-			auto& window_details = Window::GetInstance().GetPrivateDetails();
+			auto& window_details = Window::Get().GetPrivateDetails();
 
 			constexpr DXGI_FORMAT back_buffer_format  = DXGI_FORMAT_R8G8B8A8_UNORM;
 			constexpr DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -577,14 +580,14 @@ RenderContext::RenderContext( GraphicsAPI api )
 	}
 
 	/* Resize context when window is updated */
-	m_window_resized = Window::GetInstance().Subscribe( [ this ]( const WindowResized& e )
+	m_window_resized = Window::Get().Subscribe( [ this ]( const WindowResized& e )
 		{
 			Resize( e.width, e.height );
 		}
 	);
 
 	/* Disable rendering when minimized */
-	m_window_state_changed = Window::GetInstance().Subscribe( [ this ]( const WindowStateChanged& e )
+	m_window_state_changed = Window::Get().Subscribe( [ this ]( const WindowStateChanged& e )
 		{
 			if( e.state == WindowState::Suspend )
 			{
@@ -619,7 +622,7 @@ RenderContext::~RenderContext()
 
 		#elif defined( ORB_OS_LINUX )
 
-			auto& window_details = Window::GetInstance().GetPrivateDetails();
+			auto& window_details = Window::Get().GetPrivateDetails();
 
 			glXMakeCurrent( window_details.display, None, nullptr );
 			glXDestroyContext( window_details.display, details.context );
@@ -670,7 +673,7 @@ bool RenderContext::MakeCurrent()
 
 	#elif defined( ORB_OS_LINUX )
 
-		auto& window_details = Window::GetInstance().GetPrivateDetails();
+		auto& window_details = Window::Get().GetPrivateDetails();
 
 		if( !glXMakeCurrent( window_details.display, window_details.window, details.context ) )
 			return false;
@@ -838,7 +841,7 @@ void RenderContext::SwapBuffers( void )
 
 		#elif defined( ORB_OS_LINUX )
 
-			auto& window_details = Window::GetInstance().GetPrivateDetails();
+			auto& window_details = Window::Get().GetPrivateDetails();
 
 			glXSwapBuffers( window_details.display, window_details.window );
 

@@ -16,66 +16,100 @@
  */
 
 #pragma once
-#include <cassert>
+#include <cstdint>
 
 #include "Orbit/Core/Core.h"
 
 ORB_NAMESPACE_BEGIN
 
-template< typename Derived, bool AutomaticInitialization >
-class Singleton;
-
-template< typename Derived >
-class Singleton< Derived, false >
+enum class Key
 {
-public:
+	Unknown = 0,
 
-	static Derived& Get( void )
-	{
-		assert( s_instance != nullptr );
-		return *s_instance;
-	}
+	_0,
+	_1,
+	_2,
+	_3,
+	_4,
+	_5,
+	_6,
+	_7,
+	_8,
+	_9,
 
-	static Derived* GetPtr( void )
-	{
-		assert( s_instance != nullptr );
-		return s_instance;
-	}
+	A,
+	B,
+	C,
+	D,
+	E,
+	F,
+	G,
+	H,
+	I,
+	J,
+	K,
+	L,
+	M,
+	N,
+	O,
+	P,
+	Q,
+	R,
+	S,
+	T,
+	U,
+	V,
+	W,
+	X,
+	Y,
+	Z,
 
-protected:
+	F1,
+	F2,
+	F3,
+	F4,
+	F5,
+	F6,
+	F7,
+	F8,
+	F9,
+	F10,
+	F11,
+	F12,
 
-	Singleton( void )
-	{
-		assert( s_instance == nullptr );
-		s_instance = static_cast< Derived* >( this );
-	}
+	Escape,
+	Tab,
+	CapsLock,
+	Shift,
+	Control,
+	Alt,
+	Space,
+	Return,
+	Backspace,
+	PrintScreen,
+	ScrollLock,
+	Pause,
+	Insert,
+	Home,
+	PageUp,
+	Delete,
+	End,
+	PageDown,
+	NumLock,
+	Divide,
+	Multiply,
+	Subtract,
+	Add,
+	DecimalPoint,
+	ArrowDown,
+	ArrowLeft,
+	ArrowRight,
+	ArrowUp,
 
-	~Singleton( void )
-	{
-		assert( s_instance == this );
-		s_instance = nullptr;
-	}
-
-private:
-
-	static Derived* s_instance;
-
+	Back,
+	Search,
 };
 
-template< typename Derived >
-class Singleton< Derived, true >
-{
-public:
-
-	static Derived& Get( void )
-	{
-		static Derived instance { };
-		return instance;
-	}
-
-};
-
-template< typename Derived >
-Derived* Singleton< Derived, false >::s_instance = nullptr;
+extern ORB_API_CORE Key ConvertSystemKey( uint32_t system_key );
 
 ORB_NAMESPACE_END

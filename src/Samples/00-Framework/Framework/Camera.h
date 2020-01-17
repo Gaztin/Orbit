@@ -16,66 +16,45 @@
  */
 
 #pragma once
-#include <cassert>
+#include <cstdint>
 
-#include "Orbit/Core/Core.h"
+#include <Orbit/Core/Event/EventSubscription.h>
+#include <Orbit/Math/Matrix4.h>
 
-ORB_NAMESPACE_BEGIN
+namespace Orbit { struct WindowResized; }
 
-template< typename Derived, bool AutomaticInitialization >
-class Singleton;
-
-template< typename Derived >
-class Singleton< Derived, false >
+class Camera
 {
 public:
 
-	static Derived& Get( void )
-	{
-		assert( s_instance != nullptr );
-		return *s_instance;
-	}
+	Camera( void );
 
-	static Derived* GetPtr( void )
-	{
-		assert( s_instance != nullptr );
-		return s_instance;
-	}
+public:
 
-protected:
+	void Update( float delta_time );
 
-	Singleton( void )
-	{
-		assert( s_instance == nullptr );
-		s_instance = static_cast< Derived* >( this );
-	}
+public:
 
-	~Singleton( void )
-	{
-		assert( s_instance == this );
-		s_instance = nullptr;
-	}
+	Orbit::Matrix4 GetViewProjection( void ) const;
+
+public:
+
+	float fov       = 60.0f;
+	float near_clip = 0.1f;
+	float far_clip  = 100.0f;
+	float speed     = 4.0f;
 
 private:
 
-	static Derived* s_instance;
+	void OnResized ( const Orbit::WindowResized& e );
+	void UpdateView( float delta_time );
+
+private:
+
+	Orbit::EventSubscription m_on_resize;
+	Orbit::Matrix4           m_view;
+
+	uint32_t m_width  = 512;
+	uint32_t m_height = 512;
 
 };
-
-template< typename Derived >
-class Singleton< Derived, true >
-{
-public:
-
-	static Derived& Get( void )
-	{
-		static Derived instance { };
-		return instance;
-	}
-
-};
-
-template< typename Derived >
-Derived* Singleton< Derived, false >::s_instance = nullptr;
-
-ORB_NAMESPACE_END

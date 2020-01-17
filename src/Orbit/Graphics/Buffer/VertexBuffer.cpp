@@ -27,7 +27,7 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 	: m_details { }
 	, m_count   { count }
 {
-	auto&        context_details = RenderContext::GetInstance().GetPrivateDetails();
+	auto&        context_details = RenderContext::Get().GetPrivateDetails();
 	const size_t total_size      = ( count * stride );
 
 	switch( context_details.index() )
@@ -129,7 +129,7 @@ void VertexBuffer::Bind( void )
 		case( unique_index_v< Private::_VertexBufferDetailsD3D11, Private::VertexBufferDetails > ):
 		{
 			auto&         details = std::get< Private::_VertexBufferDetailsD3D11 >( m_details );
-			auto&         d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto&         d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
 			ID3D11Buffer* buffer  = details.buffer.get();
 			UINT          stride  = details.stride;
 			UINT          offset  = 0;

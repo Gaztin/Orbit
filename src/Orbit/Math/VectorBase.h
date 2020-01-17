@@ -43,7 +43,7 @@ public:
 
 	float Length( void ) const
 	{
-		return std::sqrtf( DotProduct() );
+		return sqrtf( DotProduct() );
 	}
 
 	void Normalize( void )

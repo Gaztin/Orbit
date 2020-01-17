@@ -16,66 +16,34 @@
  */
 
 #pragma once
-#include <cassert>
-
 #include "Orbit/Core/Core.h"
 
 ORB_NAMESPACE_BEGIN
 
-template< typename Derived, bool AutomaticInitialization >
-class Singleton;
-
-template< typename Derived >
-class Singleton< Derived, false >
+class ORB_API_CORE Point
 {
 public:
 
-	static Derived& Get( void )
-	{
-		assert( s_instance != nullptr );
-		return *s_instance;
-	}
+	Point( void );
+	Point( int x, int y );
+	Point( float fx, float fy );
+	Point( double dx, double dy );
 
-	static Derived* GetPtr( void )
-	{
-		assert( s_instance != nullptr );
-		return s_instance;
-	}
-
-protected:
-
-	Singleton( void )
-	{
-		assert( s_instance == nullptr );
-		s_instance = static_cast< Derived* >( this );
-	}
-
-	~Singleton( void )
-	{
-		assert( s_instance == this );
-		s_instance = nullptr;
-	}
-
-private:
-
-	static Derived* s_instance;
-
-};
-
-template< typename Derived >
-class Singleton< Derived, true >
-{
 public:
 
-	static Derived& Get( void )
-	{
-		static Derived instance { };
-		return instance;
-	}
+	Point& operator+=( const Point& other );
+	Point& operator-=( const Point& other );
+
+public:
+
+	Point operator+( const Point& other ) const;
+	Point operator-( const Point& other ) const;
+
+public:
+
+	int x;
+	int y;
 
 };
-
-template< typename Derived >
-Derived* Singleton< Derived, false >::s_instance = nullptr;
 
 ORB_NAMESPACE_END

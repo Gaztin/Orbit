@@ -24,7 +24,7 @@ ORB_NAMESPACE_BEGIN
 
 Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 {
-	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
+	auto& context_details = RenderContext::Get().GetPrivateDetails();
 
 	switch( context_details.index() )
 	{
@@ -162,7 +162,7 @@ void Texture2D::Bind( uint32_t slot )
 		case( unique_index_v< Private::_Texture2DDetailsD3D11, Private::Texture2DDetails > ):
 		{
 			auto&                     details = std::get< Private::_Texture2DDetailsD3D11 >( m_details );
-			auto&                     d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto&                     d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
 			ID3D11ShaderResourceView* srv     = details.shader_resource_view.get();
 
 			d3d11.device_context->PSSetShaderResources( slot, 1, &srv );

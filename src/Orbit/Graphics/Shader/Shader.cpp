@@ -37,7 +37,7 @@ GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShade
 
 Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 {
-	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
+	auto& context_details = RenderContext::Get().GetPrivateDetails();
 
 	switch( context_details.index() )
 	{
@@ -262,7 +262,7 @@ void Shader::Bind( void )
 
 		case( unique_index_v< Private::_ShaderDetailsD3D11, Private::ShaderDetails > ):
 		{
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
 			auto& details = std::get< Private::_ShaderDetailsD3D11 >( m_details );
 
 			if( details.input_layout )
@@ -367,7 +367,7 @@ void Shader::Unbind( void )
 
 		case( unique_index_v< Private::_ShaderDetailsD3D11, Private::ShaderDetails > ):
 		{
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
 			auto& details = std::get< Private::_ShaderDetailsD3D11 >( m_details );
 
 			if( details.input_layout )
@@ -446,7 +446,7 @@ void Shader::Unbind( void )
 
 GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShaderType gl_shader_type )
 {
-	auto& gl = std::get< Private::_RenderContextDetailsOpenGL >( RenderContext::GetInstance().GetPrivateDetails() );
+	auto& gl = std::get< Private::_RenderContextDetailsOpenGL >( RenderContext::Get().GetPrivateDetails() );
 
 	const std::string_view version_directive  = GLSL::GetVersionDirective( gl.version );
 	const std::string_view glsl_define        = GLSL::GetGLSLDefine();

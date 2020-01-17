@@ -28,7 +28,7 @@ ORB_NAMESPACE_BEGIN
 
 ConstantBuffer::ConstantBuffer( size_t size )
 {
-	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
+	auto& context_details = RenderContext::Get().GetPrivateDetails();
 
 	switch( context_details.index() )
 	{
@@ -164,7 +164,7 @@ void* ConstantBuffer::UpdateBegin( size_t size )
 		case( unique_index_v< Private::_ConstantBufferDetailsD3D11, Private::ConstantBufferDetails > ):
 		{
 			auto& details = std::get< Private::_ConstantBufferDetailsD3D11 >( m_details );
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
 
 			D3D11_MAPPED_SUBRESOURCE subresource;
 			if( d3d11.device_context->Map( details.buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource ) == S_OK )
@@ -200,7 +200,7 @@ void ConstantBuffer::UpdateEnd()
 		case( unique_index_v< Private::_ConstantBufferDetailsD3D11, Private::ConstantBufferDetails > ):
 		{
 			auto& details = std::get< Private::_ConstantBufferDetailsD3D11 >( m_details );
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
 
 			d3d11.device_context->Unmap( details.buffer.get(), 0 );
 
@@ -236,7 +236,7 @@ void ConstantBuffer::Bind( [[ maybe_unused ]] ShaderType type, uint32_t slot )
 		case( unique_index_v< Private::_ConstantBufferDetailsD3D11, Private::ConstantBufferDetails > ):
 		{
 			auto&         details = std::get< Private::_ConstantBufferDetailsD3D11 >( m_details );
-			auto&         d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto&         d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
 			ID3D11Buffer* buffer  = details.buffer.get();
 
 			switch( type )

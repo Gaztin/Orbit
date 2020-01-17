@@ -15,67 +15,60 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include <cassert>
+#include "Point.h"
 
-#include "Orbit/Core/Core.h"
+#include <cmath>
 
 ORB_NAMESPACE_BEGIN
 
-template< typename Derived, bool AutomaticInitialization >
-class Singleton;
-
-template< typename Derived >
-class Singleton< Derived, false >
+Point::Point( void )
+	: x( 0 )
+	, y( 0 )
 {
-public:
+}
 
-	static Derived& Get( void )
-	{
-		assert( s_instance != nullptr );
-		return *s_instance;
-	}
-
-	static Derived* GetPtr( void )
-	{
-		assert( s_instance != nullptr );
-		return s_instance;
-	}
-
-protected:
-
-	Singleton( void )
-	{
-		assert( s_instance == nullptr );
-		s_instance = static_cast< Derived* >( this );
-	}
-
-	~Singleton( void )
-	{
-		assert( s_instance == this );
-		s_instance = nullptr;
-	}
-
-private:
-
-	static Derived* s_instance;
-
-};
-
-template< typename Derived >
-class Singleton< Derived, true >
+Point::Point( int x, int y )
+	: x( x )
+	, y( y )
 {
-public:
+}
 
-	static Derived& Get( void )
-	{
-		static Derived instance { };
-		return instance;
-	}
+Point::Point( float fx, float fy )
+	: x( static_cast< int >( std::round( fx ) ) )
+	, y( static_cast< int >( std::round( fy ) ) )
+{
+}
 
-};
+Point::Point( double dx, double dy )
+	: x( static_cast< int >( std::round( dx ) ) )
+	, y( static_cast< int >( std::round( dy ) ) )
+{
+}
 
-template< typename Derived >
-Derived* Singleton< Derived, false >::s_instance = nullptr;
+Point& Point::operator+=( const Point& other )
+{
+	x += other.x;
+	y += other.y;
+
+	return *this;
+}
+
+Point& Point::operator-=( const Point& other )
+{
+	x -= other.x;
+	y -= other.y;
+
+	return *this;
+}
+
+Point Point::operator+( const Point& other ) const
+{
+	return Point( x + other.x, y + other.y );
+}
+
+Point Point::operator-( const Point& other ) const
+{
+	return Point( x - other.x, y - other.y );
+}
 
 ORB_NAMESPACE_END

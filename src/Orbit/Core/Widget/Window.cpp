@@ -17,13 +17,19 @@
 
 #include "Window.h"
 
+#include <cmath>
+
+#include "Orbit/Core/Input/Input.h"
+#include "Orbit/Core/Input/Key.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
 #include "Orbit/Core/Platform/Android/AndroidNativeAppGlue.h"
 #include "Orbit/Core/Platform/iOS/UIWindow.h"
 #include "Orbit/Core/Platform/macOS/WindowDelegate.h"
 #include "Orbit/Core/Utility/Utility.h"
 
-#if defined( ORB_OS_MACOS )
+#if defined( ORB_OS_WINDOWS )
+#  include <windowsx.h>
+#elif defined( ORB_OS_MACOS )
 #  include <AppKit/AppKit.h>
 #elif defined( ORB_OS_ANDROID )
 #  include <android/sensor.h>
@@ -35,6 +41,8 @@ ORB_NAMESPACE_BEGIN
 static ATOM RegisterWindowClass( LPCSTR name );
 #elif defined( ORB_OS_LINUX )
 static void HandleXEvent( Window* w, const XEvent& xevent );
+#elif defined( ORB_OS_MACOS )
+static void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow );
 #elif defined( ORB_OS_ANDROID )
 static void AppCMD ( AndroidApp* state, AndroidAppCommand cmd );
 static int  OnInput( AndroidApp* state, AInputEvent* e );
@@ -68,12 +76,12 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	Visual*                 visual      = DefaultVisual( m_details.display, screen );
 	constexpr unsigned long value_mask  = ( CWBackPixel | CWEventMask );
 	XSetWindowAttributes    attribs     = { };
-	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask );
+	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask );
 	m_details.window                    = XCreateWindow( m_details.display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, value_mask, &attribs );
 
-	/* Allow us to capture the window close event */
-	Atom close_atom = XInternAtom( m_details.display, "WM_DELETE_WINDOW", True );
-	XSetWMProtocols( m_details.display, m_details.window, &close_atom, 1 );
+	/* Allows us to capture the window close event */
+	m_details.wm_delete_window = XInternAtom( m_details.display, "WM_DELETE_WINDOW", True );
+	XSetWMProtocols( m_details.display, m_details.window, &m_details.wm_delete_window, 1 );
 	
 	/* Send initial resize event */
 	XEvent xevent;
@@ -123,9 +131,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 		AndroidPollSource* source;
 
 		if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
-		{
 			source->process( AndroidOnly::app, source );
-		}
 	}
 
 #elif defined( ORB_OS_IOS )
@@ -135,6 +141,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	[ m_details.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
 	m_details.ui_window.backgroundColor = [ UIColor whiteColor ];
 	[ m_details.ui_window makeKeyAndVisible ];
+	[ m_details.ui_window setMultipleTouchEnabled:YES ];
 
 	/* Create view controller */
 	UIViewController* vc = [ UIViewController alloc ];
@@ -179,6 +186,7 @@ Window::~Window( void )
 
 void Window::PollEvents( void )
 {
+	Input::ResetStates();
 
 #if defined( ORB_OS_WINDOWS )
 
@@ -206,6 +214,8 @@ void Window::PollEvents( void )
 
 	while( ( event = [ m_details.window nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
 	{
+		HandleNSEvent( event, m_details.window );
+
 		[ m_details.window sendEvent:event ];
 	}
 
@@ -214,9 +224,7 @@ void Window::PollEvents( void )
 	AndroidPollSource* source;
 
 	if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
-	{
 		source->process( AndroidOnly::app, source );
-	}
 
 #endif
 
@@ -289,9 +297,7 @@ void Window::Resize( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint3
 	RECT rect;
 	
 	if( GetWindowRect( m_details.hwnd, &rect ) )
-	{
 		MoveWindow( m_details.hwnd, rect.left, rect.top, width, height, TRUE );
-	}
 
 #elif defined( ORB_OS_LINUX )
 
@@ -444,6 +450,113 @@ static LRESULT WINAPI WindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 
 			break;
 		}
+
+		case WM_KEYDOWN:
+		{
+			if( ( HIWORD( lparam ) & KF_REPEAT ) == 0 )
+			{
+				const Key key = ConvertSystemKey( static_cast< uint32_t >( wparam ) );
+
+				Input::SetKeyPressed( key );
+			}
+
+			break;
+		}
+
+		case WM_KEYUP:
+		{
+			const Key key = ConvertSystemKey( static_cast< uint32_t >( wparam ) );
+			Input::SetKeyReleased( key );
+
+			break;
+		}
+
+		case WM_LBUTTONDOWN:
+		{
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerPressed( Input::pointer_index_mouse_left, pos );
+
+			break;
+		}
+
+		case WM_LBUTTONUP:
+		{
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerReleased( Input::pointer_index_mouse_left, pos );
+
+			break;
+		}
+
+		case WM_MBUTTONDOWN:
+		{
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerPressed( Input::pointer_index_mouse_middle, pos );
+
+			break;
+		}
+
+		case WM_MBUTTONUP:
+		{
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerReleased( Input::pointer_index_mouse_middle, pos );
+
+			break;
+		}
+
+		case WM_RBUTTONDOWN:
+		{
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerPressed( Input::pointer_index_mouse_right, pos );
+
+			break;
+		}
+
+		case WM_RBUTTONUP:
+		{
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+			Input::SetPointerReleased( Input::pointer_index_mouse_right, pos );
+
+			break;
+		}
+
+		case WM_XBUTTONDOWN:
+		{
+			WORD  which = HIWORD( wparam );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+
+			switch( which )
+			{
+				case XBUTTON1: { Input::SetPointerPressed( Input::pointer_index_mouse_extra_1, pos ); } break;
+				case XBUTTON2: { Input::SetPointerPressed( Input::pointer_index_mouse_extra_2, pos ); } break;
+			}
+
+			break;
+		}
+
+		case WM_XBUTTONUP:
+		{
+			WORD  which = HIWORD( wparam );
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+
+			switch( which )
+			{
+				case XBUTTON1: { Input::SetPointerReleased( Input::pointer_index_mouse_extra_1, pos ); } break;
+				case XBUTTON2: { Input::SetPointerReleased( Input::pointer_index_mouse_extra_2, pos ); } break;
+			}
+
+			break;
+		}
+
+		case WM_MOUSEMOVE:
+		{
+			Point pos( GET_X_LPARAM( lparam ), GET_Y_LPARAM( lparam ) );
+
+			/* FIXME: Mouse pos won't be tracked until any mouse button has been pressed */
+			for( size_t index : Input::GetPointerIndices() )
+				Input::SetPointerPos( index, pos );
+
+			break;
+		}
 	}
 
 	return DefWindowProcA( hwnd, msg, wparam, lparam );
@@ -525,7 +638,168 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 
 		case ClientMessage:
 		{
-			w->Close();
+			auto& details = w->GetPrivateDetails();
+			Atom  atom    = *reinterpret_cast< const Atom* >( xevent.xclient.data.l );
+			
+			if( atom == details.wm_delete_window )
+				w->Close();
+
+			break;
+		}
+		
+		case KeyPress:
+		{
+			Key key = ConvertSystemKey( xevent.xkey.keycode );
+			Input::SetKeyPressed( key );
+			
+			break;
+		}
+		
+		case KeyRelease:
+		{
+			Key key = ConvertSystemKey( xevent.xkey.keycode );
+			Input::SetKeyReleased( key );
+			
+			break;
+		}
+		
+		case ButtonPress:
+		{
+			Point pos( xevent.xbutton.x, xevent.xbutton.y );
+
+			switch( xevent.xbutton.button )
+			{
+				case Button1: { Input::SetPointerPressed( Input::pointer_index_mouse_left, pos );    } break;
+				case Button2: { Input::SetPointerPressed( Input::pointer_index_mouse_middle, pos );  } break;
+				case Button3: { Input::SetPointerPressed( Input::pointer_index_mouse_right, pos );   } break;
+				case Button4: { Input::SetPointerPressed( Input::pointer_index_mouse_extra_1, pos ); } break;
+				case Button5: { Input::SetPointerPressed( Input::pointer_index_mouse_extra_2, pos ); } break;
+			}
+
+			break;
+		}
+		
+		case ButtonRelease:
+		{
+			Point pos( xevent.xbutton.x, xevent.xbutton.y );
+
+			switch( xevent.xbutton.button )
+			{
+				case Button1: { Input::SetPointerReleased( Input::pointer_index_mouse_left, pos );    } break;
+				case Button2: { Input::SetPointerReleased( Input::pointer_index_mouse_middle, pos );  } break;
+				case Button3: { Input::SetPointerReleased( Input::pointer_index_mouse_right, pos );   } break;
+				case Button4: { Input::SetPointerReleased( Input::pointer_index_mouse_extra_1, pos ); } break;
+				case Button5: { Input::SetPointerReleased( Input::pointer_index_mouse_extra_2, pos ); } break;
+			}
+			
+			break;
+		}
+		
+		case MotionNotify:
+		{
+			Point pos( xevent.xmotion.x, xevent.xmotion.y );
+
+			/* FIXME: Mouse pos won't be tracked until any mouse button has been pressed */
+			for( size_t index : Input::GetPointerIndices() )
+				Input::SetPointerPos( index, pos );
+
+			break;
+		}
+	}
+}
+
+#elif defined( ORB_OS_MACOS )
+
+void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
+{
+	switch( nsevent.type )
+	{
+		default: break;
+
+		case NSEventTypeKeyDown:
+		{
+			Key key = ConvertSystemKey( nsevent.keyCode );
+			Input::SetKeyPressed( key );
+
+			break;
+		}
+
+		case NSEventTypeKeyUp:
+		{
+			Key key = ConvertSystemKey( nsevent.keyCode );
+			Input::SetKeyReleased( key );
+
+			break;
+		}
+
+		case NSEventTypeLeftMouseDown:
+		{
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerPressed( Input::pointer_index_mouse_left, pos );
+
+			break;
+		}
+
+		case NSEventTypeLeftMouseUp:
+		{
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerReleased( Input::pointer_index_mouse_left, pos );
+
+			break;
+		}
+
+		case NSEventTypeRightMouseDown:
+		{
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerPressed( Input::pointer_index_mouse_right, pos );
+
+			break;
+		}
+
+		case NSEventTypeRightMouseUp:
+		{
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerReleased( Input::pointer_index_mouse_right, pos );
+
+			break;
+		}
+
+		case NSEventTypeOtherMouseDown:
+		{
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerPressed( Input::pointer_index_mouse_middle, pos );
+
+			break;
+		}
+
+		case NSEventTypeOtherMouseUp:
+		{
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			Input::SetPointerReleased( Input::pointer_index_mouse_middle, pos );
+
+			break;
+		}
+
+		case NSEventTypeMouseMoved:
+		{
+			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
+
+			/* FIXME: Mouse pos won't be tracked until any mouse button has been pressed */
+			for( size_t index : Input::GetPointerIndices() )
+				Input::SetPointerPos( index, pos );
 
 			break;
 		}
@@ -608,6 +882,67 @@ static int OnInput( AndroidApp* /*state*/, AInputEvent* e )
 	switch( AInputEvent_getType( e ) )
 	{
 		default: break;
+
+		case AINPUT_EVENT_TYPE_KEY:
+		{
+			Key key = ConvertSystemKey( AKeyEvent_getKeyCode( e ) );
+
+			switch( AKeyEvent_getAction( e ) )
+			{
+				default: break;
+
+				case AKEY_EVENT_ACTION_DOWN:
+				{
+					Input::SetKeyPressed( key );
+					break;
+				}
+
+				case AKEY_EVENT_ACTION_UP:
+				{
+					Input::SetKeyReleased( key );
+					break;
+				}
+			}
+
+			break;
+		}
+
+		case AINPUT_EVENT_TYPE_MOTION:
+		{
+			uint32_t action_and_pointer_index = static_cast< uint32_t >( AMotionEvent_getAction( e ) );
+			uint32_t action                   = ( action_and_pointer_index & 0xff );
+			uint32_t pointer_index            = ( action_and_pointer_index & 0xffffff00 ) >> 8;
+			int32_t x                         = static_cast< int32_t >( std::round( AMotionEvent_getX( e, pointer_index ) ) );
+			int32_t y                         = static_cast< int32_t >( std::round( AMotionEvent_getY( e, pointer_index ) ) );
+
+			switch( action )
+			{
+				default: break;
+
+				case AMOTION_EVENT_ACTION_DOWN:
+				case AMOTION_EVENT_ACTION_POINTER_DOWN:
+				{
+					Input::SetPointerPressed( pointer_index, Point( x, y ) );
+					break;
+				}
+
+				case AMOTION_EVENT_ACTION_CANCEL:
+				case AMOTION_EVENT_ACTION_UP:
+				case AMOTION_EVENT_ACTION_POINTER_UP:
+				{
+					Input::SetPointerReleased( pointer_index, Point( x, y ) );
+					break;
+				}
+
+				case AMOTION_EVENT_ACTION_MOVE:
+				{
+					Input::SetPointerPos( pointer_index, Point( x, y ) );
+					break;
+				}
+			}
+
+			break;
+		}
 	}
 
 	return 0;

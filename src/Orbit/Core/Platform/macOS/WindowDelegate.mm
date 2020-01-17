@@ -24,12 +24,12 @@
 
 -( void )windowWillClose:( NSNotification* ) __unused notification
 {
-	ORB_NAMESPACE Window::GetInstance().Close();
+	ORB_NAMESPACE Window::Get().Close();
 }
 
 -( void )windowDidMove:( NSNotification* ) __unused notification
 {
-	ORB_NAMESPACE Window& window  = ORB_NAMESPACE Window::GetInstance();
+	ORB_NAMESPACE Window& window  = ORB_NAMESPACE Window::Get();
 	auto&                 details = window.GetPrivateDetails();
 	const CGPoint         point   = details.window.frame.origin;
 
@@ -46,7 +46,7 @@
 	e.width  = frame_size.width;
 	e.height = frame_size.height;
 
-	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::Get().QueueEvent( e );
 
 	return frame_size;
 }
@@ -56,7 +56,7 @@
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Suspend;
 
-	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::Get().QueueEvent( e );
 }
 
 -( void )windowDidDeminiaturize:( NSNotification* ) __unused notification
@@ -64,7 +64,7 @@
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Restore;
 
-	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::Get().QueueEvent( e );
 }
 
 -( void )windowDidBecomeMain:( NSNotification* ) __unused notification
@@ -72,7 +72,7 @@
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Focus;
 
-	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::Get().QueueEvent( e );
 }
 
 -( void )windowDidResignMain:( NSNotification* ) __unused notification
@@ -80,7 +80,7 @@
 	ORB_NAMESPACE WindowStateChanged e;
 	e.state = ORB_NAMESPACE WindowState::Defocus;
 
-	ORB_NAMESPACE Window::GetInstance().QueueEvent( e );
+	ORB_NAMESPACE Window::Get().QueueEvent( e );
 }
 
 @end

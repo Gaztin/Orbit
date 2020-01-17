@@ -1,6 +1,7 @@
 require 'third_party/premake-android-studio'
 
 OUTDIR = 'build/%{_ACTION}/%{cfg.platform}/%{cfg.buildcfg}/'
+FRAMEWORK_NAME = '00-Framework'
 
 -- Allow Objective C++ files on macOS and iOS
 premake.api.addAllowed( 'language', 'ObjCpp' )
@@ -104,8 +105,28 @@ local function decl_module( name )
 		includedirs { ANDROID_NATIVE_APP_GLUE_DIR }
 	filter { }
 
+	project()
 	group()
+
 	table.insert( modules, name )
+end
+
+local function decl_framework()
+	group( 'Samples' )
+	project( FRAMEWORK_NAME )
+	kind( 'StaticLib' )
+	appid( 'com.gaztin.orbit.libs.framework')
+	base_config()
+	files {
+		string.format( 'src/Samples/%s/**', FRAMEWORK_NAME ),
+	}
+
+	filter { 'system:macosx or ios', 'files:**.cpp' }
+		language( 'ObjCpp' )
+	filter { }
+
+	project()
+	group()
 end
 
 local samples = { }
@@ -123,6 +144,12 @@ local function decl_sample( name )
 		'src/Samples/' .. fullname .. '/*.cpp',
 		'src/Samples/' .. fullname .. '/*.h',
 	}
+	includedirs {
+		string.format( 'src/Samples/%s/', FRAMEWORK_NAME ),
+	}
+	links {
+		FRAMEWORK_NAME,
+	}
 
 	filter { 'system:linux' }
 		linkoptions { '-Wl,-rpath=\\$$ORIGIN' }
@@ -136,7 +163,9 @@ local function decl_sample( name )
 		assetdirs { 'assets/' }
 	filter { }
 
+	project()
 	group()
+
 	table.insert( samples, fullname )
 end
 
@@ -149,7 +178,7 @@ workspace( workspace_name )
 
 decl_module( 'Core' )
 	filter { 'system:macosx' }
-		links { 'Cocoa.framework' }
+		links { 'Cocoa.framework', 'Carbon.framework' }
 	filter { 'system:android' }
 		links { 'log', 'android' }
 	filter { 'system:ios' }
@@ -173,6 +202,7 @@ decl_module( 'Graphics' )
 		defines { 'GLES_SILENCE_DEPRECATION' }
 	filter { }
 
+decl_framework()
 decl_sample( 'Triangle' )
 decl_sample( 'Cube' )
 
