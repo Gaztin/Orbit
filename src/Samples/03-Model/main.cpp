@@ -33,6 +33,7 @@
 #include <Orbit/Math/Vector3.h>
 #include <Orbit/Math/Vector4.h>
 
+#include "Framework/Camera.h"
 #include "ModelData.h"
 
 const Orbit::VertexLayout vertex_layout
@@ -153,9 +154,8 @@ float4 PSMain( PixelData input ) : SV_TARGET
 #endif
 )";
 
-std::tuple     vertex_constant_data   = std::make_tuple( Orbit::Matrix4() );
-std::tuple     fragment_constant_data = std::make_tuple( Orbit::Vector3() );
-Orbit::Matrix4 projection_matrix;
+std::tuple vertex_constant_data   = std::make_tuple( Orbit::Matrix4() );
+std::tuple fragment_constant_data = std::make_tuple( Orbit::Vector3() );
 
 const uint32_t texture_data[]
 {
@@ -171,7 +171,6 @@ public:
 
 	SampleApp( void )
 		: m_window( 800, 600 )
-		, m_resize_subscription( m_window.Subscribe( OnWindowResize ) )
 		, m_shader( shader_source, vertex_layout )
 		, m_model( model_data, vertex_layout )
 		, m_vertex_constant_buffer( vertex_constant_data )
@@ -203,7 +202,7 @@ public:
 
 				m_model_matrix.Rotate( Orbit::Vector3( 0_pi, 0.5_pi * delta_time, 0_pi ) );
 
-				mvp = m_model_matrix * view * projection_matrix;
+				mvp = m_model_matrix * m_camera.GetViewProjection();
 			}
 
 			/* Light direction */
@@ -221,6 +220,8 @@ public:
 		m_window.PollEvents();
 		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
+		m_camera.Update( delta_time );
+
 		Orbit::RenderCommand command = m_model.MakeRenderCommand();
 		command.shader = &m_shader;
 		command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &m_vertex_constant_buffer );
@@ -235,24 +236,9 @@ public:
 
 	bool IsRunning() override { return m_window.IsOpen(); }
 
-public:
-
-	static void OnWindowResize( const Orbit::WindowResized& e )
-	{
-		using namespace Orbit::MathLiterals;
-
-		constexpr float fov       = 60_pi / 180.f;
-		constexpr float far_clip  = 100.f;
-		constexpr float near_clip = 0.1f;
-		const float     aspect    = static_cast< float >( e.width ) / e.height;
-
-		projection_matrix.SetPerspective( aspect, fov, near_clip, far_clip );
-	}
-
 private:
 
 	Orbit::Window            m_window;
-	Orbit::EventSubscription m_resize_subscription;
 	Orbit::RenderContext     m_render_context;
 	Orbit::Shader            m_shader;
 	Orbit::Model             m_model;
@@ -261,5 +247,7 @@ private:
 	Orbit::Texture2D         m_texture;
 	Orbit::BasicRenderer     m_renderer;
 	Orbit::Matrix4           m_model_matrix;
+
+	Camera m_camera;
 
 };
