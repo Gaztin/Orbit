@@ -126,7 +126,7 @@ Key ConvertSystemKey( uint32_t system_key )
 
 	Key key = Key::Unknown;
 
-	if( Window* window = Window::GetPtr(); window )
+	if( Window* window = Window::GetPtr(); window != nullptr )
 	{
 		int     keysyms_per_keycode_return;
 		KeySym* keysym = XGetKeyboardMapping( window->GetPrivateDetails().display, system_key, 1, &keysyms_per_keycode_return );
@@ -218,6 +218,8 @@ Key ConvertSystemKey( uint32_t system_key )
 				case XK_Right:       { key = Key::ArrowRight;   } break;
 				case XK_Up:          { key = Key::ArrowUp;      } break;
 			}
+
+			XFree( keysym );
 		}
 	}
 	

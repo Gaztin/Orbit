@@ -105,9 +105,7 @@ namespace Input
 	bool GetKeyPressed( Key key )
 	{
 		if( auto it = key_states.find( key ); it != key_states.end() )
-		{
 			return it->second.pressed;
-		}
 
 		return false;
 	}
@@ -115,9 +113,7 @@ namespace Input
 	bool GetKeyReleased( Key key )
 	{
 		if( auto it = key_states.find( key ); it != key_states.end() )
-		{
 			return it->second.released;
-		}
 
 		return false;
 	}
@@ -125,9 +121,7 @@ namespace Input
 	bool GetKeyHeld( Key key )
 	{
 		if( auto it = key_states.find( key ); it != key_states.end() )
-		{
 			return it->second.held;
-		}
 
 		return false;
 	}
@@ -158,17 +152,13 @@ namespace Input
 		pointer.current_pos = pos;
 
 		if( fps_cursor.enabled )
-		{
 			pointer.previous_pos = center;
-		}
 	}
 
 	Point GetPointerPos( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
-		{
 			return it->second.current_pos;
-		}
 
 		return Point();
 	}
@@ -176,9 +166,7 @@ namespace Input
 	bool GetPointerPressed( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
-		{
 			return it->second.state.pressed;
-		}
 
 		return false;
 	}
@@ -186,9 +174,7 @@ namespace Input
 	bool GetPointerReleased( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
-		{
 			return it->second.state.released;
-		}
 
 		return false;
 	}
@@ -196,9 +182,7 @@ namespace Input
 	bool GetPointerHeld( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
-		{
 			return it->second.state.held;
-		}
 
 		return false;
 	}
@@ -206,9 +190,7 @@ namespace Input
 	Point GetPointerMove( size_t index )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
-		{
 			return ( it->second.current_pos - it->second.previous_pos );
-		}
 
 		return Point();
 	}
@@ -239,9 +221,7 @@ namespace Input
 				Pixmap pixmap;
 				
 				if( ( pixmap = XCreateBitmapFromData( details.display, details.window, data, 1, 1 ) ) == None )
-				{
 					return 0;
-				}
 				
 				XColor color;
 				Cursor cursor = XCreatePixmapCursor( details.display, pixmap, pixmap, &color, &color, 0, 0 );
@@ -256,14 +236,8 @@ namespace Input
 
 	#elif defined( ORB_OS_MACOS )
 
-		if( enable )
-		{
-			[ NSCursor hide ];
-		}
-		else
-		{
-			[ NSCursor unhide ];
-		}
+		if( enable ) [ NSCursor hide ];
+		else         [ NSCursor unhide ];
 
 	#endif
 
@@ -334,9 +308,7 @@ namespace Input
 			center.y = lroundf( cursor_pos.y );
 
 			if( fps_cursor.enabled )
-			{
 				CGWarpMouseCursorPosition( cursor_pos );
-			}
 		}
 
 	#endif

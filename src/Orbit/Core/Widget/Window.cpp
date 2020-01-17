@@ -131,9 +131,7 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 		AndroidPollSource* source;
 
 		if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
-		{
 			source->process( AndroidOnly::app, source );
-		}
 	}
 
 #elif defined( ORB_OS_IOS )
@@ -226,9 +224,7 @@ void Window::PollEvents( void )
 	AndroidPollSource* source;
 
 	if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
-	{
 		source->process( AndroidOnly::app, source );
-	}
 
 #endif
 
@@ -301,9 +297,7 @@ void Window::Resize( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint3
 	RECT rect;
 	
 	if( GetWindowRect( m_details.hwnd, &rect ) )
-	{
 		MoveWindow( m_details.hwnd, rect.left, rect.top, width, height, TRUE );
-	}
 
 #elif defined( ORB_OS_LINUX )
 
@@ -648,9 +642,7 @@ void HandleXEvent( Window* w, const XEvent& xevent )
 			Atom  atom    = *reinterpret_cast< const Atom* >( xevent.xclient.data.l );
 			
 			if( atom == details.wm_delete_window )
-			{
 				w->Close();
-			}
 
 			break;
 		}
