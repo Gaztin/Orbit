@@ -1,18 +1,24 @@
-# Orbit
+# 💫Orbit
 This is a Work-In-Progress game engine using C++17
 
-## Samples
+# 🔧Building
+This project uses [Premake](https://premake.github.io/). It's a project generator configured with Lua scripts.
 
-**Triangle**
+The first thing you'll want to do is to run the `init.sh` script. This is a bash script that fetches/builds the premake executable that we'll use to generate our project files. If you are on Windows and don't have any way of running bash scripts, [simply download the latest executable from their website](https://premake.github.io/download.html) and put it in the root directory of the project.
 
-![](res/readme/triangle.png)
+To generate files for your favorite IDE or build system, simply run the premake executable like so:
+`premake5.exe vs2019` (Windows)
+`./premake5 codelite` (Unix)
 
+[Click here for a list of generators.](https://github.com/premake/premake-core/wiki/Using-Premake)
+
+# 💉Samples
+
+**Triangle**</br>
+![](res/readme/triangle.png)</br>
 Obligatory triangle example (textured)
 
-**Cube**
-
-![](res/readme/cube.gif)
-
-This is the first 3D sample.
-
+**Cube**</br>
+![](res/readme/cube.gif)</br>
+This is the first 3D sample.</br>
 Introduces a first-person free-flight camera and the usage of constant buffers and matrices.
