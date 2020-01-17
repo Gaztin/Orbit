@@ -58,7 +58,7 @@ namespace Input
 	PointerIterator& PointerIterator::operator++( void )
 	{
 		if( auto it = pointers.find( index ); it != pointers.end() )
-			index = ( ++it )->first;
+			index = ( ++it != pointers.end() ) ? it->first : ~0ul;
 
 		return *this;
 	}
