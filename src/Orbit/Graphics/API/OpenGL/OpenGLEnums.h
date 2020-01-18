@@ -707,6 +707,18 @@ enum class OpenGLTextureUnit : GLenum
 	Texture15 = 0x84CF,
 };
 
+enum class OpenGLUniformBlockParam : GLenum
+{
+	Binding                    = 0x8A3F,
+	DataSize                   = 0x8A40,
+	NameLength                 = 0x8A41,
+	ActiveUniforms             = 0x8A42,
+	ActiveUniformIndices       = 0x8A43,
+	ReferencedByVertexShader   = 0x8A44,
+	ReferencedByGeometryShader = 0x8A45,
+	ReferencedByFragmentShader = 0x8A46,
+};
+
 /* Enable masking on bitfield types */
 ORB_ENABLE_BITMASKING( OpenGLMapAccess );
 
