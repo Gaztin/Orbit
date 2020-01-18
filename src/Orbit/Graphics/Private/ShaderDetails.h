@@ -34,7 +34,6 @@ namespace Private
 	{
 		VertexLayout layout;
 		GLuint       program;
-		GLsizei      vertex_stride;
 		GLuint       vao;
 	};
 

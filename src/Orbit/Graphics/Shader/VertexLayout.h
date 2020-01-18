@@ -30,6 +30,51 @@ enum class VertexComponent : uint8_t
 	TexCoord,
 };
 
-using VertexLayout = std::vector< VertexComponent >;
+struct IndexedVertexComponent
+{
+	size_t   GetSize     ( void ) const;
+	size_t   GetDataCount( void ) const;
+
+	VertexComponent type;
+	size_t          index;
+};
+
+class VertexLayout;
+
+struct ORB_API_GRAPHICS VertexComponentIterator
+{
+	bool                     operator!=( const VertexComponentIterator& other ) const;
+	IndexedVertexComponent   operator* ( void )                                 const;
+	VertexComponentIterator& operator++( void );
+
+	const VertexLayout*    layout;
+	IndexedVertexComponent indexed_component;
+};
+
+class ORB_API_GRAPHICS VertexLayout
+{
+	friend struct VertexComponentIterator;
+
+public:
+
+	VertexLayout( void ) = default;
+	VertexLayout( std::initializer_list< VertexComponent > components );
+
+public:
+
+	size_t GetStride( void )                      const;
+	size_t IndexOf  ( VertexComponent component ) const;
+	bool   Contains ( VertexComponent component ) const;
+
+public:
+
+	VertexComponentIterator begin( void ) const;
+	VertexComponentIterator end  ( void ) const;
+
+private:
+
+	std::vector< VertexComponent > m_components;
+
+};
 
 ORB_NAMESPACE_END

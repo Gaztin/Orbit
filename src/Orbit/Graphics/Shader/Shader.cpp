@@ -109,19 +109,28 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 			{
 				std::vector< D3D11_INPUT_ELEMENT_DESC > descriptors;
 
-				for( VertexComponent component : vertex_layout )
+				for( IndexedVertexComponent component : vertex_layout )
 				{
 					D3D11_INPUT_ELEMENT_DESC desc { };
 					desc.AlignedByteOffset = descriptors.empty() ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
 					desc.InputSlotClass    = D3D11_INPUT_PER_VERTEX_DATA;
 
-					switch( component )
+					switch( component.type )
 					{
-						default:                        { desc.SemanticName = "";         desc.Format = DXGI_FORMAT_UNKNOWN;            } break;
-						case VertexComponent::Position: { desc.SemanticName = "POSITION"; desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; } break;
-						case VertexComponent::Normal:   { desc.SemanticName = "NORMAL";   desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;    } break;
-						case VertexComponent::Color:    { desc.SemanticName = "COLOR";    desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; } break;
-						case VertexComponent::TexCoord: { desc.SemanticName = "TEXCOORD"; desc.Format = DXGI_FORMAT_R32G32_FLOAT;       } break;
+						default:                        { assert( false );                } break;
+						case VertexComponent::Position: { desc.SemanticName = "POSITION"; } break;
+						case VertexComponent::Normal:   { desc.SemanticName = "NORMAL";   } break;
+						case VertexComponent::Color:    { desc.SemanticName = "COLOR";    } break;
+						case VertexComponent::TexCoord: { desc.SemanticName = "TEXCOORD"; } break;
+					}
+
+					switch( component.GetDataCount() )
+					{
+						default: { assert( false );                              } break;
+						case 1:  { desc.Format = DXGI_FORMAT_R32_FLOAT;          } break;
+						case 2:  { desc.Format = DXGI_FORMAT_R32G32_FLOAT;       } break;
+						case 3:  { desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;    } break;
+						case 4:  { desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; } break;
 					}
 
 					descriptors.push_back( desc );
@@ -209,19 +218,6 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 			/* Copy vertex layout*/
 			details.layout = vertex_layout;
 
-			/* Calculate vertex stride */
-			details.vertex_stride = 0;
-			for( VertexComponent component : vertex_layout )
-			{
-				switch( component )
-				{
-					case VertexComponent::Position: { details.vertex_stride += sizeof( float ) * 4; } break;
-					case VertexComponent::Normal:   { details.vertex_stride += sizeof( float ) * 3; } break;
-					case VertexComponent::Color:    { details.vertex_stride += sizeof( float ) * 4; } break;
-					case VertexComponent::TexCoord: { details.vertex_stride += sizeof( float ) * 2; } break;
-				}
-			}
-
 			break;
 		}
 
@@ -294,52 +290,12 @@ void Shader::Bind( void )
 
 			const uint8_t* ptr = nullptr;
 
-			for( GLuint i = 0; i < details.layout.size(); ++i )
+			for( IndexedVertexComponent component : details.layout )
 			{
-				OpenGLVertexAttribDataType data_type { };
-				GLint                      data_length = 0;
+				glEnableVertexAttribArray( component.index );
+				glVertexAttribPointer( component.index, component.GetDataCount(), OpenGLVertexAttribDataType::Float, GL_FALSE, details.layout.GetStride(), ptr );
 
-				switch( details.layout[ i ] )
-				{
-					default:
-					{
-						LogError( "Invalid attrib data type" );
-						continue;
-					}
-
-					case VertexComponent::TexCoord:
-					{
-						data_type   = OpenGLVertexAttribDataType::Float;
-						data_length = 2;
-						break;
-					}
-
-					case VertexComponent::Normal:
-					{
-						data_type   = OpenGLVertexAttribDataType::Float;
-						data_length = 3;
-						break;
-					}
-
-					case VertexComponent::Position:
-					case VertexComponent::Color:
-					{
-						data_type   = OpenGLVertexAttribDataType::Float;
-						data_length = 4;
-						break;
-					}
-				}
-
-				glEnableVertexAttribArray( i );
-				glVertexAttribPointer( i, data_length, data_type, GL_FALSE, details.vertex_stride, ptr );
-
-				switch( details.layout[ i ] )
-				{
-					case VertexComponent::Position: { ptr += sizeof( float ) * 4; } break;
-					case VertexComponent::Normal:   { ptr += sizeof( float ) * 3; } break;
-					case VertexComponent::Color:    { ptr += sizeof( float ) * 4; } break;
-					case VertexComponent::TexCoord: { ptr += sizeof( float ) * 2; } break;
-				}
+				ptr += component.GetSize();
 			}
 
 			break;
@@ -417,15 +373,13 @@ void Shader::Unbind( void )
 		{
 			auto& details = std::get< Private::_ShaderDetailsOpenGL >( m_details );
 
-			for( GLuint i = 0; i < details.layout.size(); ++i )
-				glDisableVertexAttribArray( i );
+			for( IndexedVertexComponent component : details.layout )
+				glDisableVertexAttribArray( component.index );
 
 			glUseProgram( 0 );
 
 			if( details.vao )
-			{
 				glBindVertexArray( 0 );
-			}
 
 			break;
 		}
