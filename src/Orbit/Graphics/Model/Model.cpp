@@ -62,10 +62,9 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 	it = begin;
 
-	uint8_t index_size = 8;
+	uint8_t index_size = 4;
 	/**/ if( vertex_count < std::numeric_limits< uint8_t  >::max() ) { index_size = 1; }
 	else if( vertex_count < std::numeric_limits< uint16_t >::max() ) { index_size = 2; }
-	else if( vertex_count < std::numeric_limits< uint32_t >::max() ) { index_size = 4; }
 
 	uint32_t stride          = layout.GetStride();
 	uint32_t pos_offset      = layout.OffsetOf( VertexComponent::Position );
@@ -142,9 +141,9 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 		/* Face indices */
 		{
-			uint64_t indices[ 3 ];
+			uint32_t indices[ 3 ];
 
-			if( std::sscanf( it, "f %llu %llu %llu\n%n", &indices[ 0 ], &indices[ 1 ], &indices[ 2 ], &bytes_read ) == 3 )
+			if( std::sscanf( it, "f %u %u %u\n%n", &indices[ 0 ], &indices[ 1 ], &indices[ 2 ], &bytes_read ) == 3 )
 			{
 				switch( index_size )
 				{
@@ -175,15 +174,6 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 						*( index_write + 2 ) = static_cast< uint32_t >( indices[ 2 ] - 1 );
 
 					} break;
-
-					case 8:
-					{
-						uint64_t* index_write = reinterpret_cast< uint64_t* >( &index_data[ index_size * faces_read * 3 ] );
-						*( index_write + 0 ) = static_cast< uint64_t >( indices[ 0 ] - 1 );
-						*( index_write + 1 ) = static_cast< uint64_t >( indices[ 1 ] - 1 );
-						*( index_write + 2 ) = static_cast< uint64_t >( indices[ 2 ] - 1 );
-
-					} break;
 				}
 
 				++faces_read;
@@ -202,7 +192,7 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 	{
 		for( uint32_t face = 0; face < face_count; ++face )
 		{
-			size_t indices[ 3 ];
+			uint32_t indices[ 3 ];
 
 			switch( index_size )
 			{
@@ -232,21 +222,6 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 					indices[ 2 ] = static_cast< size_t >( index_read[ 2 ] );
 
 				} break;
-
-				case 8:
-				{
-					const uint64_t* index_read = reinterpret_cast< const uint64_t* >( &index_data[ 8 * face * 3 ] );
-					indices[ 0 ] = static_cast< size_t >( index_read[ 0 ] );
-					indices[ 1 ] = static_cast< size_t >( index_read[ 1 ] );
-					indices[ 2 ] = static_cast< size_t >( index_read[ 2 ] );
-
-				} break;
-
-				default:
-				{
-					assert( false );
-
-				} break;
 			}
 
 			const Orbit::Vector3* positions[ 3 ]
@@ -259,7 +234,7 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 			const Orbit::Vector3 pos0_to_pos1 = ( *positions[ 1 ] - *positions[ 0 ] );
 			const Orbit::Vector3 pos0_to_pos2 = ( *positions[ 2 ] - *positions[ 0 ] );
 
-			Orbit::Vector3 normal = pos0_to_pos2.CrossProduct( pos0_to_pos1 );
+			Orbit::Vector3 normal = pos0_to_pos1.CrossProduct( pos0_to_pos2 );
 			normal.Normalize();
 
 			Orbit::Vector3* normal0_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 0 ] + normal_offset ] );
