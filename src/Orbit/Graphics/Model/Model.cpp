@@ -247,9 +247,17 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 		}
 	}
 
+	IndexFormat index_format;
+	switch( index_size )
+	{
+		case 1: { index_format = IndexFormat::Byte;       } break;
+		case 2: { index_format = IndexFormat::Word;       } break;
+		case 4: { index_format = IndexFormat::DoubleWord; } break;
+	}
+
 	/* Create buffers */
 	m_vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, stride );
-	m_index_buffer  = std::make_unique< IndexBuffer >( IndexFormat::Word, index_data.get(), face_count * 3 );
+	m_index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
 }
 
 ORB_NAMESPACE_END
