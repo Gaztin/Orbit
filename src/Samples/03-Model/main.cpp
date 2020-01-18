@@ -50,7 +50,9 @@ constexpr std::string_view shader_source = R"(
 #  if defined( VERTEX )
 
 ORB_CONSTANTS_BEGIN( VertexConstants )
-	ORB_CONSTANT( mat4, mvp );
+	ORB_CONSTANT( mat4, view_projection );
+	ORB_CONSTANT( mat4, model );
+	ORB_CONSTANT( mat4, model_inverse );
 ORB_CONSTANTS_END
 
 ORB_ATTRIBUTE( 0 ) vec4 a_position;
@@ -65,10 +67,10 @@ ORB_VARYING vec3 v_normal;
 
 void main()
 {
-	v_position = mvp * a_position;
+	v_position = view_projection * model * a_position;
 	v_color    = a_color;
 	v_texcoord = a_texcoord;
-	v_normal   = a_normal;
+	v_normal   = ( transpose( model_inverse ) * vec4( a_normal, 1.0 ) ).xyz;
 
 	gl_Position = v_position;
 }
@@ -91,7 +93,8 @@ void main()
 	vec4 tex_color = texture( diffuse_texture, v_texcoord );
 	vec4 out_color = tex_color + v_color;
 
-	out_color.rgb *= dot( v_normal, light_dir );
+	float diffuse  = -dot( v_normal, light_dir );
+	out_color.rgb *= diffuse;
 
 	ORB_SET_OUT_COLOR( out_color );
 }
@@ -106,7 +109,9 @@ SamplerState texture_sampler;
 
 cbuffer VertexConstants
 {
-	matrix mvp;
+	matrix view_projection;
+	matrix model;
+	matrix model_inverse;
 };
 
 cbuffer PixelConstants
@@ -133,10 +138,10 @@ struct PixelData
 PixelData VSMain( VertexData input )
 {
 	PixelData output;
-	output.position = mul( input.position, mvp );
+	output.position = mul( input.position, mul( model, view_projection ) );
 	output.color    = input.color;
 	output.texcoord = input.texcoord;
-	output.normal   = input.normal;
+	output.normal   = mul( float4( input.normal, 1.0 ), transpose( model_inverse ) ).xyz;
 
 	return output;
 }
@@ -146,7 +151,8 @@ float4 PSMain( PixelData input ) : SV_TARGET
 	float4 tex_color = diffuse_texture.Sample( texture_sampler, input.texcoord );
 	float4 out_color = tex_color + input.color;
 
-	out_color.rgb *= dot( input.normal, light_dir );
+	float  diffuse  = -dot( input.normal, light_dir );
+	out_color.rgb  *= diffuse;
 
 	return out_color;
 }
@@ -154,7 +160,7 @@ float4 PSMain( PixelData input ) : SV_TARGET
 #endif
 )";
 
-std::tuple vertex_constant_data   = std::make_tuple( Orbit::Matrix4() );
+std::tuple vertex_constant_data   = std::make_tuple( Orbit::Matrix4(), Orbit::Matrix4(), Orbit::Matrix4() );
 std::tuple fragment_constant_data = std::make_tuple( Orbit::Vector3() );
 
 const uint32_t texture_data[]
@@ -171,6 +177,7 @@ public:
 
 	SampleApp( void )
 		: m_window( 800, 600 )
+		, m_render_context( Orbit::GraphicsAPI::OpenGL )
 		, m_shader( shader_source, vertex_layout )
 		, m_model( model_data, vertex_layout )
 		, m_vertex_constant_buffer( vertex_constant_data )
@@ -189,29 +196,23 @@ public:
 	{
 		/* Update constant buffers */
 		{
-			auto& [ mvp ]       = vertex_constant_data;
-			auto& [ light_dir ] = fragment_constant_data;
+			auto& [ view_projection, model, model_inverse ] = vertex_constant_data;
+			auto& [ light_dir ]                             = fragment_constant_data;
 
 			/* Calculate model-view-projection matrix */
 			{
 				using namespace Orbit::MathLiterals;
-				using namespace Orbit::UnitLiterals::Metric;
-
-				Orbit::Matrix4 view;
-				view.Translate( Orbit::Vector3( 0_m, 0_m, 7.5_m ) );
 
 				m_model_matrix.Rotate( Orbit::Vector3( 0_pi, 0.5_pi * delta_time, 0_pi ) );
 
-				mvp = m_model_matrix * m_camera.GetViewProjection();
+				view_projection = m_camera.GetViewProjection();
+				model           = m_model_matrix;
+				model_inverse   = m_model_matrix;
+				model_inverse.Invert();
 			}
 
-			/* Light direction */
-			{
-				using namespace Orbit::MathLiterals;
-
-				light_dir = Orbit::Vector3( 0.2f, -0.7f, 0.2f );
-				light_dir.Normalize();
-			}
+			/* Light position */
+			light_dir = Orbit::Vector3( 1.0f, -1.0f, 1.0f );
 
 			m_vertex_constant_buffer.Update( vertex_constant_data );
 			m_fragment_constant_buffer.Update( fragment_constant_data );
