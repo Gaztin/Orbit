@@ -63,7 +63,7 @@ public:
 public:
 
 	size_t GetStride( void )                      const;
-	size_t IndexOf  ( VertexComponent component ) const;
+	size_t OffsetOf ( VertexComponent component ) const;
 	bool   Contains ( VertexComponent component ) const;
 
 public:

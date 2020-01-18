@@ -21,7 +21,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-constexpr size_t invalid_index = std::numeric_limits< size_t >::max();
+constexpr size_t invalid_offset = std::numeric_limits< size_t >::max();
 
 static size_t DataCountOf( VertexComponent component )
 {
@@ -82,21 +82,26 @@ VertexLayout::VertexLayout( std::initializer_list< VertexComponent > components 
 size_t VertexLayout::GetStride( void ) const
 {
 	size_t stride = 0;
+
 	for( VertexComponent vc : m_components )
 		stride += SizeOf( vc );
 
 	return stride;
 }
 
-size_t VertexLayout::IndexOf( VertexComponent component ) const
+size_t VertexLayout::OffsetOf( VertexComponent component ) const
 {
-	for( size_t i = 0; i < m_components.size(); ++i )
+	size_t offset = 0;
+
+	for( VertexComponent vc : m_components )
 	{
-		if( m_components[ i ] == component )
-			return i;
+		if( vc == component )
+			return offset;
+
+		offset += SizeOf( vc );
 	}
 
-	return invalid_index;
+	return invalid_offset;
 }
 
 bool VertexLayout::Contains( VertexComponent component ) const

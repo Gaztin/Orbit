@@ -67,20 +67,20 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 	else if( vertex_count < std::numeric_limits< uint16_t >::max() ) { index_size = 2; }
 	else if( vertex_count < std::numeric_limits< uint32_t >::max() ) { index_size = 4; }
 
-	uint32_t stride         = layout.GetStride();
-	uint32_t pos_index      = layout.IndexOf( VertexComponent::Position );
-	uint32_t normal_index   = layout.IndexOf( VertexComponent::Normal );
-	uint32_t color_index    = layout.IndexOf( VertexComponent::Color );
-	uint32_t texcoord_index = layout.IndexOf( VertexComponent::TexCoord );
-	auto     vertex_data    = std::unique_ptr< uint8_t[] >( new uint8_t[ stride * vertex_count ] );
-	auto     index_data     = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
+	uint32_t stride          = layout.GetStride();
+	uint32_t pos_offset      = layout.OffsetOf( VertexComponent::Position );
+	uint32_t normal_offset   = layout.OffsetOf( VertexComponent::Normal );
+	uint32_t color_offset    = layout.OffsetOf( VertexComponent::Color );
+	uint32_t texcoord_offset = layout.OffsetOf( VertexComponent::TexCoord );
+	auto     vertex_data     = std::unique_ptr< uint8_t[] >( new uint8_t[ stride * vertex_count ] );
+	auto     index_data      = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
 
 	/* Clear data before read */
 	for( size_t i = 0; i < vertex_count; ++i )
 	{
 		if( layout.Contains( VertexComponent::Position ) )
 		{
-			float* pos_write = reinterpret_cast< float* >( &vertex_data[ stride * i + pos_index ] );
+			float* pos_write = reinterpret_cast< float* >( &vertex_data[ stride * i + pos_offset ] );
 			pos_write[ 0 ] = 0.0f;
 			pos_write[ 1 ] = 0.0f;
 			pos_write[ 2 ] = 0.0f;
@@ -89,7 +89,7 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 		if( layout.Contains( VertexComponent::Normal ) )
 		{
-			float* normal_write = reinterpret_cast< float* >( &vertex_data[ stride * i + normal_index ] );
+			float* normal_write = reinterpret_cast< float* >( &vertex_data[ stride * i + normal_offset ] );
 			normal_write[ 0 ] = 0.0f;
 			normal_write[ 1 ] = 0.0f;
 			normal_write[ 2 ] = 0.0f;
@@ -97,7 +97,7 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 		if( layout.Contains( VertexComponent::Color ) )
 		{
-			float* color_write = reinterpret_cast< float* >( &vertex_data[ stride * i + color_index ] );
+			float* color_write = reinterpret_cast< float* >( &vertex_data[ stride * i + color_offset ] );
 			color_write[ 0 ] = 0.0f;
 			color_write[ 1 ] = 0.0f;
 			color_write[ 2 ] = 0.0f;
@@ -106,7 +106,7 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 		if( layout.Contains( VertexComponent::TexCoord ) )
 		{
-			float* texcoord_write = reinterpret_cast< float* >( &vertex_data[ stride * i + texcoord_index ] );
+			float* texcoord_write = reinterpret_cast< float* >( &vertex_data[ stride * i + texcoord_offset ] );
 			texcoord_write[ 0 ] = 0.0f;
 			texcoord_write[ 1 ] = 0.0f;
 		}
@@ -127,7 +127,7 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 			if( std::sscanf( it, "v %f %f %f\n%n", &pos[ 0 ], &pos[ 1 ], &pos[ 2 ], &bytes_read ) == 3 )
 			{
-				float* pos_write = reinterpret_cast< float* >( &vertex_data[ stride * vertices_read + pos_index ] );
+				float* pos_write = reinterpret_cast< float* >( &vertex_data[ stride * vertices_read + pos_offset ] );
 				pos_write[ 0 ] = pos[ 0 ];
 				pos_write[ 1 ] = pos[ 1 ];
 				pos_write[ 2 ] = pos[ 2 ];
@@ -251,9 +251,9 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 			const Orbit::Vector3* positions[ 3 ]
 			{
-				reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * indices[ 0 ] + pos_index ] ),
-				reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * indices[ 1 ] + pos_index ] ),
-				reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * indices[ 2 ] + pos_index ] ),
+				reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * indices[ 0 ] + pos_offset ] ),
+				reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * indices[ 1 ] + pos_offset ] ),
+				reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * indices[ 2 ] + pos_offset ] ),
 			};
 
 			const Orbit::Vector3 pos0_to_pos1 = ( *positions[ 1 ] - *positions[ 0 ] );
@@ -262,9 +262,9 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 			Orbit::Vector3 normal = pos0_to_pos2.CrossProduct( pos0_to_pos1 );
 			normal.Normalize();
 
-			Orbit::Vector3* normal0_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 0 ] + normal_index ] );
-			Orbit::Vector3* normal1_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 1 ] + normal_index ] );
-			Orbit::Vector3* normal2_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 2 ] + normal_index ] );
+			Orbit::Vector3* normal0_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 0 ] + normal_offset ] );
+			Orbit::Vector3* normal1_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 1 ] + normal_offset ] );
+			Orbit::Vector3* normal2_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 2 ] + normal_offset ] );
 
 			*normal0_write = normal;
 			*normal1_write = normal;
