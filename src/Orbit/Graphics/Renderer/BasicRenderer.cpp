@@ -52,13 +52,25 @@ void BasicRenderer::Render( void )
 
 			for( auto& constant_buffers : command.constant_buffers )
 			{
-				for( size_t i = 0; i < constant_buffers.second.size(); ++i )
+				for( size_t i = 0; i < constant_buffers.second.size(); ( ++i, ++global_slot ) )
 				{
-					const uint32_t local_slot = static_cast< uint32_t >( i );
+					const uint32_t local_slot     = static_cast< uint32_t >( i );
+					const auto&    shader_details = command.shader->GetPrivateDetails();
 
 					constant_buffers.second[ i ]->Bind( constant_buffers.first, local_slot, global_slot );
 
-					++global_slot;
+				#if( ORB_HAS_OPENGL )
+
+					/* Set block bindings */
+					if( shader_details.index() == unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > )
+					{
+						auto& shader_gl = std::get< Private::_ShaderDetailsOpenGL >( shader_details );
+
+						glUniformBlockBinding( shader_gl.program, global_slot, global_slot );
+					}
+
+				#endif
+
 				}
 			}
 		}

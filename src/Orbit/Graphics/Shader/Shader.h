@@ -35,6 +35,10 @@ public:
 	void Bind  ( void );
 	void Unbind( void );
 
+public:
+
+	const Private::ShaderDetails& GetPrivateDetails( void ) const { return m_details; }
+
 private:
 
 	Private::ShaderDetails m_details;
