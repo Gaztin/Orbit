@@ -18,7 +18,7 @@
 #pragma once
 #include "Orbit/Graphics/Graphics.h"
 
-#if defined( ORB_HAS_OPENGL )
+#if( ORB_HAS_OPENGL )
 
 #include <cstddef>
 #include <string_view>

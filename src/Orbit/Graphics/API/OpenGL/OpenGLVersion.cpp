@@ -17,7 +17,7 @@
 
 #include "OpenGLVersion.h"
 
-#if defined( ORB_HAS_OPENGL )
+#if( ORB_HAS_OPENGL )
 #  include <cctype>
 #  include <cstdio>
 #  include <cstring>
