@@ -79,6 +79,11 @@ VertexLayout::VertexLayout( std::initializer_list< VertexComponent > components 
 {
 }
 
+VertexLayout::VertexLayout( Span< VertexComponent > components )
+	: m_components( components.begin(), components.end() )
+{
+}
+
 size_t VertexLayout::GetStride( void ) const
 {
 	size_t stride = 0;

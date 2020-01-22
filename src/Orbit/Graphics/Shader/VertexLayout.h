@@ -18,6 +18,7 @@
 #pragma once
 #include <vector>
 
+#include "Orbit/Core/Utility/Span.h"
 #include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
@@ -59,6 +60,7 @@ public:
 
 	VertexLayout( void ) = default;
 	VertexLayout( std::initializer_list< VertexComponent > components );
+	VertexLayout( Span< VertexComponent > components );
 
 public:
 
