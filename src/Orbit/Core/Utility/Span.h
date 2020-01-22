@@ -16,6 +16,7 @@
  */
 
 #pragma once
+#include <array>
 #include <string_view>
 #include <vector>
 
@@ -44,6 +45,13 @@ public:
 	Span( std::initializer_list< T > args )
 		: m_ptr   { args.begin() }
 		, m_count { args.size() }
+	{
+	}
+
+	template< size_t N >
+	Span( const std::array< T, N >& arr )
+		: m_ptr   { arr.data() }
+		, m_count { arr.size() }
 	{
 	}
 
