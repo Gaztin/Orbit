@@ -226,23 +226,47 @@ constexpr auto ModelShader::GenerateSourceD3D11( void ) const
 		buffer.Add( "};\n\n" );
 	}
 
+	auto vertex_layout = GetVertexLayout();
+	if( !vertex_layout.empty() )
+	{
+		/* VertexData */
+		{
+			buffer.Add( "struct VertexData\n{\n" );
+
+			for( Orbit::VertexComponent component : vertex_layout )
+			{
+				switch( component )
+				{
+					case Orbit::VertexComponent::Position: { buffer.Add( "\tfloat4 position : POSITION;\n" ); } break;
+					case Orbit::VertexComponent::Normal:   { buffer.Add( "\tfloat3 normal   : NORMAL;\n" );   } break;
+					case Orbit::VertexComponent::Color:    { buffer.Add( "\tfloat4 color    : COLOR;\n" );    } break;
+					case Orbit::VertexComponent::TexCoord: { buffer.Add( "\tfloat2 texcoord : TEXCOORD;\n" ); } break;
+				}
+			}
+
+			buffer.Add( "};\n\n" );
+		}
+
+		/* PixelData */
+		{
+			buffer.Add( "struct PixelData\n{\n" );
+
+			for( Orbit::VertexComponent component : vertex_layout )
+			{
+				switch( component )
+				{
+					case Orbit::VertexComponent::Position: { buffer.Add( "\tfloat4 position : SV_POSITION;\n" ); } break;
+					case Orbit::VertexComponent::Normal:   { buffer.Add( "\tfloat3 normal   : NORMAL;\n" );      } break;
+					case Orbit::VertexComponent::Color:    { buffer.Add( "\tfloat4 color    : COLOR;\n" );       } break;
+					case Orbit::VertexComponent::TexCoord: { buffer.Add( "\tfloat2 texcoord : TEXCOORD;\n" );    } break;
+				}
+			}
+
+			buffer.Add( "};\n\n" );
+		}
+	}
+
 	buffer.Add( R"(
-struct VertexData
-{
-	float4 position : POSITION;
-	float4 color    : COLOR;
-	float2 texcoord : TEXCOORD;
-	float3 normal   : NORMAL;
-};
-
-struct PixelData
-{
-	float4 position : SV_POSITION;
-	float4 color    : COLOR;
-	float2 texcoord : TEXCOORD;
-	float3 normal   : NORMAL;
-};
-
 PixelData VSMain( VertexData input )
 {
 	PixelData output;
