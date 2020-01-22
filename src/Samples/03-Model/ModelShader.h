@@ -18,8 +18,48 @@
 #pragma once
 #include <Orbit/Graphics/Shader/VertexLayout.h>
 
+#include <array>
 #include <string_view>
 #include <tuple>
+
+template< size_t I >
+struct IndexedKey
+{
+	static constexpr size_t index = I;
+};
+
+template< typename T, size_t I >
+struct IndexedPair
+{
+	static constexpr size_t index = I;
+
+	T value;
+};
+
+template< size_t I, size_t N, typename Functor, typename... ExtraArgs >
+constexpr void InvokeIndexKeys( Functor&& functor, ExtraArgs&&... extra_args )
+{
+	functor( IndexedKey< I >{ }, std::forward< ExtraArgs >( extra_args )... );
+
+	if constexpr( I + 1 < N )
+		InvokeIndexKeys< I + 1, N, Functor >( std::forward< Functor >( functor ), std::forward< ExtraArgs >( extra_args )... );
+}
+
+template< size_t I, typename T, size_t N, typename Functor, typename... ExtraArgs >
+constexpr void InvokeIndexPairs( const std::array< T, N >& arr, Functor&& functor, ExtraArgs&&... extra_args )
+{
+	functor( IndexedPair< T, I >{ arr[ I ] }, std::forward< ExtraArgs >( extra_args )... );
+
+	if constexpr( I + 1 < N )
+		InvokeIndexPairs< I + 1, T, N, Functor >( arr, std::forward< Functor >( functor ), std::forward< ExtraArgs >( extra_args )... );
+}
+
+template< typename T, size_t N, typename Functor, typename... ExtraArgs >
+constexpr void ArrayForEach( const std::array< T, N >& arr, Functor&& functor, ExtraArgs&&... extra_args )
+{
+	if constexpr( N > 0 )
+		InvokeIndexPairs< 0, T, N, Functor >( arr, std::forward< Functor >( functor ), std::forward< ExtraArgs >( extra_args )... );
+}
 
 /* Compile-time int to string by courtesy of https://stackoverflow.com/a/24000041 */
 
@@ -84,24 +124,24 @@ public:
 	}
 
 	template< typename Functor, typename... ExtraArgs >
-	constexpr void ForEach( Functor func, ExtraArgs&&... extra_args ) const
+	constexpr void ForEach( Functor&& func, ExtraArgs&&... extra_args ) const
 	{
-		Invoke< 0, Functor, Types... >( func, std::forward< ExtraArgs >( extra_args )... );
+		Invoke< 0, Functor, Types... >( std::forward< Functor >( func ), std::forward< ExtraArgs >( extra_args )... );
 	}
 
 private:
 
 	template< int Index, typename Functor, typename T, typename... Ts, typename... ExtraArgs >
-	constexpr void Invoke( Functor func, ExtraArgs&&... extra_args ) const
+	constexpr void Invoke( Functor&& func, ExtraArgs&&... extra_args ) const
 	{
 		ShaderConstant< T, Index > c{ };
 		func( c, std::forward< ExtraArgs >( extra_args )... );
 
-		Invoke< Index + 1, Functor, Ts... >( func, std::forward< ExtraArgs >( extra_args )... );
+		Invoke< Index + 1, Functor, Ts... >( std::forward< Functor >( func ), std::forward< ExtraArgs >( extra_args )... );
 	}
 
 	template< int Index, typename Functor, typename... ExtraArgs >
-	constexpr void Invoke( Functor, ExtraArgs&&... ) const
+	constexpr void Invoke( Functor&&, ExtraArgs&&... ) const
 	{
 	}
 
@@ -136,11 +176,9 @@ public:
 
 private:
 
-	static constexpr auto GetSamplers( void )
+	static constexpr size_t GetSamplerCount( void )
 	{
-		return std::array {
-			std::string_view( "diffuse_texture" ),
-		};
+		return 1;
 	}
 
 	static constexpr auto GetVertexConstants( void )
@@ -175,20 +213,22 @@ constexpr auto ModelShader::GenerateSourceD3D11( void ) const
 {
 	ConstexprBuffer buffer{ };
 
-	auto samplers = GetSamplers();
-	if( !samplers.empty() )
+	constexpr size_t sampler_count = GetSamplerCount();
+	if constexpr( sampler_count > 0 )
 	{
-		for( auto sampler : samplers )
+		constexpr auto add_sampler = []( auto it, ConstexprBuffer& buffer ) constexpr
 		{
-			buffer.Add( "Texture2D " );
-			buffer.Add( sampler );
+			buffer.Add( "Texture2D sampler_" );
+			buffer.Add( IntToString< it.index >::value );
 			buffer.Add( ";\n" );
-		}
+		};
 
-		buffer.Add( "SamplerState default_sampler_state;\n" );
+		InvokeIndexKeys< 0, sampler_count >( add_sampler, buffer );
+
+		buffer.Add( "\nSamplerState default_sampler_state;\n" );
 	}
 
-	constexpr auto add_variable = []( auto constant, ConstexprBuffer& buffer, std::string_view variable_suffix ) constexpr
+	constexpr auto add_constant = []( auto constant, ConstexprBuffer& buffer, std::string_view variable_suffix ) constexpr
 	{
 		buffer.Add( "\t" );
 
@@ -211,27 +251,27 @@ constexpr auto ModelShader::GenerateSourceD3D11( void ) const
 	};
 
 	auto vertex_constants = GetVertexConstants();
-	if( vertex_constants.Size() != 0 )
+	if constexpr( vertex_constants.Size() != 0 )
 	{
-		buffer.Add( "cbuffer VertexConstants\n{\n" );
-		vertex_constants.ForEach( add_variable, buffer, "_vertex" );
-		buffer.Add( "};\n\n" );
+		buffer.Add( "\ncbuffer VertexConstants\n{\n" );
+		vertex_constants.ForEach( add_constant, buffer, "_vertex" );
+		buffer.Add( "};\n" );
 	}
 
 	auto pixel_constants = GetPixelConstants();
-	if( pixel_constants.Size() != 0 )
+	if constexpr( pixel_constants.Size() != 0 )
 	{
-		buffer.Add( "cbuffer PixelConstants\n{\n" );
-		pixel_constants.ForEach( add_variable, buffer, "_pixel" );
-		buffer.Add( "};\n\n" );
+		buffer.Add( "\ncbuffer PixelConstants\n{\n" );
+		pixel_constants.ForEach( add_constant, buffer, "_pixel" );
+		buffer.Add( "};\n" );
 	}
 
 	auto vertex_layout = GetVertexLayout();
-	if( !vertex_layout.empty() )
+	if constexpr( !vertex_layout.empty() )
 	{
 		/* VertexData */
 		{
-			buffer.Add( "struct VertexData\n{\n" );
+			buffer.Add( "\nstruct VertexData\n{\n" );
 
 			for( Orbit::VertexComponent component : vertex_layout )
 			{
@@ -244,12 +284,12 @@ constexpr auto ModelShader::GenerateSourceD3D11( void ) const
 				}
 			}
 
-			buffer.Add( "};\n\n" );
+			buffer.Add( "};\n" );
 		}
 
 		/* PixelData */
 		{
-			buffer.Add( "struct PixelData\n{\n" );
+			buffer.Add( "\nstruct PixelData\n{\n" );
 
 			for( Orbit::VertexComponent component : vertex_layout )
 			{
@@ -262,7 +302,7 @@ constexpr auto ModelShader::GenerateSourceD3D11( void ) const
 				}
 			}
 
-			buffer.Add( "};\n\n" );
+			buffer.Add( "};\n" );
 		}
 	}
 
@@ -280,7 +320,7 @@ PixelData VSMain( VertexData input )
 
 float4 PSMain( PixelData input ) : SV_TARGET
 {
-	float4 tex_color = diffuse_texture.Sample( default_sampler_state, input.texcoord );
+	float4 tex_color = sampler_0.Sample( default_sampler_state, input.texcoord );
 	float4 out_color = tex_color + input.color;
 
 	float  diffuse  = -dot( input.normal, reserved_constant_pixel_0 );
@@ -295,61 +335,152 @@ float4 PSMain( PixelData input ) : SV_TARGET
 
 constexpr auto ModelShader::GenerateSourceOpenGL( void ) const
 {
-	return R"(
+	ConstexprBuffer buffer{ };
+
+	constexpr auto add_constant = []( auto constant, ConstexprBuffer& buffer, std::string_view variable_suffix ) constexpr
+	{
+		buffer.Add( "\tORB_CONSTANT( " );
+
+		if constexpr( constant.IsSame< float >() )
+			buffer.Add( "float" );
+		else if constexpr( constant.IsSame< Orbit::Vector2 >() )
+			buffer.Add( "vec2" );
+		else if constexpr( constant.IsSame< Orbit::Vector3 >() )
+			buffer.Add( "vec3" );
+		else if constexpr( constant.IsSame< Orbit::Vector4 >() )
+			buffer.Add( "vec4" );
+		else if constexpr( constant.IsSame< Orbit::Matrix4 >() )
+			buffer.Add( "mat4" );
+
+		buffer.Add( ", reserved_constant" );
+		buffer.Add( variable_suffix );
+		buffer.Add( "_" );
+		buffer.Add( IntToString< constant.index >::value );
+		buffer.Add( " );\n" );
+	};
+
+	/* Attributes */
+	constexpr auto add_attribute = []( auto it, ConstexprBuffer& buffer ) constexpr
+	{
+		buffer.Add( "ORB_ATTRIBUTE( " );
+		buffer.Add( IntToString< it.index >::value );
+		buffer.Add( " ) " );
+
+		switch( it.value )
+		{
+			case Orbit::VertexComponent::Position: { buffer.Add( "vec4 a_position;\n" ); } break;
+			case Orbit::VertexComponent::Normal:   { buffer.Add( "vec3 a_normal;\n" );   } break;
+			case Orbit::VertexComponent::Color:    { buffer.Add( "vec4 a_color;\n" );    } break;
+			case Orbit::VertexComponent::TexCoord: { buffer.Add( "vec2 a_texcoord;\n" ); } break;
+		}
+	};
+
+	/* Varyings */
+	constexpr auto add_varying = []( auto it, ConstexprBuffer& buffer ) constexpr
+	{
+		buffer.Add( "ORB_VARYING " );
+
+		switch( it.value )
+		{
+			case Orbit::VertexComponent::Position: { buffer.Add( "vec4 v_position;\n" ); } break;
+			case Orbit::VertexComponent::Normal:   { buffer.Add( "vec3 v_normal;\n" );   } break;
+			case Orbit::VertexComponent::Color:    { buffer.Add( "vec4 v_color;\n" );    } break;
+			case Orbit::VertexComponent::TexCoord: { buffer.Add( "vec2 v_texcoord;\n" ); } break;
+		}
+	};
+
+	auto vertex_layout = GetVertexLayout();
+
+	/* Vertex shader */
+	{
+		buffer.Add( "#if defined( VERTEX )\n" );
+
+		/* Vertex constants*/
+		auto vertex_constants = GetVertexConstants();
+		if constexpr( vertex_constants.Size() )
+		{
+			buffer.Add( "\nORB_CONSTANTS_BEGIN( VertexConstants )\n" );
+			vertex_constants.ForEach( add_constant, buffer, "_vertex" );
+			buffer.Add( "ORB_CONSTANTS_END\n" );
+		}
+
+		/* Attributes and varying variables */
+		if constexpr( !vertex_layout.empty() )
+		{
+			buffer.Add( "\n" );
+			ArrayForEach( vertex_layout, add_attribute, buffer );
+			buffer.Add( "\n" );
+			ArrayForEach( vertex_layout, add_varying, buffer );
+		}
+	}
+
+	/* Pixel shader */
+	{
+		buffer.Add( "\n#elif defined( FRAGMENT )\n" );
+
+		/* Pixel constants */
+		auto pixel_constants = GetPixelConstants();
+		if constexpr( pixel_constants.Size() )
+		{
+			buffer.Add( "\nORB_CONSTANTS_BEGIN( PixelConstants )\n" );
+			pixel_constants.ForEach( add_constant, buffer, "_pixel" );
+			buffer.Add( "ORB_CONSTANTS_END\n" );
+		}
+
+		/* Samplers */
+		constexpr size_t sampler_count = GetSamplerCount();
+		if constexpr( sampler_count > 0 )
+		{
+			constexpr auto add_sampler = []( auto it, ConstexprBuffer& buffer ) constexpr
+			{
+				buffer.Add( "uniform sampler2D sampler_" );
+				buffer.Add( IntToString< it.index >::value );
+				buffer.Add( ";\n" );
+			};
+
+			buffer.Add( "\n" );
+			InvokeIndexKeys< 0, sampler_count >( add_sampler, buffer );
+		}
+
+		/* Varying variables */
+		if constexpr( !vertex_layout.empty() )
+		{
+			buffer.Add( "\n" );
+			ArrayForEach( vertex_layout, add_varying, buffer );
+		}
+	}
+
+	buffer.Add( "\n#endif\n" );
+	buffer.Add( R"(
 #if defined( VERTEX )
-
-ORB_CONSTANTS_BEGIN( VertexConstants )
-	ORB_CONSTANT( mat4, view_projection );
-	ORB_CONSTANT( mat4, model );
-	ORB_CONSTANT( mat4, model_inverse );
-ORB_CONSTANTS_END
-
-ORB_ATTRIBUTE( 0 ) vec4 a_position;
-ORB_ATTRIBUTE( 1 ) vec4 a_color;
-ORB_ATTRIBUTE( 2 ) vec2 a_texcoord;
-ORB_ATTRIBUTE( 3 ) vec3 a_normal;
-
-ORB_VARYING vec4 v_position;
-ORB_VARYING vec4 v_color;
-ORB_VARYING vec2 v_texcoord;
-ORB_VARYING vec3 v_normal;
 
 void main()
 {
-	v_position = view_projection * model * a_position;
+	v_position = reserved_constant_vertex_0 * reserved_constant_vertex_1 * a_position;
 	v_color    = a_color;
 	v_texcoord = a_texcoord;
-	v_normal   = ( transpose( model_inverse ) * vec4( a_normal, 1.0 ) ).xyz;
+	v_normal   = ( transpose( reserved_constant_vertex_2 ) * vec4( a_normal, 1.0 ) ).xyz;
 
 	gl_Position = v_position;
 }
 
-#  elif defined( FRAGMENT )
-
-ORB_CONSTANTS_BEGIN( FragmentConstants )
-	ORB_CONSTANT( vec3, light_dir );
-ORB_CONSTANTS_END
-
-uniform sampler2D diffuse_texture;
-
-ORB_VARYING vec4 v_position;
-ORB_VARYING vec4 v_color;
-ORB_VARYING vec2 v_texcoord;
-ORB_VARYING vec3 v_normal;
+#elif defined( FRAGMENT )
 
 void main()
 {
-	vec4 tex_color = texture( diffuse_texture, v_texcoord );
+	vec4 tex_color = texture( sampler_0, v_texcoord );
 	vec4 out_color = tex_color + v_color;
 
-	float diffuse  = -dot( v_normal, light_dir );
+	float diffuse  = -dot( v_normal, reserved_constant_pixel_0 );
 	out_color.rgb *= diffuse;
 
 	ORB_SET_OUT_COLOR( out_color );
 }
 
 #endif
-)";
+)" );
+
+	return buffer.buf;
 }
 
 Orbit::VertexLayout ModelShader::GenerateVertexLayout( void ) const
