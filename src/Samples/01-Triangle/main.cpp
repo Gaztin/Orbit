@@ -37,9 +37,9 @@ struct Vertex
 
 const Orbit::VertexLayout vertex_layout
 {
-	{ "POSITION", Orbit::VertexComponent::Vec4 },
-	{ "COLOR",    Orbit::VertexComponent::Vec4 },
-	{ "TEXCOORD", Orbit::VertexComponent::Vec2 },
+	{ Orbit::VertexComponent::Position },
+	{ Orbit::VertexComponent::Color },
+	{ Orbit::VertexComponent::TexCoord },
 };
 
 constexpr std::string_view shader_source = R"(

@@ -17,7 +17,7 @@
 
 #include "OpenGLVersion.h"
 
-#if defined( ORB_HAS_OPENGL )
+#if( ORB_HAS_OPENGL )
 #  include <cctype>
 #  include <cstdio>
 #  include <cstring>
@@ -49,7 +49,7 @@ bool OpenGLVersion::RequireGL( uint8_t major, uint8_t minor ) const
 	if( major > m_major )
 		return false;
 
-	if( minor > m_minor )
+	if( major == m_major && minor > m_minor )
 		return false;
 
 	return true;
@@ -63,7 +63,7 @@ bool OpenGLVersion::RequireGLES( uint8_t major, uint8_t minor ) const
 	if( major > m_major )
 		return false;
 
-	if( minor > m_minor )
+	if( major == m_major && minor > m_minor )
 		return false;
 
 	return true;

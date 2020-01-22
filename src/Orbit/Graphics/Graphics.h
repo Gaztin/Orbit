@@ -100,8 +100,8 @@ ORB_ENABLE_BITMASKING( BufferMask );
 
 enum class ShaderType
 {
-	Vertex,
-	Fragment,
+	Fragment = 1,
+	Vertex   = 2,
 };
 
 enum class IndexFormat

@@ -41,7 +41,7 @@ public:
 
 public:
 
-	void Bind  ( ShaderType type, uint32_t slot );
+	void Bind  ( ShaderType type, uint32_t local_slot, uint32_t global_slot );
 	void Update( void* dst, size_t location, const void* data, size_t size );
 
 	template< typename... Types >
@@ -60,7 +60,7 @@ private:
 	template< typename Tup, size_t... Is >
 	void UpdateSequencial( void* dst, const Tup& tup, Sequence< Is... > )
 	{
-		[[ maybe_unused ]] auto l = { ( Update( reinterpret_cast< uint8_t* >( dst ) + std::distance( &std::get< 0 >( tup ), &std::get< Is >( tup ) ), Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
+		[[ maybe_unused ]] auto l = { ( Update( reinterpret_cast< uint8_t* >( dst ) + std::distance( reinterpret_cast< const uint8_t* >( &std::get< Is >( tup ) ), reinterpret_cast< const uint8_t* >( &std::get< 0 >( tup ) ) ), Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
 	}
 
 private:

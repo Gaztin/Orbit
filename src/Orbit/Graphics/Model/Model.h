@@ -16,48 +16,34 @@
  */
 
 #pragma once
-#include <variant>
-#include <vector>
+#include <memory>
 
-#include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Core/Utility/Span.h"
+#include "Orbit/Graphics/Renderer/RenderCommand.h"
 #include "Orbit/Graphics/Shader/VertexLayout.h"
 
 ORB_NAMESPACE_BEGIN
 
-namespace Private
+class IndexBuffer;
+class VertexBuffer;
+
+class ORB_API_GRAPHICS Model
 {
+public:
 
-#if( ORB_HAS_OPENGL )
+	explicit Model( ByteSpan data, const VertexLayout& layout );
 
-	struct _ShaderDetailsOpenGL
-	{
-		VertexLayout layout;
-		GLuint       program;
-		GLuint       vao;
-	};
+	RenderCommand MakeRenderCommand( void );
 
-#endif
-#if( ORB_HAS_D3D11 )
+private:
 
-	struct _ShaderDetailsD3D11
-	{
-		ComPtr< ID3D11VertexShader > vertex_shader;
-		ComPtr< ID3D11PixelShader >  pixel_shader;
-		ComPtr< ID3D11InputLayout >  input_layout;
-		ComPtr< ID3D11SamplerState > sampler_state;
-	};
+	void ParseOBJ( ByteSpan data, const VertexLayout& layout );
 
-#endif
+private:
 
-	using ShaderDetails = std::variant< std::monostate
-	#if( ORB_HAS_OPENGL )
-		, _ShaderDetailsOpenGL
-	#endif
-	#if( ORB_HAS_D3D11 )
-		, _ShaderDetailsD3D11
-	#endif
-	>;
-}
+	std::unique_ptr< VertexBuffer > m_vertex_buffer;
+	std::unique_ptr< IndexBuffer >  m_index_buffer;
+
+};
 
 ORB_NAMESPACE_END

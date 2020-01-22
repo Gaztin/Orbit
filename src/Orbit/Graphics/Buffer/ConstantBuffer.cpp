@@ -212,7 +212,7 @@ void ConstantBuffer::UpdateEnd()
 	}
 }
 
-void ConstantBuffer::Bind( [[ maybe_unused ]] ShaderType type, uint32_t slot )
+void ConstantBuffer::Bind( [[ maybe_unused ]] ShaderType type, [[ maybe_unused ]] uint32_t local_slot, [[ maybe_unused ]] uint32_t global_slot )
 {
 	switch( m_details.index() )
 	{
@@ -225,7 +225,7 @@ void ConstantBuffer::Bind( [[ maybe_unused ]] ShaderType type, uint32_t slot )
 			auto& details = std::get< Private::_ConstantBufferDetailsOpenGL31 >( m_details );
 
 			glBindBuffer( OpenGLBufferTarget::Uniform, details.id );
-			glBindBufferBase( OpenGLBufferTarget::Uniform, slot, details.id );
+			glBindBufferBase( OpenGLBufferTarget::Uniform, global_slot, details.id );
 
 			break;
 		}
@@ -242,8 +242,8 @@ void ConstantBuffer::Bind( [[ maybe_unused ]] ShaderType type, uint32_t slot )
 			switch( type )
 			{
 				default: break;
-				case ShaderType::Vertex:   { d3d11.device_context->VSSetConstantBuffers( slot, 1, &buffer ); } break;
-				case ShaderType::Fragment: { d3d11.device_context->PSSetConstantBuffers( slot, 1, &buffer ); } break;
+				case ShaderType::Vertex:   { d3d11.device_context->VSSetConstantBuffers( local_slot, 1, &buffer ); } break;
+				case ShaderType::Fragment: { d3d11.device_context->PSSetConstantBuffers( local_slot, 1, &buffer ); } break;
 			}
 
 			break;

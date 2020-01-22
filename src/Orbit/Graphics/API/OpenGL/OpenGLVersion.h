@@ -20,7 +20,7 @@
 
 #include "Orbit/Graphics/Graphics.h"
 
-#if defined( ORB_HAS_OPENGL )
+#if( ORB_HAS_OPENGL )
 
 /* 'major' and 'minor' may already be defined. See https://stackoverflow.com/a/22253389 */
 #ifdef major

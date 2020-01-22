@@ -16,48 +16,61 @@
  */
 
 #pragma once
-#include <variant>
+#include <string_view>
 #include <vector>
 
-#include "Orbit/Core/Platform/Windows/ComPtr.h"
-#include "Orbit/Graphics/API/OpenGL/OpenGL.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
+#include "Orbit/Core/Core.h"
 
 ORB_NAMESPACE_BEGIN
 
-namespace Private
+template< typename T >
+class Span
 {
+public:
 
-#if( ORB_HAS_OPENGL )
-
-	struct _ShaderDetailsOpenGL
+	Span( void )
+		: m_ptr   { nullptr }
+		, m_count { 0 }
 	{
-		VertexLayout layout;
-		GLuint       program;
-		GLuint       vao;
-	};
+	}
 
-#endif
-#if( ORB_HAS_D3D11 )
-
-	struct _ShaderDetailsD3D11
+	template< size_t N >
+	Span( const T ( &arr )[ N ] )
+		: m_ptr   { arr }
+		, m_count { N }
 	{
-		ComPtr< ID3D11VertexShader > vertex_shader;
-		ComPtr< ID3D11PixelShader >  pixel_shader;
-		ComPtr< ID3D11InputLayout >  input_layout;
-		ComPtr< ID3D11SamplerState > sampler_state;
-	};
+	}
 
-#endif
+	Span( std::initializer_list< T > args )
+		: m_ptr   { args.begin() }
+		, m_count { args.size() }
+	{
+	}
 
-	using ShaderDetails = std::variant< std::monostate
-	#if( ORB_HAS_OPENGL )
-		, _ShaderDetailsOpenGL
-	#endif
-	#if( ORB_HAS_D3D11 )
-		, _ShaderDetailsD3D11
-	#endif
-	>;
-}
+	Span( const std::vector< T >& vec )
+		: m_ptr   { vec.data() }
+		, m_count { vec.size() }
+	{
+	}
+
+	Span( const T* data, size_t count )
+		: m_ptr   { data }
+		, m_count { count }
+	{
+	}
+
+public:
+
+	const T* begin( void ) const { return m_ptr; }
+	const T* end  ( void ) const { return ( m_ptr + m_count ); }
+
+private:
+
+	const T* m_ptr;
+	size_t   m_count;
+
+};
+
+using ByteSpan = Span< uint8_t >;
 
 ORB_NAMESPACE_END

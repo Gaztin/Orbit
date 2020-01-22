@@ -205,6 +205,7 @@ decl_module( 'Graphics' )
 decl_framework()
 decl_sample( 'Triangle' )
 decl_sample( 'Cube' )
+decl_sample( 'Model' )
 
 workspace( workspace_name )
 	startproject( samples[ 1 ] )

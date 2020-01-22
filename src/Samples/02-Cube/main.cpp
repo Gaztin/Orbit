@@ -46,9 +46,9 @@ struct Vertex
 
 const Orbit::VertexLayout vertex_layout
 {
-	{ "POSITION", Orbit::VertexComponent::Vec4 },
-	{ "COLOR",    Orbit::VertexComponent::Vec4 },
-	{ "TEXCOORD", Orbit::VertexComponent::Vec2 },
+	{ Orbit::VertexComponent::Position },
+	{ Orbit::VertexComponent::Color },
+	{ Orbit::VertexComponent::TexCoord },
 };
 
 constexpr std::string_view shader_source = R"(
@@ -253,7 +253,7 @@ public:
 		command.vertex_buffer = &m_vertex_buffer;
 		command.index_buffer  = &m_index_buffer;
 		command.shader        = &m_shader;
-		command.constant_buffers.push_back( &m_constant_buffer );
+		command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &m_constant_buffer );
 		command.textures.push_back( &m_texture );
 
 		m_renderer.QueueCommand( command );

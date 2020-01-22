@@ -27,6 +27,76 @@
 
 ORB_NAMESPACE_BEGIN
 
+static void BindConstantBuffers( const RenderCommand& command )
+{
+	uint32_t global_slot = 0;
+
+	for( auto& constant_buffers : command.constant_buffers )
+	{
+		for( size_t i = 0; i < constant_buffers.second.size(); ( ++i, ++global_slot ) )
+		{
+			const uint32_t local_slot     = static_cast< uint32_t >( i );
+			const auto&    shader_details = command.shader->GetPrivateDetails();
+
+			constant_buffers.second[ i ]->Bind( constant_buffers.first, local_slot, global_slot );
+
+		#if( ORB_HAS_OPENGL )
+
+			/* Set block bindings */
+			if( shader_details.index() == unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > )
+			{
+				auto& shader_gl = std::get< Private::_ShaderDetailsOpenGL >( shader_details );
+
+				glUniformBlockBinding( shader_gl.program, global_slot, global_slot );
+			}
+
+		#endif // ORB_HAS_OPENGL
+
+		}
+	}
+}
+
+static void APIDraw( const RenderCommand& command )
+{
+	Private::RenderContextDetails& context_details = RenderContext::Get().GetPrivateDetails();
+
+	switch( context_details.index() )
+	{
+		default: break;
+
+		#if( ORB_HAS_D3D11 )
+
+		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
+		{
+			auto& d3d11 = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
+
+			d3d11.device_context->DrawIndexed( static_cast< UINT >( command.index_buffer->GetCount() ), 0, 0 );
+
+		} break;
+
+	#endif
+	#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
+		{
+			OpenGLIndexType index_type{ };
+
+			switch( command.index_buffer->GetFormat() )
+			{
+				case IndexFormat::Byte:       { index_type = OpenGLIndexType::Byte;  } break;
+				case IndexFormat::Word:       { index_type = OpenGLIndexType::Short; } break;
+				case IndexFormat::DoubleWord: { index_type = OpenGLIndexType::Int;   } break;
+			}
+
+			glDrawElements( OpenGLDrawMode::Triangles, static_cast< GLsizei >( command.index_buffer->GetCount() ), index_type, nullptr );
+
+		} break;
+
+	#endif
+
+	}
+}
+
 void BasicRenderer::QueueCommand( const RenderCommand& command )
 {
 	m_commands.push_back( command );
@@ -34,61 +104,17 @@ void BasicRenderer::QueueCommand( const RenderCommand& command )
 
 void BasicRenderer::Render( void )
 {
-	Private::RenderContextDetails& context_details = RenderContext::Get().GetPrivateDetails();
-
 	for( RenderCommand& command : m_commands )
 	{
 		for( size_t i = 0; i < command.textures.size(); ++i )
-		{
 			command.textures[ i ]->Bind( static_cast< uint32_t >( i ) );
-		}
 
 		command.vertex_buffer->Bind();
 		command.shader->Bind();
 		command.index_buffer->Bind();
 
-		for( size_t i = 0; i < command.constant_buffers.size(); ++i )
-		{
-			command.constant_buffers[ i ]->Bind( ShaderType::Vertex, static_cast< uint32_t >( i ) );
-		}
-
-		switch( context_details.index() )
-		{
-			default: break;
-
-		#if( ORB_HAS_D3D11 )
-
-			case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
-			{
-				Private::_RenderContextDetailsD3D11& d3d11 = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
-
-				d3d11.device_context->DrawIndexed( static_cast< UINT >( command.index_buffer->GetCount() ), 0, 0 );
-
-				break;
-			}
-
-		#endif
-		#if( ORB_HAS_OPENGL )
-
-			case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
-			{
-				OpenGLIndexType index_type { };
-
-				switch( command.index_buffer->GetFormat() )
-				{
-					case IndexFormat::Byte:       { index_type = OpenGLIndexType::Byte;  } break;
-					case IndexFormat::Word:       { index_type = OpenGLIndexType::Short; } break;
-					case IndexFormat::DoubleWord: { index_type = OpenGLIndexType::Int;   } break;
-				}
-
-				glDrawElements( OpenGLDrawMode::Triangles, static_cast< GLsizei >( command.index_buffer->GetCount() ), index_type, nullptr );
-
-				break;
-			}
-
-		#endif
-
-		}
+		BindConstantBuffers( command );
+		APIDraw( command );
 
 //		command.index_buffer->Unbind();
 		command.shader->Unbind();
