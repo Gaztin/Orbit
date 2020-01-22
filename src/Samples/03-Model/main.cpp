@@ -38,16 +38,8 @@
 #include "ModelData.h"
 
 constexpr ModelShader model_shader;
-constexpr std::string_view shader_source_d3d11 = model_shader.GenerateSourceD3D11();
-constexpr std::string_view shader_source_gl    = model_shader.GenerateSourceOpenGL();
-
-const Orbit::VertexLayout vertex_layout
-{
-	Orbit::VertexComponent::Position,
-	Orbit::VertexComponent::Color,
-	Orbit::VertexComponent::TexCoord,
-	Orbit::VertexComponent::Normal,
-};
+constexpr auto shader_source_d3d11 = model_shader.GenerateSourceD3D11();
+constexpr auto shader_source_gl    = model_shader.GenerateSourceOpenGL();
 
 std::tuple vertex_constant_data   = std::make_tuple( Orbit::Matrix4(), Orbit::Matrix4(), Orbit::Matrix4() );
 std::tuple fragment_constant_data = std::make_tuple( Orbit::Vector3() );
@@ -66,9 +58,9 @@ public:
 
 	SampleApp( void )
 		: m_window( 800, 600 )
-		, m_render_context( Orbit::GraphicsAPI::OpenGL )
-		, m_shader( shader_source_gl, vertex_layout )
-		, m_model( model_data, vertex_layout )
+		, m_render_context( Orbit::GraphicsAPI::D3D11 )
+		, m_shader( std::string( shader_source_d3d11.data() ), model_shader.GenerateVertexLayout() )
+		, m_model( model_data, model_shader.GenerateVertexLayout() )
 		, m_vertex_constant_buffer( vertex_constant_data )
 		, m_fragment_constant_buffer( fragment_constant_data )
 		, m_texture( 4, 4, texture_data )
