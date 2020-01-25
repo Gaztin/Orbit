@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,35 +16,37 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Private/ShaderDetails.h"
+#include <Orbit/Graphics/Shader/ShaderInterface.h>
 
-ORB_NAMESPACE_BEGIN
-
-class IndexBuffer;
-class ShaderInterface;
-class VertexBuffer;
-
-class ORB_API_GRAPHICS Shader
+class ModelShader final : public Orbit::ShaderInterface
 {
 public:
 
-	explicit Shader( ShaderInterface& object );
-	Shader( std::string_view source, const VertexLayout& vertex_layout );
-	~Shader( void );
-
-public:
-
-	void Bind  ( void );
-	void Unbind( void );
-
-public:
-
-	const Private::ShaderDetails& GetPrivateDetails( void ) const { return m_details; }
+	ModelShader( void ) = default;
 
 private:
 
-	Private::ShaderDetails m_details;
+	Vec4 VSMain( void ) override;
+	Vec4 PSMain( void ) override;
+
+private:
+
+	Sampler diffuse_texture;
+
+	Attribute a_position;
+	Attribute a_normal;
+	Attribute a_color;
+	Attribute a_texcoord;
+
+	Varying v_position;
+	Varying v_normal;
+	Varying v_color;
+	Varying v_texcoord;
+
+	Uniform u_view_projection;
+	Uniform u_model;
+	Uniform u_model_inverse;
+
+	Uniform u_light_dir;
 
 };
-
-ORB_NAMESPACE_END

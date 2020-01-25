@@ -35,6 +35,7 @@
 
 #include "Framework/Camera.h"
 #include "ModelData.h"
+#include "ModelShader.h"
 
 const Orbit::VertexLayout vertex_layout
 {
@@ -178,7 +179,8 @@ public:
 	SampleApp( void )
 		: m_window( 800, 600 )
 		, m_render_context( Orbit::GraphicsAPI::OpenGL )
-		, m_shader( shader_source, vertex_layout )
+		, m_shader_source{ }
+		, m_shader( m_shader_source )
 		, m_model( model_data, vertex_layout )
 		, m_vertex_constant_buffer( vertex_constant_data )
 		, m_fragment_constant_buffer( fragment_constant_data )
@@ -241,6 +243,7 @@ private:
 
 	Orbit::Window            m_window;
 	Orbit::RenderContext     m_render_context;
+	ModelShader              m_shader_source;
 	Orbit::Shader            m_shader;
 	Orbit::Model             m_model;
 	Orbit::ConstantBuffer    m_vertex_constant_buffer;
