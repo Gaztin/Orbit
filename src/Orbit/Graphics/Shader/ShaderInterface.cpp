@@ -222,7 +222,7 @@ void ShaderInterface::Variable::operator+=( const Variable& rhs )
 	rhs.m_used = true;
 
 	StoreValue();
-	current_shader->m_source_code.append( "( " + GetValue() + " += " + rhs.GetValue() + " )" );
+	current_shader->m_source_code.append( "\t" + GetValue() + " += " + rhs.GetValue() + ";\n" );
 }
 
 void ShaderInterface::Variable::operator*=( const Variable& rhs )
@@ -232,7 +232,7 @@ void ShaderInterface::Variable::operator*=( const Variable& rhs )
 	/* TODO: if m_type == VariableType::Mat4, do mul for HLSL */
 
 	StoreValue();
-	current_shader->m_source_code.append( "( " + GetValue() + " *= " + rhs.GetValue() + " )" );
+	current_shader->m_source_code.append( "\t" + GetValue() + " *= " + rhs.GetValue() + ";\n" );
 }
 
 void ShaderInterface::Variable::StoreValue( void )
