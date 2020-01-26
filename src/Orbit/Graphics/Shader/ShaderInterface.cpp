@@ -17,7 +17,6 @@
 
 #include "ShaderInterface.h"
 
-#include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
 
 #include <cassert>
@@ -118,8 +117,6 @@ std::string ShaderInterface::GetSource( void )
 
 		}
 	}
-
-	LogInfo( "%s\n", m_source_code.c_str() );
 
 	return m_source_code;
 }

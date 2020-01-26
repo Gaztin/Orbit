@@ -56,7 +56,6 @@ public:
 
 	SampleApp( void )
 		: m_window( 800, 600 )
-		, m_render_context( Orbit::GraphicsAPI::OpenGL )
 		, m_shader( model_shader )
 		, m_model( model_data, model_shader.GetVertexLayout() )
 		, m_vertex_constant_buffer( vertex_constant_data )
