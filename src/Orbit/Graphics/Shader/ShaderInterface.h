@@ -68,8 +68,8 @@ protected:
 
 	public:
 
-		Variable*   parent;
-		std::string value;
+		Variable* parent;
+		char      value[ 5 ];
 
 	};
 
