@@ -946,6 +946,11 @@ protected:
 
 private:
 
+	void GenerateSourceHLSL( void );
+	void GenerateSourceGLSL( void );
+
+private:
+
 	std::string                 m_source_code;
 	std::vector< UniformBase* > m_uniforms;
 	VertexLayout                m_attribute_layout;
