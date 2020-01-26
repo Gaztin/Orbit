@@ -44,10 +44,10 @@ private:
 	Varying v_texcoord = Orbit::VertexComponent::TexCoord;
 	Varying v_normal   = Orbit::VertexComponent::Normal;
 
-	Uniform u_view_projection = VariableType::MAT4;
-	Uniform u_model           = VariableType::MAT4;
-	Uniform u_model_inverse   = VariableType::MAT4;
+	Uniform u_view_projection = VariableType::Mat4;
+	Uniform u_model           = VariableType::Mat4;
+	Uniform u_model_inverse   = VariableType::Mat4;
 
-	Uniform u_light_dir       = VariableType::VEC3;
+	Uniform u_light_dir       = VariableType::Vec3;
 
 };

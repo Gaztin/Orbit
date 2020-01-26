@@ -29,15 +29,15 @@ public:
 
 	enum class VariableType
 	{
-		UNKNOWN = 0,
+		Unknown = 0,
 
-		FLOAT,
-		VEC2,
-		VEC3,
-		VEC4,
-		MAT4,
+		Float,
+		Vec2,
+		Vec3,
+		Vec4,
+		Mat4,
 
-		SAMPLER,
+		Sampler,
 	};
 
 public:
@@ -106,7 +106,7 @@ protected:
 	private:
 
 		std::string  m_value;
-		VariableType m_type   = VariableType::UNKNOWN;
+		VariableType m_type   = VariableType::Unknown;
 		bool         m_stored = false;
 		mutable bool m_used   = false;
 
