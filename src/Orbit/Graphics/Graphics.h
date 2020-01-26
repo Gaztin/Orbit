@@ -73,12 +73,8 @@ ORB_NAMESPACE_BEGIN
 enum class GraphicsAPI
 {
 	Null = 0,
-#if( ORB_HAS_D3D11 )
 	D3D11,
-#endif
-#if( ORB_HAS_OPENGL )
 	OpenGL,
-#endif
 };
 
 #if( ORB_HAS_D3D11 )
