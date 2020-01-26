@@ -181,6 +181,11 @@ ShaderInterface::Variable ShaderInterface::Variable::operator*( const Variable& 
 	m_used     = true;
 	rhs.m_used = true;
 
+	if( current_graphics_api == GraphicsAPI::D3D11 && ( m_type == VariableType::Mat4 || rhs.m_type == VariableType::Mat4 ) )
+	{
+		return Variable{ "mul( " + rhs.GetValue() + ", " + GetValue() + " )" };
+	}
+
 	return Variable{ "( " + GetValue() + " * " + rhs.GetValue() + " )" };
 }
 
