@@ -68,8 +68,8 @@ protected:
 
 	public:
 
-		Variable* parent;
-		char      value[ 5 ];
+		Variable*   parent;
+		const char* value;
 
 	};
 
