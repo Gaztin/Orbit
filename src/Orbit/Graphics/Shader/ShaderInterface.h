@@ -838,6 +838,14 @@ protected:
 
 	};
 
+	class ORB_API_GRAPHICS Mat4 : public Variable
+	{
+	public:
+
+		Mat4( const Variable& );
+
+	};
+
 	class ORB_API_GRAPHICS Sampler : public Variable
 	{
 	public:

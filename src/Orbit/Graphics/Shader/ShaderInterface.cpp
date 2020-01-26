@@ -1111,6 +1111,13 @@ ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, con
 	value4.m_used = true;
 }
 
+ShaderInterface::Mat4::Mat4( const Variable& value )
+	: Variable( "mat4( " + value.m_value + " )" )
+{
+	m_type       = VariableType::Mat4;
+	value.m_used = true;
+}
+
 ShaderInterface::Sampler::Sampler( void )
 	: Variable( GenerateName( "sampler" ) )
 {
