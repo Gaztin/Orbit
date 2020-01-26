@@ -34,14 +34,14 @@ private:
 	Sampler diffuse_texture;
 
 	Attribute a_position;
-	Attribute a_normal;
 	Attribute a_color;
 	Attribute a_texcoord;
+	Attribute a_normal;
 
 	Varying v_position;
-	Varying v_normal;
 	Varying v_color;
 	Varying v_texcoord;
+	Varying v_normal;
 
 	Uniform u_view_projection;
 	Uniform u_model;
