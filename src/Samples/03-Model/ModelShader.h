@@ -17,7 +17,6 @@
 
 #pragma once
 #include <Orbit/Graphics/Shader/ShaderInterface.h>
-#include <Orbit/Graphics/Shader/VertexLayout.h>
 
 class ModelShader final : public Orbit::ShaderInterface
 {

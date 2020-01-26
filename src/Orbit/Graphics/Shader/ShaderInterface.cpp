@@ -226,7 +226,7 @@ std::string ShaderInterface::GetSource( void )
 
 VertexLayout ShaderInterface::GetVertexLayout( void ) const
 {
-	return VertexLayout{ };
+	return m_attribute_layout;
 }
 
 void ShaderInterface::VariableDummy::operator*=( const Variable& rhs ) const
