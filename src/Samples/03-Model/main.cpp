@@ -37,6 +37,8 @@
 #include "ModelData.h"
 #include "ModelShader.h"
 
+static ModelShader model_shader;
+
 std::tuple vertex_constant_data   = std::make_tuple( Orbit::Matrix4(), Orbit::Matrix4(), Orbit::Matrix4() );
 std::tuple fragment_constant_data = std::make_tuple( Orbit::Vector3() );
 
@@ -55,9 +57,8 @@ public:
 	SampleApp( void )
 		: m_window( 800, 600 )
 		, m_render_context( Orbit::GraphicsAPI::OpenGL )
-		, m_shader_source{ }
-		, m_shader( m_shader_source )
-		, m_model( model_data, m_shader_source.GetVertexLayout() )
+		, m_shader( model_shader )
+		, m_model( model_data, model_shader.GetVertexLayout() )
 		, m_vertex_constant_buffer( vertex_constant_data )
 		, m_fragment_constant_buffer( fragment_constant_data )
 		, m_texture( 4, 4, texture_data )
@@ -119,7 +120,6 @@ private:
 
 	Orbit::Window            m_window;
 	Orbit::RenderContext     m_render_context;
-	ModelShader              m_shader_source;
 	Orbit::Shader            m_shader;
 	Orbit::Model             m_model;
 	Orbit::ConstantBuffer    m_vertex_constant_buffer;
