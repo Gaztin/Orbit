@@ -134,12 +134,12 @@ void ShaderInterface::VariableDummy::operator*=( const Variable& rhs ) const
 	parent->StoreValue();
 	rhs.m_used = true;
 
-	current_shader->m_source_code.append( "\t" + parent->m_value + "." + value + " *= " + rhs.m_value + ";\n" );
+	current_shader->m_source_code.append( "\t" + parent->GetValue() + "." + value + " *= " + rhs.GetValue() + ";\n" );
 }
 
 ShaderInterface::VariableDummy::operator ShaderInterface::Variable( void ) const
 {
-	return Variable{ parent->m_value + "." + value };
+	return Variable{ parent->GetValue() + "." + value };
 }
 
 ShaderInterface::Variable::Variable( void )
@@ -181,7 +181,7 @@ ShaderInterface::Variable ShaderInterface::Variable::operator*( const Variable& 
 	m_used     = true;
 	rhs.m_used = true;
 
-	return Variable{ "( " + m_value + " * " + rhs.m_value + " )" };
+	return Variable{ "( " + GetValue() + " * " + rhs.GetValue() + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Variable::operator+( const Variable& rhs ) const
@@ -189,14 +189,14 @@ ShaderInterface::Variable ShaderInterface::Variable::operator+( const Variable& 
 	m_used     = true;
 	rhs.m_used = true;
 
-	return Variable{ "( " + m_value + " + " + rhs.m_value + " )" };
+	return Variable{ "( " + GetValue() + " + " + rhs.GetValue() + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Variable::operator-( void ) const
 {
 	m_used = true;
 
-	return Variable{ "( -" + m_value + " )" };
+	return Variable{ "( -" + GetValue() + " )" };
 }
 
 void ShaderInterface::Variable::operator=( const Variable& rhs )
@@ -205,7 +205,7 @@ void ShaderInterface::Variable::operator=( const Variable& rhs )
 
 	StoreValue();
 
-	current_shader->m_source_code.append( "\t" + m_value + " = " + rhs.m_value + ";\n" );
+	current_shader->m_source_code.append( "\t" + GetValue() + " = " + rhs.GetValue() + ";\n" );
 }
 
 void ShaderInterface::Variable::operator+=( const Variable& rhs )
@@ -214,7 +214,7 @@ void ShaderInterface::Variable::operator+=( const Variable& rhs )
 
 	StoreValue();
 
-	current_shader->m_source_code.append( "( " + m_value + " += " + rhs.m_value + " )" );
+	current_shader->m_source_code.append( "( " + GetValue() + " += " + rhs.GetValue() + " )" );
 }
 
 void ShaderInterface::Variable::operator*=( const Variable& rhs )
@@ -223,7 +223,7 @@ void ShaderInterface::Variable::operator*=( const Variable& rhs )
 
 	StoreValue();
 
-	current_shader->m_source_code.append( "( " + m_value + " *= " + rhs.m_value + " )" );
+	current_shader->m_source_code.append( "( " + GetValue() + " *= " + rhs.GetValue() + " )" );
 }
 
 void ShaderInterface::Variable::StoreValue( void )
@@ -939,14 +939,14 @@ ShaderInterface::Float::Float( const Variable& value )
 }
 
 ShaderInterface::Vec2::Vec2( const Variable& value )
-	: Variable( TypeString( VariableType::Vec2 ) + "( " + value.m_value + " )" )
+	: Variable( TypeString( VariableType::Vec2 ) + "( " + value.GetValue() + " )" )
 {
 	m_type       = VariableType::Vec2;
 	value.m_used = true;
 }
 
 ShaderInterface::Vec2::Vec2( const Variable& value1, const Variable& value2 )
-	: Variable( TypeString( VariableType::Vec2 ) + "( " + value1.m_value + ", " + value2.m_value + " )" )
+	: Variable( TypeString( VariableType::Vec2 ) + "( " + value1.GetValue() + ", " + value2.GetValue() + " )" )
 {
 	m_type        = VariableType::Vec2;
 	value1.m_used = true;
@@ -954,14 +954,14 @@ ShaderInterface::Vec2::Vec2( const Variable& value1, const Variable& value2 )
 }
 
 ShaderInterface::Vec3::Vec3( const Variable& value )
-	: Variable( TypeString( VariableType::Vec3 ) + "( " + value.m_value + " )" )
+	: Variable( TypeString( VariableType::Vec3 ) + "( " + value.GetValue() + " )" )
 {
 	m_type       = VariableType::Vec3;
 	value.m_used = true;
 }
 
 ShaderInterface::Vec3::Vec3( const Variable& value1, const Variable& value2 )
-	: Variable( TypeString( VariableType::Vec3 ) + "( " + value1.m_value + ", " + value2.m_value + " )" )
+	: Variable( TypeString( VariableType::Vec3 ) + "( " + value1.GetValue() + ", " + value2.GetValue() + " )" )
 {
 	m_type        = VariableType::Vec3;
 	value1.m_used = true;
@@ -969,7 +969,7 @@ ShaderInterface::Vec3::Vec3( const Variable& value1, const Variable& value2 )
 }
 
 ShaderInterface::Vec3::Vec3( const Variable& value1, const Variable& value2, const Variable& value3 )
-	: Variable( TypeString( VariableType::Vec3 ) + "( " + value1.m_value + ", " + value2.m_value + ", " + value3.m_value + " )" )
+	: Variable( TypeString( VariableType::Vec3 ) + "( " + value1.GetValue() + ", " + value2.GetValue() + ", " + value3.GetValue() + " )" )
 {
 	m_type        = VariableType::Vec3;
 	value1.m_used = true;
@@ -978,14 +978,14 @@ ShaderInterface::Vec3::Vec3( const Variable& value1, const Variable& value2, con
 }
 
 ShaderInterface::Vec4::Vec4( const Variable& value )
-	: Variable( TypeString( VariableType::Vec4 ) + "( " + value.m_value + " )" )
+	: Variable( TypeString( VariableType::Vec4 ) + "( " + value.GetValue() + " )" )
 {
 	m_type       = VariableType::Vec4;
 	value.m_used = true;
 }
 
 ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2 )
-	: Variable( TypeString( VariableType::Vec4 ) + "( " + value1.m_value + ", " + value2.m_value + " )" )
+	: Variable( TypeString( VariableType::Vec4 ) + "( " + value1.GetValue() + ", " + value2.GetValue() + " )" )
 {
 	m_type        = VariableType::Vec4;
 	value1.m_used = true;
@@ -993,7 +993,7 @@ ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2 )
 }
 
 ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, const Variable& value3 )
-	: Variable( TypeString( VariableType::Vec4 ) + "( " + value1.m_value + ", " + value2.m_value + ", " + value3.m_value + " )" )
+	: Variable( TypeString( VariableType::Vec4 ) + "( " + value1.GetValue() + ", " + value2.GetValue() + ", " + value3.GetValue() + " )" )
 {
 	m_type        = VariableType::Vec4;
 	value1.m_used = true;
@@ -1002,7 +1002,7 @@ ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, con
 }
 
 ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, const Variable& value3, const Variable& value4 )
-	: Variable( TypeString( VariableType::Vec4 ) + "( " + value1.m_value + ", " + value2.m_value + ", " + value3.m_value + ", " + value4.m_value + " )" )
+	: Variable( TypeString( VariableType::Vec4 ) + "( " + value1.GetValue() + ", " + value2.GetValue() + ", " + value3.GetValue() + ", " + value4.GetValue() + " )" )
 {
 	m_type        = VariableType::Vec4;
 	value1.m_used = true;
@@ -1012,7 +1012,7 @@ ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, con
 }
 
 ShaderInterface::Mat4::Mat4( const Variable& value )
-	: Variable( TypeString( VariableType::Mat4 ) + "( " + value.m_value + " )" )
+	: Variable( TypeString( VariableType::Mat4 ) + "( " + value.GetValue() + " )" )
 {
 	m_type       = VariableType::Mat4;
 	value.m_used = true;
@@ -1034,12 +1034,42 @@ ShaderInterface::Varying::Varying( VertexComponent component )
 	current_shader->m_varying_layout.Add( component );
 }
 
+std::string ShaderInterface::Varying::GetValue( void ) const
+{
+	if( current_graphics_api == GraphicsAPI::D3D11 )
+	{
+		switch( current_shader_type )
+		{
+			default:                   { assert( false );            } break;
+			case ShaderType::Fragment: { return "input."  + m_value; }
+			case ShaderType::Vertex:   { return "output." + m_value; }
+		}
+	}
+
+	return m_value;
+}
+
 ShaderInterface::Attribute::Attribute( VertexComponent component )
 	: Variable( GenerateName( "attribute" ) )
 {
 	m_stored = true;
 
 	current_shader->m_attribute_layout.Add( component );
+}
+
+std::string ShaderInterface::Attribute::GetValue() const
+{
+	if( current_graphics_api == GraphicsAPI::D3D11 )
+	{
+		switch( current_shader_type )
+		{
+			default:                   { assert( false );           } break;
+			case ShaderType::Fragment: { assert( false );           } break;
+			case ShaderType::Vertex:   { return "input." + m_value; }
+		}
+	}
+
+	return m_value;
 }
 
 ShaderInterface::UniformBase::UniformBase( VariableType type )
@@ -1055,7 +1085,7 @@ ShaderInterface::Variable ShaderInterface::Transpose( const Variable& rhs )
 {
 	rhs.m_used = true;
 
-	return Variable{ "transpose( " + rhs.m_value + " )" };
+	return Variable{ "transpose( " + rhs.GetValue() + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Sample( const Variable& sampler, const Variable& texcoord )
@@ -1067,12 +1097,12 @@ ShaderInterface::Variable ShaderInterface::Sample( const Variable& sampler, cons
 	{
 		case GraphicsAPI::D3D11:
 		{
-			return Variable{ sampler.m_value + ".Sample( default_sampler_state, " + texcoord.m_value + " )" };
+			return Variable{ sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )" };
 		}
 
 		case GraphicsAPI::OpenGL:
 		{
-			return Variable{ "texture( " + sampler.m_value + ", " + texcoord.m_value + " )" };
+			return Variable{ "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )" };
 		}
 	}
 
@@ -1084,7 +1114,7 @@ ShaderInterface::Variable ShaderInterface::Dot( const Variable& vec1, const Vari
 	vec1.m_used = true;
 	vec2.m_used = true;
 
-	return Variable{ "dot( " + vec1.m_value + ", " + vec2.m_value + " )" };
+	return Variable{ "dot( " + vec1.GetValue() + ", " + vec2.GetValue() + " )" };
 }
 
 void ShaderInterface::GenerateSourceHLSL( void )
@@ -1195,7 +1225,7 @@ void ShaderInterface::GenerateSourceHLSL( void )
 	m_source_code.append( "\nfloat4 PSMain( PixelData input ) : SV_TARGET\n{\n" );
 	current_shader_type = ShaderType::Fragment;
 	auto ps_result = PSMain();
-	m_source_code.append( "\treturn " + ps_result.m_value + ";\n}\n" );
+	m_source_code.append( "\treturn " + ps_result.GetValue() + ";\n}\n" );
 
 	{
 		std::ostringstream ss;
@@ -1279,7 +1309,7 @@ void ShaderInterface::GenerateSourceGLSL( void )
 	m_source_code.append( "\nvoid main()\n{\n" );
 	current_shader_type = ShaderType::Vertex;
 	auto vs_result = VSMain();
-	m_source_code.append( "\tgl_Position = " + vs_result.m_value + ";\n}\n" );
+	m_source_code.append( "\tgl_Position = " + vs_result.GetValue() + ";\n}\n" );
 
 	{
 		std::ostringstream ss;
@@ -1347,7 +1377,7 @@ void ShaderInterface::GenerateSourceGLSL( void )
 	m_source_code.append( "\nvoid main()\n{\n" );
 	current_shader_type = ShaderType::Fragment;
 	auto ps_result = PSMain();
-	m_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.m_value + " );\n}\n" );
+	m_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.GetValue() + " );\n}\n" );
 
 	{
 		std::ostringstream ss;

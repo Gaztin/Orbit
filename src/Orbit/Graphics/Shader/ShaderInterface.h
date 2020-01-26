@@ -88,6 +88,10 @@ protected:
 
 	public:
 
+		virtual std::string GetValue() const { return m_value; }
+
+	public:
+
 		Variable operator*( const Variable& ) const;
 		Variable operator+( const Variable& ) const;
 		Variable operator-( void )     const;
@@ -872,6 +876,10 @@ protected:
 
 		Varying( VertexComponent );
 
+	public:
+
+		std::string GetValue() const override;
+
 	};
 
 	template< VertexComponent VC >
@@ -904,6 +912,10 @@ protected:
 	public:
 
 		Attribute( VertexComponent );
+
+	public:
+
+		std::string GetValue() const override;
 
 	};
 
