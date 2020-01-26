@@ -172,6 +172,7 @@ VertexLayout ShaderInterface::GetVertexLayout( void ) const
 void ShaderInterface::VariableDummy::operator*=( const Variable& rhs ) const
 {
 	parent->StoreValue();
+	rhs.m_used = true;
 
 	current_shader->m_source_code.append( "\t" + parent->m_value + "." + value + " *= " + rhs.m_value + ";\n" );
 }
@@ -189,12 +190,15 @@ ShaderInterface::Variable::Variable( void )
 ShaderInterface::Variable::Variable( const Variable& other )
 	: m_value( other.m_value )
 {
+	other.m_used = true;
+
 	InitDummies();
 }
 
 ShaderInterface::Variable::Variable( Variable&& other )
 	: m_value( std::move( other.m_value ) )
 {
+	other.m_used = true;
 }
 
 ShaderInterface::Variable::Variable( double value )
@@ -214,21 +218,31 @@ ShaderInterface::Variable::Variable( std::string_view name )
 
 ShaderInterface::Variable ShaderInterface::Variable::operator*( const Variable& rhs ) const
 {
+	m_used     = true;
+	rhs.m_used = true;
+
 	return Variable{ "( " + m_value + " * " + rhs.m_value + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Variable::operator+( const Variable& rhs ) const
 {
+	m_used     = true;
+	rhs.m_used = true;
+
 	return Variable{ "( " + m_value + " + " + rhs.m_value + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Variable::operator-( void ) const
 {
+	m_used = true;
+
 	return Variable{ "( -" + m_value + " )" };
 }
 
 void ShaderInterface::Variable::operator=( const Variable& rhs )
 {
+	rhs.m_used = true;
+
 	StoreValue();
 
 	current_shader->m_source_code.append( "\t" + m_value + " = " + rhs.m_value + ";\n" );
@@ -236,6 +250,8 @@ void ShaderInterface::Variable::operator=( const Variable& rhs )
 
 void ShaderInterface::Variable::operator+=( const Variable& rhs )
 {
+	rhs.m_used = true;
+
 	StoreValue();
 
 	current_shader->m_source_code.append( "( " + m_value + " += " + rhs.m_value + " )" );
@@ -243,6 +259,8 @@ void ShaderInterface::Variable::operator+=( const Variable& rhs )
 
 void ShaderInterface::Variable::operator*=( const Variable& rhs )
 {
+	rhs.m_used = true;
+
 	StoreValue();
 
 	current_shader->m_source_code.append( "( " + m_value + " *= " + rhs.m_value + " )" );
@@ -956,61 +974,81 @@ void ShaderInterface::Variable::InitDummies( void )
 ShaderInterface::Float::Float( const Variable& value )
 	: Variable( value.m_value )
 {
-	m_type = VariableType::FLOAT;
+	m_type       = VariableType::FLOAT;
+	value.m_used = true;
 }
 
 ShaderInterface::Vec2::Vec2( const Variable& value )
 	: Variable( "vec2( " + value.m_value + " )" )
 {
-	m_type = VariableType::VEC2;
+	m_type       = VariableType::VEC2;
+	value.m_used = true;
 }
 
 ShaderInterface::Vec2::Vec2( const Variable& value1, const Variable& value2 )
 	: Variable( "vec2( " + value1.m_value + ", " + value2.m_value + " )" )
 {
-	m_type = VariableType::VEC2;
+	m_type        = VariableType::VEC2;
+	value1.m_used = true;
+	value2.m_used = true;
 }
 
 ShaderInterface::Vec3::Vec3( const Variable& value )
 	: Variable( "vec3( " + value.m_value + " )" )
 {
-	m_type = VariableType::VEC3;
+	m_type       = VariableType::VEC3;
+	value.m_used = true;
 }
 
 ShaderInterface::Vec3::Vec3( const Variable& value1, const Variable& value2 )
 	: Variable( "vec3( " + value1.m_value + ", " + value2.m_value + " )" )
 {
-	m_type = VariableType::VEC3;
+	m_type        = VariableType::VEC3;
+	value1.m_used = true;
+	value2.m_used = true;
 }
 
 ShaderInterface::Vec3::Vec3( const Variable& value1, const Variable& value2, const Variable& value3 )
 	: Variable( "vec3( " + value1.m_value + ", " + value2.m_value + ", " + value3.m_value + " )" )
 {
-	m_type = VariableType::VEC3;
+	m_type        = VariableType::VEC3;
+	value1.m_used = true;
+	value2.m_used = true;
+	value3.m_used = true;
 }
 
 ShaderInterface::Vec4::Vec4( const Variable& value )
 	: Variable( "vec4( " + value.m_value + " )" )
 {
-	m_type = VariableType::VEC4;
+	m_type       = VariableType::VEC4;
+	value.m_used = true;
 }
 
 ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2 )
 	: Variable( "vec4( " + value1.m_value + ", " + value2.m_value + " )" )
 {
-	m_type = VariableType::VEC4;
+	m_type        = VariableType::VEC4;
+	value1.m_used = true;
+	value2.m_used = true;
 }
 
 ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, const Variable& value3 )
 	: Variable( "vec4( " + value1.m_value + ", " + value2.m_value + ", " + value3.m_value + " )" )
 {
-	m_type = VariableType::VEC4;
+	m_type        = VariableType::VEC4;
+	value1.m_used = true;
+	value2.m_used = true;
+	value3.m_used = true;
 }
 
 ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, const Variable& value3, const Variable& value4 )
 	: Variable( "vec4( " + value1.m_value + ", " + value2.m_value + ", " + value3.m_value + ", " + value4.m_value + " )" )
 {
-	m_type = VariableType::VEC4;
+	m_type        = VariableType::VEC4;
+	value1.m_used = true;
+	value2.m_used = true;
+	value3.m_used = true;
+	value4.m_used = true;
 }
 
 ShaderInterface::Sampler::Sampler( void )
@@ -1046,16 +1084,24 @@ ShaderInterface::Uniform::Uniform( void )
 
 ShaderInterface::Variable ShaderInterface::Transpose( const Variable& rhs )
 {
+	rhs.m_used = true;
+
 	return Variable{ "transpose( " + rhs.m_value + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Sample( const Variable& sampler, const Variable& texcoord )
 {
+	sampler.m_used  = true;
+	texcoord.m_used = true;
+
 	return Variable{ "texture( " + sampler.m_value + ", " + texcoord.m_value + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Dot( const Variable& vec1, const Variable& vec2 )
 {
+	vec1.m_used = true;
+	vec2.m_used = true;
+
 	return Variable{ "dot( " + vec1.m_value + ", " + vec2.m_value + " )" };
 }
 

@@ -108,6 +108,7 @@ protected:
 		std::string  m_value;
 		VariableType m_type   = VariableType::UNKNOWN;
 		bool         m_stored = false;
+		mutable bool m_used   = false;
 
 	public:
 
