@@ -806,11 +806,43 @@ protected:
 
 	};
 
-	using Float   = Variable;
-	using Vec2    = Variable;
-	using Vec3    = Variable;
-	using Vec4    = Variable;
-	using Mat4    = Variable;
+	class ORB_API_GRAPHICS Float : public Variable
+	{
+	public:
+
+		Float( const Variable& );
+
+	};
+
+	class ORB_API_GRAPHICS Vec2 : public Variable
+	{
+	public:
+
+		Vec2( const Variable& );
+		Vec2( const Variable&, const Variable& );
+
+	};
+
+	class ORB_API_GRAPHICS Vec3 : public Variable
+	{
+	public:
+
+		Vec3( const Variable& );
+		Vec3( const Variable&, const Variable& );
+		Vec3( const Variable&, const Variable&, const Variable& );
+
+	};
+
+	class ORB_API_GRAPHICS Vec4 : public Variable
+	{
+	public:
+
+		Vec4( const Variable& );
+		Vec4( const Variable&, const Variable& );
+		Vec4( const Variable&, const Variable&, const Variable& );
+		Vec4( const Variable&, const Variable&, const Variable&, const Variable& );
+
+	};
 
 	class ORB_API_GRAPHICS Sampler : public Variable
 	{

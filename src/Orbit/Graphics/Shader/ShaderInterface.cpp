@@ -862,6 +862,66 @@ void ShaderInterface::Variable::InitDummies( void )
 	aaaa = VariableDummy{ this, "aaaa" };
 }
 
+ShaderInterface::Float::Float( const Variable& value )
+	: Variable( value.m_value )
+{
+	m_type = VariableType::FLOAT;
+}
+
+ShaderInterface::Vec2::Vec2( const Variable& value )
+	: Variable( "vec2( " + value.m_value + " )" )
+{
+	m_type = VariableType::VEC2;
+}
+
+ShaderInterface::Vec2::Vec2( const Variable& value1, const Variable& value2 )
+	: Variable( "vec2( " + value1.m_value + ", " + value2.m_value + " )" )
+{
+	m_type = VariableType::VEC2;
+}
+
+ShaderInterface::Vec3::Vec3( const Variable& value )
+	: Variable( "vec3( " + value.m_value + " )" )
+{
+	m_type = VariableType::VEC3;
+}
+
+ShaderInterface::Vec3::Vec3( const Variable& value1, const Variable& value2 )
+	: Variable( "vec3( " + value1.m_value + ", " + value2.m_value + " )" )
+{
+	m_type = VariableType::VEC3;
+}
+
+ShaderInterface::Vec3::Vec3( const Variable& value1, const Variable& value2, const Variable& value3 )
+	: Variable( "vec3( " + value1.m_value + ", " + value2.m_value + ", " + value3.m_value + " )" )
+{
+	m_type = VariableType::VEC3;
+}
+
+ShaderInterface::Vec4::Vec4( const Variable& value )
+	: Variable( "vec4( " + value.m_value + " )" )
+{
+	m_type = VariableType::VEC4;
+}
+
+ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2 )
+	: Variable( "vec4( " + value1.m_value + ", " + value2.m_value + " )" )
+{
+	m_type = VariableType::VEC4;
+}
+
+ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, const Variable& value3 )
+	: Variable( "vec4( " + value1.m_value + ", " + value2.m_value + ", " + value3.m_value + " )" )
+{
+	m_type = VariableType::VEC4;
+}
+
+ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, const Variable& value3, const Variable& value4 )
+	: Variable( "vec4( " + value1.m_value + ", " + value2.m_value + ", " + value3.m_value + ", " + value4.m_value + " )" )
+{
+	m_type = VariableType::VEC4;
+}
+
 ShaderInterface::Sampler::Sampler( void )
 	: Variable( GenerateName( "sampler" ) )
 {
