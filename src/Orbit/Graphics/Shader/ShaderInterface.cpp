@@ -156,9 +156,16 @@ ShaderInterface::Variable::Variable( const Variable& other )
 }
 
 ShaderInterface::Variable::Variable( Variable&& other )
-	: m_value( std::move( other.m_value ) )
+	: m_value ( std::move( other.m_value ) )
+	, m_type  ( other.m_type )
+	, m_stored( other.m_stored )
+	, m_used  ( other.m_used )
 {
-	other.m_used = true;
+	other.m_type   = VariableType::Unknown;
+	other.m_stored = false;
+	other.m_used   = false;
+
+	InitDummies();
 }
 
 ShaderInterface::Variable::Variable( double value )
