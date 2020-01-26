@@ -66,8 +66,9 @@ protected:
 
 	public:
 
-		Variable*   parent;
-		const char* value;
+		Variable*    parent;
+		const char*  value;
+		VariableType type;
 
 	};
 
@@ -84,7 +85,7 @@ protected:
 
 	protected:
 
-		explicit Variable( std::string_view );
+		explicit Variable( std::string_view, VariableType type = VariableType::Unknown );
 
 	public:
 
