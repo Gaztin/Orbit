@@ -872,7 +872,7 @@ protected:
 	{
 	public:
 
-		Uniform( void );
+		Uniform( VariableType );
 
 	};
 
@@ -889,10 +889,11 @@ protected:
 
 private:
 
-	std::string  m_source_code;
-	VertexLayout m_attribute_layout;
-	VertexLayout m_varying_layout;
-	uint32_t     m_sampler_count;
+	std::string             m_source_code;
+	std::vector< Uniform* > m_uniforms;
+	VertexLayout            m_attribute_layout;
+	VertexLayout            m_varying_layout;
+	uint32_t                m_sampler_count;
 
 };
 

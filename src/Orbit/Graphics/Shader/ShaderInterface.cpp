@@ -69,8 +69,11 @@ std::string ShaderInterface::GetSource( void )
 		m_source_code.reserve( 4096 );
 		current_shader = this;
 
-		m_source_code.append( "#if defined( VERTEX )\n\n" );
+		m_source_code.append( "#if defined( VERTEX )\n" );
 
+		size_t vertex_constants_insert_offset = m_source_code.size();
+
+		m_source_code.append( "\n" );
 		for( auto vc : m_attribute_layout )
 		{
 			std::ostringstream ss;
@@ -95,7 +98,6 @@ std::string ShaderInterface::GetSource( void )
 		}
 
 		m_source_code.append( "\n" );
-
 		for( auto vc : m_varying_layout )
 		{
 			std::ostringstream ss;
@@ -119,7 +121,37 @@ std::string ShaderInterface::GetSource( void )
 
 		m_source_code.append( "\nvoid main()\n{\n" );
 		auto vs_result = VSMain();
-		m_source_code.append( "\tgl_Position = " + vs_result.m_value + ";\n}\n\n#elif defined( FRAGMENT )\n" );
+		m_source_code.append( "\tgl_Position = " + vs_result.m_value + ";\n}\n" );
+
+		{
+			std::ostringstream ss;
+
+			for( size_t i = 0; i < m_uniforms.size(); ++i )
+			{
+				if( m_uniforms[ i ]->m_used )
+				{
+					ss << "\tORB_CONSTANT( ";
+					ss << TypeString( m_uniforms[ i ]->m_type );
+					ss << ", uniform_";
+					ss << i;
+					ss << " );\n";
+
+					/* Reset state for next shader pass */
+					m_uniforms[ i ]->m_used = false;
+				}
+			}
+
+			if( ss.rdbuf()->in_avail() == 0 )
+			{
+				const std::string what = "\nORB_CONSTANTS_BEGIN( VertexConstants )\n" + ss.str() + "ORB_CONSTANTS_END\n";
+
+				m_source_code.insert( vertex_constants_insert_offset, what );
+			}
+		}
+
+		m_source_code.append( "\n#elif defined( FRAGMENT )\n" );
+
+		size_t pixel_constants_insert_offset = m_source_code.size();
 
 		m_source_code.append( "\n" );
 		for( uint32_t i = 0; i < m_sampler_count; ++i )
@@ -156,7 +188,35 @@ std::string ShaderInterface::GetSource( void )
 
 		m_source_code.append( "\nvoid main()\n{\n" );
 		auto ps_result = PSMain();
-		m_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.m_value + " );\n}\n\n#endif\n" );
+		m_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.m_value + " );\n}\n" );
+
+		{
+			std::ostringstream ss;
+
+			for( size_t i = 0; i < m_uniforms.size(); ++i )
+			{
+				if( m_uniforms[ i ]->m_used )
+				{
+					ss << "\tORB_CONSTANT( ";
+					ss << TypeString( m_uniforms[ i ]->m_type );
+					ss << ", uniform_";
+					ss << i;
+					ss << " );\n";
+
+					/* Reset state for next shader pass */
+					m_uniforms[ i ]->m_used = false;
+				}
+			}
+
+			if( ss.rdbuf()->in_avail() == 0 )
+			{
+				const std::string what = "\nORB_CONSTANTS_BEGIN( PixelConstants )\n" + ss.str() + "ORB_CONSTANTS_END\n";
+
+				m_source_code.insert( pixel_constants_insert_offset, what );
+			}
+		}
+
+		m_source_code.append( "\n#endif\n" );
 	}
 
 	LogInfo( "%s\n", m_source_code.c_str() );
@@ -1076,10 +1136,13 @@ ShaderInterface::Attribute::Attribute( VertexComponent component )
 	current_shader->m_attribute_layout.Add( component );
 }
 
-ShaderInterface::Uniform::Uniform( void )
+ShaderInterface::Uniform::Uniform( VariableType type )
 	: Variable( GenerateName( "uniform" ) )
 {
 	m_stored = true;
+	m_type   = type;
+
+	current_shader->m_uniforms.push_back( this );
 }
 
 ShaderInterface::Variable ShaderInterface::Transpose( const Variable& rhs )
