@@ -60,16 +60,16 @@ protected:
 
 	public:
 
+		void operator*=( const Variable& rhs ) const;
 
 	public:
 
 		operator Variable( void ) const;
 
-		Variable operator*=( const Variable& rhs ) const;
+	public:
 
-	private:
-
-		std::string m_name;
+		Variable*   parent;
+		std::string value;
 
 	};
 
@@ -80,10 +80,8 @@ protected:
 	public:
 
 		Variable( void );
-		Variable( const Variable& );
-		Variable( const Variable&, const Variable& );
-		Variable( const Variable&, const Variable&, const Variable& );
-		Variable( const Variable&, const Variable&, const Variable&, const Variable& );
+		explicit Variable( const Variable& );
+		Variable( Variable&& );
 		Variable( double );
 
 	protected:
@@ -92,25 +90,24 @@ protected:
 
 	public:
 
-		Variable& operator=( const Variable& );
-
-	public:
-
 		Variable operator*( const Variable& ) const;
 		Variable operator+( const Variable& ) const;
 		Variable operator-( void )     const;
 
-		Variable& operator+=( const Variable& );
-		Variable& operator*=( const Variable& );
+		void operator= ( const Variable& );
+		void operator+=( const Variable& );
+		void operator*=( const Variable& );
 
 	private:
 
+		void StoreValue ( void );
 		void InitDummies( void );
 
 	private:
 
-		std::string m_name;
+		std::string  m_value;
 		VariableType m_type   = VariableType::UNKNOWN;
+		bool         m_stored = false;
 
 	public:
 

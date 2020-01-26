@@ -57,18 +57,14 @@ std::string ShaderInterface::GetSource( void )
 		m_source_code.reserve( 4096 );
 		current_shader = this;
 
-		m_source_code.append( "\nPixelData VSMain( VertexData input )\n{\n" );
+		m_source_code.append( "#if defined( VERTEX )\n\nvoid main()\n{\n" );
 		auto vs_result = VSMain();
-		m_source_code.append( "}\n" );
-
-		LogInfo( "%s\n", m_source_code.c_str() );
-
-		m_source_code.append( "\nfloat4 PSMain( PixelData input )\n{\n" );
+		m_source_code.append( "\tgl_Position = " + vs_result.m_value + ";\n}\n\n#elif defined( FRAGMENT )\n\nvoid main()\n{\n" );
 		auto ps_result = PSMain();
-		m_source_code.append( "}\n" );
-
-		LogInfo( "%s\n", m_source_code.c_str() );
+		m_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.m_value + " );\n}\n\n#endif\n" );
 	}
+
+	LogInfo( "%s\n", m_source_code.c_str() );
 
 	return m_source_code;
 }
@@ -78,91 +74,97 @@ VertexLayout ShaderInterface::GetVertexLayout( void ) const
 	return VertexLayout{ };
 }
 
+void ShaderInterface::VariableDummy::operator*=( const Variable& rhs ) const
 {
+	parent->StoreValue();
 
+	current_shader->m_source_code.append( "\t" + parent->m_value + "." + value + " *= " + rhs.m_value + ";\n" );
 }
 
-ShaderInterface::Variable ShaderInterface::VariableDummy::operator*=( const Variable& rhs ) const
+ShaderInterface::VariableDummy::operator ShaderInterface::Variable( void ) const
 {
-	return Variable{ m_name + " *= " + rhs.m_name };
+	return Variable{ parent->m_value + "." + value };
 }
 
 ShaderInterface::Variable::Variable( void )
-	: m_name{ GenerateName( "local" ) }
 {
 	InitDummies();
 }
 
-ShaderInterface::Variable::Variable( const Variable& )
-	: m_name{ GenerateName( "local" ) }
+ShaderInterface::Variable::Variable( const Variable& other )
+	: m_value( other.m_value )
 {
 	InitDummies();
 }
 
-ShaderInterface::Variable::Variable( const Variable&, const Variable& )
-	: m_name{ GenerateName( "local" ) }
+ShaderInterface::Variable::Variable( Variable&& other )
+	: m_value( std::move( other.m_value ) )
 {
-	InitDummies();
 }
 
-ShaderInterface::Variable::Variable( const Variable&, const Variable&, const Variable& )
-	: m_name{ GenerateName( "local" ) }
+ShaderInterface::Variable::Variable( double value )
 {
-	InitDummies();
-}
+	std::ostringstream ss;
+	ss << std::fixed << value;
+	m_value = ss.str();
 
-ShaderInterface::Variable::Variable( const Variable&, const Variable&, const Variable&, const Variable& )
-	: m_name{ GenerateName( "local" ) }
-{
-	InitDummies();
-}
-
-ShaderInterface::Variable::Variable( double )
-	: m_name{ GenerateName( "local" ) }
-{
 	InitDummies();
 }
 
 ShaderInterface::Variable::Variable( std::string_view name )
-	: m_name{ name }
+	: m_value( name )
 {
 	InitDummies();
 }
 
-ShaderInterface::Variable& ShaderInterface::Variable::operator=( const Variable& rhs )
-{
-	current_shader->m_source_code.append( "\t" + m_name + " = " + rhs.m_name + ";\n" );
-
-	return *this;
-}
-
 ShaderInterface::Variable ShaderInterface::Variable::operator*( const Variable& rhs ) const
 {
-	return Variable{ "( " + m_name + " * " + rhs.m_name + " )" };
+	return Variable{ "( " + m_value + " * " + rhs.m_value + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Variable::operator+( const Variable& rhs ) const
 {
-	return Variable{ "( " + m_name + " + " + rhs.m_name + " )" };
+	return Variable{ "( " + m_value + " + " + rhs.m_value + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Variable::operator-( void ) const
 {
-	return Variable{ "( -" + m_name + " )" };
+	return Variable{ "( -" + m_value + " )" };
 }
 
-ShaderInterface::Variable& ShaderInterface::Variable::operator+=( const Variable& rhs )
+void ShaderInterface::Variable::operator=( const Variable& rhs )
 {
-	current_shader->m_source_code.append( "( " + m_name + " += " + rhs.m_name + " )" );
+	StoreValue();
 
-	return *this;
+	current_shader->m_source_code.append( "\t" + m_value + " = " + rhs.m_value + ";\n" );
 }
 
-ShaderInterface::Variable& ShaderInterface::Variable::operator*=( const Variable& rhs )
+void ShaderInterface::Variable::operator+=( const Variable& rhs )
 {
-	current_shader->m_source_code.append( "( " + m_name + " *= " + rhs.m_name + " )" );
+	StoreValue();
 
-	return *this;
+	current_shader->m_source_code.append( "( " + m_value + " += " + rhs.m_value + " )" );
+}
+
+void ShaderInterface::Variable::operator*=( const Variable& rhs )
+{
+	StoreValue();
+
+	current_shader->m_source_code.append( "( " + m_value + " *= " + rhs.m_value + " )" );
+}
+
+void ShaderInterface::Variable::StoreValue( void )
+{
+	if( !m_stored )
+	{
+		auto value = m_value;
+		m_value = GenerateName( "local" );
+
+		auto typestring = TypeString( m_type );
+		current_shader->m_source_code.append( "\t" + typestring + " " + m_value + " = " + value + ";\n" );
+
+		m_stored = true;
+	}
 }
 
 void ShaderInterface::Variable::InitDummies( void )
@@ -919,36 +921,41 @@ ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, con
 ShaderInterface::Sampler::Sampler( void )
 	: Variable( GenerateName( "sampler" ) )
 {
+	m_type   = VariableType::SAMPLER;
+	m_stored = true;
 }
 
 ShaderInterface::Varying::Varying( void )
 	: Variable( GenerateName( "varying" ) )
 {
+	m_stored = true;
 }
 
 ShaderInterface::Attribute::Attribute( void )
 	: Variable( GenerateName( "attribute" ) )
 {
+	m_stored = true;
 }
 
 ShaderInterface::Uniform::Uniform( void )
 	: Variable( GenerateName( "uniform" ) )
 {
+	m_stored = true;
 }
 
 ShaderInterface::Variable ShaderInterface::Transpose( const Variable& rhs )
 {
-	return Variable{ "transpose( " + rhs.m_name + " )" };
+	return Variable{ "transpose( " + rhs.m_value + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Sample( const Variable& sampler, const Variable& texcoord )
 {
-	return Variable{ sampler.m_name + ".Sample( default_sampler_state, " + texcoord.m_name + " )" };
+	return Variable{ "texture( " + sampler.m_value + ", " + texcoord.m_value + " )" };
 }
 
 ShaderInterface::Variable ShaderInterface::Dot( const Variable& vec1, const Variable& vec2 )
 {
-	return Variable{ "dot( " + vec1.m_name + ", " + vec2.m_name + " )" };
+	return Variable{ "dot( " + vec1.m_value + ", " + vec2.m_value + " )" };
 }
 
 ORB_NAMESPACE_END
