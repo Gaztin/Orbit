@@ -1142,7 +1142,7 @@ ShaderInterface::Attribute::Attribute( VertexComponent component )
 	current_shader->m_attribute_layout.Add( component );
 }
 
-ShaderInterface::Uniform::Uniform( VariableType type )
+ShaderInterface::UniformBase::UniformBase( VariableType type )
 	: Variable( GenerateName( "uniform" ) )
 {
 	m_stored = true;

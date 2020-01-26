@@ -33,20 +33,20 @@ private:
 
 	Sampler diffuse_texture;
 
-	Attribute a_position = Orbit::VertexComponent::Position;
-	Attribute a_color    = Orbit::VertexComponent::Color;
-	Attribute a_texcoord = Orbit::VertexComponent::TexCoord;
-	Attribute a_normal   = Orbit::VertexComponent::Normal;
+	Attribute::Position a_position;
+	Attribute::Color    a_color;
+	Attribute::TexCoord a_texcoord;
+	Attribute::Normal   a_normal;
 
-	Varying v_position = Orbit::VertexComponent::Position;
-	Varying v_color    = Orbit::VertexComponent::Color;
-	Varying v_texcoord = Orbit::VertexComponent::TexCoord;
-	Varying v_normal   = Orbit::VertexComponent::Normal;
+	Varying::Position v_position;
+	Varying::Color    v_color;
+	Varying::TexCoord v_texcoord;
+	Varying::Normal   v_normal;
 
-	Uniform u_view_projection = VariableType::Mat4;
-	Uniform u_model           = VariableType::Mat4;
-	Uniform u_model_inverse   = VariableType::Mat4;
+	Uniform< Mat4 > u_view_projection;
+	Uniform< Mat4 > u_model;
+	Uniform< Mat4 > u_model_inverse;
 
-	Uniform u_light_dir       = VariableType::Vec3;
+	Uniform< Vec3 > u_light_dir;
 
 };

@@ -854,31 +854,82 @@ protected:
 
 	};
 
+	template< VertexComponent VC >
+	class VaryingHelper;
+
 	class ORB_API_GRAPHICS Varying : public Variable
 	{
 	public:
 
-		Varying( VertexComponent );
-
-	public:
+		using Position = VaryingHelper< VertexComponent::Position >;
+		using Normal   = VaryingHelper< VertexComponent::Normal >;
+		using Color    = VaryingHelper< VertexComponent::Color >;
+		using TexCoord = VaryingHelper< VertexComponent::TexCoord >;
 
 		using Variable::operator=;
 
+	public:
+
+		Varying( VertexComponent );
+
 	};
+
+	template< VertexComponent VC >
+	class VaryingHelper : public Varying
+	{
+	public:
+
+		using Varying::operator=;
+
+	public:
+
+		VaryingHelper( void ) : Varying( VC ) { }
+
+	};
+
+	template< VertexComponent VC >
+	class AttributeHelper;
 
 	class ORB_API_GRAPHICS Attribute : public Variable
 	{
+	public:
+
+		using Position = AttributeHelper< VertexComponent::Position >;
+		using Normal   = AttributeHelper< VertexComponent::Normal >;
+		using Color    = AttributeHelper< VertexComponent::Color >;
+		using TexCoord = AttributeHelper< VertexComponent::TexCoord >;
+
+		using Variable::operator=;
+
 	public:
 
 		Attribute( VertexComponent );
 
 	};
 
-	class ORB_API_GRAPHICS Uniform : public Variable
+	template< VertexComponent VC >
+	class AttributeHelper : public Attribute
 	{
 	public:
 
-		Uniform( VariableType );
+		AttributeHelper( void ) : Attribute( VC ) { }
+
+	};
+
+	class ORB_API_GRAPHICS UniformBase : public Variable
+	{
+	public:
+
+		UniformBase( VariableType );
+
+	};
+
+	template< typename T >
+	class Uniform : public UniformBase
+	{
+	public:
+
+		Uniform( void );
 
 	};
 
@@ -895,12 +946,27 @@ protected:
 
 private:
 
-	std::string             m_source_code;
-	std::vector< Uniform* > m_uniforms;
-	VertexLayout            m_attribute_layout;
-	VertexLayout            m_varying_layout;
-	uint32_t                m_sampler_count;
+	std::string                 m_source_code;
+	std::vector< UniformBase* > m_uniforms;
+	VertexLayout                m_attribute_layout;
+	VertexLayout                m_varying_layout;
+	uint32_t                    m_sampler_count;
 
 };
+
+template<>
+inline ShaderInterface::Uniform< ShaderInterface::Float >::Uniform( void ) : UniformBase( VariableType::Float ) { }
+
+template<>
+inline ShaderInterface::Uniform< ShaderInterface::Vec2 >::Uniform( void ) : UniformBase( VariableType::Vec2 ) { }
+
+template<>
+inline ShaderInterface::Uniform< ShaderInterface::Vec3 >::Uniform( void ) : UniformBase( VariableType::Vec3 ) { }
+
+template<>
+inline ShaderInterface::Uniform< ShaderInterface::Vec4 >::Uniform( void ) : UniformBase( VariableType::Vec4 ) { }
+
+template<>
+inline ShaderInterface::Uniform< ShaderInterface::Mat4 >::Uniform( void ) : UniformBase( VariableType::Mat4 ) { }
 
 ORB_NAMESPACE_END
