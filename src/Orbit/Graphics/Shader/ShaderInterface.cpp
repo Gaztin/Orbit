@@ -37,6 +37,19 @@ static std::string GenerateName( const std::string prefix )
 	return ss.str();
 }
 
+static std::string TypeString( ShaderInterface::VariableType type )
+{
+	switch( type )
+	{
+		default:                                   { return "unknown"; }
+		case ShaderInterface::VariableType::FLOAT: { return "float"; }
+		case ShaderInterface::VariableType::VEC2:  { return "vec2"; }
+		case ShaderInterface::VariableType::VEC3:  { return "vec3"; }
+		case ShaderInterface::VariableType::VEC4:  { return "vec4"; }
+		case ShaderInterface::VariableType::MAT4:  { return "mat4"; }
+	}
+}
+
 std::string ShaderInterface::GetSource( void )
 {
 	if( m_source_code.empty() )

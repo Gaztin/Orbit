@@ -27,6 +27,21 @@ class ORB_API_GRAPHICS ShaderInterface
 {
 public:
 
+	enum class VariableType
+	{
+		UNKNOWN = 0,
+
+		FLOAT,
+		VEC2,
+		VEC3,
+		VEC4,
+		MAT4,
+
+		SAMPLER,
+	};
+
+public:
+
 	ShaderInterface( void ) = default;
 	virtual ~ShaderInterface( void ) = default;
 
@@ -97,6 +112,7 @@ protected:
 	private:
 
 		std::string m_name;
+		VariableType m_type   = VariableType::UNKNOWN;
 
 	public:
 
