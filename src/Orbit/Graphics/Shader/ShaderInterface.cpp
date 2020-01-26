@@ -1114,7 +1114,6 @@ ShaderInterface::Vec4::Vec4( const Variable& value1, const Variable& value2, con
 ShaderInterface::Sampler::Sampler( void )
 	: Variable( GenerateName( "sampler" ) )
 {
-	m_type   = VariableType::Sampler;
 	m_stored = true;
 
 	++current_shader->m_sampler_count;
