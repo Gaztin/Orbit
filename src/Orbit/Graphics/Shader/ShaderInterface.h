@@ -60,8 +60,6 @@ protected:
 
 	public:
 
-		VariableDummy( void ) = default;
-		explicit VariableDummy( Variable* parent, const std::string& name );
 
 	public:
 

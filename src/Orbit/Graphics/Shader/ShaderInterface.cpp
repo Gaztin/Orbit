@@ -78,14 +78,8 @@ VertexLayout ShaderInterface::GetVertexLayout( void ) const
 	return VertexLayout{ };
 }
 
-ShaderInterface::VariableDummy::VariableDummy( Variable* parent, const std::string& name )
-	: m_name( parent->m_name + "." + name )
 {
-}
 
-ShaderInterface::VariableDummy::operator ShaderInterface::Variable( void ) const
-{
-	return Variable{ m_name };
 }
 
 ShaderInterface::Variable ShaderInterface::VariableDummy::operator*=( const Variable& rhs ) const
