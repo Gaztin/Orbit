@@ -851,7 +851,7 @@ protected:
 	{
 	public:
 
-		Varying( void );
+		Varying( VertexComponent );
 
 	public:
 
@@ -863,7 +863,7 @@ protected:
 	{
 	public:
 
-		Attribute( void );
+		Attribute( VertexComponent );
 
 	};
 
@@ -888,7 +888,10 @@ protected:
 
 private:
 
-	std::string m_source_code;
+	std::string  m_source_code;
+	VertexLayout m_attribute_layout;
+	VertexLayout m_varying_layout;
+	uint32_t     m_sampler_count;
 
 };
 

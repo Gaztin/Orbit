@@ -17,6 +17,7 @@
 
 #pragma once
 #include <Orbit/Graphics/Shader/ShaderInterface.h>
+#include <Orbit/Graphics/Shader/VertexLayout.h>
 
 class ModelShader final : public Orbit::ShaderInterface
 {
@@ -33,15 +34,15 @@ private:
 
 	Sampler diffuse_texture;
 
-	Attribute a_position;
-	Attribute a_color;
-	Attribute a_texcoord;
-	Attribute a_normal;
+	Attribute a_position = Orbit::VertexComponent::Position;
+	Attribute a_color    = Orbit::VertexComponent::Color;
+	Attribute a_texcoord = Orbit::VertexComponent::TexCoord;
+	Attribute a_normal   = Orbit::VertexComponent::Normal;
 
-	Varying v_position;
-	Varying v_color;
-	Varying v_texcoord;
-	Varying v_normal;
+	Varying v_position = Orbit::VertexComponent::Position;
+	Varying v_color    = Orbit::VertexComponent::Color;
+	Varying v_texcoord = Orbit::VertexComponent::TexCoord;
+	Varying v_normal   = Orbit::VertexComponent::Normal;
 
 	Uniform u_view_projection;
 	Uniform u_model;

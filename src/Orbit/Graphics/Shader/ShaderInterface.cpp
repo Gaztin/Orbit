@@ -19,6 +19,7 @@
 
 #include "Orbit/Core/IO/Log.h"
 
+#include <cassert>
 #include <map>
 #include <sstream>
 
@@ -68,9 +69,92 @@ std::string ShaderInterface::GetSource( void )
 		m_source_code.reserve( 4096 );
 		current_shader = this;
 
-		m_source_code.append( "#if defined( VERTEX )\n\nvoid main()\n{\n" );
+		m_source_code.append( "#if defined( VERTEX )\n\n" );
+
+		for( auto vc : m_attribute_layout )
+		{
+			std::ostringstream ss;
+			ss << "ORB_ATTRIBUTE( ";
+			ss << vc.index;
+			ss << " ) ";
+
+			switch( vc.GetDataCount() )
+			{
+				default: { assert( false ); } break;
+				case 1:  { ss << "float ";  } break;
+				case 2:  { ss << "vec2 ";   } break;
+				case 3:  { ss << "vec3 ";   } break;
+				case 4:  { ss << "vec4 ";   } break;
+			}
+
+			ss << "attribute_";
+			ss << vc.index;
+			ss << ";\n";
+
+			m_source_code.append( ss.str() );
+		}
+
+		m_source_code.append( "\n" );
+
+		for( auto vc : m_varying_layout )
+		{
+			std::ostringstream ss;
+			ss << "ORB_VARYING ";
+
+			switch( vc.GetDataCount() )
+			{
+				default: { assert( false ); } break;
+				case 1:  { ss << "float ";  } break;
+				case 2:  { ss << "vec2 ";   } break;
+				case 3:  { ss << "vec3 ";   } break;
+				case 4:  { ss << "vec4 ";   } break;
+			}
+
+			ss << "varying_";
+			ss << vc.index;
+			ss << ";\n";
+
+			m_source_code.append( ss.str() );
+		}
+
+		m_source_code.append( "\nvoid main()\n{\n" );
 		auto vs_result = VSMain();
-		m_source_code.append( "\tgl_Position = " + vs_result.m_value + ";\n}\n\n#elif defined( FRAGMENT )\n\nvoid main()\n{\n" );
+		m_source_code.append( "\tgl_Position = " + vs_result.m_value + ";\n}\n\n#elif defined( FRAGMENT )\n" );
+
+		m_source_code.append( "\n" );
+		for( uint32_t i = 0; i < m_sampler_count; ++i )
+		{
+			std::ostringstream ss;
+			ss << "uniform sampler2D sampler_";
+			ss << i;
+			ss << ";\n";
+
+			m_source_code.append( ss.str() );
+		}
+
+		m_source_code.append( "\n" );
+		for( auto vc : m_varying_layout )
+		{
+			std::ostringstream ss;
+			ss << "ORB_VARYING ";
+
+			switch( vc.GetDataCount() )
+			{
+				default: { assert( false ); } break;
+				case 1:  { ss << "float ";  } break;
+				case 2:  { ss << "vec2 ";   } break;
+				case 3:  { ss << "vec3 ";   } break;
+				case 4:  { ss << "vec4 ";   } break;
+			}
+
+			ss << "varying_";
+			ss << vc.index;
+			ss << ";\n";
+
+			m_source_code.append( ss.str() );
+		}
+
+		m_source_code.append( "\nvoid main()\n{\n" );
 		auto ps_result = PSMain();
 		m_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.m_value + " );\n}\n\n#endif\n" );
 	}
@@ -934,18 +1018,24 @@ ShaderInterface::Sampler::Sampler( void )
 {
 	m_type   = VariableType::SAMPLER;
 	m_stored = true;
+
+	++current_shader->m_sampler_count;
 }
 
-ShaderInterface::Varying::Varying( void )
+ShaderInterface::Varying::Varying( VertexComponent component )
 	: Variable( GenerateName( "varying" ) )
 {
 	m_stored = true;
+
+	current_shader->m_varying_layout.Add( component );
 }
 
-ShaderInterface::Attribute::Attribute( void )
+ShaderInterface::Attribute::Attribute( VertexComponent component )
 	: Variable( GenerateName( "attribute" ) )
 {
 	m_stored = true;
+
+	current_shader->m_attribute_layout.Add( component );
 }
 
 ShaderInterface::Uniform::Uniform( void )
