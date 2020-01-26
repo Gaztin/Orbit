@@ -42,8 +42,8 @@ public:
 
 public:
 
-	ShaderInterface( void ) = default;
-	virtual ~ShaderInterface( void ) = default;
+	ShaderInterface( void );
+	virtual ~ShaderInterface( void );
 
 public:
 

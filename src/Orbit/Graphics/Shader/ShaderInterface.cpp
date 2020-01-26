@@ -50,6 +50,17 @@ static std::string TypeString( ShaderInterface::VariableType type )
 	}
 }
 
+ShaderInterface::ShaderInterface( void )
+{
+	current_shader = this;
+}
+
+ShaderInterface::~ShaderInterface( void )
+{
+	if( current_shader == this )
+		current_shader = nullptr;
+}
+
 std::string ShaderInterface::GetSource( void )
 {
 	if( m_source_code.empty() )
