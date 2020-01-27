@@ -89,7 +89,7 @@ protected:
 
 	public:
 
-		virtual std::string GetValue() const { return m_value; }
+		virtual std::string GetValue( void ) const { return m_value; }
 
 	public:
 
