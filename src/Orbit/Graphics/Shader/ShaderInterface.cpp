@@ -141,7 +141,7 @@ ShaderInterface::VariableDummy::operator ShaderInterface::Variable( void ) const
 
 ShaderInterface::Variable::Variable( void )
 {
-	InitDummies();
+	InitProxies();
 }
 
 ShaderInterface::Variable::Variable( const Variable& other )
@@ -149,7 +149,7 @@ ShaderInterface::Variable::Variable( const Variable& other )
 {
 	other.m_used = true;
 
-	InitDummies();
+	InitProxies();
 }
 
 ShaderInterface::Variable::Variable( Variable&& other )
@@ -162,7 +162,7 @@ ShaderInterface::Variable::Variable( Variable&& other )
 	other.m_stored = false;
 	other.m_used   = false;
 
-	InitDummies();
+	InitProxies();
 }
 
 ShaderInterface::Variable::Variable( double value )
@@ -171,14 +171,14 @@ ShaderInterface::Variable::Variable( double value )
 	ss << std::fixed << value;
 	m_value = ss.str();
 
-	InitDummies();
+	InitProxies();
 }
 
 ShaderInterface::Variable::Variable( std::string_view name, VariableType type )
 	: m_value( name )
 	, m_type ( type )
 {
-	InitDummies();
+	InitProxies();
 }
 
 ShaderInterface::Variable ShaderInterface::Variable::operator*( const Variable& rhs ) const
@@ -249,7 +249,7 @@ void ShaderInterface::Variable::StoreValue( void )
 	}
 }
 
-void ShaderInterface::Variable::InitDummies( void )
+void ShaderInterface::Variable::InitProxies( void )
 {
 	x    = VariableDummy{ this, "x", VariableType::Float };
 	y    = VariableDummy{ this, "y", VariableType::Float };
