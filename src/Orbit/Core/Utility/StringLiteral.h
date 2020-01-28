@@ -23,7 +23,8 @@ ORB_NAMESPACE_BEGIN
 template< char... Chars >
 struct StringLiteral
 {
-	static constexpr char value[ sizeof...( Chars ) + 1 ] = { Chars..., '\0' };
+	static constexpr size_t length              = sizeof...( Chars );
+	static constexpr char   value[ length + 1 ] = { Chars..., '\0' };
 };
 
 template< size_t Index, size_t Length >
