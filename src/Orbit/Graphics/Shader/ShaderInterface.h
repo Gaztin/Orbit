@@ -64,6 +64,21 @@ protected:
 
 	public:
 
+		static constexpr VariableType GetVariableType( void )
+		{
+			switch( proxy_name.length )
+			{
+				case 1: { return VariableType::Float; }
+				case 2: { return VariableType::Vec2;  }
+				case 3: { return VariableType::Vec3;  }
+				case 4: { return VariableType::Vec4;  }
+			}
+
+			return VariableType::Unknown;
+		}
+
+	public:
+
 		void operator*=( const Variable& rhs ) const
 		{
 			parent->StoreValue();
@@ -71,11 +86,9 @@ protected:
 			static_cast< Variable >( *this ) *= rhs;
 		}
 
-	public:
-
 		operator Variable( void ) const
 		{
-			Variable proxy_variable( parent->GetValue() + "." + proxy_name.value, type );
+			Variable proxy_variable( parent->GetValue() + "." + proxy_name.value, GetVariableType() );
 
 			/* If parent is stored, then the proxy can be considered stored too.
 			 * Otherwise, we'd not be able to manipulate the proxies within variables.
@@ -88,8 +101,7 @@ protected:
 
 	public:
 
-		Variable*    parent;
-		VariableType type;
+		Variable* parent;
 
 	};
 
