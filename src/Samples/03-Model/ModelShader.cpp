@@ -22,7 +22,7 @@ ModelShader::Vec4 ModelShader::VSMain( void )
 	v_position = u_view_projection * u_model * a_position;
 	v_color    = a_color;
 	v_texcoord = a_texcoord;
-	v_normal   = ( Transpose( u_model_inverse ) * Vec4( a_normal, 1.0 ) ).xyz;
+	v_normal   = ( Transpose( u_model_inverse ) * Vec4( a_normal, 1.0 ) )->xyz;
 
 	return v_position;
 }
@@ -33,7 +33,7 @@ ModelShader::Vec4 ModelShader::PSMain( void )
 	Vec4 out_color = tex_color + v_color;
 
 	Float diffuse  = -Dot( v_normal, u_light_dir );
-	out_color.rgb *= diffuse;
+	out_color->rgb *= diffuse;
 
 	return out_color;
 }
