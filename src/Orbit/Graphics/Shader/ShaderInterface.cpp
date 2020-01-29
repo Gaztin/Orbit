@@ -190,14 +190,16 @@ ShaderInterface::Variable ShaderInterface::Variable::operator-( void ) const
 	return Variable( "( -" + GetValue() + " )", m_type );
 }
 
-ShaderInterface::Variable* ShaderInterface::Variable::operator->( void )
+ShaderInterface::Swizzle* ShaderInterface::Variable::operator->( void )
 {
+	static Swizzle swizzle;
+
 	StoreValue();
 
 	m_used                     = true;
 	s_latest_accessed_variable = this;
 
-	return this;
+	return &swizzle;
 }
 
 void ShaderInterface::Variable::operator=( const Variable& rhs )
