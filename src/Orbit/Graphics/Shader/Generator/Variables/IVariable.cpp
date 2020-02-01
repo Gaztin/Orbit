@@ -23,7 +23,7 @@
 #include "Orbit/Graphics/Shader/Generator/Variables/Vec3.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
 #include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-#include "Orbit/Graphics/Shader/Generator/ShaderCode.h"
+#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
 #include "Orbit/Graphics/Shader/Generator/Swizzle.h"
 
 #include <map>
@@ -79,7 +79,7 @@ namespace ShaderGen
 			m_value = ss.str();
 
 			const std::string typestring( VariableTypeToString( m_type ) );
-			IGenerator::GetCurrentShaderCode()->code.append( "\t" + typestring + " " + m_value + " = " + value + ";\n" );
+			IGenerator::GetCurrentMainFunction()->code.append( "\t" + typestring + " " + m_value + " = " + value + ";\n" );
 
 			m_stored = true;
 		}
@@ -90,7 +90,7 @@ namespace ShaderGen
 		SetUsed();
 		rhs.SetUsed();
 
-		switch( IGenerator::GetCurrentShaderCode()->language )
+		switch( IGenerator::GetCurrentMainFunction()->shader_language )
 		{
 			case ShaderLanguage::HLSL:
 			{
@@ -134,7 +134,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IGenerator::GetCurrentShaderCode()->code.append( "\t" + GetValue() + " = " + rhs.GetValue() + ";\n" );
+		IGenerator::GetCurrentMainFunction()->code.append( "\t" + GetValue() + " = " + rhs.GetValue() + ";\n" );
 	}
 
 	void IVariable::operator+=( const IVariable& rhs )
@@ -142,7 +142,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IGenerator::GetCurrentShaderCode()->code.append( "\t" + GetValue() + " += " + rhs.GetValue() + ";\n" );
+		IGenerator::GetCurrentMainFunction()->code.append( "\t" + GetValue() + " += " + rhs.GetValue() + ";\n" );
 	}
 
 	void IVariable::operator*=( const IVariable& rhs )
@@ -152,7 +152,7 @@ namespace ShaderGen
 		/* TODO: if m_type == VariableType::Mat4, do mul for HLSL */
 
 		StoreValue();
-		IGenerator::GetCurrentShaderCode()->code.append( "\t" + GetValue() + " *= " + rhs.GetValue() + ";\n" );
+		IGenerator::GetCurrentMainFunction()->code.append( "\t" + GetValue() + " *= " + rhs.GetValue() + ";\n" );
 	}
 }
 

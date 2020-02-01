@@ -29,7 +29,7 @@ ORB_NAMESPACE_BEGIN
 namespace ShaderGen
 {
 	class  UniformBase;
-	struct ShaderCode;
+	struct MainFunction;
 
 	class ORB_API_GRAPHICS IGenerator
 	{
@@ -50,8 +50,8 @@ namespace ShaderGen
 
 	public:
 
-		static IGenerator* GetCurrentGenerator ( void );
-		static ShaderCode* GetCurrentShaderCode( void );
+		static IGenerator*   GetCurrentGenerator   ( void );
+		static MainFunction* GetCurrentMainFunction( void );
 
 	protected:
 

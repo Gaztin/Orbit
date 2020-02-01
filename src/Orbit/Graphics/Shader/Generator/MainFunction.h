@@ -26,12 +26,12 @@ namespace ShaderGen
 {
 	class IGenerator;
 
-	struct ShaderCode
+	struct MainFunction
 	{
 		std::string code;
 
-		ShaderType     type;
-		ShaderLanguage language;
+		ShaderType     shader_type;
+		ShaderLanguage shader_language;
 	};
 }
 

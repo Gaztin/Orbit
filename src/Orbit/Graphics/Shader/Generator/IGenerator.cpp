@@ -20,7 +20,7 @@
 #include "Orbit/Graphics/Context/RenderContext.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Uniform.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
-#include "Orbit/Graphics/Shader/Generator/ShaderCode.h"
+#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
 
 #include <cassert>
 #include <map>
@@ -30,8 +30,8 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static IGenerator* current_generator   = nullptr;
-	static ShaderCode* current_shader_code = nullptr;
+	static IGenerator*   current_generator     = nullptr;
+	static MainFunction* current_main_function = nullptr;
 
 	static std::string_view VertexComponentTypeString( IndexedVertexComponent component )
 	{
@@ -107,9 +107,9 @@ namespace ShaderGen
 		return current_generator;
 	}
 
-	ShaderCode* IGenerator::GetCurrentShaderCode( void )
+	MainFunction* IGenerator::GetCurrentMainFunction( void )
 	{
-		return current_shader_code;
+		return current_main_function;
 	}
 
 	IVariable IGenerator::Transpose( const IVariable& matrix )
@@ -126,7 +126,7 @@ namespace ShaderGen
 		sampler.SetUsed();
 		texcoord.SetUsed();
 
-		switch( GetCurrentShaderCode()->language )
+		switch( GetCurrentMainFunction()->shader_language )
 		{
 			default:
 			{
@@ -211,20 +211,20 @@ namespace ShaderGen
 
 		/* Generate main function for the vertex shader */
 		{
-			ShaderCode vs_code;
-			vs_code.language = ShaderLanguage::HLSL;
-			vs_code.type     = ShaderType::Vertex;
+			MainFunction vs_main;
+			vs_main.shader_language = ShaderLanguage::HLSL;
+			vs_main.shader_type     = ShaderType::Vertex;
 
-			current_shader_code = &vs_code;
+			current_main_function = &vs_main;
 
 			full_source_code.append( "\nPixelData VSMain( VertexData input )\n{\n\tPixelData output;\n" );
 
 			Vec4 vs_result = VSMain();
 
-			full_source_code.append( vs_code.code );
+			full_source_code.append( vs_main.code );
 			full_source_code.append( "\treturn output;\n}\n" );
 
-			current_shader_code = nullptr;
+			current_main_function = nullptr;
 		}
 
 		{
@@ -253,20 +253,20 @@ namespace ShaderGen
 
 		/* Generate main function for the pixel shader */
 		{
-			ShaderCode ps_code;
-			ps_code.language = ShaderLanguage::HLSL;
-			ps_code.type     = ShaderType::Fragment;
+			MainFunction ps_main;
+			ps_main.shader_language = ShaderLanguage::HLSL;
+			ps_main.shader_type     = ShaderType::Fragment;
 
-			current_shader_code = &ps_code;
+			current_main_function = &ps_main;
 
 			full_source_code.append( "\nfloat4 PSMain( PixelData input ) : SV_TARGET\n{\n" );
 
 			Vec4 ps_result = PSMain();
 
-			full_source_code.append( ps_code.code );
+			full_source_code.append( ps_main.code );
 			full_source_code.append( "\treturn " + ps_result.GetValue() + ";\n}\n" );
 
-			current_shader_code = nullptr;
+			current_main_function = nullptr;
 		}
 
 		{
@@ -324,20 +324,20 @@ namespace ShaderGen
 
 		/* Generate main function for vertex shader */
 		{
-			ShaderCode vs_code;
-			vs_code.language = ShaderLanguage::GLSL;
-			vs_code.type     = ShaderType::Vertex;
+			MainFunction vs_main;
+			vs_main.shader_language = ShaderLanguage::GLSL;
+			vs_main.shader_type     = ShaderType::Vertex;
 
-			current_shader_code = &vs_code;
+			current_main_function = &vs_main;
 
 			full_source_code.append( "\nvoid main()\n{\n" );
 
 			Vec4 vs_result = VSMain();
 
-			full_source_code.append( vs_code.code );
+			full_source_code.append( vs_main.code );
 			full_source_code.append( "\tgl_Position = " + vs_result.GetValue() + ";\n}\n" );
 
-			current_shader_code = nullptr;
+			current_main_function = nullptr;
 		}
 
 		{
@@ -388,20 +388,20 @@ namespace ShaderGen
 
 		/* Generate main function for the fragment shader */
 		{
-			ShaderCode ps_code;
-			ps_code.language = ShaderLanguage::GLSL;
-			ps_code.type     = ShaderType::Fragment;
+			MainFunction ps_main;
+			ps_main.shader_language = ShaderLanguage::GLSL;
+			ps_main.shader_type     = ShaderType::Fragment;
 
-			current_shader_code = &ps_code;
+			current_main_function = &ps_main;
 
 			full_source_code.append( "\nvoid main()\n{\n" );
 
 			Vec4 ps_result = PSMain();
 
-			full_source_code.append( ps_code.code );
+			full_source_code.append( ps_main.code );
 			full_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.GetValue() + " );\n}\n" );
 
-			current_shader_code = nullptr;
+			current_main_function = nullptr;
 		}
 
 		{

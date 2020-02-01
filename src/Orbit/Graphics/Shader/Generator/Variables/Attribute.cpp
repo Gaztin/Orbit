@@ -18,7 +18,7 @@
 #include "Attribute.h"
 
 #include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-#include "Orbit/Graphics/Shader/Generator/ShaderCode.h"
+#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
 
 #include <cassert>
 #include <sstream>
@@ -59,11 +59,11 @@ namespace ShaderGen
 
 	std::string Attribute::GetValue( void ) const
 	{
-		ShaderCode* code = IGenerator::GetCurrentShaderCode();
+		MainFunction* main = IGenerator::GetCurrentMainFunction();
 
-		if( code->language == ShaderLanguage::HLSL )
+		if( main->shader_language == ShaderLanguage::HLSL )
 		{
-			switch( code->type )
+			switch( main->shader_type )
 			{
 				case ShaderType::Vertex: { return "input." + m_value; }
 				default:                 { assert( false );           } break;
