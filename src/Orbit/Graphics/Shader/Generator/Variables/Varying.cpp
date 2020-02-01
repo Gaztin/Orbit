@@ -18,6 +18,7 @@
 #include "Varying.h"
 
 #include "Orbit/Graphics/Shader/Generator/IGenerator.h"
+#include "Orbit/Graphics/Shader/Generator/ShaderCode.h"
 
 #include <cassert>
 #include <sstream>
@@ -53,14 +54,24 @@ namespace ShaderGen
 	{
 		m_stored = true;
 
-		IGenerator::AddVarying( component );
+		IGenerator::GetCurrentGenerator()->m_varying_layout.Add( component );
 	}
 
 	std::string Varying::GetValue( void ) const
 	{
-		const std::string prefix = IGenerator::GetVaryingPrefix();
+		ShaderCode* code = IGenerator::GetCurrentShaderCode();
 
-		return prefix + m_value;
+		if( code->language == ShaderLanguage::HLSL )
+		{
+			switch( code->type )
+			{
+				case ShaderType::Vertex:   { return "output." + m_value; }
+				case ShaderType::Fragment: { return "input."  + m_value; }
+				default:                   { assert( false ); } break;
+			}
+		}
+
+		return m_value;
 	}
 }
 

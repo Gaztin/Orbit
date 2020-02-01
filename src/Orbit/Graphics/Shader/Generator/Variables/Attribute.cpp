@@ -18,6 +18,7 @@
 #include "Attribute.h"
 
 #include "Orbit/Graphics/Shader/Generator/IGenerator.h"
+#include "Orbit/Graphics/Shader/Generator/ShaderCode.h"
 
 #include <cassert>
 #include <sstream>
@@ -53,14 +54,23 @@ namespace ShaderGen
 	{
 		m_stored = true;
 
-		IGenerator::AddAttribute( component );
+		IGenerator::GetCurrentGenerator()->m_attribute_layout.Add( component );
 	}
 
 	std::string Attribute::GetValue( void ) const
 	{
-		const std::string prefix = IGenerator::GetAttributePrefix();
+		ShaderCode* code = IGenerator::GetCurrentShaderCode();
 
-		return prefix + m_value;
+		if( code->language == ShaderLanguage::HLSL )
+		{
+			switch( code->type )
+			{
+				case ShaderType::Vertex: { return "input." + m_value; }
+				default:                 { assert( false );           } break;
+			}
+		}
+
+		return m_value;
 	}
 }
 

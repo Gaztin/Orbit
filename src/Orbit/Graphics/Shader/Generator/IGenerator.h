@@ -28,10 +28,16 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	class UniformBase;
+	class  UniformBase;
+	struct ShaderCode;
 
 	class ORB_API_GRAPHICS IGenerator
 	{
+		friend class Attribute;
+		friend class Sampler;
+		friend class UniformBase;
+		friend class Varying;
+
 	public:
 
 		IGenerator( void );
@@ -44,15 +50,8 @@ namespace ShaderGen
 
 	public:
 
-		static void           AppendSourceCode     ( std::string_view code );
-		static ShaderLanguage GetLanguage          ( void );
-		static ShaderType     GetShaderType        ( void );
-		static void           IncrementSamplerCount( void );
-		static void           AddAttribute         ( VertexComponent component );
-		static void           AddVarying           ( VertexComponent component );
-		static void           AddUniform           ( UniformBase* uniform );
-		static std::string    GetAttributePrefix   ( void );
-		static std::string    GetVaryingPrefix     ( void );
+		static IGenerator* GetCurrentGenerator ( void );
+		static ShaderCode* GetCurrentShaderCode( void );
 
 	protected:
 
@@ -67,20 +66,15 @@ namespace ShaderGen
 
 	private:
 
-		void GenerateHLSL( void );
-		void GenerateGLSL( void );
+		std::string GenerateHLSL( void );
+		std::string GenerateGLSL( void );
 
 	private:
 
-		std::string                 m_source_code;
-		std::string                 m_attribute_prefix;
-		std::string                 m_varying_prefix;
 		std::vector< UniformBase* > m_uniforms;
 		VertexLayout                m_attribute_layout;
 		VertexLayout                m_varying_layout;
 		uint32_t                    m_sampler_count;
-		ShaderType                  m_shader_type;
-		ShaderLanguage              m_language;
 
 	};
 }

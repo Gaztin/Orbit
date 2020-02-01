@@ -15,33 +15,24 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Uniform.h"
+#pragma once
+#include "Orbit/Graphics/Graphics.h"
 
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-
-#include <sstream>
+#include <string>
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static std::string NewName( void )
+	class IGenerator;
+
+	struct ShaderCode
 	{
-		static uint32_t unique_index = 0;
+		std::string code;
 
-		std::ostringstream ss;
-		ss << "uniform_" << ( unique_index++ );
-
-		return ss.str();
-	}
-
-	UniformBase::UniformBase( VariableType type )
-		: IVariable( NewName(), type )
-	{
-		m_stored = true;
-
-		IGenerator::GetCurrentGenerator()->m_uniforms.push_back( this );
-	}
+		ShaderType     type;
+		ShaderLanguage language;
+	};
 }
 
 ORB_NAMESPACE_END

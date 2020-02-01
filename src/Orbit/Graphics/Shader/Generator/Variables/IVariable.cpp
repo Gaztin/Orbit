@@ -23,6 +23,7 @@
 #include "Orbit/Graphics/Shader/Generator/Variables/Vec3.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
 #include "Orbit/Graphics/Shader/Generator/IGenerator.h"
+#include "Orbit/Graphics/Shader/Generator/ShaderCode.h"
 #include "Orbit/Graphics/Shader/Generator/Swizzle.h"
 
 #include <map>
@@ -78,7 +79,7 @@ namespace ShaderGen
 			m_value = ss.str();
 
 			const std::string typestring( VariableTypeToString( m_type ) );
-			IGenerator::AppendSourceCode( "\t" + typestring + " " + m_value + " = " + value + ";\n" );
+			IGenerator::GetCurrentShaderCode()->code.append( "\t" + typestring + " " + m_value + " = " + value + ";\n" );
 
 			m_stored = true;
 		}
@@ -89,7 +90,7 @@ namespace ShaderGen
 		SetUsed();
 		rhs.SetUsed();
 
-		switch( IGenerator::GetLanguage() )
+		switch( IGenerator::GetCurrentShaderCode()->language )
 		{
 			case ShaderLanguage::HLSL:
 			{
@@ -133,7 +134,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IGenerator::AppendSourceCode( "\t" + GetValue() + " = " + rhs.GetValue() + ";\n" );
+		IGenerator::GetCurrentShaderCode()->code.append( "\t" + GetValue() + " = " + rhs.GetValue() + ";\n" );
 	}
 
 	void IVariable::operator+=( const IVariable& rhs )
@@ -141,7 +142,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IGenerator::AppendSourceCode( "\t" + GetValue() + " += " + rhs.GetValue() + ";\n" );
+		IGenerator::GetCurrentShaderCode()->code.append( "\t" + GetValue() + " += " + rhs.GetValue() + ";\n" );
 	}
 
 	void IVariable::operator*=( const IVariable& rhs )
@@ -151,7 +152,7 @@ namespace ShaderGen
 		/* TODO: if m_type == VariableType::Mat4, do mul for HLSL */
 
 		StoreValue();
-		IGenerator::AppendSourceCode( "\t" + GetValue() + " *= " + rhs.GetValue() + ";\n" );
+		IGenerator::GetCurrentShaderCode()->code.append( "\t" + GetValue() + " *= " + rhs.GetValue() + ";\n" );
 	}
 }
 

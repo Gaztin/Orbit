@@ -40,7 +40,7 @@ namespace ShaderGen
 	{
 		m_stored = true;
 
-		IGenerator::IncrementSamplerCount();
+		++IGenerator::GetCurrentGenerator()->m_sampler_count;
 	}
 }
 
