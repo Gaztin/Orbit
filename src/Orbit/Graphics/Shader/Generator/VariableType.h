@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,35 +16,37 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Private/ShaderDetails.h"
+#include "Orbit/Graphics/Graphics.h"
+
+#include <string_view>
 
 ORB_NAMESPACE_BEGIN
 
-class IndexBuffer;
-class VertexBuffer;
-namespace ShaderGen { class IGenerator; }
-
-class ORB_API_GRAPHICS Shader
+namespace ShaderGen
 {
-public:
+	enum class VariableType
+	{
+		Unknown = 0,
 
-	explicit Shader( ShaderGen::IGenerator& generator );
-	Shader( std::string_view source, const VertexLayout& vertex_layout );
-	~Shader( void );
+		Float,
+		Vec2,
+		Vec3,
+		Vec4,
+		Mat4,
+	};
 
-public:
-
-	void Bind  ( void );
-	void Unbind( void );
-
-public:
-
-	const Private::ShaderDetails& GetPrivateDetails( void ) const { return m_details; }
-
-private:
-
-	Private::ShaderDetails m_details;
-
-};
+	constexpr std::string_view VariableTypeToString( VariableType type )
+	{
+		switch( type )
+		{
+			case VariableType::Float: { return "float";      }
+			case VariableType::Vec2:  { return "vec2";       }
+			case VariableType::Vec3:  { return "vec3";       }
+			case VariableType::Vec4:  { return "vec4";       }
+			case VariableType::Mat4:  { return "mat4";       }
+			default:                  { return "error_type"; }
+		}
+	}
+}
 
 ORB_NAMESPACE_END

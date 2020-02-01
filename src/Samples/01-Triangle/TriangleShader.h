@@ -16,9 +16,12 @@
  */
 
 #pragma once
-#include <Orbit/Graphics/Shader/ShaderInterface.h>
+#include <Orbit/Graphics/Shader/Generator/Variables/Attribute.h>
+#include <Orbit/Graphics/Shader/Generator/Variables/Sampler.h>
+#include <Orbit/Graphics/Shader/Generator/Variables/Varying.h>
+#include <Orbit/Graphics/Shader/Generator/IGenerator.h>
 
-class TriangleShader final : public Orbit::ShaderInterface
+class TriangleShader final : public Orbit::ShaderGen::IGenerator
 {
 public:
 
@@ -26,19 +29,19 @@ public:
 
 private:
 
-	Vec4 VSMain( void ) override;
-	Vec4 PSMain( void ) override;
+	Orbit::ShaderGen::Vec4 VSMain( void ) override;
+	Orbit::ShaderGen::Vec4 PSMain( void ) override;
 
 private:
 
-	Sampler diffuse_texture;
+	Orbit::ShaderGen::Sampler diffuse_texture;
 
-	Attribute::Position a_position;
-	Attribute::Color    a_color;
-	Attribute::TexCoord a_texcoord;
+	Orbit::ShaderGen::Attribute::Position a_position;
+	Orbit::ShaderGen::Attribute::Color    a_color;
+	Orbit::ShaderGen::Attribute::TexCoord a_texcoord;
 
-	Varying::Position v_position;
-	Varying::Color    v_color;
-	Varying::TexCoord v_texcoord;
+	Orbit::ShaderGen::Varying::Position v_position;
+	Orbit::ShaderGen::Varying::Color    v_color;
+	Orbit::ShaderGen::Varying::TexCoord v_texcoord;
 
 };

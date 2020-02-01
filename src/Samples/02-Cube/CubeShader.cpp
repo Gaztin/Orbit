@@ -17,7 +17,7 @@
 
 #include "CubeShader.h"
 
-CubeShader::Vec4 CubeShader::VSMain( void )
+Orbit::ShaderGen::Vec4 CubeShader::VSMain( void )
 {
 	v_position = u_mvp * a_position;
 	v_color    = a_color;
@@ -26,10 +26,10 @@ CubeShader::Vec4 CubeShader::VSMain( void )
 	return v_position;
 }
 
-CubeShader::Vec4 CubeShader::PSMain( void )
+Orbit::ShaderGen::Vec4 CubeShader::PSMain( void )
 {
-	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
-	Vec4 out_color = tex_color * v_color;
+	Orbit::ShaderGen::Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
+	Orbit::ShaderGen::Vec4 out_color = tex_color * v_color;
 
 	return out_color;
 }

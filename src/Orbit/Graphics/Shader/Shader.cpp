@@ -24,7 +24,7 @@
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
-#include "Orbit/Graphics/Shader/ShaderInterface.h"
+#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
 
 #if( ORB_HAS_D3D11 )
 #  include <d3dcompiler.h>
@@ -36,8 +36,8 @@ ORB_NAMESPACE_BEGIN
 GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShaderType gl_shader_type );
 #endif
 
-Shader::Shader( ShaderInterface& object )
-	: Shader( object.GetSource(), object.GetVertexLayout() )
+Shader::Shader( ShaderGen::IGenerator& generator )
+	: Shader( generator.Generate(), generator.GetVertexLayout() )
 {
 }
 

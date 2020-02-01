@@ -17,47 +17,17 @@
 
 #pragma once
 #include "Orbit/Core/Utility/StringLiteral.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
-
-#include <string_view>
-#include <string>
+#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS ShaderInterface
+namespace ShaderGen
 {
-public:
-
-	enum class VariableType
-	{
-		Unknown = 0,
-
-		Float,
-		Vec2,
-		Vec3,
-		Vec4,
-		Mat4,
-	};
-
-public:
-
-	ShaderInterface( void );
-	virtual ~ShaderInterface( void );
-
-public:
-
-	std::string  GetSource      ( void );
-	VertexLayout GetVertexLayout( void ) const;
-
-protected:
-
-	class Variable;
+	class IVariable;
 
 	template< char... Name >
 	class SwizzleComponent
 	{
-		friend class Variable;
-
 	public:
 
 		static constexpr StringLiteral< Name... > name{ };
@@ -79,36 +49,45 @@ protected:
 
 	public:
 
-		void operator*=( const Variable& rhs ) const
+		void operator*=( const IVariable& rhs ) const
 		{
-			static_cast< Variable >( *this ) *= rhs;
+			IVariable* parent = Swizzle::latest_accessed_variable;
+
+			/* Make sure the parent is stored, otherwise it might attempt to modify temporary
+			 * variables. */
+			parent->StoreValue();
+
+			static_cast< IVariable >( *this ) *= rhs;
 		}
 
-		operator Variable( void ) const
+		operator IVariable( void ) const
 		{
-			Variable* parent = Variable::s_latest_accessed_variable;
-			Variable  component_variable( parent->m_value + "." + name.value, GetVariableType() );
+			IVariable* parent = Swizzle::latest_accessed_variable;
+			IVariable  component_variable( parent->GetValue() + "." + name.value, GetVariableType() );
 
 			/* If parent is stored, then the swizzle component can be considered stored too.
-			 * Otherwise, we'd not be able to manipulate the proxies within variables.
+			 * Otherwise, we'd not be able to manipulate the components within variables.
 			 * `foo.rgb *= 0.5;` would become `vec3 local = foo.rgb; local *= 0.5;` and `foo` would
 			 * be left unchanged. */
-			component_variable.m_stored = parent->m_stored;
+			if( parent->IsStored() )
+				component_variable.SetStored();
 
 			return component_variable;
 		}
 
 	};
 
-#define ORB_SWIZZLE_COMPONENT( NAME )                          \
-    decltype( ORB_NAMESPACE ShaderInterface::SwizzleComponent< \
-        ORB_NAMESPACE StringLiteralGrab< 0 >( NAME ),          \
-        ORB_NAMESPACE StringLiteralGrab< 1 >( NAME ),          \
-        ORB_NAMESPACE StringLiteralGrab< 2 >( NAME ),          \
-        ORB_NAMESPACE StringLiteralGrab< 3 >( NAME ) >() )
+#define ORB_SWIZZLE_COMPONENT( NAME )                    \
+	decltype( ORB_NAMESPACE ShaderGen::SwizzleComponent< \
+		ORB_NAMESPACE StringLiteralGrab< 0 >( NAME ),    \
+		ORB_NAMESPACE StringLiteralGrab< 1 >( NAME ),    \
+		ORB_NAMESPACE StringLiteralGrab< 2 >( NAME ),    \
+		ORB_NAMESPACE StringLiteralGrab< 3 >( NAME ) >() )
 
 	struct Swizzle
 	{
+		static ORB_API_GRAPHICS IVariable* latest_accessed_variable;
+
 		static constexpr ORB_SWIZZLE_COMPONENT( "x" ) x{ };
 		static constexpr ORB_SWIZZLE_COMPONENT( "y" ) y{ };
 		static constexpr ORB_SWIZZLE_COMPONENT( "z" ) z{ };
@@ -797,234 +776,6 @@ protected:
 		static constexpr ORB_SWIZZLE_COMPONENT( "aaab" ) aaab{ };
 		static constexpr ORB_SWIZZLE_COMPONENT( "aaaa" ) aaaa{ };
 	};
-
-	class ORB_API_GRAPHICS Variable
-	{
-		friend class ShaderInterface;
-
-	public:
-
-		Variable( void );
-		explicit Variable( const Variable& );
-		Variable( Variable&& );
-		Variable( double );
-
-	protected:
-
-		explicit Variable( std::string_view, VariableType type = VariableType::Unknown );
-
-	public:
-
-		virtual std::string GetValue( void ) const { return m_value; }
-
-	public:
-
-		Variable  operator* ( const Variable& ) const;
-		Variable  operator+ ( const Variable& ) const;
-		Variable  operator- ( void )            const;
-
-		Swizzle* operator->( void );
-		void     operator= ( const Variable& );
-		void     operator+=( const Variable& );
-		void     operator*=( const Variable& );
-
-	private:
-
-		/* Stores the value in a local variable. Useful when we want to manipulate proxies within a
-		 * variable, since `Vec2(1.0, 0.5).g *= 2.0;` is ill-behaved. */
-		void StoreValue( void );
-
-	private:
-
-		static Variable* s_latest_accessed_variable;
-
-		std::string  m_value;
-		VariableType m_type   = VariableType::Unknown;
-		bool         m_stored = false;
-		mutable bool m_used   = false;
-
-	};
-
-	class ORB_API_GRAPHICS Float : public Variable
-	{
-	public:
-
-		Float( const Variable& );
-
-	};
-
-	class ORB_API_GRAPHICS Vec2 : public Variable
-	{
-	public:
-
-		Vec2( const Variable& );
-		Vec2( const Variable&, const Variable& );
-
-	};
-
-	class ORB_API_GRAPHICS Vec3 : public Variable
-	{
-	public:
-
-		Vec3( const Variable& );
-		Vec3( const Variable&, const Variable& );
-		Vec3( const Variable&, const Variable&, const Variable& );
-
-	};
-
-	class ORB_API_GRAPHICS Vec4 : public Variable
-	{
-	public:
-
-		Vec4( const Variable& );
-		Vec4( const Variable&, const Variable& );
-		Vec4( const Variable&, const Variable&, const Variable& );
-		Vec4( const Variable&, const Variable&, const Variable&, const Variable& );
-
-	};
-
-	class ORB_API_GRAPHICS Mat4 : public Variable
-	{
-	public:
-
-		Mat4( const Variable& );
-
-	};
-
-	class ORB_API_GRAPHICS Sampler : public Variable
-	{
-	public:
-
-		Sampler( void );
-
-	};
-
-	template< VertexComponent VC >
-	class VaryingHelper;
-
-	class ORB_API_GRAPHICS Varying : public Variable
-	{
-	public:
-
-		using Position = VaryingHelper< VertexComponent::Position >;
-		using Normal   = VaryingHelper< VertexComponent::Normal >;
-		using Color    = VaryingHelper< VertexComponent::Color >;
-		using TexCoord = VaryingHelper< VertexComponent::TexCoord >;
-
-		using Variable::operator=;
-
-	public:
-
-		Varying( VertexComponent );
-
-	public:
-
-		std::string GetValue() const override;
-
-	};
-
-	template< VertexComponent VC >
-	class VaryingHelper : public Varying
-	{
-	public:
-
-		using Varying::operator=;
-
-	public:
-
-		VaryingHelper( void ) : Varying( VC ) { }
-
-	};
-
-	template< VertexComponent VC >
-	class AttributeHelper;
-
-	class ORB_API_GRAPHICS Attribute : public Variable
-	{
-	public:
-
-		using Position = AttributeHelper< VertexComponent::Position >;
-		using Normal   = AttributeHelper< VertexComponent::Normal >;
-		using Color    = AttributeHelper< VertexComponent::Color >;
-		using TexCoord = AttributeHelper< VertexComponent::TexCoord >;
-
-		using Variable::operator=;
-
-	public:
-
-		Attribute( VertexComponent );
-
-	public:
-
-		std::string GetValue() const override;
-
-	};
-
-	template< VertexComponent VC >
-	class AttributeHelper : public Attribute
-	{
-	public:
-
-		AttributeHelper( void ) : Attribute( VC ) { }
-
-	};
-
-	class ORB_API_GRAPHICS UniformBase : public Variable
-	{
-	public:
-
-		UniformBase( VariableType );
-
-	};
-
-	template< typename T >
-	class Uniform : public UniformBase
-	{
-	public:
-
-		Uniform( void );
-
-	};
-
-protected:
-
-	virtual Vec4 VSMain( void ) = 0;
-	virtual Vec4 PSMain( void ) = 0;
-
-protected:
-
-	Variable Transpose( const Variable& );
-	Variable Sample   ( const Variable&, const Variable& );
-	Variable Dot      ( const Variable&, const Variable& );
-
-private:
-
-	void GenerateSourceHLSL( void );
-	void GenerateSourceGLSL( void );
-
-private:
-
-	std::string                 m_source_code;
-	std::vector< UniformBase* > m_uniforms;
-	VertexLayout                m_attribute_layout;
-	VertexLayout                m_varying_layout;
-	uint32_t                    m_sampler_count;
-
-};
-
-template<>
-inline ShaderInterface::Uniform< ShaderInterface::Float >::Uniform( void ) : UniformBase( VariableType::Float ) { }
-
-template<>
-inline ShaderInterface::Uniform< ShaderInterface::Vec2 >::Uniform( void ) : UniformBase( VariableType::Vec2 ) { }
-
-template<>
-inline ShaderInterface::Uniform< ShaderInterface::Vec3 >::Uniform( void ) : UniformBase( VariableType::Vec3 ) { }
-
-template<>
-inline ShaderInterface::Uniform< ShaderInterface::Vec4 >::Uniform( void ) : UniformBase( VariableType::Vec4 ) { }
-
-template<>
-inline ShaderInterface::Uniform< ShaderInterface::Mat4 >::Uniform( void ) : UniformBase( VariableType::Mat4 ) { }
+}
 
 ORB_NAMESPACE_END
