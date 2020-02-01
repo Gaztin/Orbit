@@ -18,23 +18,24 @@
 #include "ModelShader.h"
 
 #include <Orbit/Graphics/Shader/Generator/Variables/Float.h>
+#include <Orbit/Graphics/Shader/Generator/Variables/Vec4.h>
 
-Orbit::ShaderGen::Vec4 ModelShader::VSMain( void )
+ModelShader::Vec4 ModelShader::VSMain( void )
 {
 	v_position = u_view_projection * u_model * a_position;
 	v_color    = a_color;
 	v_texcoord = a_texcoord;
-	v_normal   = ( Transpose( u_model_inverse ) * Orbit::ShaderGen::Vec4( a_normal, 1.0 ) )->xyz;
+	v_normal   = ( Transpose( u_model_inverse ) * Vec4( a_normal, 1.0 ) )->xyz;
 
 	return v_position;
 }
 
-Orbit::ShaderGen::Vec4 ModelShader::PSMain( void )
+ModelShader::Vec4 ModelShader::PSMain( void )
 {
-	Orbit::ShaderGen::Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
-	Orbit::ShaderGen::Vec4 out_color = tex_color + v_color;
+	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
+	Vec4 out_color = tex_color + v_color;
 
-	Orbit::ShaderGen::Float diffuse  = -Dot( v_normal, u_light_dir );
+	Float diffuse  = -Dot( v_normal, u_light_dir );
 	out_color->rgb *= diffuse;
 
 	return out_color;

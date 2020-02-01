@@ -17,7 +17,7 @@
 
 #pragma once
 #include "Orbit/Core/Utility/StringLiteral.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
+#include "Orbit/Graphics/Shader/Generator/Variables/Uniform.h"
 #include "Orbit/Graphics/Shader/Generator/Swizzle.h"
 #include "Orbit/Graphics/Shader/VertexLayout.h"
 
@@ -52,6 +52,21 @@ namespace ShaderGen
 
 		static IGenerator* GetCurrentGenerator ( void );
 		static ShaderCode* GetCurrentShaderCode( void );
+
+	protected:
+
+		using Sampler   = Sampler;
+		using Attribute = Attribute;
+		using Varying   = Varying;
+
+		template< typename T >
+		using Uniform = Uniform< T >;
+
+		using Float = Float;
+		using Vec2  = Vec2;
+		using Vec3  = Vec3;
+		using Vec4  = Vec4;
+		using Mat4  = Mat4;
 
 	protected:
 

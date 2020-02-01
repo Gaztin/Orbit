@@ -30,27 +30,27 @@ public:
 
 private:
 
-	Orbit::ShaderGen::Vec4 VSMain( void ) override;
-	Orbit::ShaderGen::Vec4 PSMain( void ) override;
+	Vec4 VSMain( void ) override;
+	Vec4 PSMain( void ) override;
 
 private:
 
-	Orbit::ShaderGen::Sampler diffuse_texture;
+	Sampler diffuse_texture;
 
-	Orbit::ShaderGen::Attribute::Position a_position;
-	Orbit::ShaderGen::Attribute::Color    a_color;
-	Orbit::ShaderGen::Attribute::TexCoord a_texcoord;
-	Orbit::ShaderGen::Attribute::Normal   a_normal;
+	Attribute::Position a_position;
+	Attribute::Color    a_color;
+	Attribute::TexCoord a_texcoord;
+	Attribute::Normal   a_normal;
 
-	Orbit::ShaderGen::Varying::Position v_position;
-	Orbit::ShaderGen::Varying::Color    v_color;
-	Orbit::ShaderGen::Varying::TexCoord v_texcoord;
-	Orbit::ShaderGen::Varying::Normal   v_normal;
+	Varying::Position v_position;
+	Varying::Color    v_color;
+	Varying::TexCoord v_texcoord;
+	Varying::Normal   v_normal;
 
-	Orbit::ShaderGen::Uniform< Orbit::ShaderGen::Mat4 > u_view_projection;
-	Orbit::ShaderGen::Uniform< Orbit::ShaderGen::Mat4 > u_model;
-	Orbit::ShaderGen::Uniform< Orbit::ShaderGen::Mat4 > u_model_inverse;
+	Uniform< Mat4 > u_view_projection;
+	Uniform< Mat4 > u_model;
+	Uniform< Mat4 > u_model_inverse;
 
-	Orbit::ShaderGen::Uniform< Orbit::ShaderGen::Vec3 > u_light_dir;
+	Uniform< Vec3 > u_light_dir;
 
 };

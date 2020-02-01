@@ -17,7 +17,9 @@
 
 #include "TriangleShader.h"
 
-Orbit::ShaderGen::Vec4 TriangleShader::VSMain( void )
+#include <Orbit/Graphics/Shader/Generator/Variables/Vec4.h>
+
+TriangleShader::Vec4 TriangleShader::VSMain( void )
 {
 	v_position = a_position;
 	v_color    = a_color;
@@ -26,10 +28,10 @@ Orbit::ShaderGen::Vec4 TriangleShader::VSMain( void )
 	return v_position;
 }
 
-Orbit::ShaderGen::Vec4 TriangleShader::PSMain( void )
+TriangleShader::Vec4 TriangleShader::PSMain( void )
 {
-	Orbit::ShaderGen::Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
-	Orbit::ShaderGen::Vec4 out_color = tex_color * v_color;
+	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
+	Vec4 out_color = tex_color * v_color;
 
 	return out_color;
 }

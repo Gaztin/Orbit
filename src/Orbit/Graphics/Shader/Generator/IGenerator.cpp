@@ -19,6 +19,7 @@
 
 #include "Orbit/Graphics/Context/RenderContext.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Uniform.h"
+#include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
 #include "Orbit/Graphics/Shader/Generator/ShaderCode.h"
 
 #include <cassert>

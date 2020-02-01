@@ -29,19 +29,19 @@ public:
 
 private:
 
-	Orbit::ShaderGen::Vec4 VSMain( void ) override;
-	Orbit::ShaderGen::Vec4 PSMain( void ) override;
+	Vec4 VSMain( void ) override;
+	Vec4 PSMain( void ) override;
 
 private:
 
-	Orbit::ShaderGen::Sampler diffuse_texture;
+	Sampler diffuse_texture;
 
-	Orbit::ShaderGen::Attribute::Position a_position;
-	Orbit::ShaderGen::Attribute::Color    a_color;
-	Orbit::ShaderGen::Attribute::TexCoord a_texcoord;
+	Attribute::Position a_position;
+	Attribute::Color    a_color;
+	Attribute::TexCoord a_texcoord;
 
-	Orbit::ShaderGen::Varying::Position v_position;
-	Orbit::ShaderGen::Varying::Color    v_color;
-	Orbit::ShaderGen::Varying::TexCoord v_texcoord;
+	Varying::Position v_position;
+	Varying::Color    v_color;
+	Varying::TexCoord v_texcoord;
 
 };
