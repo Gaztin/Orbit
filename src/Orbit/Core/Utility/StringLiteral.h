@@ -21,10 +21,60 @@
 ORB_NAMESPACE_BEGIN
 
 template< char... Chars >
-struct StringLiteral
+class StringLiteral
 {
+public:
+
 	static constexpr size_t length              = sizeof...( Chars );
 	static constexpr char   value[ length + 1 ] = { Chars..., '\0' };
+
+public:
+
+	static constexpr bool HasDuplicateChar( void )
+	{
+		return HasDuplicateChar< 0, Chars... >();
+	}
+
+private:
+
+	template< size_t Index, char Arg0, char... Args >
+	static constexpr bool HasDuplicateChar( void )
+	{
+		if constexpr( Arg0 == '\0' )
+		{
+			return true;
+		}
+		else
+		{
+			return ( HasChar< Index, Arg0, Args... >() && HasDuplicateChar< Index + 1, Args... >() );
+		}
+	}
+
+	template< size_t Index >
+	static constexpr bool HasDuplicateChar( void )
+	{
+		return true;
+	}
+
+	template< size_t Index, char Which, char Arg0, char... Args >
+	static constexpr bool HasChar( void )
+	{
+		if constexpr( Which == Arg0 )
+		{
+			return false;
+		}
+		else
+		{
+			return HasChar< Index + 1, Which, Args... >();
+		}
+	}
+
+	template< size_t Index, char Which >
+	static constexpr bool HasChar( void )
+	{
+		return true;
+	}
+
 };
 
 template< size_t Index, size_t Length >
