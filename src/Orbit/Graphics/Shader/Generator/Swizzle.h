@@ -53,6 +53,8 @@ namespace ShaderGen
 		{
 			IVariable* parent = Swizzle::latest_accessed_variable;
 
+			static_assert( HasDuplicateComponent< 0, Name... >(), "Cannot modify swizzles where the same component is used more than once" );
+
 			/* Make sure the parent is stored, otherwise it might attempt to modify temporary
 			 * variables. */
 			parent->StoreValue();
@@ -73,6 +75,46 @@ namespace ShaderGen
 				component_variable.SetStored();
 
 			return component_variable;
+		}
+
+	private:
+
+		template< size_t Index, char Char, char... Chars >
+		static constexpr bool HasDuplicateComponent( void )
+		{
+			if constexpr( Char == '\0' )
+			{
+				return true;
+			}
+			else
+			{
+				return ( HasComponent< Index, Char, Chars... >() && HasDuplicateComponent< Index + 1, Chars... >() );
+			}
+		}
+
+		template< size_t Index >
+		static constexpr bool HasDuplicateComponent( void )
+		{
+			return true;
+		}
+
+		template< size_t Index, char C, char Char, char... Chars >
+		static constexpr bool HasComponent( void )
+		{
+			if constexpr( C == Char )
+			{
+				return false;
+			}
+			else
+			{
+				return HasComponent< Index + 1, C, Chars... >();
+			}
+		}
+
+		template< size_t Index, char C >
+		static constexpr bool HasComponent( void )
+		{
+			return true;
 		}
 
 	};
