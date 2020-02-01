@@ -102,16 +102,6 @@ namespace ShaderGen
 		return m_attribute_layout;
 	}
 
-	IGenerator* IGenerator::GetCurrentGenerator( void )
-	{
-		return current_generator;
-	}
-
-	MainFunction* IGenerator::GetCurrentMainFunction( void )
-	{
-		return current_main_function;
-	}
-
 	IVariable IGenerator::Transpose( const IVariable& matrix )
 	{
 		assert( matrix.GetType() == VariableType::Mat4 );
@@ -429,6 +419,16 @@ namespace ShaderGen
 		full_source_code.append( "\n#endif\n" );
 
 		return full_source_code;
+	}
+
+	IGenerator* IGenerator::GetCurrentGenerator( void )
+	{
+		return current_generator;
+	}
+
+	MainFunction* IGenerator::GetCurrentMainFunction( void )
+	{
+		return current_main_function;
 	}
 }
 

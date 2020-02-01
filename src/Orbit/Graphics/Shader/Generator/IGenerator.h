@@ -28,11 +28,11 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	class  UniformBase;
 	struct MainFunction;
 
 	class ORB_API_GRAPHICS IGenerator
 	{
+		friend class IVariable;
 		friend class Attribute;
 		friend class Sampler;
 		friend class UniformBase;
@@ -47,11 +47,6 @@ namespace ShaderGen
 
 		std::string  Generate       ( void );
 		VertexLayout GetVertexLayout( void ) const;
-
-	public:
-
-		static IGenerator*   GetCurrentGenerator   ( void );
-		static MainFunction* GetCurrentMainFunction( void );
 
 	protected:
 
@@ -83,6 +78,11 @@ namespace ShaderGen
 
 		std::string GenerateHLSL( void );
 		std::string GenerateGLSL( void );
+
+	private:
+
+		static IGenerator*   GetCurrentGenerator   ( void );
+		static MainFunction* GetCurrentMainFunction( void );
 
 	private:
 
