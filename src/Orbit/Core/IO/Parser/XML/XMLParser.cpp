@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -15,36 +15,17 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include <memory>
-
-#include "Orbit/Core/Utility/Span.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Renderer/RenderCommand.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
+#include "XMLParser.h"
 
 ORB_NAMESPACE_BEGIN
 
-
-class ORB_API_GRAPHICS Model
+XMLParser::XMLParser( ByteSpan data )
+	: IParser( data )
 {
-public:
+	if( !ExpectString( R"(<?xml version="1.0" encoding="utf-8"?>\n)" ) )
+		return;
 
-	explicit Model( ByteSpan data, const VertexLayout& layout );
-
-	RenderCommand MakeRenderCommand( void );
-
-private:
-
-	bool ParseCollada( ByteSpan data, const VertexLayout& layout );
-	bool ParseOBJ    ( ByteSpan data, const VertexLayout& layout );
-
-private:
-
-	std::unique_ptr< VertexBuffer > m_vertex_buffer;
-	std::unique_ptr< IndexBuffer >  m_index_buffer;
-
-};
+	m_good = true;
+}
 
 ORB_NAMESPACE_END

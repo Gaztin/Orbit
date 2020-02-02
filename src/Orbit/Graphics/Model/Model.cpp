@@ -21,6 +21,8 @@
 #include <cstdio>
 #include <vector>
 
+#include "Orbit/Core/IO/Parser/XML/XMLParser.h"
+#include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Math/Vector3.h"
@@ -29,8 +31,11 @@ ORB_NAMESPACE_BEGIN
 
 Model::Model( ByteSpan data, const VertexLayout& layout )
 {
-	/* Assume obj for now */
-	ParseOBJ( data, layout );
+	if( !( ParseCollada( data, layout ) ||
+	       ParseOBJ( data, layout ) ) )
+	{
+		LogError( "Failed to load model. Unsupported format." );
+	}
 }
 
 RenderCommand Model::MakeRenderCommand( void )
@@ -42,7 +47,14 @@ RenderCommand Model::MakeRenderCommand( void )
 	return command;
 }
 
-void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
+bool Model::ParseCollada( ByteSpan data, const VertexLayout& /*layout*/ )
+{
+	XMLParser xml_parser( data );
+
+	return xml_parser.Good();
+}
+
+bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 {
 	const char* begin = reinterpret_cast< const char* >( data.begin() );
 	const char* end   = reinterpret_cast< const char* >( data.end() );
@@ -59,8 +71,11 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 		/* Seek to next line */
 		while( it < end && *( it++ ) != '\n' );
 	}
-
 	it = begin;
+
+	/* Opt out if not OBJ */
+	if( vertex_count == 0 && face_count == 0 )
+		return false;
 
 	uint8_t index_size = 4;
 	/**/ if( vertex_count < std::numeric_limits< uint8_t  >::max() ) { index_size = 1; }
@@ -258,6 +273,8 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 	/* Create buffers */
 	m_vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, stride );
 	m_index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
+
+	return true;
 }
 
 ORB_NAMESPACE_END

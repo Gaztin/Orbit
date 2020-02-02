@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,34 +16,34 @@
  */
 
 #pragma once
-#include <memory>
-
 #include "Orbit/Core/Utility/Span.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Renderer/RenderCommand.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
+
+#include <memory>
+#include <string_view>
 
 ORB_NAMESPACE_BEGIN
 
-
-class ORB_API_GRAPHICS Model
+class ORB_API_CORE IParser
 {
 public:
 
-	explicit Model( ByteSpan data, const VertexLayout& layout );
+	explicit IParser( ByteSpan data );
+	virtual ~IParser( void ) = default;
 
-	RenderCommand MakeRenderCommand( void );
+public:
 
-private:
+	bool Good( void ) const { return m_good; }
 
-	bool ParseCollada( ByteSpan data, const VertexLayout& layout );
-	bool ParseOBJ    ( ByteSpan data, const VertexLayout& layout );
+protected:
 
-private:
+	bool ExpectString( std::string_view str );
 
-	std::unique_ptr< VertexBuffer > m_vertex_buffer;
-	std::unique_ptr< IndexBuffer >  m_index_buffer;
+protected:
+
+	std::unique_ptr< uint8_t[] > m_data;
+	size_t                       m_size;
+	ptrdiff_t                    m_offset;
+	bool                         m_good;
 
 };
 
