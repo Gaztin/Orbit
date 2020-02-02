@@ -17,9 +17,11 @@
 
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
+#include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
+#include <Orbit/Graphics/Model/Model.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Math/Vector3.h>
@@ -46,6 +48,7 @@ public:
 	SampleApp( void )
 		: m_window( 800, 600 )
 		, m_shader( animation_shader )
+		, m_model( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
 		, m_constant_buffer( constant_data )
 	{
 		m_window.SetTitle( "Orbit Sample (03-Model)" );
@@ -80,6 +83,11 @@ public:
 
 		m_camera.Update( delta_time );
 
+		Orbit::RenderCommand command = m_model.MakeRenderCommand();
+		command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &m_constant_buffer );
+		command.shader = &m_shader;
+
+		m_renderer.QueueCommand( command );
 		m_renderer.Render();
 
 		m_render_context.SwapBuffers();
@@ -92,6 +100,7 @@ private:
 	Orbit::Window         m_window;
 	Orbit::RenderContext  m_render_context;
 	Orbit::Shader         m_shader;
+	Orbit::Model          m_model;
 	Orbit::ConstantBuffer m_constant_buffer;
 	Orbit::BasicRenderer  m_renderer;
 	Orbit::Matrix4        m_model_matrix;
