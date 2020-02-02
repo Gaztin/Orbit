@@ -42,18 +42,18 @@ private:
 	{
 		if constexpr( Arg0 == '\0' )
 		{
-			return true;
+			return false;
 		}
 		else
 		{
-			return ( HasChar< Index, Arg0, Args... >() && HasDuplicateChar< Index + 1, Args... >() );
+			return ( HasChar< Index, Arg0, Args... >() || HasDuplicateChar< Index + 1, Args... >() );
 		}
 	}
 
 	template< size_t Index >
 	static constexpr bool HasDuplicateChar( void )
 	{
-		return true;
+		return false;
 	}
 
 	template< size_t Index, char Which, char Arg0, char... Args >
@@ -61,7 +61,7 @@ private:
 	{
 		if constexpr( Which == Arg0 )
 		{
-			return false;
+			return true;
 		}
 		else
 		{
@@ -72,7 +72,7 @@ private:
 	template< size_t Index, char Which >
 	static constexpr bool HasChar( void )
 	{
-		return true;
+		return false;
 	}
 
 };
