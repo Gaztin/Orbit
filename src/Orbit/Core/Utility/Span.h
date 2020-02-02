@@ -19,7 +19,7 @@
 #include <string_view>
 #include <vector>
 
-#include "Orbit/Core/Core.h"
+#include "Orbit/Core/IO/Asset.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -50,6 +50,12 @@ public:
 	Span( const std::vector< T >& vec )
 		: m_ptr   { vec.data() }
 		, m_count { vec.size() }
+	{
+	}
+
+	Span( const Asset& asset )
+		: m_ptr   { asset.GetData() }
+		, m_count { asset.GetSize() }
 	{
 	}
 
