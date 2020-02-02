@@ -22,3 +22,7 @@ Obligatory triangle example (textured)
 ![](res/readme/cube.gif)</br>
 This is the first 3D sample.</br>
 Introduces a first-person free-flight camera and the usage of constant buffers and matrices.
+
+**Model**</br>
+![](res/readme/model.gif)</br>
+Loads a teapot model from an embedded OBJ file and renders it with a simple directional light.
