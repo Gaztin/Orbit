@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -15,36 +15,23 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Private/ShaderDetails.h"
+#include "CubeShader.h"
 
-ORB_NAMESPACE_BEGIN
+#include <Orbit/Graphics/Shader/Generator/Variables/Vec4.h>
 
-class IndexBuffer;
-class VertexBuffer;
-namespace ShaderGen { class IGenerator; }
-
-class ORB_API_GRAPHICS Shader
+CubeShader::Vec4 CubeShader::VSMain( void )
 {
-public:
+	v_position = u_mvp * a_position;
+	v_color    = a_color;
+	v_texcoord = a_texcoord;
 
-	explicit Shader( ShaderGen::IGenerator& generator );
-	Shader( std::string_view source, const VertexLayout& vertex_layout );
-	~Shader( void );
+	return v_position;
+}
 
-public:
+CubeShader::Vec4 CubeShader::PSMain( void )
+{
+	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
+	Vec4 out_color = tex_color * v_color;
 
-	void Bind  ( void );
-	void Unbind( void );
-
-public:
-
-	const Private::ShaderDetails& GetPrivateDetails( void ) const { return m_details; }
-
-private:
-
-	Private::ShaderDetails m_details;
-
-};
-
-ORB_NAMESPACE_END
+	return out_color;
+}

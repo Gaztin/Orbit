@@ -36,6 +36,7 @@
 #include <Orbit/Math/Vector4.h>
 
 #include "Framework/Camera.h"
+#include "CubeShader.h"
 
 struct Vertex
 {
@@ -44,102 +45,7 @@ struct Vertex
 	Orbit::Vector2 texcoord;
 };
 
-const Orbit::VertexLayout vertex_layout
-{
-	{ Orbit::VertexComponent::Position },
-	{ Orbit::VertexComponent::Color },
-	{ Orbit::VertexComponent::TexCoord },
-};
-
-constexpr std::string_view shader_source = R"(
-#if defined( GLSL )
-
-#  if defined( VERTEX )
-
-ORB_CONSTANTS_BEGIN( Constants )
-	ORB_CONSTANT( mat4, mvp );
-ORB_CONSTANTS_END
-
-ORB_ATTRIBUTE( 0 ) vec4 a_position;
-ORB_ATTRIBUTE( 1 ) vec4 a_color;
-ORB_ATTRIBUTE( 2 ) vec2 a_texcoord;
-
-ORB_VARYING vec4 v_position;
-ORB_VARYING vec4 v_color;
-ORB_VARYING vec2 v_texcoord;
-
-void main()
-{
-	v_position = mvp * a_position;
-	v_color    = a_color;
-	v_texcoord = a_texcoord;
-
-	gl_Position = v_position;
-}
-
-#  elif defined( FRAGMENT )
-
-uniform sampler2D diffuse_texture;
-
-ORB_VARYING vec4 v_position;
-ORB_VARYING vec4 v_color;
-ORB_VARYING vec2 v_texcoord;
-
-void main()
-{
-	vec4 tex_color = texture( diffuse_texture, v_texcoord );
-	vec4 out_color = tex_color * v_color;
-
-	ORB_SET_OUT_COLOR( out_color );
-}
-
-#  endif
-
-#elif defined( HLSL )
-
-Texture2D diffuse_texture;
-
-SamplerState texture_sampler;
-
-cbuffer Constants
-{
-	matrix mvp;
-};
-
-struct VertexData
-{
-	float4 position : POSITION;
-	float4 color    : COLOR;
-	float2 texcoord : TEXCOORD;
-};
-
-struct PixelData
-{
-	float4 position : SV_POSITION;
-	float4 color    : COLOR;
-	float2 texcoord : TEXCOORD;
-};
-
-PixelData VSMain( VertexData input )
-{
-	PixelData output;
-	output.position = mul( input.position, mvp );
-	output.color    = input.color;
-	output.texcoord = input.texcoord;
-
-	return output;
-}
-
-float4 PSMain( PixelData input ) : SV_TARGET
-{
-	float4 tex_color = diffuse_texture.Sample( texture_sampler, input.texcoord );
-	float4 out_color = tex_color * input.color;
-
-	return out_color;
-}
-
-#endif
-)";
+static CubeShader cube_shader;
 
 const std::initializer_list< Vertex > vertex_data
 {
@@ -213,7 +119,7 @@ public:
 
 	SampleApp( void )
 		: m_window( 800, 600 )
-		, m_shader( shader_source, vertex_layout )
+		, m_shader( cube_shader )
 		, m_vertex_buffer( vertex_data )
 		, m_index_buffer( index_data )
 		, m_constant_buffer( constant_data )

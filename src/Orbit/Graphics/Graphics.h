@@ -70,15 +70,39 @@
 
 ORB_NAMESPACE_BEGIN
 
+/* Enumerators */
+
 enum class GraphicsAPI
 {
 	Null = 0,
-#if( ORB_HAS_D3D11 )
 	D3D11,
-#endif
-#if( ORB_HAS_OPENGL )
 	OpenGL,
-#endif
+};
+
+enum class ShaderLanguage
+{
+	HLSL = 1,
+	GLSL = 2,
+};
+
+enum class ShaderType
+{
+	Fragment = 1,
+	Vertex   = 2,
+};
+
+enum class BufferMask
+{
+	Color = 0x1,
+	Depth = 0x2,
+};
+ORB_ENABLE_BITMASKING( BufferMask );
+
+enum class IndexFormat
+{
+	Byte,
+	Word,
+	DoubleWord,
 };
 
 #if( ORB_HAS_D3D11 )
@@ -88,28 +112,6 @@ constexpr GraphicsAPI default_graphics_api = GraphicsAPI::OpenGL;
 #else
 constexpr GraphicsAPI default_graphics_api = GraphicsAPI::Null;
 #endif
-
-/* Enumerators */
-
-enum class BufferMask
-{
-	Color = 0x1,
-	Depth = 0x2,
-};
-ORB_ENABLE_BITMASKING( BufferMask );
-
-enum class ShaderType
-{
-	Fragment = 1,
-	Vertex   = 2,
-};
-
-enum class IndexFormat
-{
-	Byte,
-	Word,
-	DoubleWord,
-};
 
 template< typename T >
 struct IndexFormatTraits

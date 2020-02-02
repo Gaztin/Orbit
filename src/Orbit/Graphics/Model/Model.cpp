@@ -66,13 +66,13 @@ void Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 	/**/ if( vertex_count < std::numeric_limits< uint8_t  >::max() ) { index_size = 1; }
 	else if( vertex_count < std::numeric_limits< uint16_t >::max() ) { index_size = 2; }
 
-	uint32_t stride          = layout.GetStride();
-	uint32_t pos_offset      = layout.OffsetOf( VertexComponent::Position );
-	uint32_t normal_offset   = layout.OffsetOf( VertexComponent::Normal );
-	uint32_t color_offset    = layout.OffsetOf( VertexComponent::Color );
-	uint32_t texcoord_offset = layout.OffsetOf( VertexComponent::TexCoord );
-	auto     vertex_data     = std::unique_ptr< uint8_t[] >( new uint8_t[ stride * vertex_count ] );
-	auto     index_data      = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
+	size_t stride          = layout.GetStride();
+	size_t pos_offset      = layout.OffsetOf( VertexComponent::Position );
+	size_t normal_offset   = layout.OffsetOf( VertexComponent::Normal );
+	size_t color_offset    = layout.OffsetOf( VertexComponent::Color );
+	size_t texcoord_offset = layout.OffsetOf( VertexComponent::TexCoord );
+	auto   vertex_data     = std::unique_ptr< uint8_t[] >( new uint8_t[ stride * vertex_count ] );
+	auto   index_data      = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
 
 	/* Clear data before read */
 	for( size_t i = 0; i < vertex_count; ++i )

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -15,36 +15,21 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Private/ShaderDetails.h"
+#include "Mat4.h"
+
+#include <cassert>
 
 ORB_NAMESPACE_BEGIN
 
-class IndexBuffer;
-class VertexBuffer;
-namespace ShaderGen { class IGenerator; }
-
-class ORB_API_GRAPHICS Shader
+namespace ShaderGen
 {
-public:
+	Mat4::Mat4( const IVariable& value )
+		: IVariable( "mat4( " + value.GetValue() + " )", DataType::Mat4 )
+	{
+		assert( value.GetDataType() == DataType::Mat4 );
 
-	explicit Shader( ShaderGen::IGenerator& generator );
-	Shader( std::string_view source, const VertexLayout& vertex_layout );
-	~Shader( void );
-
-public:
-
-	void Bind  ( void );
-	void Unbind( void );
-
-public:
-
-	const Private::ShaderDetails& GetPrivateDetails( void ) const { return m_details; }
-
-private:
-
-	Private::ShaderDetails m_details;
-
-};
+		value.SetUsed();
+	}
+}
 
 ORB_NAMESPACE_END

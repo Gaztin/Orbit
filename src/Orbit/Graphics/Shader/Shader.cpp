@@ -24,6 +24,7 @@
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
+#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
 
 #if( ORB_HAS_D3D11 )
 #  include <d3dcompiler.h>
@@ -34,6 +35,11 @@ ORB_NAMESPACE_BEGIN
 #if( ORB_HAS_OPENGL )
 GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShaderType gl_shader_type );
 #endif
+
+Shader::Shader( ShaderGen::IGenerator& generator )
+	: Shader( generator.Generate(), generator.GetVertexLayout() )
+{
+}
 
 Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 {
@@ -292,8 +298,8 @@ void Shader::Bind( void )
 
 			for( IndexedVertexComponent component : details.layout )
 			{
-				glEnableVertexAttribArray( component.index );
-				glVertexAttribPointer( component.index, component.GetDataCount(), OpenGLVertexAttribDataType::Float, GL_FALSE, details.layout.GetStride(), ptr );
+				glEnableVertexAttribArray( static_cast< GLuint >( component.index ) );
+				glVertexAttribPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Float, GL_FALSE, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
 
 				ptr += component.GetSize();
 			}
@@ -374,7 +380,7 @@ void Shader::Unbind( void )
 			auto& details = std::get< Private::_ShaderDetailsOpenGL >( m_details );
 
 			for( IndexedVertexComponent component : details.layout )
-				glDisableVertexAttribArray( component.index );
+				glDisableVertexAttribArray( static_cast< GLuint >( component.index ) );
 
 			glUseProgram( 0 );
 

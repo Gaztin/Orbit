@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,35 +16,35 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Private/ShaderDetails.h"
+#include <Orbit/Graphics/Shader/Generator/Variables/Attribute.h>
+#include <Orbit/Graphics/Shader/Generator/Variables/Sampler.h>
+#include <Orbit/Graphics/Shader/Generator/Variables/Uniform.h>
+#include <Orbit/Graphics/Shader/Generator/Variables/Varying.h>
+#include <Orbit/Graphics/Shader/Generator/IGenerator.h>
 
-ORB_NAMESPACE_BEGIN
-
-class IndexBuffer;
-class VertexBuffer;
-namespace ShaderGen { class IGenerator; }
-
-class ORB_API_GRAPHICS Shader
+class CubeShader final : public Orbit::ShaderGen::IGenerator
 {
 public:
 
-	explicit Shader( ShaderGen::IGenerator& generator );
-	Shader( std::string_view source, const VertexLayout& vertex_layout );
-	~Shader( void );
-
-public:
-
-	void Bind  ( void );
-	void Unbind( void );
-
-public:
-
-	const Private::ShaderDetails& GetPrivateDetails( void ) const { return m_details; }
+	CubeShader( void ) = default;
 
 private:
 
-	Private::ShaderDetails m_details;
+	Vec4 VSMain( void ) override;
+	Vec4 PSMain( void ) override;
+
+private:
+
+	Sampler diffuse_texture;
+
+	Attribute::Position a_position;
+	Attribute::Color    a_color;
+	Attribute::TexCoord a_texcoord;
+
+	Varying::Position v_position;
+	Varying::Color    v_color;
+	Varying::TexCoord v_texcoord;
+
+	Uniform< Mat4 > u_mvp;
 
 };
-
-ORB_NAMESPACE_END

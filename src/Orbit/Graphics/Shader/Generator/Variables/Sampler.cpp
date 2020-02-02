@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -15,36 +15,33 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Private/ShaderDetails.h"
+#include "Sampler.h"
+
+#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
+
+#include <sstream>
 
 ORB_NAMESPACE_BEGIN
 
-class IndexBuffer;
-class VertexBuffer;
-namespace ShaderGen { class IGenerator; }
-
-class ORB_API_GRAPHICS Shader
+namespace ShaderGen
 {
-public:
+	static std::string NewName( void )
+	{
+		static uint32_t unique_index = 0;
 
-	explicit Shader( ShaderGen::IGenerator& generator );
-	Shader( std::string_view source, const VertexLayout& vertex_layout );
-	~Shader( void );
+		std::ostringstream ss;
+		ss << "sampler_" << ( unique_index++ );
 
-public:
+		return ss.str();
+	}
 
-	void Bind  ( void );
-	void Unbind( void );
+	Sampler::Sampler( void )
+		: IVariable( NewName(), DataType::Unknown )
+	{
+		m_stored = true;
 
-public:
-
-	const Private::ShaderDetails& GetPrivateDetails( void ) const { return m_details; }
-
-private:
-
-	Private::ShaderDetails m_details;
-
-};
+		++IGenerator::GetCurrentGenerator()->m_sampler_count;
+	}
+}
 
 ORB_NAMESPACE_END
