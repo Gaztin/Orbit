@@ -211,7 +211,7 @@ namespace ShaderGen
 
 			Vec4 vs_result = VSMain();
 
-			full_source_code.append( vs_main.code );
+			full_source_code.append( vs_main.code.str() );
 			full_source_code.append( "\treturn output;\n}\n" );
 
 			current_main_function = nullptr;
@@ -253,7 +253,7 @@ namespace ShaderGen
 
 			Vec4 ps_result = PSMain();
 
-			full_source_code.append( ps_main.code );
+			full_source_code.append( ps_main.code.str() );
 			full_source_code.append( "\treturn " + ps_result.GetValue() + ";\n}\n" );
 
 			current_main_function = nullptr;
@@ -324,7 +324,7 @@ namespace ShaderGen
 
 			Vec4 vs_result = VSMain();
 
-			full_source_code.append( vs_main.code );
+			full_source_code.append( vs_main.code.str() );
 			full_source_code.append( "\tgl_Position = " + vs_result.GetValue() + ";\n}\n" );
 
 			current_main_function = nullptr;
@@ -388,7 +388,7 @@ namespace ShaderGen
 
 			Vec4 ps_result = PSMain();
 
-			full_source_code.append( ps_main.code );
+			full_source_code.append( ps_main.code.str() );
 			full_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.GetValue() + " );\n}\n" );
 
 			current_main_function = nullptr;

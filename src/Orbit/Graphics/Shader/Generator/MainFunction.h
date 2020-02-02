@@ -18,7 +18,7 @@
 #pragma once
 #include "Orbit/Graphics/Graphics.h"
 
-#include <string>
+#include <sstream>
 
 ORB_NAMESPACE_BEGIN
 
@@ -28,7 +28,7 @@ namespace ShaderGen
 
 	struct MainFunction
 	{
-		std::string code;
+		std::ostringstream code;
 
 		ShaderType     shader_type;
 		ShaderLanguage shader_language;

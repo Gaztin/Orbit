@@ -75,11 +75,10 @@ namespace ShaderGen
 			std::ostringstream ss;
 			ss << "local_" << ( unique_index++ );
 
-			auto value = m_value;
+			auto old_value = m_value;
 			m_value = ss.str();
 
-			const std::string typestring( VariableTypeToString( m_type ) );
-			IGenerator::GetCurrentMainFunction()->code.append( "\t" + typestring + " " + m_value + " = " + value + ";\n" );
+			IGenerator::GetCurrentMainFunction()->code << "\t" << VariableTypeToString( m_type ) << " " << m_value << " = " << old_value << ";\n";
 
 			m_stored = true;
 		}
@@ -134,7 +133,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IGenerator::GetCurrentMainFunction()->code.append( "\t" + GetValue() + " = " + rhs.GetValue() + ";\n" );
+		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
 	}
 
 	void IVariable::operator+=( const IVariable& rhs )
@@ -142,7 +141,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IGenerator::GetCurrentMainFunction()->code.append( "\t" + GetValue() + " += " + rhs.GetValue() + ";\n" );
+		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
 	}
 
 	void IVariable::operator*=( const IVariable& rhs )
@@ -152,7 +151,7 @@ namespace ShaderGen
 		/* TODO: if m_type == VariableType::Mat4, do mul for HLSL */
 
 		StoreValue();
-		IGenerator::GetCurrentMainFunction()->code.append( "\t" + GetValue() + " *= " + rhs.GetValue() + ";\n" );
+		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
 	}
 }
 
