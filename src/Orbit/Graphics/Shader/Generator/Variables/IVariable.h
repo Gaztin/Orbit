@@ -41,8 +41,8 @@ namespace ShaderGen
 
 	public:
 
-		/* Stores the value in a local variable. Useful when we want to manipulate proxies within a
-		 * variable, since `Vec2(1.0, 0.5).g *= 2.0;` is ill-behaved. */
+		/* Stores the value in a local variable. Useful when we want to manipulate swizzles within
+		 * a variable, since `Vec2(1.0, 0.5).g *= 2.0;` is ill-behaved. */
 		void StoreValue( void );
 
 	public:
