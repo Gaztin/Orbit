@@ -19,13 +19,13 @@
 #include <memory>
 
 #include "Orbit/Core/Utility/Span.h"
+#include "Orbit/Graphics/Buffer/IndexBuffer.h"
+#include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
 #include "Orbit/Graphics/Shader/VertexLayout.h"
 
 ORB_NAMESPACE_BEGIN
 
-class IndexBuffer;
-class VertexBuffer;
 
 class ORB_API_GRAPHICS Model
 {
