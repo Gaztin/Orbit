@@ -36,7 +36,7 @@ namespace ShaderGen
 	}
 
 	Sampler::Sampler( void )
-		: IVariable( NewName(), VariableType::Unknown )
+		: IVariable( NewName(), DataType::Unknown )
 	{
 		m_stored = true;
 

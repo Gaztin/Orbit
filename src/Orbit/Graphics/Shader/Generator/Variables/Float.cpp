@@ -26,9 +26,9 @@ ORB_NAMESPACE_BEGIN
 namespace ShaderGen
 {
 	Float::Float( const IVariable& f )
-		: IVariable( f.GetValue(), VariableType::Float )
+		: IVariable( f.GetValue(), DataType::Float )
 	{
-		assert( f.GetType() == VariableType::Float );
+		assert( f.GetDataType() == DataType::Float );
 
 		f.SetUsed();
 	}

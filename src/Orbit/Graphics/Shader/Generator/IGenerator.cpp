@@ -104,11 +104,11 @@ namespace ShaderGen
 
 	IVariable IGenerator::Transpose( const IVariable& matrix )
 	{
-		assert( matrix.GetType() == VariableType::Mat4 );
+		assert( matrix.GetDataType() == DataType::Mat4 );
 
 		matrix.SetUsed();
 
-		return IVariable( "transpose( " + matrix.GetValue() + " )", VariableType::Mat4 );
+		return IVariable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
 	}
 
 	IVariable IGenerator::Sample( const IVariable& sampler, const IVariable& texcoord )
@@ -126,12 +126,12 @@ namespace ShaderGen
 
 			case ShaderLanguage::HLSL:
 			{
-				return IVariable( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", VariableType::Vec4 );
+				return IVariable( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::Vec4 );
 			}
 
 			case ShaderLanguage::GLSL:
 			{
-				return IVariable( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", VariableType::Vec4 );
+				return IVariable( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::Vec4 );
 			}
 		}
 	}
@@ -141,7 +141,7 @@ namespace ShaderGen
 		lhs.SetUsed();
 		rhs.SetUsed();
 
-		return IVariable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", VariableType::Float );
+		return IVariable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
 	}
 
 	std::string IGenerator::GenerateHLSL( void )
@@ -224,7 +224,7 @@ namespace ShaderGen
 			{
 				if( m_uniforms[ i ]->m_used )
 				{
-					ss << "\t" << VariableTypeToString( m_uniforms[ i ]->m_type ) << " uniform_" << i << ";\n";
+					ss << "\t" << DataTypeToString( m_uniforms[ i ]->m_data_type ) << " uniform_" << i << ";\n";
 
 					/* Reset state for next shader pass */
 					m_uniforms[ i ]->m_used = false;
@@ -266,7 +266,7 @@ namespace ShaderGen
 			{
 				if( m_uniforms[ i ]->m_used )
 				{
-					ss << "\t" << VariableTypeToString( m_uniforms[ i ]->m_type ) << " uniform_" << i << ";\n";
+					ss << "\t" << DataTypeToString( m_uniforms[ i ]->m_data_type ) << " uniform_" << i << ";\n";
 
 					/* Reset state for next shader pass */
 					m_uniforms[ i ]->m_used = false;
@@ -337,7 +337,7 @@ namespace ShaderGen
 			{
 				if( m_uniforms[ i ]->m_used )
 				{
-					ss << "\tORB_CONSTANT( " << VariableTypeToString( m_uniforms[ i ]->m_type ) << ", uniform_" << i << " );\n";
+					ss << "\tORB_CONSTANT( " << DataTypeToString( m_uniforms[ i ]->m_data_type ) << ", uniform_" << i << " );\n";
 
 					/* Reset state for next shader pass */
 					m_uniforms[ i ]->m_used = false;
@@ -401,7 +401,7 @@ namespace ShaderGen
 			{
 				if( m_uniforms[ i ]->m_used )
 				{
-					ss << "\tORB_CONSTANT( " << VariableTypeToString( m_uniforms[ i ]->m_type ) << ", uniform_" << i << " );\n";
+					ss << "\tORB_CONSTANT( " << DataTypeToString( m_uniforms[ i ]->m_data_type ) << ", uniform_" << i << " );\n";
 
 					/* Reset state for next shader pass */
 					m_uniforms[ i ]->m_used = false;

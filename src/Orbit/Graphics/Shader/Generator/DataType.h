@@ -24,7 +24,7 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	enum class VariableType
+	enum class DataType
 	{
 		Unknown = 0,
 
@@ -35,16 +35,16 @@ namespace ShaderGen
 		Mat4,
 	};
 
-	constexpr std::string_view VariableTypeToString( VariableType type )
+	constexpr std::string_view DataTypeToString( DataType type )
 	{
 		switch( type )
 		{
-			case VariableType::Float: { return "float";      }
-			case VariableType::Vec2:  { return "vec2";       }
-			case VariableType::Vec3:  { return "vec3";       }
-			case VariableType::Vec4:  { return "vec4";       }
-			case VariableType::Mat4:  { return "mat4";       }
-			default:                  { return "error_type"; }
+			case DataType::Float: { return "float";      }
+			case DataType::Vec2:  { return "vec2";       }
+			case DataType::Vec3:  { return "vec3";       }
+			case DataType::Vec4:  { return "vec4";       }
+			case DataType::Mat4:  { return "mat4";       }
+			default:              { return "error_type"; }
 		}
 	}
 }

@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Shader/Generator/VariableType.h"
+#include "Orbit/Graphics/Shader/Generator/DataType.h"
 
 #include <string_view>
 
@@ -36,7 +36,7 @@ namespace ShaderGen
 		IVariable( const IVariable& other );
 		IVariable( IVariable&& other );
 		IVariable( double f );
-		IVariable( std::string_view value, VariableType type );
+		IVariable( std::string_view value, DataType data_type );
 		virtual ~IVariable( void ) = default;
 
 	public:
@@ -47,10 +47,10 @@ namespace ShaderGen
 
 	public:
 
-		VariableType GetType  ( void ) const { return m_type; };
-		void         SetUsed  ( void ) const { m_used = true; }
-		void         SetStored( void )       { m_stored = true; }
-		bool         IsStored ( void ) const { return m_stored; };
+		DataType GetDataType( void ) const { return m_data_type; };
+		void     SetUsed    ( void ) const { m_used = true; }
+		void     SetStored  ( void )       { m_stored = true; }
+		bool     IsStored   ( void ) const { return m_stored; };
 
 	public:
 
@@ -70,7 +70,7 @@ namespace ShaderGen
 	protected:
 
 		std::string  m_value;
-		VariableType m_type;
+		DataType     m_data_type;
 		bool         m_stored = false;
 		mutable bool m_used   = false;
 

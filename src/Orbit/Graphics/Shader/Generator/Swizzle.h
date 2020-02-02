@@ -34,17 +34,17 @@ namespace ShaderGen
 
 	public:
 
-		static constexpr VariableType GetVariableType( void )
+		static constexpr DataType GetDataType( void )
 		{
 			switch( name.length )
 			{
-				case 1: { return VariableType::Float; }
-				case 2: { return VariableType::Vec2;  }
-				case 3: { return VariableType::Vec3;  }
-				case 4: { return VariableType::Vec4;  }
+				case 1: { return DataType::Float; }
+				case 2: { return DataType::Vec2;  }
+				case 3: { return DataType::Vec3;  }
+				case 4: { return DataType::Vec4;  }
 			}
 
-			return VariableType::Unknown;
+			return DataType::Unknown;
 		}
 
 	public:
@@ -65,7 +65,7 @@ namespace ShaderGen
 		operator IVariable( void ) const
 		{
 			IVariable* parent = Swizzle::latest_accessed_variable;
-			IVariable  component_variable( parent->GetValue() + "." + name.value, GetVariableType() );
+			IVariable  component_variable( parent->GetValue() + "." + name.value, GetDataType() );
 
 			/* If parent is stored, then the swizzle component can be considered stored too.
 			 * Otherwise, we'd not be able to manipulate the components within variables.

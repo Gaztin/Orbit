@@ -32,7 +32,7 @@ namespace ShaderGen
 	{
 	public:
 
-		UniformBase( VariableType type );
+		UniformBase( DataType type );
 
 	};
 
@@ -45,11 +45,11 @@ namespace ShaderGen
 
 	};
 
-	template<> inline Uniform< Float >::Uniform( void ) : UniformBase( VariableType::Float ) { }
-	template<> inline Uniform< Vec2  >::Uniform( void ) : UniformBase( VariableType::Vec2  ) { }
-	template<> inline Uniform< Vec3  >::Uniform( void ) : UniformBase( VariableType::Vec3  ) { }
-	template<> inline Uniform< Vec4  >::Uniform( void ) : UniformBase( VariableType::Vec4  ) { }
-	template<> inline Uniform< Mat4  >::Uniform( void ) : UniformBase( VariableType::Mat4  ) { }
+	template<> inline Uniform< Float >::Uniform( void ) : UniformBase( DataType::Float ) { }
+	template<> inline Uniform< Vec2  >::Uniform( void ) : UniformBase( DataType::Vec2  ) { }
+	template<> inline Uniform< Vec3  >::Uniform( void ) : UniformBase( DataType::Vec3  ) { }
+	template<> inline Uniform< Vec4  >::Uniform( void ) : UniformBase( DataType::Vec4  ) { }
+	template<> inline Uniform< Mat4  >::Uniform( void ) : UniformBase( DataType::Mat4  ) { }
 }
 
 ORB_NAMESPACE_END

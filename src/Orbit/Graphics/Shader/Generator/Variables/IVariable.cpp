@@ -35,34 +35,34 @@ ORB_NAMESPACE_BEGIN
 namespace ShaderGen
 {
 	IVariable::IVariable( const IVariable& other )
-		: m_value( other.m_value )
-		, m_type ( other.m_type )
+		: m_value    ( other.m_value )
+		, m_data_type( other.m_data_type )
 	{
 		other.SetUsed();
 	}
 
 	IVariable::IVariable( IVariable&& other )
-		: m_value ( std::move( other.m_value ) )
-		, m_type  ( other.m_type )
-		, m_stored( other.m_stored )
-		, m_used  ( other.m_used )
+		: m_value    ( std::move( other.m_value ) )
+		, m_data_type( other.m_data_type )
+		, m_stored   ( other.m_stored )
+		, m_used     ( other.m_used )
 	{
-		other.m_type   = VariableType::Unknown;
+		other.m_data_type   = DataType::Unknown;
 		other.m_stored = false;
 		other.m_used   = false;
 	}
 
 	IVariable::IVariable( double f )
-		: m_value ( std::to_string( f ) )
-		, m_type  ( VariableType::Float )
-		, m_stored( false )
-		, m_used  ( false )
+		: m_value    ( std::to_string( f ) )
+		, m_data_type( DataType::Float )
+		, m_stored   ( false )
+		, m_used     ( false )
 	{
 	}
 
-	IVariable::IVariable( std::string_view value, VariableType type )
-		: m_value( value )
-		, m_type ( type )
+	IVariable::IVariable( std::string_view value, DataType data_type )
+		: m_value    ( value )
+		, m_data_type( data_type )
 	{
 	}
 
@@ -78,7 +78,7 @@ namespace ShaderGen
 			auto old_value = m_value;
 			m_value = ss.str();
 
-			IGenerator::GetCurrentMainFunction()->code << "\t" << VariableTypeToString( m_type ) << " " << m_value << " = " << old_value << ";\n";
+			IGenerator::GetCurrentMainFunction()->code << "\t" << DataTypeToString( m_data_type ) << " " << m_value << " = " << old_value << ";\n";
 
 			m_stored = true;
 		}
@@ -93,12 +93,12 @@ namespace ShaderGen
 		{
 			case ShaderLanguage::HLSL:
 			{
-				return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", GetType() );
+				return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", GetDataType() );
 			} break;
 
 			default:
 			{
-				return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", GetType() );
+				return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", GetDataType() );
 			} break;
 		}
 	}
@@ -108,14 +108,14 @@ namespace ShaderGen
 		SetUsed();
 		rhs.SetUsed();
 
-		return IVariable( "( " + GetValue() + " + " + rhs.GetValue() + " )", m_type );
+		return IVariable( "( " + GetValue() + " + " + rhs.GetValue() + " )", m_data_type );
 	}
 
 	IVariable IVariable::operator-( void ) const
 	{
 		SetUsed();
 
-		return IVariable( "( -" + GetValue() + " )", m_type );
+		return IVariable( "( -" + GetValue() + " )", m_data_type );
 	}
 
 	Swizzle* IVariable::operator->( void )
@@ -148,7 +148,7 @@ namespace ShaderGen
 	{
 		rhs.SetUsed();
 
-		/* TODO: if m_type == VariableType::Mat4, do mul for HLSL */
+		/* TODO: if m_type == DataType::Mat4, do mul for HLSL */
 
 		StoreValue();
 		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";

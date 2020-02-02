@@ -35,7 +35,7 @@ namespace ShaderGen
 		return ss.str();
 	}
 
-	UniformBase::UniformBase( VariableType type )
+	UniformBase::UniformBase( DataType type )
 		: IVariable( NewName(), type )
 	{
 		m_stored = true;
