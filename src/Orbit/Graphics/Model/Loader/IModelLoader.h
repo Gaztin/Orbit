@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,40 +16,30 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Span.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Model/Mesh.h"
-#include "Orbit/Graphics/Renderer/RenderCommand.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-class IModelLoader;
+class Vector3;
+class Vector4;
 
-class ORB_API_GRAPHICS Model
+class ORB_API_GRAPHICS IModelLoader
 {
-	ORB_DISABLE_COPY( Model );
+public:
+
+	IModelLoader( void ) = default;
+	virtual ~IModelLoader( void ) = default;
 
 public:
 
-	explicit Model( ByteSpan data, const VertexLayout& vertex_layout );
-
-public:
-
-	auto begin( void ) const { return m_meshes.begin(); }
-	auto end  ( void ) const { return m_meshes.end(); }
-
-private:
-
-	bool TryLoad( IModelLoader& loader, ByteSpan data, const VertexLayout& vertex_layout );
-
-	bool ParseCollada( ByteSpan data, const VertexLayout& layout );
-	bool ParseOBJ    ( ByteSpan data, const VertexLayout& layout );
-
-private:
-
-	std::vector< Mesh > m_meshes;
+	virtual bool   Init                  ( ByteSpan data ) = 0;
+	virtual size_t PeekVertexCount       ( void )          = 0;
+	virtual size_t PeekFaceCount         ( void )          = 0;
+	virtual size_t PeekMeshCount         ( void )          = 0;
+	virtual void   ReadNextVertexPosition( Vector4* out )  = 0;
+	virtual void   ReadNextVertexNormal  ( Vector3* out )  = 0;
+	virtual void   ReadNextFace          ( size_t* out )   = 0;
+	virtual bool   ShouldGenerateNormals ( void )          = 0;
 
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -17,39 +17,29 @@
 
 #pragma once
 #include "Orbit/Core/Utility/Span.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Model/Mesh.h"
-#include "Orbit/Graphics/Renderer/RenderCommand.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
+#include "Orbit/Graphics/Model/Loader/IModelLoader.h"
 
 ORB_NAMESPACE_BEGIN
 
-class IModelLoader;
-
-class ORB_API_GRAPHICS Model
+class ORB_API_GRAPHICS OBJLoader final : public IModelLoader
 {
-	ORB_DISABLE_COPY( Model );
-
 public:
 
-	explicit Model( ByteSpan data, const VertexLayout& vertex_layout );
-
-public:
-
-	auto begin( void ) const { return m_meshes.begin(); }
-	auto end  ( void ) const { return m_meshes.end(); }
+	bool   Init                  ( ByteSpan data ) override;
+	size_t PeekVertexCount       ( void )          override;
+	size_t PeekFaceCount         ( void )          override;
+	size_t PeekMeshCount         ( void )          override;
+	void   ReadNextVertexPosition( Vector4* out )  override;
+	void   ReadNextVertexNormal  ( Vector3* out )  override;
+	void   ReadNextFace          ( size_t* out )   override;
+	bool   ShouldGenerateNormals ( void )          override;
 
 private:
 
-	bool TryLoad( IModelLoader& loader, ByteSpan data, const VertexLayout& vertex_layout );
+	ByteSpan m_data;
 
-	bool ParseCollada( ByteSpan data, const VertexLayout& layout );
-	bool ParseOBJ    ( ByteSpan data, const VertexLayout& layout );
-
-private:
-
-	std::vector< Mesh > m_meshes;
+	const uint8_t* m_vertex_location;
+	const uint8_t* m_face_location;
 
 };
 
