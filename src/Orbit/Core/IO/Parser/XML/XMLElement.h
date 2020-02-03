@@ -16,30 +16,20 @@
  */
 
 #pragma once
-#include "Orbit/Core/IO/Parser/XML/XMLElement.h"
-#include "Orbit/Core/IO/Parser/ITextParser.h"
+#include "Orbit/Core/IO/Parser/XML/XMLAttribute.h"
 
+#include <string>
 #include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE XMLParser : public ITextParser
+struct XMLElement
 {
-public:
+	std::string name;
+	std::string content;
 
-	explicit XMLParser( ByteSpan data );
-	~XMLParser( void ) = default;
-
-private:
-
-	std::string ReadName    ( void );
-	std::string ReadContent ( void );
-	bool        ParseElement( XMLElement* parent );
-
-private:
-
-	XMLElement m_root_element;
-
+	std::vector< XMLAttribute > attributes;
+	std::vector< XMLElement >   children;
 };
 
 ORB_NAMESPACE_END

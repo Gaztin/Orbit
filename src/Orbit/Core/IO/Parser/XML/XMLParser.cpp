@@ -17,15 +17,112 @@
 
 #include "XMLParser.h"
 
+#include <cctype>
+
 ORB_NAMESPACE_BEGIN
 
 XMLParser::XMLParser( ByteSpan data )
-	: IParser( data )
+	: ITextParser( data )
 {
-	if( !ExpectString( R"(<?xml version="1.0" encoding="utf-8"?>\n)" ) )
+	if( !ExpectString( R"(<?xml version="1.0" encoding="utf-8"?>)" ) )
 		return;
 
+	SkipWhitespace();
+
+	while( !IsEOF() )
+	{
+		if( !ParseElement( &m_root_element ) )
+			return;
+	}
+
 	m_good = true;
+}
+
+std::string XMLParser::ReadName( void )
+{
+	size_t off = m_offset;
+
+	while( off < m_size && ( std::isalpha( m_data[ off ] ) || m_data[ off ] == '_' ) )
+		++off;
+
+	const std::string name( reinterpret_cast< const char* >( &m_data[ m_offset ] ), ( off - m_offset ) );
+
+	m_offset = off;
+
+	return name;
+}
+
+std::string XMLParser::ReadContent( void )
+{
+	size_t off = m_offset;
+
+	while( off < m_size && m_data[ off ] != '<' && ( std::isprint( m_data[ off ] ) || std::isspace( m_data[ off ] ) ) )
+		++off;
+
+	const std::string name( reinterpret_cast< const char* >( &m_data[ m_offset ] ), ( off - m_offset ) );
+
+	m_offset = off;
+
+	return name;
+}
+
+bool XMLParser::ParseElement( XMLElement* parent )
+{
+	XMLElement element;
+
+	if( !ExpectString( "<" ) )
+		return false;
+
+	element.name = ReadName();
+	SkipWhitespace();
+
+	/* Attributes */
+	while( Peek( 1 ) != ">" && Peek( 2 ) != "/>" )
+	{
+		XMLAttribute attribute;
+		attribute.name = ReadName();
+
+		if( !ExpectString( "=" ) )
+			return false;
+
+		attribute.value = ReadLiteral();
+		element.attributes.push_back( attribute );
+
+		SkipWhitespace();
+	}
+
+	if( ExpectString( ">" ) )
+	{
+		SkipWhitespace();
+
+		/* Does element have character data instead of child elements? */
+		if( Peek( 1 ) != "<" )
+		{
+			element.content = ReadContent();
+
+			SkipWhitespace();
+			if( !ExpectString( "</" + element.name + ">" ) )
+				return false;
+		}
+		else
+		{
+			while( !ExpectString( "</" + element.name + ">" ) )
+			{
+				if( !ParseElement( &element ) )
+					return false;
+			}
+		}
+	}
+	else if( !ExpectString( "/>" ) )
+	{
+		return false;
+	}
+
+	parent->children.push_back( element );
+
+	SkipWhitespace();
+
+	return true;
 }
 
 ORB_NAMESPACE_END

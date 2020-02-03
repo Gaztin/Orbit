@@ -36,13 +36,21 @@ public:
 
 protected:
 
-	bool ExpectString( std::string_view str );
+	void Skip( size_t size );
+
+protected:
+
+	bool IsEOF( void ) const;
+
+protected:
+
+	virtual bool ExpectString( std::string_view str ) = 0;
 
 protected:
 
 	std::unique_ptr< uint8_t[] > m_data;
 	size_t                       m_size;
-	ptrdiff_t                    m_offset;
+	size_t                       m_offset;
 	bool                         m_good;
 
 };

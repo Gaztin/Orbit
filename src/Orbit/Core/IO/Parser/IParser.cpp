@@ -29,12 +29,17 @@ IParser::IParser( ByteSpan data )
 {
 }
 
-bool IParser::ExpectString( std::string_view str )
+void IParser::Skip( size_t size )
 {
-	if( ( m_offset + str.length() ) > m_size )
-		return false;
+	if( ( m_offset + size ) < m_size )
+		m_offset += size;
+	else
+		m_offset = m_size;
+}
 
-	return ( std::strncmp( reinterpret_cast< const char* >( &m_data[ m_offset ] ), str.data(), str.length() ) == 0 );
+bool IParser::IsEOF( void ) const
+{
+	return ( m_offset == m_size );
 }
 
 ORB_NAMESPACE_END
