@@ -128,9 +128,9 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 				if( layout.Contains( VertexComponent::Color ) )
 				{
 					float* color_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + color_offset ] );
-					color_write[ 0 ] = 0.0f;
-					color_write[ 1 ] = 0.0f;
-					color_write[ 2 ] = 0.0f;
+					color_write[ 0 ] = 0.75f;
+					color_write[ 1 ] = 0.75f;
+					color_write[ 2 ] = 0.75f;
 					color_write[ 3 ] = 1.0f;
 				}
 
