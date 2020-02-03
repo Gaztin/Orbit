@@ -94,8 +94,7 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 				return false;
 
 			uint8_t index_size = 4;
-			/**/ if( vertex_count < std::numeric_limits< uint8_t  >::max() ) { index_size = 1; }
-			else if( vertex_count < std::numeric_limits< uint16_t >::max() ) { index_size = 2; }
+			if( vertex_count < std::numeric_limits< uint16_t >::max() ) { index_size = 2; }
 
 			const size_t vertex_stride   = layout.GetStride();
 			const size_t pos_offset      = layout.OffsetOf( VertexComponent::Position );
