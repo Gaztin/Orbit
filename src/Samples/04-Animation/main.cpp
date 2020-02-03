@@ -55,6 +55,9 @@ public:
 		m_window.Show();
 		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
 		m_model_matrix.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
+		m_model_matrix.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
+		m_camera.position = Orbit::Vector3( 0.0f, 3.0f, -6.0f );
+		m_camera.rotation = Orbit::Vector3( Orbit::Pi * 0.1f, 0.0f, 0.0f );
 	}
 
 public:
@@ -67,8 +70,6 @@ public:
 
 			/* Calculate model-view-projection matrix */
 			{
-				m_model_matrix.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 0.5f * delta_time, 0.0f ) );
-
 				view_projection = m_camera.GetViewProjection();
 				model           = m_model_matrix;
 				model_inverse   = m_model_matrix;

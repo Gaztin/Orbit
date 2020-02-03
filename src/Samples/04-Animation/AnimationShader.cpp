@@ -18,6 +18,7 @@
 #include "AnimationShader.h"
 
 #include <Orbit/Graphics/Shader/Generator/Variables/Float.h>
+#include <Orbit/Graphics/Shader/Generator/Variables/Vec3.h>
 #include <Orbit/Graphics/Shader/Generator/Variables/Vec4.h>
 
 AnimationShader::Vec4 AnimationShader::VSMain( void )
@@ -34,6 +35,11 @@ AnimationShader::Vec4 AnimationShader::PSMain( void )
 {
 	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
 	Vec4 out_color = tex_color + v_color;
+
+	Float directional_impact = ( -Dot( v_normal, Normalize( Vec3( 0.4, -1.0, 1.0 ) ) ) * 0.75 );
+	Float ambient_impact     = 0.5;
+
+	out_color->rgb *= ( directional_impact + ambient_impact );
 
 	return out_color;
 }
