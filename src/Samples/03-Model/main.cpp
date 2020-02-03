@@ -34,7 +34,6 @@
 #include <Orbit/Math/Vector4.h>
 
 #include "Framework/Camera.h"
-#include "ModelData.h"
 #include "ModelShader.h"
 
 static ModelShader model_shader;
@@ -57,7 +56,7 @@ public:
 	SampleApp( void )
 		: m_window( 800, 600 )
 		, m_shader( model_shader )
-		, m_model( model_data, model_shader.GetVertexLayout() )
+		, m_model( Orbit::Asset( "models/teapot.obj" ), model_shader.GetVertexLayout() )
 		, m_vertex_constant_buffer( vertex_constant_data )
 		, m_fragment_constant_buffer( fragment_constant_data )
 		, m_texture( 4, 4, texture_data )
