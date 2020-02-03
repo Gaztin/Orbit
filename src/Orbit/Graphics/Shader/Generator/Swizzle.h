@@ -55,11 +55,20 @@ namespace ShaderGen
 
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
-			/* Make sure the parent is stored, otherwise it might attempt to modify temporary
-			 * variables. */
 			parent->StoreValue();
 
 			static_cast< IVariable >( *this ) *= rhs;
+		}
+
+		void operator=( const IVariable& rhs ) const
+		{
+			IVariable* parent = Swizzle::latest_accessed_variable;
+
+			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
+
+			parent->StoreValue();
+
+			static_cast< IVariable >( *this ) = rhs;
 		}
 
 		operator IVariable( void ) const
