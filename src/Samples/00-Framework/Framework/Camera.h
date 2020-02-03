@@ -20,6 +20,7 @@
 
 #include <Orbit/Core/Event/EventSubscription.h>
 #include <Orbit/Math/Matrix4.h>
+#include <Orbit/Math/Vector3.h>
 
 namespace Orbit { struct WindowResized; }
 
@@ -44,6 +45,9 @@ public:
 	float far_clip  = 100.0f;
 	float speed     = 4.0f;
 
+	Orbit::Vector3 position;
+	Orbit::Vector3 rotation;
+
 private:
 
 	void OnResized ( const Orbit::WindowResized& e );
@@ -52,7 +56,6 @@ private:
 private:
 
 	Orbit::EventSubscription m_on_resize;
-	Orbit::Matrix4           m_view;
 
 	uint32_t m_width  = 512;
 	uint32_t m_height = 512;
