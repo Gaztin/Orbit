@@ -101,15 +101,20 @@ public:
 
 		m_camera.Update( delta_time );
 
-		Orbit::RenderCommand command = m_model.MakeRenderCommand();
-		command.shader = &m_shader;
-		command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &m_vertex_constant_buffer );
-		command.constant_buffers[ Orbit::ShaderType::Fragment ].push_back( &m_fragment_constant_buffer );
-		command.textures.push_back( &m_texture );
+		for( const Orbit::Mesh& mesh : m_model )
+		{
+			Orbit::RenderCommand command;
+			command.vertex_buffer = mesh.vertex_buffer.get();
+			command.index_buffer  = mesh.index_buffer.get();
+			command.shader        = &m_shader;
+			command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &m_vertex_constant_buffer );
+			command.constant_buffers[ Orbit::ShaderType::Fragment ].push_back( &m_fragment_constant_buffer );
+			command.textures.push_back( &m_texture );
 
-		m_renderer.QueueCommand( command );
+			m_renderer.QueueCommand( command );
+		}
+
 		m_renderer.Render();
-
 		m_render_context.SwapBuffers();
 	}
 

@@ -83,11 +83,6 @@ public:
 
 		m_camera.Update( delta_time );
 
-		Orbit::RenderCommand command = m_model.MakeRenderCommand();
-		command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &m_constant_buffer );
-		command.shader = &m_shader;
-
-		m_renderer.QueueCommand( command );
 		m_renderer.Render();
 
 		m_render_context.SwapBuffers();

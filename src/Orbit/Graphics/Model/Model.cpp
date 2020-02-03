@@ -38,20 +38,11 @@ Model::Model( ByteSpan data, const VertexLayout& layout )
 	}
 }
 
-RenderCommand Model::MakeRenderCommand( void )
-{
-	RenderCommand command;
-	command.vertex_buffer = m_vertex_buffer.get();
-	command.index_buffer  = m_index_buffer.get();
-
-	return command;
-}
-
 bool Model::ParseCollada( ByteSpan data, const VertexLayout& /*layout*/ )
 {
-	XMLParser xml_parser( data );
+	const XMLParser xml_parser( data );
 
-	return xml_parser.Good();
+	return false;
 }
 
 bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
@@ -270,9 +261,12 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 		case 4: { index_format = IndexFormat::DoubleWord; } break;
 	}
 
-	/* Create buffers */
-	m_vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, stride );
-	m_index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
+	/* Create mesh */
+	Mesh mesh;
+	mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, stride );
+	mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
+
+	m_meshes.emplace_back( std::move( mesh ) );
 
 	return true;
 }
