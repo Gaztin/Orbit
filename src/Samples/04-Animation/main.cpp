@@ -83,6 +83,17 @@ public:
 
 		m_camera.Update( delta_time );
 
+		for( const Orbit::Mesh& mesh : m_model )
+		{
+			Orbit::RenderCommand command;
+			command.vertex_buffer = mesh.vertex_buffer.get();
+			command.index_buffer  = mesh.index_buffer.get();
+			command.shader        = &m_shader;
+			command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &m_constant_buffer );
+
+			m_renderer.QueueCommand( command );
+		}
+
 		m_renderer.Render();
 
 		m_render_context.SwapBuffers();

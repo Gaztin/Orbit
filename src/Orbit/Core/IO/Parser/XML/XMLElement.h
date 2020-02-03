@@ -36,7 +36,7 @@ public:
 
 public:
 
-	XMLElement operator[]( std::string_view key ) const;
+	const XMLElement& operator[]( std::string_view key ) const;
 
 public:
 

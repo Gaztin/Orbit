@@ -30,7 +30,7 @@ std::string_view XMLElement::Attribute( std::string_view key ) const
 	return { };
 }
 
-XMLElement XMLElement::operator[]( std::string_view key ) const
+const XMLElement& XMLElement::operator[]( std::string_view key ) const
 {
 	for( const XMLElement& child : children )
 	{
@@ -38,7 +38,8 @@ XMLElement XMLElement::operator[]( std::string_view key ) const
 			return child;
 	}
 
-	return { };
+	static XMLElement dummy;
+	return dummy;
 }
 
 ORB_NAMESPACE_END

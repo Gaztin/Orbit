@@ -19,6 +19,8 @@
 
 #include <cassert>
 #include <cstdio>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "Orbit/Core/IO/Parser/XML/XMLParser.h"
@@ -38,29 +40,222 @@ Model::Model( ByteSpan data, const VertexLayout& layout )
 	}
 }
 
-bool Model::ParseCollada( ByteSpan data, const VertexLayout& /*layout*/ )
+bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 {
 	const XMLParser xml_parser( data );
 
-	if( xml_parser.IsGood() )
+	if( !xml_parser.IsGood() )
+		return false;
+
+	const XMLElement& root = xml_parser.GetRootElement();
+
+	for( const XMLElement& geometry : root[ "COLLADA" ][ "library_geometries" ] )
 	{
-		XMLElement root = xml_parser.GetRootElement();
-
-		for( auto it : root[ "COLLADA" ][ "library_geometries" ] )
+		if( geometry.name == "geometry" )
 		{
-			if( it.name == "geometry" )
+			Mesh mesh;
+			mesh.name = geometry.Attribute( "name" );
+
+			/* Peek the number of vertices */
+			size_t vertex_count = 0;
+			for( const XMLElement& source : geometry[ "mesh" ] )
 			{
-				Mesh mesh;
-				mesh.name = it.Attribute( "name" );
+				const std::string_view source_name = source.Attribute( "name" );
 
-				m_meshes.emplace_back( std::move( mesh ) );
+				if( source_name == "position" )
+				{
+					if( layout.Contains( VertexComponent::Position ) )
+					{
+						std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "count" ) ) );
+						ss >> vertex_count;
+						break;
+					}
+				}
+				else if( source_name == "normal" )
+				{
+					if( layout.Contains( VertexComponent::Normal ) )
+					{
+						std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "count" ) ) );
+						ss >> vertex_count;
+						break;
+					}
+				}
 			}
-		}
 
-		return true;
+			size_t face_count = 0;
+			/* Peek the number of faces */
+			{
+				std::istringstream ss( std::string( geometry[ "mesh" ][ "polylist" ].Attribute( "count" ) ) );
+				ss >> face_count;
+			}
+
+			/* Opt out if not COLLADA */
+			if( vertex_count == 0 && face_count == 0 )
+				return false;
+
+			uint8_t index_size = 4;
+			/**/ if( vertex_count < std::numeric_limits< uint8_t  >::max() ) { index_size = 1; }
+			else if( vertex_count < std::numeric_limits< uint16_t >::max() ) { index_size = 2; }
+
+			const size_t vertex_stride   = layout.GetStride();
+			const size_t pos_offset      = layout.OffsetOf( VertexComponent::Position );
+			const size_t normal_offset   = layout.OffsetOf( VertexComponent::Normal );
+			const size_t color_offset    = layout.OffsetOf( VertexComponent::Color );
+			const size_t texcoord_offset = layout.OffsetOf( VertexComponent::TexCoord );
+			auto         vertex_data     = std::unique_ptr< uint8_t[] >( new uint8_t[ vertex_stride * vertex_count ] );
+			auto         index_data      = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
+
+			/* Clear data before read */
+			for( size_t i = 0; i < vertex_count; ++i )
+			{
+				if( layout.Contains( VertexComponent::Position ) )
+				{
+					float* pos_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + pos_offset ] );
+					pos_write[ 0 ] = 0.0f;
+					pos_write[ 1 ] = 0.0f;
+					pos_write[ 2 ] = 0.0f;
+					pos_write[ 3 ] = 1.0f;
+				}
+
+				if( layout.Contains( VertexComponent::Normal ) )
+				{
+					float* normal_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + normal_offset ] );
+					normal_write[ 0 ] = 0.0f;
+					normal_write[ 1 ] = 0.0f;
+					normal_write[ 2 ] = 0.0f;
+				}
+
+				if( layout.Contains( VertexComponent::Color ) )
+				{
+					float* color_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + color_offset ] );
+					color_write[ 0 ] = 0.0f;
+					color_write[ 1 ] = 0.0f;
+					color_write[ 2 ] = 0.0f;
+					color_write[ 3 ] = 1.0f;
+				}
+
+				if( layout.Contains( VertexComponent::TexCoord ) )
+				{
+					float* texcoord_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + texcoord_offset ] );
+					texcoord_write[ 0 ] = 0.0f;
+					texcoord_write[ 1 ] = 0.0f;
+				}
+			}
+
+			/* Write to vertex data */
+			for( const XMLElement& source : geometry[ "mesh" ] )
+			{
+				const std::string_view source_name = source.Attribute( "name" );
+
+				if( source_name == "position" )
+				{
+					if( layout.Contains( VertexComponent::Position ) )
+					{
+						size_t position_component_count = 0;
+						{
+							std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
+							ss >> position_component_count;
+						}
+
+						std::istringstream ss( source[ "float_array" ].content );
+
+						for( size_t i = 0; i < vertex_count; ++i )
+						{
+							float* pos_write = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + pos_offset ] );
+
+							for( size_t component = 0; component < position_component_count; ++component )
+								ss >> pos_write[ component ];
+
+							pos_write = pos_write;
+						}
+					}
+				}
+				else if( source_name == "normal" )
+				{
+					if( layout.Contains( VertexComponent::Normal ) )
+					{
+						size_t normal_component_count = 0;
+						{
+							std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
+							ss >> normal_component_count;
+						}
+
+						std::istringstream ss( source[ "float_array" ].content );
+
+						for( size_t i = 0; i < vertex_count; ++i )
+						{
+							float* normal_write = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + normal_offset ] );
+
+							for( size_t component = 0; component < normal_component_count; ++component )
+								ss >> normal_write[ component ];
+
+							normal_write = normal_write;
+						}
+					}
+				}
+			}
+
+			/* Write to index data */
+			{
+				size_t input_count = 0;
+				for( const XMLElement& input : geometry[ "mesh" ][ "polylist" ] )
+				{
+					if( input.name == "input" )
+						++input_count;
+				}
+
+				std::istringstream ss( geometry[ "mesh" ][ "polylist" ][ "p" ].content );
+
+				for( size_t i = 0; i < face_count * 3; ++i )
+				{
+					switch( index_size )
+					{
+						case 1:
+						{
+							uint8_t* index_write = &index_data[ i ];
+
+							for( size_t input = 0; input < input_count; ++input )
+								ss >> *index_write;
+
+						} break;
+
+						case 2:
+						{
+							uint16_t* index_write = reinterpret_cast< uint16_t* >( &index_data[ i * 2 ] );
+
+							for( size_t input = 0; input < input_count; ++input )
+								ss >> *index_write;
+
+						} break;
+
+						case 4:
+						{
+							uint32_t* index_write = reinterpret_cast< uint32_t* >( &index_data[ i * 4 ] );
+
+							for( size_t input = 0; input < input_count; ++input )
+								ss >> *index_write;
+
+						} break;
+					}
+				}
+			}
+
+			IndexFormat index_format;
+			switch( index_size )
+			{
+				case 1: { index_format = IndexFormat::Byte;       } break;
+				case 2: { index_format = IndexFormat::Word;       } break;
+				case 4: { index_format = IndexFormat::DoubleWord; } break;
+			}
+
+			mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, vertex_stride );
+			mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
+
+			m_meshes.emplace_back( std::move( mesh ) );
+		}
 	}
 
-	return false;
+	return true;
 }
 
 bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )

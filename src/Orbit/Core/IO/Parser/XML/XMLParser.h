@@ -32,7 +32,7 @@ public:
 
 public:
 
-	XMLElement GetRootElement( void ) const { return m_root_element; }
+	const XMLElement& GetRootElement( void ) const { return m_root_element; }
 
 private:
 
