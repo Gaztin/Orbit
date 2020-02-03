@@ -32,7 +32,7 @@ public:
 
 public:
 
-	bool Good( void ) const { return m_good; }
+	bool IsGood( void ) const { return m_good; }
 
 protected:
 

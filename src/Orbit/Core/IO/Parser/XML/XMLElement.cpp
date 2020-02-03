@@ -15,37 +15,30 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/IO/Parser/XML/XMLAttribute.h"
-
-#include <string>
-#include <vector>
+#include "XMLElement.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE XMLElement
+std::string_view XMLElement::Attribute( std::string_view key ) const
 {
-public:
+	for( const XMLAttribute& attribute : attributes )
+	{
+		if( attribute.name == key )
+			return attribute.value;
+	}
 
-	std::string_view Attribute( std::string_view key ) const;
+	return { };
+}
 
-public:
+XMLElement XMLElement::operator[]( std::string_view key ) const
+{
+	for( const XMLElement& child : children )
+	{
+		if( child.name == key )
+			return child;
+	}
 
-	auto begin( void ) const { return children.begin(); }
-	auto end  ( void ) const { return children.end(); }
-
-public:
-
-	XMLElement operator[]( std::string_view key ) const;
-
-public:
-
-	std::string name;
-	std::string content;
-
-	std::vector< XMLAttribute > attributes;
-	std::vector< XMLElement >   children;
-
-};
+	return { };
+}
 
 ORB_NAMESPACE_END

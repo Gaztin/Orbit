@@ -42,6 +42,24 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& /*layout*/ )
 {
 	const XMLParser xml_parser( data );
 
+	if( xml_parser.IsGood() )
+	{
+		XMLElement root = xml_parser.GetRootElement();
+
+		for( auto it : root[ "COLLADA" ][ "library_geometries" ] )
+		{
+			if( it.name == "geometry" )
+			{
+				Mesh mesh;
+				mesh.name = it.Attribute( "name" );
+
+				m_meshes.emplace_back( std::move( mesh ) );
+			}
+		}
+
+		return true;
+	}
+
 	return false;
 }
 

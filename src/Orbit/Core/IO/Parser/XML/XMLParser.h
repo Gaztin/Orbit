@@ -30,6 +30,10 @@ public:
 	explicit XMLParser( ByteSpan data );
 	~XMLParser( void ) = default;
 
+public:
+
+	XMLElement GetRootElement( void ) const { return m_root_element; }
+
 private:
 
 	std::string ReadName    ( void );
