@@ -73,6 +73,7 @@ namespace ShaderGen
 		IVariable Transpose( const IVariable& matrix );
 		IVariable Sample   ( const IVariable& sampler, const IVariable& texcoord );
 		IVariable Dot      ( const IVariable& lhs, const IVariable& rhs );
+		IVariable Normalize( const IVariable& vec );
 
 	private:
 

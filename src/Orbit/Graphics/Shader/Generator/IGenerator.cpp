@@ -144,6 +144,13 @@ namespace ShaderGen
 		return IVariable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
 	}
 
+	IVariable IGenerator::Normalize( const IVariable& vec )
+	{
+		vec.SetUsed();
+
+		return IVariable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
+	}
+
 	std::string IGenerator::GenerateHLSL( void )
 	{
 		std::string full_source_code;
