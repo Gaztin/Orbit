@@ -35,7 +35,7 @@ ModelShader::Vec4 ModelShader::PSMain( void )
 	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
 	Vec4 out_color = tex_color + v_color;
 
-	Float diffuse  = -Dot( v_normal, u_light_dir );
+	Float diffuse  = ( -Dot( v_normal, u_light_dir ) * 0.5 );
 	out_color->rgb *= diffuse;
 
 	return out_color;
