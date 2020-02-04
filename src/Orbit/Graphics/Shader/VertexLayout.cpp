@@ -23,19 +23,6 @@ ORB_NAMESPACE_BEGIN
 
 constexpr size_t invalid_offset = std::numeric_limits< size_t >::max();
 
-/*static size_t DataSizeOf( VertexComponent component )
-{
-	switch( component )
-	{
-		default: { assert( false ); return 0; }
-
-		case Orbit::VertexComponent::Position: return sizeof( float );
-		case Orbit::VertexComponent::Normal:   return sizeof( float );
-		case Orbit::VertexComponent::Color:    return sizeof( float );
-		case Orbit::VertexComponent::TexCoord: return sizeof( float );
-	}
-}*/
-
 static size_t DataCountOf( VertexComponent component )
 {
 	switch( component )
