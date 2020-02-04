@@ -99,10 +99,6 @@ namespace ShaderGen
 	{
 	public:
 
-		static constexpr size_t size = N;
-
-	public:
-
 		UniformArray( void )
 			: UniformArrayBase( UniformTraits< T >::data_type )
 		{
