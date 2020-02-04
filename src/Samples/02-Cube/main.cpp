@@ -103,7 +103,11 @@ const std::initializer_list< uint16_t > index_data
 	20, 22, 23,
 };
 
-std::tuple constant_data = std::make_tuple( Orbit::Matrix4() );
+struct ConstantData
+{
+	Orbit::Matrix4 mvp;
+
+} constant_data;
 
 const uint32_t texture_data[]
 {
@@ -122,7 +126,7 @@ public:
 		, m_shader( cube_shader )
 		, m_vertex_buffer( vertex_data )
 		, m_index_buffer( index_data )
-		, m_constant_buffer( constant_data )
+		, m_constant_buffer( sizeof( ConstantData ) )
 		, m_texture( 4, 4, texture_data )
 	{
 		m_window.SetTitle( "Orbit Sample (02-Cube)" );
@@ -136,18 +140,11 @@ public:
 	{
 		/* Update constant buffer */
 		{
-			auto& [ mvp ] = constant_data;
+			m_model.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
-			/* Calculate model-view-projection matrix */
-			{
-				using namespace Orbit::MathLiterals;
+			constant_data.mvp = m_model * m_camera.GetViewProjection();
 
-				m_model.Rotate( Orbit::Vector3( 0, 0.5_pi * delta_time, 0 ) );
-
-				mvp = m_model * m_camera.GetViewProjection();
-			}
-
-			m_constant_buffer.Update( constant_data );
+			m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
 		}
 
 		m_window.PollEvents();

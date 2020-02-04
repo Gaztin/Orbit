@@ -31,7 +31,13 @@
 
 static AnimationShader animation_shader;
 
-std::tuple constant_data = std::make_tuple( Orbit::Matrix4(), Orbit::Matrix4(), Orbit::Matrix4() );
+struct ConstantData
+{
+	Orbit::Matrix4 view_projection;
+	Orbit::Matrix4 model;
+	Orbit::Matrix4 model_inverse;
+
+} constant_data;
 
 const uint32_t texture_data[]
 {
@@ -49,7 +55,7 @@ public:
 		: m_window( 800, 600 )
 		, m_shader( animation_shader )
 		, m_model( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
-		, m_constant_buffer( constant_data )
+		, m_constant_buffer( sizeof( ConstantData ) )
 	{
 		m_window.SetTitle( "Orbit Sample (03-Model)" );
 		m_window.Show();
@@ -66,17 +72,15 @@ public:
 	{
 		/* Update constant buffers */
 		{
-			auto& [ view_projection, model, model_inverse ] = constant_data;
-
 			/* Calculate model-view-projection matrix */
 			{
-				view_projection = m_camera.GetViewProjection();
-				model           = m_model_matrix;
-				model_inverse   = m_model_matrix;
-				model_inverse.Invert();
+				constant_data.view_projection = m_camera.GetViewProjection();
+				constant_data.model           = m_model_matrix;
+				constant_data.model_inverse   = m_model_matrix;
+				constant_data.model_inverse.Invert();
 			}
 
-			m_constant_buffer.Update( constant_data );
+			m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
 		}
 
 		m_window.PollEvents();
