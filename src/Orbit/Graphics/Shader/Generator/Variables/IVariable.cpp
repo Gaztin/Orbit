@@ -95,21 +95,40 @@ namespace ShaderGen
 
 	IVariable IVariable::operator*( const IVariable& rhs ) const
 	{
+		assert( ( m_data_type == rhs.m_data_type ) ||
+		        ( m_data_type == DataType::Mat4  && ( rhs.m_data_type == DataType::FVec4                                                                             ) ) ||
+		        ( m_data_type == DataType::FVec4 && ( rhs.m_data_type == DataType::Mat4  || rhs.m_data_type == DataType::Float                                       ) ) ||
+		        ( m_data_type == DataType::FVec3 && ( rhs.m_data_type == DataType::Float                                                                             ) ) ||
+		        ( m_data_type == DataType::FVec2 && ( rhs.m_data_type == DataType::Float                                                                             ) ) ||
+		        ( m_data_type == DataType::Float && ( rhs.m_data_type == DataType::FVec4 || rhs.m_data_type == DataType::FVec3 || rhs.m_data_type == DataType::FVec2 ) ) );
+
 		SetUsed();
 		rhs.SetUsed();
 
-		switch( IGenerator::GetCurrentMainFunction()->shader_language )
+		DataType result_type = DataType::Unknown;
+		switch( m_data_type )
 		{
-			case ShaderLanguage::HLSL:
+			case DataType::Float:
+			case DataType::Mat4:
 			{
-				return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", rhs.GetDataType() );
+				result_type = rhs.m_data_type;
 			} break;
 
-			default:
+			case DataType::FVec2:
+			case DataType::FVec3:
+			case DataType::FVec4:
 			{
-				return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", rhs.GetDataType() );
+				result_type = m_data_type;
 			} break;
 		}
+
+		if( IGenerator::GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
+		    ( m_data_type == DataType::Mat4 || rhs.m_data_type == DataType::Mat4 ) )
+		{
+			return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", result_type );
+		}
+
+		return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", result_type );
 	}
 
 	IVariable IVariable::operator+( const IVariable& rhs ) const
@@ -187,6 +206,11 @@ namespace ShaderGen
 			case DataType::IVec4:
 			{
 				data_type = DataType::Int;
+			} break;
+
+			case DataType::Mat4:
+			{
+				data_type = DataType::FVec4;
 			} break;
 		}
 
