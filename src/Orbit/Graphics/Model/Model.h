@@ -25,7 +25,6 @@
 
 ORB_NAMESPACE_BEGIN
 
-class IModelLoader;
 
 class ORB_API_GRAPHICS Model
 {
@@ -33,7 +32,7 @@ class ORB_API_GRAPHICS Model
 
 public:
 
-	explicit Model( ByteSpan data, const VertexLayout& vertex_layout );
+	explicit Model( ByteSpan data, const VertexLayout& layout );
 
 public:
 
@@ -41,8 +40,6 @@ public:
 	auto end  ( void ) const { return m_meshes.end(); }
 
 private:
-
-	bool TryLoad( IModelLoader& loader, ByteSpan data, const VertexLayout& vertex_layout );
 
 	bool ParseCollada( ByteSpan data, const VertexLayout& layout );
 	bool ParseOBJ    ( ByteSpan data, const VertexLayout& layout );
