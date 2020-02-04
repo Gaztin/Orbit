@@ -37,6 +37,8 @@ struct ConstantData
 	Orbit::Matrix4 model;
 	Orbit::Matrix4 model_inverse;
 
+	std::array< Orbit::Matrix4, AnimationShader::joint_transform_count > joint_transforms;
+
 } constant_data;
 
 const uint32_t texture_data[]
