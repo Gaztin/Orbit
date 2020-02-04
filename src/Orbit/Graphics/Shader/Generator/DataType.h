@@ -37,6 +37,8 @@ namespace ShaderGen
 		IVec2,
 		IVec3,
 		IVec4,
+
+		Array,
 	};
 
 	constexpr std::string_view DataTypeToString( DataType type )

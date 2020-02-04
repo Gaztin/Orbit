@@ -35,14 +35,32 @@ namespace ShaderGen
 
 	static std::string_view VertexComponentTypeString( IndexedVertexComponent component )
 	{
-		switch( component.GetDataCount() )
+		switch( component.GetDataType() )
 		{
-			case 1:  return "float";
-			case 2:  return "vec2";
-			case 3:  return "vec3";
-			case 4:  return "vec4";
-			default: return "error_type";
+			case PrimitiveDataType::Float:
+			{
+				switch( component.GetDataCount() )
+				{
+					case 1:  return "float";
+					case 2:  return "vec2";
+					case 3:  return "vec3";
+					case 4:  return "vec4";
+				}
+			} break;
+
+			case PrimitiveDataType::Int:
+			{
+				switch( component.GetDataCount() )
+				{
+					case 1:  return "int";
+					case 2:  return "ivec2";
+					case 3:  return "ivec3";
+					case 4:  return "ivec4";
+				}
+			} break;
 		}
+
+		return "error_type";
 	}
 
 	static std::string_view VertexComponentSemanticName( VertexComponent component, ShaderType shader_type )
@@ -160,6 +178,9 @@ namespace ShaderGen
 		full_source_code.append( "#define vec3 float3\n" );
 		full_source_code.append( "#define vec4 float4\n" );
 		full_source_code.append( "#define mat4 matrix\n" );
+		full_source_code.append( "#define ivec2 int2\n" );
+		full_source_code.append( "#define ivec3 int3\n" );
+		full_source_code.append( "#define ivec4 int4\n" );
 
 		if( m_sampler_count > 0 )
 		{
@@ -231,7 +252,17 @@ namespace ShaderGen
 			{
 				if( m_uniforms[ i ]->m_used )
 				{
-					ss << "\t" << DataTypeToString( m_uniforms[ i ]->m_data_type ) << " uniform_" << i << ";\n";
+					if( m_uniforms[ i ]->IsArray() )
+					{
+						const UniformArrayBase* uniform_array = static_cast< const UniformArrayBase* >( m_uniforms[ i ] );
+
+						ss << "\t" << DataTypeToString( uniform_array->GetElementType() ) << " uniform_" << i << "[ " << uniform_array->GetArraySize() << " ];\n";
+					}
+					else
+					{
+						ss << "\t" << DataTypeToString( m_uniforms[ i ]->m_data_type ) << " uniform_" << i << ";\n";
+					}
+
 
 					/* Reset state for next shader pass */
 					m_uniforms[ i ]->m_used = false;

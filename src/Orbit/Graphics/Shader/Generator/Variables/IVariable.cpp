@@ -26,6 +26,7 @@
 #include "Orbit/Graphics/Shader/Generator/MainFunction.h"
 #include "Orbit/Graphics/Shader/Generator/Swizzle.h"
 
+#include <cassert>
 #include <map>
 #include <sstream>
 #include <string>
@@ -55,6 +56,14 @@ namespace ShaderGen
 	IVariable::IVariable( double f )
 		: m_value    ( std::to_string( f ) )
 		, m_data_type( DataType::Float )
+		, m_stored   ( false )
+		, m_used     ( false )
+	{
+	}
+
+	IVariable::IVariable( int i )
+		: m_value    ( std::to_string( i ) )
+		, m_data_type( DataType::Int )
 		, m_stored   ( false )
 		, m_used     ( false )
 	{
@@ -93,12 +102,12 @@ namespace ShaderGen
 		{
 			case ShaderLanguage::HLSL:
 			{
-				return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", GetDataType() );
+				return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", rhs.GetDataType() );
 			} break;
 
 			default:
 			{
-				return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", GetDataType() );
+				return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", rhs.GetDataType() );
 			} break;
 		}
 	}
@@ -116,6 +125,11 @@ namespace ShaderGen
 		SetUsed();
 
 		return IVariable( "( -" + GetValue() + " )", m_data_type );
+	}
+
+	IVariable IVariable::operator[]( size_t index ) const
+	{
+		return ( *this )[ IVariable( static_cast< int >( index ) ) ];
 	}
 
 	Swizzle* IVariable::operator->( void )
@@ -152,6 +166,36 @@ namespace ShaderGen
 
 		StoreValue();
 		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
+	}
+
+	IVariable IVariable::operator[]( const IVariable& index ) const
+	{
+		DataType data_type = DataType::Unknown;
+		switch( m_data_type )
+		{
+			default: { assert( false ); } break;
+
+			case DataType::FVec2:
+			case DataType::FVec3:
+			case DataType::FVec4:
+			{
+				data_type = DataType::Float;
+			} break;
+
+			case DataType::IVec2:
+			case DataType::IVec3:
+			case DataType::IVec4:
+			{
+				data_type = DataType::Int;
+			} break;
+		}
+
+		SetUsed();
+
+		std::ostringstream ss;
+		ss << GetValue() << "[ " << index.GetValue() << " ]";
+
+		return IVariable( ss.str(), data_type );
 	}
 }
 

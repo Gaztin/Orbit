@@ -36,6 +36,7 @@ namespace ShaderGen
 		IVariable( const IVariable& other );
 		IVariable( IVariable&& other );
 		IVariable( double f );
+		IVariable( int i );
 		IVariable( std::string_view value, DataType data_type );
 		virtual ~IVariable( void ) = default;
 
@@ -58,14 +59,19 @@ namespace ShaderGen
 
 	public:
 
-		IVariable operator*( const IVariable& ) const;
-		IVariable operator+( const IVariable& ) const;
-		IVariable operator-( void )             const;
+		IVariable operator* ( const IVariable& rhs )   const;
+		IVariable operator+ ( const IVariable& rhs )   const;
+		IVariable operator- ( void )                   const;
+		IVariable operator[]( size_t index )           const;
 
 		Swizzle* operator->( void );
-		void     operator= ( const IVariable& );
-		void     operator+=( const IVariable& );
-		void     operator*=( const IVariable& );
+		void     operator= ( const IVariable& rhs );
+		void     operator+=( const IVariable& rhs );
+		void     operator*=( const IVariable& rhs );
+
+	public:
+
+		virtual IVariable operator[]( const IVariable& index ) const;
 
 	protected:
 
