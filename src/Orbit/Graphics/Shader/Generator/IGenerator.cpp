@@ -271,9 +271,11 @@ namespace ShaderGen
 				}
 			}
 
-			if( ss.rdbuf()->in_avail() == 0 )
+			const std::string ss_str = ss.str();
+
+			if( !ss_str.empty() )
 			{
-				const std::string what = "\ncbuffer VertexUniforms\n{\n" + ss.str() + "};\n";
+				const std::string what = "\ncbuffer VertexUniforms\n{\n" + ss_str + "};\n";
 
 				full_source_code.insert( uniforms_offset, what );
 
@@ -313,9 +315,11 @@ namespace ShaderGen
 				}
 			}
 
-			if( ss.rdbuf()->in_avail() == 0 )
+			const std::string ss_str = ss.str();
+
+			if( !ss_str.empty() )
 			{
-				const std::string what = "\ncbuffer PixelUniforms\n{\n" + ss.str() + "};\n";
+				const std::string what = "\ncbuffer PixelUniforms\n{\n" + ss_str + "};\n";
 
 				full_source_code.insert( uniforms_offset, what );
 
@@ -384,9 +388,11 @@ namespace ShaderGen
 				}
 			}
 
-			if( ss.rdbuf()->in_avail() == 0 )
+			const std::string ss_str = ss.str();
+
+			if( !ss_str.empty() )
 			{
-				const std::string what = "\nORB_CONSTANTS_BEGIN( VertexConstants )\n" + ss.str() + "ORB_CONSTANTS_END\n";
+				const std::string what = "\nORB_CONSTANTS_BEGIN( VertexConstants )\n" + ss_str + "ORB_CONSTANTS_END\n";
 
 				full_source_code.insert( vertex_uniforms_offset, what );
 			}
@@ -448,9 +454,11 @@ namespace ShaderGen
 				}
 			}
 
-			if( ss.rdbuf()->in_avail() == 0 )
+			const std::string ss_str = ss.str();
+
+			if( !ss_str.empty() )
 			{
-				const std::string what = "\nORB_CONSTANTS_BEGIN( PixelConstants )\n" + ss.str() + "ORB_CONSTANTS_END\n";
+				const std::string what = "\nORB_CONSTANTS_BEGIN( PixelConstants )\n" + ss_str + "ORB_CONSTANTS_END\n";
 
 				full_source_code.insert( pixel_uniforms_insert_offset, what );
 			}
