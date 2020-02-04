@@ -84,7 +84,7 @@ public:
 	{
 		/* Update constant buffers */
 		{
-			m_model_matrix.Rotate( Orbit::Vector3( 0.0f, 0.5 * Orbit::Pi * delta_time, 0.0f ) );
+			m_model_matrix.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
 			vertex_constant_data.view_projection = m_camera.GetViewProjection();
 			vertex_constant_data.model           = m_model_matrix;
