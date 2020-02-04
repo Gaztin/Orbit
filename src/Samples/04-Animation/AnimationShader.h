@@ -41,14 +41,17 @@ private:
 	Attribute::Color    a_color;
 	Attribute::TexCoord a_texcoord;
 	Attribute::Normal   a_normal;
+	Attribute::JointIDs a_joint_ids;
+	Attribute::Weights  a_weights;
 
 	Varying::Position v_position;
 	Varying::Color    v_color;
 	Varying::TexCoord v_texcoord;
 	Varying::Normal   v_normal;
 
-	Uniform< Mat4 > u_view_projection;
-	Uniform< Mat4 > u_model;
-	Uniform< Mat4 > u_model_inverse;
+	Uniform< Mat4 >      u_view_projection;
+	Uniform< Mat4 >      u_model;
+	Uniform< Mat4 >      u_model_inverse;
+	UniformArray< Mat4, 50 > u_joint_transforms;
 
 };

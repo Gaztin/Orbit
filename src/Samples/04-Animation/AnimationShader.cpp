@@ -23,6 +23,18 @@
 
 AnimationShader::Vec4 AnimationShader::VSMain( void )
 {
+	Vec4 total_local_pos = Vec4( 0.0, 0.0, 0.0, 0.0 );
+	Vec4 total_normal    = Vec4( 0.0, 0.0, 0.0, 0.0 );
+
+	for( size_t i = 0; i < 4; ++i )
+	{
+		Vec4 local_position = u_joint_transforms[ a_joint_ids[ i ] ] * a_position;
+		total_local_pos += local_position * a_weights[ i ];
+
+		Vec4 world_normal = u_joint_transforms[ a_joint_ids[ i ] ] * Vec4( a_normal, 0.0 );
+		total_normal += world_normal * a_weights[ i ];
+	}
+
 	v_position = u_view_projection * u_model * a_position;
 	v_color    = a_color;
 	v_texcoord = a_texcoord;

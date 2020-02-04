@@ -33,6 +33,8 @@ static size_t DataCountOf( VertexComponent component )
 		case VertexComponent::Normal:   return 3;
 		case VertexComponent::Color:    return 4;
 		case VertexComponent::TexCoord: return 2;
+		case VertexComponent::JointIDs: return 4;
+		case VertexComponent::Weights:  return 4;
 	}
 }
 
@@ -46,7 +48,11 @@ static PrimitiveDataType DataTypeOf( VertexComponent component )
 		case Orbit::VertexComponent::Normal:
 		case Orbit::VertexComponent::Color:
 		case Orbit::VertexComponent::TexCoord:
+		case Orbit::VertexComponent::Weights:
 			return PrimitiveDataType::Float;
+
+		case Orbit::VertexComponent::JointIDs:
+			return PrimitiveDataType::Int;
 	}
 }
 

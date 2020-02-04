@@ -71,6 +71,8 @@ namespace ShaderGen
 			case VertexComponent::Normal:   return "NORMAL";
 			case VertexComponent::Color:    return "COLOR";
 			case VertexComponent::TexCoord: return "TEXCOORD";
+			case VertexComponent::JointIDs: return "JOINTIDS";
+			case VertexComponent::Weights:  return "WEIGHTS";
 			default:                        return "ERROR";
 		}
 	};

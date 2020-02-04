@@ -28,6 +28,8 @@ enum class VertexComponent : uint8_t
 	Normal,
 	Color,
 	TexCoord,
+	JointIDs,
+	Weights,
 };
 
 struct IndexedVertexComponent
