@@ -96,13 +96,15 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 			uint8_t index_size = 4;
 			if( vertex_count < std::numeric_limits< uint16_t >::max() ) { index_size = 2; }
 
-			const size_t vertex_stride   = layout.GetStride();
-			const size_t pos_offset      = layout.OffsetOf( VertexComponent::Position );
-			const size_t normal_offset   = layout.OffsetOf( VertexComponent::Normal );
-			const size_t color_offset    = layout.OffsetOf( VertexComponent::Color );
-			const size_t texcoord_offset = layout.OffsetOf( VertexComponent::TexCoord );
-			auto         vertex_data     = std::unique_ptr< uint8_t[] >( new uint8_t[ vertex_stride * vertex_count ] );
-			auto         index_data      = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
+			const size_t vertex_stride    = layout.GetStride();
+			const size_t pos_offset       = layout.OffsetOf( VertexComponent::Position );
+			const size_t normal_offset    = layout.OffsetOf( VertexComponent::Normal );
+			const size_t color_offset     = layout.OffsetOf( VertexComponent::Color );
+			const size_t texcoord_offset  = layout.OffsetOf( VertexComponent::TexCoord );
+			const size_t joint_ids_offset = layout.OffsetOf( VertexComponent::JointIDs );
+			const size_t weights_offset   = layout.OffsetOf( VertexComponent::Weights );
+			auto         vertex_data      = std::unique_ptr< uint8_t[] >( new uint8_t[ vertex_stride * vertex_count ] );
+			auto         index_data       = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
 
 			/* Clear data before read */
 			for( size_t i = 0; i < vertex_count; ++i )
@@ -138,6 +140,24 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 					float* texcoord_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + texcoord_offset ] );
 					texcoord_write[ 0 ] = 0.0f;
 					texcoord_write[ 1 ] = 0.0f;
+				}
+
+				if( layout.Contains( VertexComponent::JointIDs ) )
+				{
+					int* joint_ids_write = reinterpret_cast< int* >( &vertex_data[ vertex_stride * i + joint_ids_offset ] );
+					joint_ids_write[ 0 ] = 0;
+					joint_ids_write[ 1 ] = 0;
+					joint_ids_write[ 2 ] = 0;
+					joint_ids_write[ 3 ] = 0;
+				}
+
+				if( layout.Contains( VertexComponent::Weights ) )
+				{
+					float* weights_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + weights_offset ] );
+					weights_write[ 0 ] = 0.25f;
+					weights_write[ 1 ] = 0.25f;
+					weights_write[ 2 ] = 0.25f;
+					weights_write[ 3 ] = 0.25f;
 				}
 			}
 
