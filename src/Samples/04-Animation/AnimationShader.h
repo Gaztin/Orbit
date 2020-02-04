@@ -26,6 +26,10 @@ class AnimationShader final : public Orbit::ShaderGen::IGenerator
 {
 public:
 
+	static constexpr size_t joint_transform_count = 50;
+
+public:
+
 	AnimationShader( void ) = default;
 
 private:
@@ -49,9 +53,10 @@ private:
 	Varying::TexCoord v_texcoord;
 	Varying::Normal   v_normal;
 
-	Uniform< Mat4 >      u_view_projection;
-	Uniform< Mat4 >      u_model;
-	Uniform< Mat4 >      u_model_inverse;
-	UniformArray< Mat4, 50 > u_joint_transforms;
+	Uniform< Mat4 > u_view_projection;
+	Uniform< Mat4 > u_model;
+	Uniform< Mat4 > u_model_inverse;
+
+	UniformArray< Mat4, joint_transform_count > u_joint_transforms;
 
 };

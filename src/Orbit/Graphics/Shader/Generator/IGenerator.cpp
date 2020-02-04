@@ -381,7 +381,16 @@ namespace ShaderGen
 			{
 				if( m_uniforms[ i ]->m_used )
 				{
-					ss << "\tORB_CONSTANT( " << DataTypeToString( m_uniforms[ i ]->m_data_type ) << ", uniform_" << i << " );\n";
+					if( m_uniforms[ i ]->IsArray() )
+					{
+						const UniformArrayBase* uniform_array = static_cast< const UniformArrayBase* >( m_uniforms[ i ] );
+
+						ss << "\tORB_CONSTANT( " << DataTypeToString( uniform_array->GetElementType() ) << ", uniform_" << i << "[ " << uniform_array->GetArraySize() << " ] );\n";
+					}
+					else
+					{
+						ss << "\tORB_CONSTANT( " << DataTypeToString( m_uniforms[ i ]->m_data_type ) << ", uniform_" << i << " );\n";
+					}
 
 					/* Reset state for next shader pass */
 					m_uniforms[ i ]->m_used = false;

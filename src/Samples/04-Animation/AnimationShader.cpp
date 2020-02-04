@@ -29,16 +29,16 @@ AnimationShader::Vec4 AnimationShader::VSMain( void )
 	for( size_t i = 0; i < 4; ++i )
 	{
 		Vec4 local_position = u_joint_transforms[ a_joint_ids[ i ] ] * a_position;
-		total_local_pos += local_position * a_weights[ i ];
+		total_local_pos    += local_position * a_weights[ i ];
 
 		Vec4 world_normal = u_joint_transforms[ a_joint_ids[ i ] ] * Vec4( a_normal, 0.0 );
-		total_normal += world_normal * a_weights[ i ];
+		total_normal     += world_normal * a_weights[ i ];
 	}
 
-	v_position = u_view_projection * u_model * a_position;
+	v_position = u_view_projection * u_model * total_local_pos;
 	v_color    = a_color;
 	v_texcoord = a_texcoord;
-	v_normal   = ( Transpose( u_model_inverse ) * Vec4( a_normal, 1.0 ) )->xyz;
+	v_normal   = ( Transpose( u_model_inverse ) * total_normal )->xyz;
 
 	return v_position;
 }
