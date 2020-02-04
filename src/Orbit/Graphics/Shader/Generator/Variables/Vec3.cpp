@@ -24,25 +24,25 @@ ORB_NAMESPACE_BEGIN
 namespace ShaderGen
 {
 	Vec3::Vec3( const IVariable& a )
-		: IVariable( "vec3( " + a.GetValue() + " )", DataType::Vec3 )
+		: IVariable( "vec3( " + a.GetValue() + " )", DataType::FVec3 )
 	{
-		assert( a.GetDataType() == DataType::Vec3 );
+		assert( a.GetDataType() == DataType::FVec3 );
 
 		a.SetUsed();
 	}
 
 	Vec3::Vec3( const IVariable& a, const IVariable& b )
-		: IVariable( "vec3( " + a.GetValue() + ", " + b.GetValue() + " )", DataType::Vec3 )
+		: IVariable( "vec3( " + a.GetValue() + ", " + b.GetValue() + " )", DataType::FVec3 )
 	{
-		assert( ( ( a.GetDataType() == DataType::Vec2  ) && ( b.GetDataType() == DataType::Float ) ) ||
-		        ( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Vec2  ) ) );
+		assert( ( ( a.GetDataType() == DataType::FVec2 ) && ( b.GetDataType() == DataType::Float ) ) ||
+		        ( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::FVec2 ) ) );
 
 		a.SetUsed();
 		b.SetUsed();
 	}
 
 	Vec3::Vec3( const IVariable& a, const IVariable& b, const IVariable& c )
-		: IVariable( "vec3( " + a.GetValue() + ", " + b.GetValue() + ", " + c.GetValue() + " )", DataType::Vec3 )
+		: IVariable( "vec3( " + a.GetValue() + ", " + b.GetValue() + ", " + c.GetValue() + " )", DataType::FVec3 )
 	{
 		assert( ( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Float ) && ( c.GetDataType() == DataType::Float ) ) );
 

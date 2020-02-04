@@ -39,9 +39,9 @@ namespace ShaderGen
 			switch( name.length )
 			{
 				case 1: { return DataType::Float; }
-				case 2: { return DataType::Vec2;  }
-				case 3: { return DataType::Vec3;  }
-				case 4: { return DataType::Vec4;  }
+				case 2: { return DataType::FVec2; }
+				case 3: { return DataType::FVec3; }
+				case 4: { return DataType::FVec4; }
 			}
 
 			return DataType::Unknown;

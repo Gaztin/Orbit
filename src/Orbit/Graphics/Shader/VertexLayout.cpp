@@ -23,11 +23,24 @@ ORB_NAMESPACE_BEGIN
 
 constexpr size_t invalid_offset = std::numeric_limits< size_t >::max();
 
+/*static size_t DataSizeOf( VertexComponent component )
+{
+	switch( component )
+	{
+		default: { assert( false ); return 0; }
+
+		case Orbit::VertexComponent::Position: return sizeof( float );
+		case Orbit::VertexComponent::Normal:   return sizeof( float );
+		case Orbit::VertexComponent::Color:    return sizeof( float );
+		case Orbit::VertexComponent::TexCoord: return sizeof( float );
+	}
+}*/
+
 static size_t DataCountOf( VertexComponent component )
 {
 	switch( component )
 	{
-		default: { assert( false ); return 0; } break;
+		default: { assert( false ); return 0; }
 
 		case VertexComponent::Position: return 4;
 		case VertexComponent::Normal:   return 3;
@@ -36,9 +49,23 @@ static size_t DataCountOf( VertexComponent component )
 	}
 }
 
+static PrimitiveDataType DataTypeOf( VertexComponent component )
+{
+	switch( component )
+	{
+		default: { assert( false ); return static_cast< PrimitiveDataType >( ~0 ); }
+
+		case Orbit::VertexComponent::Position:
+		case Orbit::VertexComponent::Normal:
+		case Orbit::VertexComponent::Color:
+		case Orbit::VertexComponent::TexCoord:
+			return PrimitiveDataType::Float;
+	}
+}
+
 static size_t SizeOf( VertexComponent component )
 {
-	return ( sizeof( float ) * DataCountOf( component ) );
+	return ( 4 * DataCountOf( component ) );
 }
 
 size_t IndexedVertexComponent::GetSize( void ) const
@@ -49,6 +76,11 @@ size_t IndexedVertexComponent::GetSize( void ) const
 size_t IndexedVertexComponent::GetDataCount( void ) const
 {
 	return DataCountOf( type );
+}
+
+PrimitiveDataType IndexedVertexComponent::GetDataType( void ) const
+{
+	return DataTypeOf( type );
 }
 
 bool VertexComponentIterator::operator!=( const VertexComponentIterator& other ) const

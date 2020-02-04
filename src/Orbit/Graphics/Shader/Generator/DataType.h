@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Graphics.h"
+#include "Orbit/Graphics/Shader/VertexLayout.h"
 
 #include <string_view>
 
@@ -29,23 +29,63 @@ namespace ShaderGen
 		Unknown = 0,
 
 		Float,
-		Vec2,
-		Vec3,
-		Vec4,
+		FVec2,
+		FVec3,
+		FVec4,
 		Mat4,
+		Int,
+		IVec2,
+		IVec3,
+		IVec4,
 	};
 
 	constexpr std::string_view DataTypeToString( DataType type )
 	{
 		switch( type )
 		{
-			case DataType::Float: { return "float";      }
-			case DataType::Vec2:  { return "vec2";       }
-			case DataType::Vec3:  { return "vec3";       }
-			case DataType::Vec4:  { return "vec4";       }
-			case DataType::Mat4:  { return "mat4";       }
 			default:              { return "error_type"; }
+			case DataType::Float: { return "float";      }
+			case DataType::FVec2: { return "vec2";       }
+			case DataType::FVec3: { return "vec3";       }
+			case DataType::FVec4: { return "vec4";       }
+			case DataType::Mat4:  { return "mat4";       }
+			case DataType::Int:   { return "int";        }
+			case DataType::IVec2: { return "ivec2";      }
+			case DataType::IVec3: { return "ivec3";      }
+			case DataType::IVec4: { return "ivec4";      }
 		}
+	}
+
+	inline DataType DataTypeFromVertexComponent( VertexComponent component )
+	{
+		IndexedVertexComponent dummy{ component, 0 };
+
+		switch( dummy.GetDataType() )
+		{
+			case PrimitiveDataType::Float:
+			{
+				switch( dummy.GetDataCount() )
+				{
+					case 1: return DataType::Float;
+					case 2: return DataType::FVec2;
+					case 3: return DataType::FVec3;
+					case 4: return DataType::FVec4;
+				}
+			} break;
+
+			case PrimitiveDataType::Int:
+			{
+				switch( dummy.GetDataCount() )
+				{
+					case 1: return DataType::Int;
+					case 2: return DataType::IVec2;
+					case 4: return DataType::IVec3;
+					case 3: return DataType::IVec4;
+				}
+			} break;
+		}
+
+		return DataType::Unknown;
 	}
 }
 
