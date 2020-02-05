@@ -41,8 +41,8 @@ public:
 public:
 
 	float fov       = 60.0f;
-	float near_clip = 0.1f;
-	float far_clip  = 100.0f;
+	float near_clip = 0.01f;
+	float far_clip  = 1024.0f;
 	float speed     = 4.0f;
 
 	Orbit::Vector3 position;
