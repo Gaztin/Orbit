@@ -30,6 +30,26 @@ std::string_view XMLElement::Attribute( std::string_view key ) const
 	return { };
 }
 
+const XMLElement& XMLElement::ChildWithAttribute( std::string_view element, std::string_view attribute, std::string_view value ) const
+{
+	for( const XMLElement& child : children )
+	{
+		if( child.name != element )
+			continue;
+
+		for( const XMLAttribute& attrib : child.attributes )
+		{
+			if( attrib.name != attribute || attrib.value != value )
+				continue;
+
+			return child;
+		}
+	}
+
+	static XMLElement dummy;
+	return dummy;
+}
+
 const XMLElement& XMLElement::operator[]( std::string_view key ) const
 {
 	for( const XMLElement& child : children )

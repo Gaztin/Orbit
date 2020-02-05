@@ -31,6 +31,10 @@ public:
 
 public:
 
+	const XMLElement& ChildWithAttribute( std::string_view element, std::string_view attribute, std::string_view value ) const;
+
+public:
+
 	auto begin( void ) const { return children.begin(); }
 	auto end  ( void ) const { return children.end(); }
 
