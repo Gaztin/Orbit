@@ -58,6 +58,7 @@ public:
 		, m_shader( animation_shader )
 		, m_model( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
 		, m_constant_buffer( sizeof( ConstantData ) )
+		, m_life_time( 0.0f )
 	{
 		m_window.SetTitle( "Orbit Sample (03-Model)" );
 		m_window.Show();
@@ -72,26 +73,28 @@ public:
 
 	void OnFrame( float delta_time ) override
 	{
-		/* Update constant buffers */
-		{
-			/* Calculate model-view-projection matrix */
-			{
-				constant_data.view_projection = m_camera.GetViewProjection();
-				constant_data.model           = m_model_matrix;
-				constant_data.model_inverse   = m_model_matrix;
-				constant_data.model_inverse.Invert();
-			}
-
-			m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
-		}
+		m_life_time += delta_time;
 
 		m_window.PollEvents();
 		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
 		m_camera.Update( delta_time );
 
+		constant_data.view_projection = m_camera.GetViewProjection();
+
 		for( const Orbit::Mesh& mesh : m_model )
 		{
+			constant_data.model           = mesh.bind_pose;
+			constant_data.model_inverse   = constant_data.model;
+			constant_data.model_inverse.Invert();
+
+			for( size_t i = 0; i < mesh.joint_transforms.size(); ++i )
+			{
+				constant_data.joint_transforms[ i ] = mesh.joint_transforms[ i ];
+			}
+
+			m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
+
 			Orbit::RenderCommand command;
 			command.vertex_buffer = mesh.vertex_buffer.get();
 			command.index_buffer  = mesh.index_buffer.get();
@@ -119,5 +122,7 @@ private:
 	Orbit::Matrix4        m_model_matrix;
 
 	Camera m_camera;
+
+	float m_life_time;
 
 };

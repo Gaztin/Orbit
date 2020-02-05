@@ -47,12 +47,14 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 	if( !xml_parser.IsGood() )
 		return false;
 
-	const XMLElement& root = xml_parser.GetRootElement();
+	const XMLElement& collada = xml_parser.GetRootElement()[ "COLLADA" ];
 
-	for( const XMLElement& geometry : root[ "COLLADA" ][ "library_geometries" ] )
+	for( const XMLElement& geometry : collada[ "library_geometries" ] )
 	{
 		if( geometry.name == "geometry" )
 		{
+			const std::string geometry_id( geometry.Attribute( "id" ) );
+
 			Mesh mesh;
 			mesh.name = geometry.Attribute( "name" );
 
@@ -154,10 +156,10 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 				if( layout.Contains( VertexComponent::Weights ) )
 				{
 					float* weights_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + weights_offset ] );
-					weights_write[ 0 ] = 0.25f;
-					weights_write[ 1 ] = 0.25f;
-					weights_write[ 2 ] = 0.25f;
-					weights_write[ 3 ] = 0.25f;
+					weights_write[ 0 ] = 1.0f;
+					weights_write[ 1 ] = 0.0f;
+					weights_write[ 2 ] = 0.0f;
+					weights_write[ 3 ] = 0.0f;
 				}
 			}
 
@@ -256,6 +258,121 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 						} break;
 					}
+				}
+			}
+
+			/* Find controller data in other library */
+			for( const XMLElement& controller : collada[ "library_controllers" ] )
+			{
+				const std::string controller_id( controller.Attribute( "id" ) );
+				const XMLElement& skin = controller[ "skin" ];
+				const std::string skin_source( skin.Attribute( "source" ) );
+
+				if( skin_source == ( "#" + geometry_id ) )
+				{
+					{
+						std::istringstream ss( skin[ "bind_shape_matrix" ].content );
+
+						for( size_t i = 0; i < 16; ++i )
+							ss >> mesh.bind_pose[ i ];
+					}
+
+					std::vector< float > weights;
+					for( const XMLElement& source : skin )
+					{
+						const std::string source_id( source.Attribute( "id" ) );
+
+						if( source_id == ( controller_id + "-Matrices" ) )
+						{
+							const XMLElement& float_array = source[ "float_array" ];
+
+							size_t count = 0;
+							{
+								std::istringstream ss( std::string( float_array.Attribute( "count" ) ) );
+								ss >> count;
+								assert( count % 16 == 0 );
+								count /= 16;
+							}
+
+							std::istringstream ss( float_array.content );
+
+							for( size_t i = 0; i < count; ++i )
+							{
+								Matrix4 joint_matrix;
+								for( size_t e = 0; e < 16; ++e )
+									ss >> joint_matrix[ e ];
+
+								mesh.joint_transforms.push_back( joint_matrix );
+							}
+						}
+						else if( source_id == ( controller_id + "-Weights" ) )
+						{
+							const XMLElement& float_array = source[ "float_array" ];
+
+							size_t count = 0;
+							{
+								std::istringstream ss( std::string( float_array.Attribute( "count" ) ) );
+								ss >> count;
+							}
+
+							std::istringstream ss( float_array.content );
+
+							weights.reserve( count );
+
+							for( size_t i = 0; i < count; ++i )
+							{
+								float weight = 0.0f;
+								ss >> weight;
+								weights.push_back( weight );
+							}
+						}
+					}
+
+					const XMLElement& vertex_weights = skin[ "vertex_weights" ];
+
+					size_t vertex_weight_count = 0;
+					{
+						std::istringstream ss( std::string( vertex_weights.Attribute( "count" ) ) );
+						ss >> vertex_weight_count;
+					}
+
+					std::vector< size_t > vcounts;
+					vcounts.reserve( vertex_weight_count );
+					{
+						std::istringstream ss( vertex_weights[ "vcount" ].content );
+
+						for( size_t i = 0; i < vertex_weight_count; ++i )
+						{
+							size_t count = 0;
+							ss >> count;
+							vcounts.push_back( count );
+						}
+					}
+
+					for( size_t i = 0; i < vcounts.size(); ++i )
+					{
+						const size_t vcount          = vcounts[ i ];
+						int*         joint_ids_write = reinterpret_cast< int*   >( &vertex_data[ i * vertex_stride + joint_ids_offset ] );
+						float*       weights_write   = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + weights_offset ] );
+
+						assert( vcount <= 4 );
+
+						for( size_t v = 0; v < vcount; ++v )
+						{
+							std::istringstream ss( vertex_weights[ "v" ].content );
+							int                joint_index  = 0;
+							size_t             weight_index = 0;
+
+							ss >> joint_index;
+							ss >> weight_index;
+							--weight_index;
+
+							joint_ids_write[ v ] = joint_index;
+							weights_write[ v ]   = weights[ weight_index ];
+						}
+					}
+
+					break;
 				}
 			}
 

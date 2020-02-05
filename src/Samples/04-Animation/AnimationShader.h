@@ -26,7 +26,7 @@ class AnimationShader final : public Orbit::ShaderGen::IGenerator
 {
 public:
 
-	static constexpr size_t joint_transform_count = 50;
+	static constexpr size_t joint_transform_count = 64;
 
 public:
 
