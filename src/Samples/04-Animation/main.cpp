@@ -73,7 +73,7 @@ public:
 	{
 		for( const Orbit::Joint& child : joint.children )
 		{
-			const Orbit::Matrix4 child_world_transform = world_transform * child.transform;
+			const Orbit::Matrix4 child_world_transform = world_transform * child.local_bind_transform;
 
 			constant_data.joint_transforms[ child.id ] = child_world_transform;
 

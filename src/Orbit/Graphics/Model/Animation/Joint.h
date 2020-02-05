@@ -30,7 +30,9 @@ struct Joint
 
 	std::string name;
 
-	Matrix4 transform;
+	Matrix4 animated_transform;
+	Matrix4 local_bind_transform;
+	Matrix4 inverse_bind_transform;
 
 	size_t id;
 };
