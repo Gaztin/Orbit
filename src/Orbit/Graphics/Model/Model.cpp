@@ -90,41 +90,30 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 			Mesh mesh;
 			mesh.name = geometry.Attribute( "name" );
 
-			/* Peek the number of vertices */
-			size_t vertex_count = 0;
-			for( const XMLElement& source : geometry[ "mesh" ] )
-			{
-				const std::string_view source_name = source.Attribute( "name" );
+			const XMLElement& polylist = geometry[ "mesh" ][ "polylist" ];
 
-				if( source_name == "position" )
-				{
-					if( layout.Contains( VertexComponent::Position ) )
-					{
-						std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "count" ) ) );
-						ss >> vertex_count;
-						break;
-					}
-				}
-				else if( source_name == "normal" )
-				{
-					if( layout.Contains( VertexComponent::Normal ) )
-					{
-						std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "count" ) ) );
-						ss >> vertex_count;
-						break;
-					}
-				}
+			size_t vertex_count = 0;
+			/* Peek the number of vertices */
+			{
+				std::string positions_source( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
+				positions_source.erase( positions_source.begin() );
+
+				const XMLElement&  source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", positions_source );
+				std::istringstream ss( std::string( source[ "float_array" ].Attribute( "count" ) ) );
+				ss >> vertex_count;
+				assert( vertex_count % 3 == 0 );
+				vertex_count /= 3;
 			}
 
 			size_t face_count = 0;
 			/* Peek the number of faces */
 			{
-				std::istringstream ss( std::string( geometry[ "mesh" ][ "polylist" ].Attribute( "count" ) ) );
+				std::istringstream ss( std::string( polylist.Attribute( "count" ) ) );
 				ss >> face_count;
 			}
 
 			/* Opt out if not COLLADA */
-			if( vertex_count == 0 && face_count == 0 )
+			if( vertex_count == 0 || face_count == 0 )
 				return false;
 
 			uint8_t index_size = 4;
@@ -195,56 +184,51 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 				}
 			}
 
-			/* Write to vertex data */
-			for( const XMLElement& source : geometry[ "mesh" ] )
+			if( layout.Contains( VertexComponent::Position ) )
 			{
-				const std::string_view source_name = source.Attribute( "name" );
+				std::string source_id( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
+				source_id.erase( source_id.begin() );
 
-				if( source_name == "position" )
+				const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
+
+				size_t stride = 0;
 				{
-					if( layout.Contains( VertexComponent::Position ) )
-					{
-						size_t position_component_count = 0;
-						{
-							std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
-							ss >> position_component_count;
-						}
-
-						std::istringstream ss( source[ "float_array" ].content );
-
-						for( size_t i = 0; i < vertex_count; ++i )
-						{
-							float* pos_write = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + pos_offset ] );
-
-							for( size_t component = 0; component < position_component_count; ++component )
-								ss >> pos_write[ component ];
-
-							pos_write = pos_write;
-						}
-					}
+					std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
+					ss >> stride;
 				}
-				else if( source_name == "normal" )
+
+				std::istringstream ss( source[ "float_array" ].content );
+
+				for( size_t i = 0; i < vertex_count; ++i )
 				{
-					if( layout.Contains( VertexComponent::Normal ) )
-					{
-						size_t normal_component_count = 0;
-						{
-							std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
-							ss >> normal_component_count;
-						}
+					float* pos_write = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + pos_offset ] );
 
-						std::istringstream ss( source[ "float_array" ].content );
+					for( size_t c = 0; c < stride; ++c )
+						ss >> pos_write[ c ];
+				}
+			}
 
-						for( size_t i = 0; i < vertex_count; ++i )
-						{
-							float* normal_write = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + normal_offset ] );
+			if( layout.Contains( VertexComponent::Normal ) )
+			{
+				std::string source_id( polylist.ChildWithAttribute( "input", "semantic", "NORMAL" ).Attribute( "source" ) );
+				source_id.erase( source_id.begin() );
 
-							for( size_t component = 0; component < normal_component_count; ++component )
-								ss >> normal_write[ component ];
+				const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
 
-							normal_write = normal_write;
-						}
-					}
+				size_t stride = 0;
+				{
+					std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
+					ss >> stride;
+				}
+
+				std::istringstream ss( source[ "float_array" ].content );
+
+				for( size_t i = 0; i < vertex_count; ++i )
+				{
+					float* normal_write = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + normal_offset ] );
+
+					for( size_t c = 0; c < stride; ++c )
+						ss >> normal_write[ c ];
 				}
 			}
 
@@ -266,29 +250,26 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 						case 1:
 						{
 							uint8_t* index_write = &index_data[ i ];
-
-							for( size_t input = 0; input < input_count; ++input )
-								ss >> *index_write;
-
+							ss >> *index_write;
 						} break;
 
 						case 2:
 						{
 							uint16_t* index_write = reinterpret_cast< uint16_t* >( &index_data[ i * 2 ] );
-
-							for( size_t input = 0; input < input_count; ++input )
-								ss >> *index_write;
-
+							ss >> *index_write;
 						} break;
 
 						case 4:
 						{
 							uint32_t* index_write = reinterpret_cast< uint32_t* >( &index_data[ i * 4 ] );
-
-							for( size_t input = 0; input < input_count; ++input )
-								ss >> *index_write;
-
+							ss >> *index_write;
 						} break;
+					}
+
+					for( size_t input = 1; input < input_count; ++input )
+					{
+						size_t dummy;
+						ss >> dummy;
 					}
 				}
 			}
@@ -298,16 +279,21 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 			{
 				const std::string controller_id( controller.Attribute( "id" ) );
 				const XMLElement& skin = controller[ "skin" ];
-				const std::string skin_source( skin.Attribute( "source" ) );
+				std::string       skin_source_id( skin.Attribute( "source" ) );
+				skin_source_id.erase( skin_source_id.begin() );
 
-				if( skin_source == ( "#" + geometry_id ) )
+				if( skin_source_id == geometry_id )
 				{
+					const XMLElement& vertex_weights = skin[ "vertex_weights" ];
+					std::string       weight_source_id( vertex_weights.ChildWithAttribute( "input", "semantic", "WEIGHT" ).Attribute( "source" ) );
+					weight_source_id.erase( weight_source_id.begin() );
+
 					std::vector< float > weights;
 					for( const XMLElement& source : skin )
 					{
 						const std::string source_id( source.Attribute( "id" ) );
 
-						if( source_id == ( controller_id + "-Weights" ) )
+						if( weight_source_id == source_id )
 						{
 							const XMLElement& float_array = source[ "float_array" ];
 
@@ -329,8 +315,6 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 							}
 						}
 					}
-
-					const XMLElement& vertex_weights = skin[ "vertex_weights" ];
 
 					size_t vertex_weight_count = 0;
 					{
@@ -355,12 +339,11 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 					for( size_t i = 0; i < vcounts.size(); ++i )
 					{
-						const size_t vcount          = vcounts[ i ];
-						int*         joint_ids_write = reinterpret_cast< int*   >( &vertex_data[ i * vertex_stride + joint_ids_offset ] );
-						float*       weights_write   = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + weights_offset ] );
+						using WeightPair = std::pair< int, float >;
 
-						assert( vcount <= 4 );
+						size_t vcount = vcounts[ i ];
 
+						std::vector< WeightPair > weight_pairs;
 						for( size_t v = 0; v < vcount; ++v )
 						{
 							int    joint_index  = 0;
@@ -369,8 +352,31 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 							ss >> joint_index;
 							ss >> weight_index;
 
-							joint_ids_write[ v ] = joint_index;
-							weights_write[ v ]   = weights[ weight_index ];
+							weight_pairs.push_back( { joint_index, weights[ weight_index ] } );
+						}
+
+						if( vcount > 4 )
+						{
+							std::sort( weight_pairs.begin(), weight_pairs.end(), []( const WeightPair& a, const WeightPair& b ) { return ( a.second > b.second ); } );
+
+							float weight_to_redistribute = 0.0f;
+							for( size_t v = 4; v < vcount; ++v )
+								weight_to_redistribute += weight_pairs[ v ].second;
+
+							for( size_t v = 0; v < 4; ++v )
+								weight_pairs[ v ].second += ( weight_to_redistribute / 4 );
+
+							weight_pairs.resize( 4 );
+							vcount = 4;
+						}
+
+						int*   joint_ids_write = reinterpret_cast< int*   >( &vertex_data[ i * vertex_stride + joint_ids_offset ] );
+						float* weights_write   = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + weights_offset ] );
+
+						for( size_t v = 0; v < vcount; ++v )
+						{
+							joint_ids_write[ v ] = weight_pairs[ v ].first;
+							weights_write[ v ]   = weight_pairs[ v ].second;
 						}
 					}
 
@@ -393,7 +399,7 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 		}
 	}
 
-	for( const XMLElement& node : collada[ "library_visual_scenes" ][ "visual_scene" ] )
+	for( const XMLElement& node : collada[ "library_visual_scenes" ][ "visual_scene" ].ChildWithAttribute( "node", "id", "Armature" ) )
 	{
 		if( node.Attribute( "type" ) == "JOINT" )
 		{

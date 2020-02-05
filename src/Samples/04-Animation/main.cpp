@@ -69,7 +69,7 @@ public:
 
 public:
 
-	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, Orbit::Matrix4 world_transform )
+	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& world_transform )
 	{
 		for( const Orbit::Joint& child : joint.children )
 		{
@@ -92,9 +92,12 @@ public:
 
 		constant_data.view_projection = m_camera.GetViewProjection();
 
-		const Orbit::Joint& root_joint = m_model.GetRootJoint();
+		if( m_model.HasJoints() )
+		{
+			const Orbit::Joint& root_joint = m_model.GetRootJoint();
 
-		UpdateJointTransformsRecursive( root_joint, Orbit::Matrix4() );
+			UpdateJointTransformsRecursive( root_joint, Orbit::Matrix4() );
+		}
 
 		m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
 
