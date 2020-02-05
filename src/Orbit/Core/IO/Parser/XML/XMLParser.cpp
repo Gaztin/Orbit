@@ -42,7 +42,7 @@ std::string XMLParser::ReadName( void )
 {
 	size_t off = m_offset;
 
-	while( off < m_size && ( std::isalpha( m_data[ off ] ) || m_data[ off ] == '_' ) )
+	while( off < m_size && ( std::isalnum( m_data[ off ] ) || m_data[ off ] == '_' ) )
 		++off;
 
 	const std::string name( reinterpret_cast< const char* >( &m_data[ m_offset ] ), ( off - m_offset ) );
