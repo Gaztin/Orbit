@@ -40,6 +40,33 @@ Model::Model( ByteSpan data, const VertexLayout& layout )
 	}
 }
 
+static void ColladaParseNodeRecursive( const XMLElement& node, Joint& joint, size_t& next_id )
+{
+	for( const XMLElement& child : node )
+	{
+		if( child.name == "matrix" )
+		{
+			std::istringstream ss( node[ "matrix" ].content );
+
+			for( size_t i = 0; i < 16; ++i )
+				ss >> joint.transform[ i ];
+
+			/* Collada matrices are column-major */
+			joint.transform.Transpose();
+		}
+		else if( child.name == "node" )
+		{
+			Joint new_joint;
+			new_joint.id   = ( next_id++ );
+			new_joint.name = child.Attribute( "name" );
+
+			ColladaParseNodeRecursive( child, new_joint, next_id );
+
+			joint.children.push_back( new_joint );
+		}
+	}
+}
+
 bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 {
 	const XMLParser xml_parser( data );
@@ -270,42 +297,12 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 				if( skin_source == ( "#" + geometry_id ) )
 				{
-					{
-						std::istringstream ss( skin[ "bind_shape_matrix" ].content );
-
-						for( size_t i = 0; i < 16; ++i )
-							ss >> mesh.bind_pose[ i ];
-					}
-
 					std::vector< float > weights;
 					for( const XMLElement& source : skin )
 					{
 						const std::string source_id( source.Attribute( "id" ) );
 
-						if( source_id == ( controller_id + "-Matrices" ) )
-						{
-							const XMLElement& float_array = source[ "float_array" ];
-
-							size_t count = 0;
-							{
-								std::istringstream ss( std::string( float_array.Attribute( "count" ) ) );
-								ss >> count;
-								assert( count % 16 == 0 );
-								count /= 16;
-							}
-
-							std::istringstream ss( float_array.content );
-
-							for( size_t i = 0; i < count; ++i )
-							{
-								Matrix4 joint_matrix;
-								for( size_t e = 0; e < 16; ++e )
-									ss >> joint_matrix[ e ];
-
-								mesh.joint_transforms.push_back( joint_matrix );
-							}
-						}
-						else if( source_id == ( controller_id + "-Weights" ) )
+						if( source_id == ( controller_id + "-Weights" ) )
 						{
 							const XMLElement& float_array = source[ "float_array" ];
 
@@ -388,6 +385,20 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 			mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
 
 			m_meshes.emplace_back( std::move( mesh ) );
+		}
+	}
+
+	for( const XMLElement& node : collada[ "library_visual_scenes" ][ "visual_scene" ] )
+	{
+		if( node.Attribute( "type" ) == "JOINT" )
+		{
+			size_t next_id = 0;
+
+			m_root_node = std::make_unique< Joint >();
+
+			ColladaParseNodeRecursive( node, *m_root_node, next_id );
+
+			break;
 		}
 	}
 

@@ -34,8 +34,6 @@ static AnimationShader animation_shader;
 struct ConstantData
 {
 	Orbit::Matrix4 view_projection;
-	Orbit::Matrix4 model;
-	Orbit::Matrix4 model_inverse;
 
 	std::array< Orbit::Matrix4, AnimationShader::joint_transform_count > joint_transforms;
 
@@ -71,6 +69,18 @@ public:
 
 public:
 
+	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, Orbit::Matrix4 world_transform )
+	{
+		for( const Orbit::Joint& child : joint.children )
+		{
+			const Orbit::Matrix4 child_world_transform = world_transform * child.transform;
+
+			constant_data.joint_transforms[ child.id ] = child_world_transform;
+
+			UpdateJointTransformsRecursive( child, child_world_transform );
+		}
+	}
+
 	void OnFrame( float delta_time ) override
 	{
 		m_life_time += delta_time;
@@ -82,19 +92,14 @@ public:
 
 		constant_data.view_projection = m_camera.GetViewProjection();
 
+		const Orbit::Joint& root_joint = m_model.GetRootJoint();
+
+		UpdateJointTransformsRecursive( root_joint, Orbit::Matrix4() );
+
+		m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
+
 		for( const Orbit::Mesh& mesh : m_model )
 		{
-			constant_data.model           = mesh.bind_pose;
-			constant_data.model_inverse   = constant_data.model;
-			constant_data.model_inverse.Invert();
-
-			for( size_t i = 0; i < mesh.joint_transforms.size(); ++i )
-			{
-				constant_data.joint_transforms[ i ] = mesh.joint_transforms[ i ];
-			}
-
-			m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
-
 			Orbit::RenderCommand command;
 			command.vertex_buffer = mesh.vertex_buffer.get();
 			command.index_buffer  = mesh.index_buffer.get();

@@ -19,6 +19,7 @@
 #include "Orbit/Graphics/Graphics.h"
 #include "Orbit/Math/Matrix4.h"
 
+#include <string>
 #include <vector>
 
 ORB_NAMESPACE_BEGIN
@@ -27,9 +28,11 @@ struct Joint
 {
 	std::vector< Joint > children;
 
+	std::string name;
+
 	Matrix4 transform;
 
-	uint64_t id;
+	size_t id;
 };
 
 ORB_NAMESPACE_END

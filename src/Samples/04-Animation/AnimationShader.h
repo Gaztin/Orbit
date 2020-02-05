@@ -54,8 +54,6 @@ private:
 	Varying::Normal   v_normal;
 
 	Uniform< Mat4 > u_view_projection;
-	Uniform< Mat4 > u_model;
-	Uniform< Mat4 > u_model_inverse;
 
 	UniformArray< Mat4, joint_transform_count > u_joint_transforms;
 

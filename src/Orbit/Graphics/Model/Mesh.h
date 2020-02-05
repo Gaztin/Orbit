@@ -29,9 +29,6 @@ struct Mesh
 
 	std::unique_ptr< VertexBuffer > vertex_buffer;
 	std::unique_ptr< IndexBuffer >  index_buffer;
-
-	Matrix4                bind_pose;
-	std::vector< Matrix4 > joint_transforms;
 };
 
 ORB_NAMESPACE_END

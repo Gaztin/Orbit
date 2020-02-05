@@ -36,6 +36,11 @@ public:
 
 public:
 
+	bool         HasJoints   ( void ) const { return m_root_node != nullptr; }
+	const Joint& GetRootJoint( void ) const { return *m_root_node; }
+
+public:
+
 	auto begin( void ) const { return m_meshes.begin(); }
 	auto end  ( void ) const { return m_meshes.end(); }
 

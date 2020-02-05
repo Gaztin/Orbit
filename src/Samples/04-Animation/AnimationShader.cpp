@@ -35,10 +35,10 @@ AnimationShader::Vec4 AnimationShader::VSMain( void )
 		total_normal     += world_normal * a_weights[ i ];
 	}
 
-	v_position = u_view_projection * u_model * total_local_pos;
+	v_position = u_view_projection * total_local_pos;
 	v_color    = a_color;
 	v_texcoord = a_texcoord;
-	v_normal   = ( Transpose( u_model_inverse ) * total_normal )->xyz;
+	v_normal   = total_normal->xyz;
 
 	return v_position;
 }
