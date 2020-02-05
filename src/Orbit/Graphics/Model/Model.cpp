@@ -346,6 +346,8 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 						}
 					}
 
+					std::istringstream ss( vertex_weights[ "v" ].content );
+
 					for( size_t i = 0; i < vcounts.size(); ++i )
 					{
 						const size_t vcount          = vcounts[ i ];
@@ -356,9 +358,8 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 						for( size_t v = 0; v < vcount; ++v )
 						{
-							std::istringstream ss( vertex_weights[ "v" ].content );
-							int                joint_index  = 0;
-							size_t             weight_index = 0;
+							int    joint_index  = 0;
+							size_t weight_index = 0;
 
 							ss >> joint_index;
 							ss >> weight_index;
