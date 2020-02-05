@@ -363,7 +363,6 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 							ss >> joint_index;
 							ss >> weight_index;
-							--weight_index;
 
 							joint_ids_write[ v ] = joint_index;
 							weights_write[ v ]   = weights[ weight_index ];
