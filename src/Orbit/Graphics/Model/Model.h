@@ -17,9 +17,9 @@
 
 #pragma once
 #include "Orbit/Core/Utility/Span.h"
+#include "Orbit/Graphics/Animation/Joint.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Model/Animation/Joint.h"
 #include "Orbit/Graphics/Model/Mesh.h"
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
 #include "Orbit/Graphics/Shader/VertexLayout.h"
