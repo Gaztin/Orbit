@@ -399,18 +399,14 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 		}
 	}
 
-	for( const XMLElement& node : collada[ "library_visual_scenes" ][ "visual_scene" ].ChildWithAttribute( "node", "id", "Armature" ) )
+	const XMLElement& node = collada[ "library_visual_scenes" ][ "visual_scene" ][ "node" ];
+
+	if( !node.children.empty() )
 	{
-		if( node.Attribute( "type" ) == "JOINT" )
-		{
-			size_t next_id = 0;
+		size_t next_id = 0;
+		m_root_node    = std::make_unique< Joint >();
 
-			m_root_node = std::make_unique< Joint >();
-
-			ColladaParseNodeRecursive( node, Matrix4(), *m_root_node, next_id );
-
-			break;
-		}
+		ColladaParseNodeRecursive( node, Matrix4(), *m_root_node, next_id );
 	}
 
 	return true;
