@@ -40,7 +40,7 @@ Model::Model( ByteSpan data, const VertexLayout& layout )
 	}
 }
 
-static void ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& parent_matrix, Joint& joint, size_t& next_id )
+static void ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& parent_bind_transform, Joint& joint, size_t& next_id )
 {
 	for( const XMLElement& child : node )
 	{
@@ -54,9 +54,9 @@ static void ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& pa
 			/* Collada matrices are column-major */
 			joint.local_bind_transform.Transpose();
 
-			joint.animated_transform = ( parent_matrix * joint.local_bind_transform );
+			joint.bind_transform = ( parent_bind_transform * joint.local_bind_transform );
 
-			joint.inverse_bind_transform = joint.animated_transform;
+			joint.inverse_bind_transform = joint.bind_transform;
 			joint.inverse_bind_transform.Invert();
 		}
 		else if( child.name == "node" )
@@ -65,7 +65,7 @@ static void ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& pa
 			new_joint.id   = ( next_id++ );
 			new_joint.name = child.Attribute( "name" );
 
-			ColladaParseNodeRecursive( child, joint.animated_transform, new_joint, next_id );
+			ColladaParseNodeRecursive( child, joint.bind_transform, new_joint, next_id );
 
 			joint.children.push_back( new_joint );
 		}

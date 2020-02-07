@@ -69,15 +69,15 @@ public:
 
 public:
 
-	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& world_transform )
+	void UpdateJointTransformsRecursive( const Orbit::Joint& joint )
 	{
 		for( const Orbit::Joint& child : joint.children )
 		{
-			const Orbit::Matrix4 child_world_transform = world_transform * child.local_bind_transform;
+			const Orbit::Matrix4 current_transform = ( joint.bind_transform * joint.inverse_bind_transform );
 
-			constant_data.joint_transforms[ child.id ] = child_world_transform;
+			constant_data.joint_transforms[ child.id ] = current_transform;
 
-			UpdateJointTransformsRecursive( child, child_world_transform );
+			UpdateJointTransformsRecursive( child );
 		}
 	}
 
@@ -96,7 +96,7 @@ public:
 		{
 			const Orbit::Joint& root_joint = m_model.GetRootJoint();
 
-			UpdateJointTransformsRecursive( root_joint, Orbit::Matrix4() );
+			UpdateJointTransformsRecursive( root_joint );
 		}
 
 		m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
