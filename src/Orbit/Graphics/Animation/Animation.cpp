@@ -95,7 +95,7 @@ bool Animation::ParseCollada( ByteSpan data )
 		{
 			std::istringstream ss( std::string( animation[ "channel" ].Attribute( "target" ) ) );
 			ss >> target_joint;
-			target_joint.erase( target_joint.rfind( "/matrix" ) );
+			target_joint.erase( target_joint.rfind( "/" ) );
 		}
 
 		std::vector< KeyFrame > key_frames;
