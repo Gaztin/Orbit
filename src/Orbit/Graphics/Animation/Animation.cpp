@@ -51,6 +51,9 @@ Matrix4 Animation::JointPoseAtTime( std::string_view joint, float time ) const
 				return kf.transform;
 			}
 		}
+
+		if( !it->second.empty() )
+			return it->second.back().transform;
 	}
 
 	return Matrix4();
