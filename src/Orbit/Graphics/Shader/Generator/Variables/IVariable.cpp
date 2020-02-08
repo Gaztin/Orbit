@@ -131,6 +131,17 @@ namespace ShaderGen
 		return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", result_type );
 	}
 
+	IVariable IVariable::operator/( const IVariable& rhs ) const
+	{
+		assert( ( ( m_data_type == DataType::Float ) || ( m_data_type == DataType::FVec2 ) || ( m_data_type == DataType::FVec3 ) || ( m_data_type == DataType::FVec4 ) ) &&
+		        ( rhs.m_data_type == DataType::Float ) );
+
+		SetUsed();
+		rhs.SetUsed();
+
+		return IVariable( "( " + GetValue() + " / " + rhs.GetValue() + " )", m_data_type );
+	}
+
 	IVariable IVariable::operator+( const IVariable& rhs ) const
 	{
 		SetUsed();

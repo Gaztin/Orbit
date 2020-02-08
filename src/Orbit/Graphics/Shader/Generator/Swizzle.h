@@ -49,6 +49,37 @@ namespace ShaderGen
 
 	public:
 
+		IVariable operator+( const IVariable& rhs ) const
+		{
+			return ( static_cast< IVariable >( *this ) + rhs );
+		}
+
+		IVariable operator-( const IVariable& rhs ) const
+		{
+			return ( static_cast< IVariable >( *this ) - rhs );
+		}
+
+		IVariable operator*( const IVariable& rhs ) const
+		{
+			return ( static_cast< IVariable >( *this ) * rhs );
+		}
+
+		IVariable operator/( const IVariable& rhs ) const
+		{
+			return ( static_cast< IVariable >( *this ) / rhs );
+		}
+
+		void operator+=( const IVariable& rhs ) const
+		{
+			IVariable* parent = Swizzle::latest_accessed_variable;
+
+			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
+
+			parent->StoreValue();
+
+			static_cast< IVariable >( *this ) += rhs;
+		}
+
 		void operator*=( const IVariable& rhs ) const
 		{
 			IVariable* parent = Swizzle::latest_accessed_variable;

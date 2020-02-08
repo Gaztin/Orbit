@@ -60,6 +60,7 @@ namespace ShaderGen
 	public:
 
 		IVariable operator* ( const IVariable& rhs )   const;
+		IVariable operator/ ( const IVariable& rhs )   const;
 		IVariable operator+ ( const IVariable& rhs )   const;
 		IVariable operator- ( void )                   const;
 		IVariable operator[]( size_t index )           const;
