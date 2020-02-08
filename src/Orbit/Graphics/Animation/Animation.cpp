@@ -143,6 +143,7 @@ bool Animation::ParseCollada( ByteSpan data )
 			{
 				std::istringstream ss( source[ "Name_array" ].content );
 
+				/* One of: LINEAR, BEZIER, CARDINAL, HERMITE, BSPLINE and STEP */
 				for( KeyFrame& kf : key_frames )
 					ss >> kf.interpolation_type;
 			}
