@@ -71,18 +71,18 @@ public:
 
 public:
 
-	void UpdateJointTransformsRecursive( const Orbit::Joint& joint )
+	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& parent_pose )
 	{
 		const float animation_time = std::fmodf( m_life_time, 1.0f );
 
 		for( const Orbit::Joint& child : joint.children )
 		{
-			const Orbit::Matrix4 pose              = m_animation_walk.JointPoseAtTime( child.name, animation_time );
-			const Orbit::Matrix4 current_transform = ( joint.bind_transform * pose * joint.inverse_bind_transform );
+			const Orbit::Matrix4 local_pose = m_animation_walk.JointPoseAtTime( child.name, animation_time );
+			const Orbit::Matrix4 pose       = parent_pose * local_pose;
 
-			constant_data.joint_transforms[ child.id ] = current_transform;
-
-			UpdateJointTransformsRecursive( child );
+			constant_data.joint_transforms[ child.id ] = ( pose * child.inverse_bind_transform );
+	
+			UpdateJointTransformsRecursive( child, pose );
 		}
 	}
 
@@ -101,7 +101,7 @@ public:
 		{
 			const Orbit::Joint& root_joint = m_model.GetRootJoint();
 
-			UpdateJointTransformsRecursive( root_joint );
+			UpdateJointTransformsRecursive( root_joint, Orbit::Matrix4() );
 		}
 
 		m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
