@@ -19,6 +19,7 @@
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/Widget/Window.h>
+#include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Model/Model.h>
@@ -55,6 +56,7 @@ public:
 		: m_window( 800, 600 )
 		, m_shader( animation_shader )
 		, m_model( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
+		, m_animation_walk( Orbit::Asset( "animations/walking.dae" ) )
 		, m_constant_buffer( sizeof( ConstantData ) )
 		, m_life_time( 0.0f )
 	{
@@ -71,9 +73,12 @@ public:
 
 	void UpdateJointTransformsRecursive( const Orbit::Joint& joint )
 	{
+		const float animation_time = std::fmodf( m_life_time, 1.0f );
+
 		for( const Orbit::Joint& child : joint.children )
 		{
-			const Orbit::Matrix4 current_transform = ( joint.bind_transform * joint.inverse_bind_transform );
+			const Orbit::Matrix4 pose              = m_animation_walk.JointPoseAtTime( child.name, animation_time );
+			const Orbit::Matrix4 current_transform = ( joint.bind_transform * pose * joint.inverse_bind_transform );
 
 			constant_data.joint_transforms[ child.id ] = current_transform;
 
@@ -125,6 +130,7 @@ private:
 	Orbit::RenderContext  m_render_context;
 	Orbit::Shader         m_shader;
 	Orbit::Model          m_model;
+	Orbit::Animation      m_animation_walk;
 	Orbit::ConstantBuffer m_constant_buffer;
 	Orbit::BasicRenderer  m_renderer;
 	Orbit::Matrix4        m_model_matrix;
