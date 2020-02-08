@@ -182,6 +182,7 @@ inline OpenGLFunction< ORB_STRING_LITERAL_32( "glVertexAttribI4ui" ),         vo
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glVertexAttribI4uiv" ),        void( GLuint index, const GLuint* v ) >                                                                                                                 glVertexAttribI4uiv;
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glVertexAttribIFormat" ),      void( GLuint attribindex, GLint size, OpenGLVertexAttribDataType type, GLuint relativeoffset ) >                                                        glVertexAttribIFormat;
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glVertexAttribPointer" ),      void( GLuint index, GLint size, OpenGLVertexAttribDataType type, GLboolean normalized, GLsizei stride, const GLvoid* pointer ) >                        glVertexAttribPointer;
+inline OpenGLFunction< ORB_STRING_LITERAL_32( "glVertexAttribIPointer" ),     void( GLuint index, GLint size, OpenGLVertexAttribDataType type, GLsizei stride, const GLvoid* pointer ) >                                              glVertexAttribIPointer;
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glVertexBindingDivisor" ),     void( GLuint bindingindex, GLuint divisor ) >                                                                                                           glVertexBindingDivisor;
 
 ORB_NAMESPACE_END

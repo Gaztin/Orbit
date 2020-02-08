@@ -329,7 +329,7 @@ void Shader::Bind( void )
 
 					case PrimitiveDataType::Int:
 					{
-						glVertexAttribPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Int, GL_FALSE, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
+						glVertexAttribIPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Int, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
 					} break;
 				}
 
