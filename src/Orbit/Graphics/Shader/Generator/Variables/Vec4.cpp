@@ -24,7 +24,7 @@ ORB_NAMESPACE_BEGIN
 namespace ShaderGen
 {
 	Vec4::Vec4( const IVariable& a )
-		: IVariable( a )
+		: IVariable( "vec4( " + a.GetValue() + " )", DataType::FVec4 )
 	{
 		assert( a.GetDataType() == DataType::FVec4 );
 
