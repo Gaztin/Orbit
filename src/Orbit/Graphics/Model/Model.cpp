@@ -42,23 +42,26 @@ Model::Model( ByteSpan data, const VertexLayout& layout )
 
 static void ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& parent_bind_transform, Joint& joint, size_t& next_id )
 {
+	{
+		std::istringstream ss( node[ "matrix" ].content );
+
+		for( size_t i = 0; i < 16; ++i )
+			ss >> joint.local_bind_transform[ i ];
+	}
+
+	/* Collada matrices are column-major */
+	joint.local_bind_transform.Transpose();
+
+	joint.bind_transform = ( parent_bind_transform * joint.local_bind_transform );
+
+	joint.inverse_bind_transform = joint.bind_transform;
+	joint.inverse_bind_transform.Invert();
+
 	for( const XMLElement& child : node )
 	{
-		if( child.name == "matrix" )
-		{
-			std::istringstream ss( node[ "matrix" ].content );
+		if( child.name != "node" )
+			continue;
 
-			for( size_t i = 0; i < 16; ++i )
-				ss >> joint.local_bind_transform[ i ];
-
-			/* Collada matrices are column-major */
-			joint.local_bind_transform.Transpose();
-
-			joint.bind_transform = ( parent_bind_transform * joint.local_bind_transform );
-
-			joint.inverse_bind_transform = joint.bind_transform;
-			joint.inverse_bind_transform.Invert();
-		}
 		else if( child.name == "node" )
 		{
 			Joint new_joint;
@@ -404,7 +407,8 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 	if( !node.children.empty() )
 	{
 		size_t next_id = 0;
-		m_root_node    = std::make_unique< Joint >();
+
+		m_root_node = std::make_unique< Joint >();
 
 		ColladaParseNodeRecursive( node, Matrix4(), *m_root_node, next_id );
 	}
