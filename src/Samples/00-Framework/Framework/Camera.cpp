@@ -84,9 +84,9 @@ void Camera::UpdateView( float delta_time )
 
 			const float step = ( this->speed * speed_modifier * delta_time );
 
-			this->position += ( rotation_matrix.Right()   * direction.x * step );
-			this->position += ( rotation_matrix.Up()      * direction.y * step );
-			this->position += ( rotation_matrix.Forward() * direction.z * step );
+			this->position += ( rotation_matrix.right   * direction.x * step );
+			this->position += ( rotation_matrix.up      * direction.y * step );
+			this->position += ( rotation_matrix.forward * direction.z * step );
 		}
 	}
 }
