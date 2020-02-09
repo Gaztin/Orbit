@@ -17,6 +17,7 @@
 
 #pragma once
 #include "Orbit/Math/Vector3.h"
+#include "Orbit/Math/Vector4.h"
 
 #include <array>
 
@@ -53,6 +54,7 @@ public:
 public:
 
 	Matrix4  operator* ( const Matrix4& rhs ) const;
+	Vector4  operator* ( const Vector4& rhs ) const;
 	Matrix4& operator*=( const Matrix4& rhs );
 	Matrix4& operator= ( const Matrix4& rhs );
 

@@ -19,9 +19,6 @@
 
 #include <cmath>
 
-#include "Orbit/Math/Vector3.h"
-#include "Orbit/Math/Vector4.h"
-
 ORB_NAMESPACE_BEGIN
 
 Matrix4::Matrix4( float diagonal )
@@ -182,6 +179,19 @@ Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
 			                  ( *this )( 2, row ) * rhs( col, 2 ) +
 			                  ( *this )( 3, row ) * rhs( col, 3 );
 		}
+	}
+
+	return ret;
+}
+
+Vector4 Matrix4::operator*( const Vector4& rhs ) const
+{
+	Vector4 ret;
+
+	for( size_t row = 0; row < 4; ++row )
+	{
+		for( size_t col = 0; col < 4; ++col )
+			ret[ row ] += ( *this )( col, row ) * rhs[ col ];
 	}
 
 	return ret;
