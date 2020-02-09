@@ -35,7 +35,7 @@ AnimationShader::Vec4 AnimationShader::VSMain( void )
 		total_normal     += world_normal * a_weights[ i ];
 	}
 
-	v_position = u_view_projection * total_local_pos;
+	v_position = u_view_projection * Vec4( total_local_pos->xyz, 1.0 );
 	v_color    = a_color;
 	v_texcoord = a_texcoord;
 	v_normal   = total_normal->xyz;
