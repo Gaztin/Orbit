@@ -171,37 +171,25 @@ float Matrix4::GetDeterminant3x3( size_t column, size_t row ) const
 
 Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
 {
-	return ( Matrix4( *this ) *= rhs );
-}
+	Matrix4 ret;
 
-Matrix4& Matrix4::operator*=( const Matrix4& rhs )
-{
-	Matrix4& self = *this;
-
-	/* Columns */
-	std::array< Vector4, 4 > columns;
-	for( size_t i = 0; i < 4; ++i )
-	{
-		columns[ i ] = Vector4( self( 0, i ), self( 1, i ), self( 2, i ), self( 3, i ) );
-	}
-
-	/* Rows */
-	std::array< Vector4, 4 > rows;
-	for( size_t i = 0; i < 4; ++i )
-	{
-		rows[ i ] = Vector4( rhs( i, 0 ), rhs( i, 1 ), rhs( i, 2 ), rhs( i, 3 ) );
-	}
-
-	/* Calculate dot products */
 	for( size_t row = 0; row < 4; ++row )
 	{
 		for( size_t col = 0; col < 4; ++col )
 		{
-			self( col, row ) = columns[ row ].DotProduct( rows[ col ] );
+			ret( col, row ) = ( *this )( 0, row ) * rhs( col, 0 ) +
+			                  ( *this )( 1, row ) * rhs( col, 1 ) +
+			                  ( *this )( 2, row ) * rhs( col, 2 ) +
+			                  ( *this )( 3, row ) * rhs( col, 3 );
 		}
 	}
 
-	return self;
+	return ret;
+}
+
+Matrix4& Matrix4::operator*=( const Matrix4& rhs )
+{
+	return( *this = ( ( *this ) * rhs ) );
 }
 
 Matrix4& Matrix4::operator=( const Matrix4& rhs )
