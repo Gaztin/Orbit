@@ -36,7 +36,7 @@ namespace ShaderGen
 
 		static constexpr DataType GetDataType( void )
 		{
-			switch( name.length )
+			switch( name.Length() )
 			{
 				case 1: { return DataType::Float; }
 				case 2: { return DataType::FVec2; }
