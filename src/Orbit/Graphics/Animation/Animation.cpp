@@ -45,7 +45,7 @@ Matrix4 Animation::JointPoseAtTime( std::string_view joint, float time ) const
 	{
 		for( const KeyFrame& kf : it->second )
 		{
-			if( kf.time > time )
+			if( kf.time >= time )
 			{
 				/* TODO: Interpolate poses */
 				return kf.transform;
