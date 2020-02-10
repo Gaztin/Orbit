@@ -73,17 +73,14 @@ public:
 
 	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& parent_pose )
 	{
-		const float animation_time = std::fmodf( m_life_time, 1.0f );
+		const float          animation_time = std::fmodf( m_life_time, 1.0f );
+		const Orbit::Matrix4 local_pose     = m_animation_walk.JointPoseAtTime( joint.name, animation_time );
+		const Orbit::Matrix4 pose           = parent_pose * local_pose;
+
+		constant_data.joint_transforms[ joint.id ] = ( pose * joint.inverse_bind_transform );
 
 		for( const Orbit::Joint& child : joint.children )
-		{
-			const Orbit::Matrix4 local_pose = m_animation_walk.JointPoseAtTime( child.name, animation_time );
-			const Orbit::Matrix4 pose       = parent_pose * local_pose;
-
-			constant_data.joint_transforms[ child.id ] = ( pose * child.inverse_bind_transform );
-	
 			UpdateJointTransformsRecursive( child, pose );
-		}
 	}
 
 	void OnFrame( float delta_time ) override

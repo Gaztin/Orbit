@@ -36,8 +36,8 @@ public:
 
 public:
 
-	bool         HasJoints   ( void ) const { return m_root_node != nullptr; }
-	const Joint& GetRootJoint( void ) const { return *m_root_node; }
+	bool         HasJoints   ( void ) const { return m_root_joint != nullptr; }
+	const Joint& GetRootJoint( void ) const { return *m_root_joint; }
 
 public:
 
@@ -53,7 +53,7 @@ private:
 
 	std::vector< Mesh > m_meshes;
 
-	std::unique_ptr< Joint > m_root_node;
+	std::unique_ptr< Joint > m_root_joint;
 
 };
 

@@ -406,11 +406,14 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 	if( !node.children.empty() )
 	{
-		size_t next_id = 0;
+		const XMLElement& root_node = node[ "node" ];
+		size_t            next_id   = 0;
 
-		m_root_node = std::make_unique< Joint >();
+		m_root_joint       = std::make_unique< Joint >();
+		m_root_joint->id   = ( next_id++ );
+		m_root_joint->name = root_node.Attribute( "name" );
 
-		ColladaParseNodeRecursive( node, Matrix4(), *m_root_node, next_id );
+		ColladaParseNodeRecursive( root_node, Matrix4(), *m_root_joint, next_id );
 	}
 
 	return true;
