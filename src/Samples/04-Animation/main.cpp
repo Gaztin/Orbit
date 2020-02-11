@@ -75,8 +75,7 @@ public:
 	{
 		const float          animation_time = std::fmodf( m_life_time, 1.0f );
 		const Orbit::Matrix4 local_pose     = m_animation_walk.JointPoseAtTime( joint.name, animation_time );
-		const Orbit::Matrix4 pose           = parent_pose * local_pose;
-		const Orbit::Matrix4 root_inverse   = { 1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f };
+		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 
 		constant_data.joint_transforms[ joint.id ] = ( root_inverse * pose * joint.inverse_bind_transform );
 		constant_data.joint_transforms[ joint.id ].Transpose();
@@ -100,9 +99,7 @@ public:
 		{
 			const Orbit::Joint& root_joint = m_model.GetRootJoint();
 
-			Orbit::Matrix4 root_transform = { 1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f,  0.0f, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f };
-
-			UpdateJointTransformsRecursive( root_joint, root_transform );
+			UpdateJointTransformsRecursive( root_joint, Orbit::Matrix4() );
 		}
 
 		m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
