@@ -62,16 +62,13 @@ static void ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& pa
 		if( child.name != "node" )
 			continue;
 
-		else if( child.name == "node" )
-		{
-			Joint new_joint;
-			new_joint.id   = ( next_id++ );
-			new_joint.name = child.Attribute( "sid" );
+		Joint new_joint;
+		new_joint.id   = ( next_id++ );
+		new_joint.name = child.Attribute( "sid" );
 
-			ColladaParseNodeRecursive( child, joint.bind_transform, new_joint, next_id );
+		ColladaParseNodeRecursive( child, joint.bind_transform, new_joint, next_id );
 
-			joint.children.push_back( new_joint );
-		}
+		joint.children.push_back( new_joint );
 	}
 }
 
