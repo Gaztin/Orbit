@@ -166,6 +166,22 @@ float Matrix4::GetDeterminant3x3( size_t column, size_t row ) const
 	       self( c3, r1 ) * ( self( c1, r2 ) * self( c2, r3 ) - self( c2, r2 ) * self( c1, r3 ) );
 }
 
+Matrix4 Matrix4::Transposed( void ) const
+{
+	Matrix4 result( *this );
+	result.Transpose();
+
+	return result;
+}
+
+Matrix4 Matrix4::Inverted( void ) const
+{
+	Matrix4 result( *this );
+	result.Invert();
+
+	return result;
+}
+
 Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
 {
 	Matrix4 ret;

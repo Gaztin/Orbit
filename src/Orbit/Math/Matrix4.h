@@ -48,8 +48,10 @@ public:
 
 public:
 
-	float GetDeterminant   ( void ) const;
-	float GetDeterminant3x3( size_t column, size_t row ) const;
+	float   GetDeterminant   ( void ) const;
+	float   GetDeterminant3x3( size_t column, size_t row ) const;
+	Matrix4 Transposed       ( void ) const;
+	Matrix4 Inverted         ( void ) const;
 
 public:
 
