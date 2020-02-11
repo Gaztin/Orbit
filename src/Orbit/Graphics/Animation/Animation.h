@@ -35,6 +35,10 @@ public:
 
 	Matrix4 JointPoseAtTime( std::string_view joint, float time ) const;
 
+public:
+
+	float GetDuration( void ) const { return m_duration; }
+
 private:
 
 	bool ParseCollada( ByteSpan data );
@@ -42,6 +46,8 @@ private:
 private:
 
 	std::map< std::string, std::vector< KeyFrame > > m_joint_key_frames;
+
+	float m_duration;
 
 };
 

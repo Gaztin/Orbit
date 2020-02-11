@@ -32,6 +32,7 @@ static bool SortKeyFrames( const KeyFrame& a, const KeyFrame& b )
 }
 
 Animation::Animation( ByteSpan data )
+	: m_duration( 0.0 )
 {
 	if( !ParseCollada( data ) )
 	{
@@ -150,6 +151,14 @@ bool Animation::ParseCollada( ByteSpan data )
 		}
 
 		std::sort( key_frames.begin(), key_frames.end(), SortKeyFrames );
+
+		if( !key_frames.empty() )
+		{
+			const KeyFrame& last_frame = key_frames.back();
+
+			if( last_frame.time > m_duration )
+				m_duration = last_frame.time;
+		}
 
 		m_joint_key_frames.try_emplace( std::move( target_joint ), std::move( key_frames ) );
 	}

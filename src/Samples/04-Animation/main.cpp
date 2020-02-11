@@ -73,7 +73,7 @@ public:
 
 	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& parent_pose )
 	{
-		const float          animation_time = std::fmodf( m_life_time, 1.0f );
+		const float          animation_time = std::fmodf( m_life_time, m_animation_walk.GetDuration() );
 		const Orbit::Matrix4 local_pose     = m_animation_walk.JointPoseAtTime( joint.name, animation_time );
 		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 
