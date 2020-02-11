@@ -136,8 +136,6 @@ bool Animation::ParseCollada( ByteSpan data )
 				{
 					for( size_t e = 0; e < 16; ++e )
 						ss >> kf.transform[ e ];
-
-//					kf.transform.Transpose();
 				}
 			}
 			else if( source_id == interpolation_source_id )
