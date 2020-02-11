@@ -50,7 +50,7 @@ static void ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& pa
 	}
 
 	/* Collada matrices are column-major */
-	joint.local_bind_transform.Transpose();
+//	joint.local_bind_transform.Transpose();
 
 	joint.bind_transform = ( parent_bind_transform * joint.local_bind_transform );
 
