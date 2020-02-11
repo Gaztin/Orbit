@@ -77,8 +77,8 @@ public:
 		const Orbit::Matrix4 local_pose     = m_animation_walk.JointPoseAtTime( joint.name, animation_time );
 		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 
-		constant_data.joint_transforms[ joint.id ] = ( root_inverse * pose * joint.inverse_bind_transform );
-		constant_data.joint_transforms[ joint.id ].Transpose();
+		if( joint.id >= 0 )
+			constant_data.joint_transforms[ joint.id ] = ( pose * joint.inverse_bind_transform ).Transposed();
 
 		for( const Orbit::Joint& child : joint.children )
 			UpdateJointTransformsRecursive( child, pose );
