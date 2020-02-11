@@ -40,36 +40,41 @@ Model::Model( ByteSpan data, const VertexLayout& layout )
 	}
 }
 
-static void ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& parent_bind_transform, Joint& joint, size_t& next_id )
+static Joint ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& parent_inverse_bind_transform, const std::vector< std::string >& all_joint_names, const std::vector< Matrix4 >& all_joint_transforms )
 {
+	Joint joint;
+	joint.name = node.Attribute( "id" );
+
+	if( auto it = std::find( all_joint_names.begin(), all_joint_names.end(), joint.name ); it != all_joint_names.end() )
+	{
+		joint.id                     = static_cast< int >( it - all_joint_names.begin() );
+		joint.inverse_bind_transform = all_joint_transforms[ joint.id ];
+	}
+	else
 	{
 		std::istringstream ss( node[ "matrix" ].content );
+		Matrix4            local_bind_transform;
+
+		joint.id = -1;
 
 		for( size_t i = 0; i < 16; ++i )
-			ss >> joint.local_bind_transform[ i ];
+			ss >> local_bind_transform[ i ];
+
+		const Matrix4 parent_bind_transform = parent_inverse_bind_transform.Inverted();
+		const Matrix4 bind_transform        = ( parent_bind_transform * local_bind_transform );
+
+		joint.inverse_bind_transform = bind_transform.Inverted();
 	}
-
-	/* Collada matrices are column-major */
-//	joint.local_bind_transform.Transpose();
-
-	joint.bind_transform = ( parent_bind_transform * joint.local_bind_transform );
-
-	joint.inverse_bind_transform = joint.bind_transform;
-	joint.inverse_bind_transform.Invert();
 
 	for( const XMLElement& child : node )
 	{
 		if( child.name != "node" )
 			continue;
 
-		Joint new_joint;
-		new_joint.id   = ( next_id++ );
-		new_joint.name = child.Attribute( "sid" );
-
-		ColladaParseNodeRecursive( child, joint.bind_transform, new_joint, next_id );
-
-		joint.children.push_back( new_joint );
+		joint.children.push_back( ColladaParseNodeRecursive( child, joint.inverse_bind_transform, all_joint_names, all_joint_transforms ) );
 	}
+
+	return joint;
 }
 
 bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
@@ -81,6 +86,8 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 	const XMLElement& collada = xml_parser.GetRootElement()[ "COLLADA" ];
 
+	std::vector< std::string > all_joint_names;
+	std::vector< Matrix4 >     all_joint_transforms;
 	for( const XMLElement& geometry : collada[ "library_geometries" ] )
 	{
 		if( geometry.name == "geometry" )
@@ -286,14 +293,26 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 				{
 					const XMLElement& vertex_weights = skin[ "vertex_weights" ];
 					std::string       weight_source_id( vertex_weights.ChildWithAttribute( "input", "semantic", "WEIGHT" ).Attribute( "source" ) );
+					std::string       joints_source_id( skin[ "joints" ].ChildWithAttribute( "input", "semantic", "JOINT" ).Attribute( "source" ) );
+					std::string       matrices_source_id( skin[ "joints" ].ChildWithAttribute( "input", "semantic", "INV_BIND_MATRIX" ).Attribute( "source" ) );
 					weight_source_id.erase( weight_source_id.begin() );
+					joints_source_id.erase( joints_source_id.begin() );
+					matrices_source_id.erase( matrices_source_id.begin() );
+
+					Matrix4 bind_shape_matrix;
+					{
+						std::istringstream ss( skin[ "bind_shape_matrix" ].content );
+
+						for( size_t i = 0; i < 16; ++i )
+							ss >> bind_shape_matrix[ i ];
+					}
 
 					std::vector< float > weights;
 					for( const XMLElement& source : skin )
 					{
 						const std::string source_id( source.Attribute( "id" ) );
 
-						if( weight_source_id == source_id )
+						if( source_id == weight_source_id )
 						{
 							const XMLElement& float_array = source[ "float_array" ];
 
@@ -312,6 +331,60 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 								float weight = 0.0f;
 								ss >> weight;
 								weights.push_back( weight );
+							}
+						}
+						else if( source_id == joints_source_id )
+						{
+							const XMLElement& name_array = source[ "Name_array" ];
+
+							size_t count = 0;
+							{
+								std::istringstream ss( std::string( name_array.Attribute( "count" ) ) );
+								ss >> count;
+							}
+
+							if( all_joint_names.size() != count )
+							{
+								std::istringstream ss( name_array.content );
+
+								all_joint_names.clear();
+								all_joint_names.reserve( count );
+
+								for( size_t i = 0; i < count; ++i )
+								{
+									std::string joint_name;
+									ss >> joint_name;
+									all_joint_names.emplace_back( std::move( joint_name ) );
+								}
+							}
+						}
+						else if( source_id == matrices_source_id )
+						{
+							const XMLElement& float_array = source[ "float_array" ];
+
+							size_t count = 0;
+							{
+								std::istringstream ss( std::string( float_array.Attribute( "count" ) ) );
+								ss >> count;
+								assert( count % 16 == 0 );
+								count /= 16;
+							}
+
+							if( all_joint_transforms.size() != count )
+							{
+								std::istringstream ss( float_array.content );
+
+								all_joint_transforms.clear();
+								all_joint_transforms.reserve( count );
+
+								for( size_t i = 0; i < count; ++i )
+								{
+									Matrix4 joint_transform;
+									for( size_t e = 0; e < 16; ++e )
+										ss >> joint_transform[ e ];
+
+									all_joint_transforms.push_back( joint_transform * bind_shape_matrix );
+								}
 							}
 						}
 					}
@@ -399,19 +472,10 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 		}
 	}
 
-	const XMLElement& node = collada[ "library_visual_scenes" ][ "visual_scene" ][ "node" ];
+	const XMLElement& visual_scene = collada[ "library_visual_scenes" ][ "visual_scene" ];
 
-	if( !node.children.empty() )
-	{
-		const XMLElement& root_node = node[ "node" ];
-		size_t            next_id   = 0;
-
-		m_root_joint       = std::make_unique< Joint >();
-		m_root_joint->id   = ( next_id++ );
-		m_root_joint->name = root_node.Attribute( "name" );
-
-		ColladaParseNodeRecursive( root_node, Matrix4(), *m_root_joint, next_id );
-	}
+	if( !visual_scene.children.empty() )
+		m_root_joint = std::make_unique< Joint >( ColladaParseNodeRecursive( visual_scene, Matrix4(), all_joint_names, all_joint_transforms ) );
 
 	return true;
 }

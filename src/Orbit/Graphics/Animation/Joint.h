@@ -30,11 +30,9 @@ struct Joint
 
 	std::string name;
 
-	Matrix4 bind_transform;
-	Matrix4 local_bind_transform;
 	Matrix4 inverse_bind_transform;
 
-	size_t id;
+	int id;
 };
 
 ORB_NAMESPACE_END
