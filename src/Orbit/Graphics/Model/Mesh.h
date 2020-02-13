@@ -16,10 +16,11 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Graphics.h"
-#include "Orbit/Math/Matrix4.h"
+#include "Orbit/Graphics/Buffer/IndexBuffer.h"
+#include "Orbit/Graphics/Buffer/VertexBuffer.h"
 
 #include <memory>
+#include <string>
 
 ORB_NAMESPACE_BEGIN
 
