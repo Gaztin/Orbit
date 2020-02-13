@@ -290,318 +290,317 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 	for( const XMLElement& geometry : collada[ "library_geometries" ] )
 	{
-		if( geometry.name == "geometry" )
+		if( geometry.name != "geometry" )
+			continue;
+
+		Mesh mesh;
+		mesh.name = geometry.Attribute( "name" );
+
+		const std::string geometry_id( geometry.Attribute( "id" ) );
+		const XMLElement& polylist = geometry[ "mesh" ][ "polylist" ];
+
+		size_t vertex_count = 0;
+		/* Peek the number of vertices */
 		{
-			const std::string geometry_id( geometry.Attribute( "id" ) );
+			std::string positions_source( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
+			positions_source.erase( positions_source.begin() );
 
-			Mesh mesh;
-			mesh.name = geometry.Attribute( "name" );
+			const XMLElement&  source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", positions_source );
+			std::istringstream ss( std::string( source[ "float_array" ].Attribute( "count" ) ) );
+			ss >> vertex_count;
+			assert( vertex_count % 3 == 0 );
+			vertex_count /= 3;
+		}
 
-			const XMLElement& polylist = geometry[ "mesh" ][ "polylist" ];
+		size_t face_count = 0;
+		/* Peek the number of faces */
+		{
+			std::istringstream ss( std::string( polylist.Attribute( "count" ) ) );
+			ss >> face_count;
+		}
 
-			size_t vertex_count = 0;
-			/* Peek the number of vertices */
+		/* Opt out if not COLLADA */
+		if( vertex_count == 0 || face_count == 0 )
+			return false;
+
+		const size_t index_size    = EvalIndexSize( vertex_count );
+		const size_t vertex_stride = layout.GetStride();
+		auto         vertex_data   = std::unique_ptr< uint8_t[] >( new uint8_t[ vertex_stride * vertex_count ] );
+		auto         index_data    = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
+
+		ClearVertexData( vertex_data.get(), vertex_count, layout );
+
+		if( layout.Contains( VertexComponent::Position ) )
+		{
+			const size_t offset = layout.OffsetOf( VertexComponent::Position );
+			std::string  source_id( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
+			source_id.erase( source_id.begin() );
+
+			const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
+
+			size_t stride = 0;
 			{
-				std::string positions_source( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
-				positions_source.erase( positions_source.begin() );
-
-				const XMLElement&  source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", positions_source );
-				std::istringstream ss( std::string( source[ "float_array" ].Attribute( "count" ) ) );
-				ss >> vertex_count;
-				assert( vertex_count % 3 == 0 );
-				vertex_count /= 3;
+				std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
+				ss >> stride;
 			}
 
-			size_t face_count = 0;
-			/* Peek the number of faces */
+			std::istringstream ss( source[ "float_array" ].content );
+
+			for( size_t i = 0; i < vertex_count; ++i )
 			{
-				std::istringstream ss( std::string( polylist.Attribute( "count" ) ) );
-				ss >> face_count;
+				Vector4* w = reinterpret_cast< Vector4* >( &vertex_data[ i * vertex_stride + offset ] );
+
+				for( size_t c = 0; c < stride; ++c )
+					ss >> ( *w )[ c ];
+			}
+		}
+
+		if( layout.Contains( VertexComponent::Normal ) )
+		{
+			const size_t offset = layout.OffsetOf( VertexComponent::Normal );
+			std::string  source_id( polylist.ChildWithAttribute( "input", "semantic", "NORMAL" ).Attribute( "source" ) );
+			source_id.erase( source_id.begin() );
+
+			const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
+
+			size_t stride = 0;
+			{
+				std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
+				ss >> stride;
 			}
 
-			/* Opt out if not COLLADA */
-			if( vertex_count == 0 || face_count == 0 )
-				return false;
+			std::istringstream ss( source[ "float_array" ].content );
 
-			const size_t index_size    = EvalIndexSize( vertex_count );
-			const size_t vertex_stride = layout.GetStride();
-			auto         vertex_data   = std::unique_ptr< uint8_t[] >( new uint8_t[ vertex_stride * vertex_count ] );
-			auto         index_data    = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
-
-			ClearVertexData( vertex_data.get(), vertex_count, layout );
-
-			if( layout.Contains( VertexComponent::Position ) )
+			for( size_t i = 0; i < vertex_count; ++i )
 			{
-				const size_t offset = layout.OffsetOf( VertexComponent::Position );
-				std::string  source_id( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
-				source_id.erase( source_id.begin() );
+				Vector3* w = reinterpret_cast< Vector3* >( &vertex_data[ i * vertex_stride + offset ] );
 
-				const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
+				for( size_t c = 0; c < stride; ++c )
+					ss >> ( *w )[ c ];
+			}
+		}
 
-				size_t stride = 0;
-				{
-					std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
-					ss >> stride;
-				}
-
-				std::istringstream ss( source[ "float_array" ].content );
-
-				for( size_t i = 0; i < vertex_count; ++i )
-				{
-					Vector4* w = reinterpret_cast< Vector4* >( &vertex_data[ i * vertex_stride + offset ] );
-
-					for( size_t c = 0; c < stride; ++c )
-						ss >> ( *w )[ c ];
-				}
+		/* Write to index data */
+		{
+			size_t input_count = 0;
+			for( const XMLElement& input : geometry[ "mesh" ][ "polylist" ] )
+			{
+				if( input.name == "input" )
+					++input_count;
 			}
 
-			if( layout.Contains( VertexComponent::Normal ) )
+			std::istringstream ss( geometry[ "mesh" ][ "polylist" ][ "p" ].content );
+
+			for( size_t i = 0; i < face_count * 3; ++i )
 			{
-				const size_t offset = layout.OffsetOf( VertexComponent::Normal );
-				std::string  source_id( polylist.ChildWithAttribute( "input", "semantic", "NORMAL" ).Attribute( "source" ) );
-				source_id.erase( source_id.begin() );
+				size_t index = ~0ul;
+				ss >> index;
 
-				const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
+				WriteIndexHelper( index_data.get(), index_size, i, index );
 
-				size_t stride = 0;
+				for( size_t input = 1; input < input_count; ++input )
 				{
-					std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
-					ss >> stride;
-				}
+					size_t dummy;
+					ss >> dummy;
 
-				std::istringstream ss( source[ "float_array" ].content );
-
-				for( size_t i = 0; i < vertex_count; ++i )
-				{
-					Vector3* w = reinterpret_cast< Vector3* >( &vertex_data[ i * vertex_stride + offset ] );
-
-					for( size_t c = 0; c < stride; ++c )
-						ss >> ( *w )[ c ];
+					assert( dummy == index );
 				}
 			}
+		}
 
-			/* Write to index data */
+		if( layout.Contains( VertexComponent::JointIDs ) || layout.Contains( VertexComponent::Weights ) )
+		{
+			for( const XMLElement& controller : collada[ "library_controllers" ] )
 			{
-				size_t input_count = 0;
-				for( const XMLElement& input : geometry[ "mesh" ][ "polylist" ] )
+				const std::string controller_id( controller.Attribute( "id" ) );
+				const XMLElement& skin = controller[ "skin" ];
+				std::string       skin_source_id( skin.Attribute( "source" ) );
+				skin_source_id.erase( skin_source_id.begin() );
+
+				if( skin_source_id != geometry_id )
+					continue;
+
+				const XMLElement& vertex_weights = skin[ "vertex_weights" ];
+				std::string       weight_source_id( vertex_weights.ChildWithAttribute( "input", "semantic", "WEIGHT" ).Attribute( "source" ) );
+				std::string       joints_source_id( skin[ "joints" ].ChildWithAttribute( "input", "semantic", "JOINT" ).Attribute( "source" ) );
+				std::string       matrices_source_id( skin[ "joints" ].ChildWithAttribute( "input", "semantic", "INV_BIND_MATRIX" ).Attribute( "source" ) );
+				weight_source_id.erase( weight_source_id.begin() );
+				joints_source_id.erase( joints_source_id.begin() );
+				matrices_source_id.erase( matrices_source_id.begin() );
+
+				Matrix4 bind_shape_matrix;
 				{
-					if( input.name == "input" )
-						++input_count;
+					std::istringstream ss( skin[ "bind_shape_matrix" ].content );
+
+					for( size_t i = 0; i < 16; ++i )
+						ss >> bind_shape_matrix[ i ];
 				}
 
-				std::istringstream ss( geometry[ "mesh" ][ "polylist" ][ "p" ].content );
-
-				for( size_t i = 0; i < face_count * 3; ++i )
+				std::vector< float > weights;
+				for( const XMLElement& source : skin )
 				{
-					size_t index = ~0ul;
-					ss >> index;
+					const std::string source_id( source.Attribute( "id" ) );
 
-					WriteIndexHelper( index_data.get(), index_size, i, index );
-
-					for( size_t input = 1; input < input_count; ++input )
+					if( source_id == weight_source_id )
 					{
-						size_t dummy;
-						ss >> dummy;
+						const XMLElement& float_array = source[ "float_array" ];
 
-						assert( dummy == index );
-					}
-				}
-			}
-
-			if( layout.Contains( VertexComponent::JointIDs ) || layout.Contains( VertexComponent::Weights ) )
-			{
-				for( const XMLElement& controller : collada[ "library_controllers" ] )
-				{
-					const std::string controller_id( controller.Attribute( "id" ) );
-					const XMLElement& skin = controller[ "skin" ];
-					std::string       skin_source_id( skin.Attribute( "source" ) );
-					skin_source_id.erase( skin_source_id.begin() );
-
-					if( skin_source_id != geometry_id )
-						continue;
-
-					const XMLElement& vertex_weights = skin[ "vertex_weights" ];
-					std::string       weight_source_id( vertex_weights.ChildWithAttribute( "input", "semantic", "WEIGHT" ).Attribute( "source" ) );
-					std::string       joints_source_id( skin[ "joints" ].ChildWithAttribute( "input", "semantic", "JOINT" ).Attribute( "source" ) );
-					std::string       matrices_source_id( skin[ "joints" ].ChildWithAttribute( "input", "semantic", "INV_BIND_MATRIX" ).Attribute( "source" ) );
-					weight_source_id.erase( weight_source_id.begin() );
-					joints_source_id.erase( joints_source_id.begin() );
-					matrices_source_id.erase( matrices_source_id.begin() );
-
-					Matrix4 bind_shape_matrix;
-					{
-						std::istringstream ss( skin[ "bind_shape_matrix" ].content );
-
-						for( size_t i = 0; i < 16; ++i )
-							ss >> bind_shape_matrix[ i ];
-					}
-
-					std::vector< float > weights;
-					for( const XMLElement& source : skin )
-					{
-						const std::string source_id( source.Attribute( "id" ) );
-
-						if( source_id == weight_source_id )
+						size_t count = 0;
 						{
-							const XMLElement& float_array = source[ "float_array" ];
+							std::istringstream ss( std::string( float_array.Attribute( "count" ) ) );
+							ss >> count;
+						}
 
-							size_t count = 0;
-							{
-								std::istringstream ss( std::string( float_array.Attribute( "count" ) ) );
-								ss >> count;
-							}
+						std::istringstream ss( float_array.content );
 
-							std::istringstream ss( float_array.content );
+						weights.reserve( count );
 
-							weights.reserve( count );
+						for( size_t i = 0; i < count; ++i )
+						{
+							float weight = 0.0f;
+							ss >> weight;
+							weights.push_back( weight );
+						}
+					}
+					else if( source_id == joints_source_id )
+					{
+						const XMLElement& name_array = source[ "Name_array" ];
+
+						size_t count = 0;
+						{
+							std::istringstream ss( std::string( name_array.Attribute( "count" ) ) );
+							ss >> count;
+						}
+
+						if( all_joint_names.size() != count )
+						{
+							std::istringstream ss( name_array.content );
+
+							all_joint_names.clear();
+							all_joint_names.reserve( count );
 
 							for( size_t i = 0; i < count; ++i )
 							{
-								float weight = 0.0f;
-								ss >> weight;
-								weights.push_back( weight );
-							}
-						}
-						else if( source_id == joints_source_id )
-						{
-							const XMLElement& name_array = source[ "Name_array" ];
-
-							size_t count = 0;
-							{
-								std::istringstream ss( std::string( name_array.Attribute( "count" ) ) );
-								ss >> count;
-							}
-
-							if( all_joint_names.size() != count )
-							{
-								std::istringstream ss( name_array.content );
-
-								all_joint_names.clear();
-								all_joint_names.reserve( count );
-
-								for( size_t i = 0; i < count; ++i )
-								{
-									std::string joint_name;
-									ss >> joint_name;
-									all_joint_names.emplace_back( std::move( joint_name ) );
-								}
-							}
-						}
-						else if( source_id == matrices_source_id )
-						{
-							const XMLElement& float_array = source[ "float_array" ];
-
-							size_t count = 0;
-							{
-								std::istringstream ss( std::string( float_array.Attribute( "count" ) ) );
-								ss >> count;
-								assert( count % 16 == 0 );
-								count /= 16;
-							}
-
-							if( all_joint_transforms.size() != count )
-							{
-								std::istringstream ss( float_array.content );
-
-								all_joint_transforms.clear();
-								all_joint_transforms.reserve( count );
-
-								for( size_t i = 0; i < count; ++i )
-								{
-									Matrix4 joint_transform;
-									for( size_t e = 0; e < 16; ++e )
-										ss >> joint_transform[ e ];
-
-									all_joint_transforms.push_back( joint_transform * bind_shape_matrix );
-								}
+								std::string joint_name;
+								ss >> joint_name;
+								all_joint_names.emplace_back( std::move( joint_name ) );
 							}
 						}
 					}
-
-					size_t vertex_weight_count = 0;
+					else if( source_id == matrices_source_id )
 					{
-						std::istringstream ss( std::string( vertex_weights.Attribute( "count" ) ) );
-						ss >> vertex_weight_count;
-					}
+						const XMLElement& float_array = source[ "float_array" ];
 
-					std::vector< size_t > vcounts;
-					vcounts.reserve( vertex_weight_count );
-					{
-						std::istringstream ss( vertex_weights[ "vcount" ].content );
-
-						for( size_t i = 0; i < vertex_weight_count; ++i )
+						size_t count = 0;
 						{
-							size_t count = 0;
+							std::istringstream ss( std::string( float_array.Attribute( "count" ) ) );
 							ss >> count;
-							vcounts.push_back( count );
+							assert( count % 16 == 0 );
+							count /= 16;
+						}
+
+						if( all_joint_transforms.size() != count )
+						{
+							std::istringstream ss( float_array.content );
+
+							all_joint_transforms.clear();
+							all_joint_transforms.reserve( count );
+
+							for( size_t i = 0; i < count; ++i )
+							{
+								Matrix4 joint_transform;
+								for( size_t e = 0; e < 16; ++e )
+									ss >> joint_transform[ e ];
+
+								all_joint_transforms.push_back( joint_transform * bind_shape_matrix );
+							}
 						}
 					}
-
-					std::istringstream ss( vertex_weights[ "v" ].content );
-
-					for( size_t i = 0; i < vcounts.size(); ++i )
-					{
-						using WeightPair = std::pair< int, float >;
-
-						size_t vcount = vcounts[ i ];
-
-						std::vector< WeightPair > weight_pairs;
-						for( size_t v = 0; v < vcount; ++v )
-						{
-							int    joint_index = 0;
-							size_t weight_index = 0;
-
-							ss >> joint_index;
-							ss >> weight_index;
-
-							weight_pairs.push_back( { joint_index, weights[ weight_index ] } );
-						}
-
-						if( vcount > 4 )
-						{
-							std::sort( weight_pairs.begin(), weight_pairs.end(), []( const WeightPair& a, const WeightPair& b ) { return ( a.second > b.second ); } );
-
-							float weight_to_redistribute = 0.0f;
-							for( size_t v = 4; v < vcount; ++v )
-								weight_to_redistribute += weight_pairs[ v ].second;
-
-							for( size_t v = 0; v < 4; ++v )
-								weight_pairs[ v ].second += ( weight_to_redistribute / 4 );
-
-							weight_pairs.resize( 4 );
-							vcount = 4;
-						}
-
-						if( layout.Contains( VertexComponent::JointIDs ) )
-						{
-							const size_t offset = layout.OffsetOf( VertexComponent::JointIDs );
-							int*         w      = reinterpret_cast< int* >( &vertex_data[ i * vertex_stride + offset ] );
-
-							for( size_t v = 0; v < vcount; ++v )
-								w[ v ] = weight_pairs[ v ].first;
-						}
-
-						if( layout.Contains( VertexComponent::Weights ) )
-						{
-							const size_t offset = layout.OffsetOf( VertexComponent::Weights );
-							float*       w      = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + offset ] );
-
-							for( size_t v = 0; v < vcount; ++v )
-								w[ v ] = weight_pairs[ v ].second;
-						}
-					}
-
-					break;
 				}
+
+				size_t vertex_weight_count = 0;
+				{
+					std::istringstream ss( std::string( vertex_weights.Attribute( "count" ) ) );
+					ss >> vertex_weight_count;
+				}
+
+				std::vector< size_t > vcounts;
+				vcounts.reserve( vertex_weight_count );
+				{
+					std::istringstream ss( vertex_weights[ "vcount" ].content );
+
+					for( size_t i = 0; i < vertex_weight_count; ++i )
+					{
+						size_t count = 0;
+						ss >> count;
+						vcounts.push_back( count );
+					}
+				}
+
+				std::istringstream ss( vertex_weights[ "v" ].content );
+
+				for( size_t i = 0; i < vcounts.size(); ++i )
+				{
+					using WeightPair = std::pair< int, float >;
+
+					size_t vcount = vcounts[ i ];
+
+					std::vector< WeightPair > weight_pairs;
+					for( size_t v = 0; v < vcount; ++v )
+					{
+						int    joint_index = 0;
+						size_t weight_index = 0;
+
+						ss >> joint_index;
+						ss >> weight_index;
+
+						weight_pairs.push_back( { joint_index, weights[ weight_index ] } );
+					}
+
+					if( vcount > 4 )
+					{
+						std::sort( weight_pairs.begin(), weight_pairs.end(), []( const WeightPair& a, const WeightPair& b ) { return ( a.second > b.second ); } );
+
+						float weight_to_redistribute = 0.0f;
+						for( size_t v = 4; v < vcount; ++v )
+							weight_to_redistribute += weight_pairs[ v ].second;
+
+						for( size_t v = 0; v < 4; ++v )
+							weight_pairs[ v ].second += ( weight_to_redistribute / 4 );
+
+						weight_pairs.resize( 4 );
+						vcount = 4;
+					}
+
+					if( layout.Contains( VertexComponent::JointIDs ) )
+					{
+						const size_t offset = layout.OffsetOf( VertexComponent::JointIDs );
+						int*         w      = reinterpret_cast< int* >( &vertex_data[ i * vertex_stride + offset ] );
+
+						for( size_t v = 0; v < vcount; ++v )
+							w[ v ] = weight_pairs[ v ].first;
+					}
+
+					if( layout.Contains( VertexComponent::Weights ) )
+					{
+						const size_t offset = layout.OffsetOf( VertexComponent::Weights );
+						float*       w      = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + offset ] );
+
+						for( size_t v = 0; v < vcount; ++v )
+							w[ v ] = weight_pairs[ v ].second;
+					}
+				}
+
+				break;
 			}
-
-			const IndexFormat index_format = EvalIndexFormat( index_size );
-
-			mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, vertex_stride );
-			mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
-
-			m_meshes.emplace_back( std::move( mesh ) );
 		}
+
+		const IndexFormat index_format = EvalIndexFormat( index_size );
+
+		mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, vertex_stride );
+		mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
+
+		m_meshes.emplace_back( std::move( mesh ) );
 	}
 
 	const XMLElement& visual_scene = collada[ "library_visual_scenes" ][ "visual_scene" ];
