@@ -6,6 +6,6 @@ public class MainActivity extends NativeActivity
 {
 	static
 	{
-		System.loadLibrary( "04-Model" );
+		System.loadLibrary( "04-Animation" );
 	}
 }
