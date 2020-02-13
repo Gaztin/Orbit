@@ -65,8 +65,10 @@ public:
 		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
 		m_model_matrix.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
 		m_model_matrix.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
-		m_camera.position = Orbit::Vector3( 0.0f, 480.0f, 480.0f );
-		m_camera.rotation = Orbit::Vector3( 0.1f * Orbit::Pi, 1.0f * Orbit::Pi, 0.0f );
+		m_camera.position  = Orbit::Vector3( 0.0f, 540.0f, 600.0f );
+		m_camera.rotation  = Orbit::Vector3( 0.1f * Orbit::Pi, 1.0f * Orbit::Pi, 0.0f );
+		m_camera.near_clip = 256.0f;
+		m_camera.far_clip  = 1024.0f;
 	}
 
 public:
