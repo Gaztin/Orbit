@@ -56,7 +56,7 @@ public:
 		: m_window( 800, 600 )
 		, m_shader( animation_shader )
 		, m_model( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
-		, m_animation_idle( Orbit::Asset( "animations/idle.dae" ) )
+		, m_animation( Orbit::Asset( "animations/jump.dae" ) )
 		, m_constant_buffer( sizeof( ConstantData ) )
 		, m_life_time( 0.0f )
 	{
@@ -73,8 +73,8 @@ public:
 
 	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& parent_pose )
 	{
-		const float          animation_time = std::fmodf( m_life_time, m_animation_idle.GetDuration() );
-		const Orbit::Matrix4 local_pose     = m_animation_idle.JointPoseAtTime( joint.name, animation_time );
+		const float          animation_time = std::fmodf( m_life_time, m_animation.GetDuration() );
+		const Orbit::Matrix4 local_pose     = m_animation.JointPoseAtTime( joint.name, animation_time );
 		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 
 		if( joint.id >= 0 )
@@ -128,7 +128,7 @@ private:
 	Orbit::RenderContext  m_render_context;
 	Orbit::Shader         m_shader;
 	Orbit::Model          m_model;
-	Orbit::Animation      m_animation_idle;
+	Orbit::Animation      m_animation;
 	Orbit::ConstantBuffer m_constant_buffer;
 	Orbit::BasicRenderer  m_renderer;
 	Orbit::Matrix4        m_model_matrix;
