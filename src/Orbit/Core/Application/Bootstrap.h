@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,37 +16,25 @@
  */
 
 #pragma once
-#include <memory>
-#include <type_traits>
+#include "Orbit/Core/Core.h"
 
-#include "Orbit/Core/Application/Bootstrap.h"
+#include <memory>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE ApplicationBase
+namespace Bootstrap
 {
-public:
+	using Trampoline = std::shared_ptr< void >( * )( void );
 
-	ApplicationBase( void ) = default;
-	virtual ~ApplicationBase( void ) = default;
+	extern ORB_API_CORE Trampoline trampoline;
+}
 
-public:
-
-	virtual void OnFrame  ( float delta_time ) = 0;
-	virtual bool IsRunning( void ) = 0;
-
-public:
-
-	static void RunInstance( void );
-
-};
-
-template< typename Derived >
-class Application : private ApplicationBase, private Bootstrapper< Derived >
+template< typename T >
+class Bootstrapper
 {
-public:
+private:
 
-	virtual ~Application( void ) = default;
+	static inline volatile int bootstrap_eval = ( Bootstrap::trampoline = []( void ){ return std::static_pointer_cast< void >( std::make_shared< T >() ); }, 0 );
 
 };
 

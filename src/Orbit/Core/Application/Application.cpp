@@ -23,9 +23,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-std::shared_ptr< void >( *_application_initializer )( void );
-
-void ApplicationBase::RunInstance()
+void ApplicationBase::RunInstance( void )
 {
 
 #if defined( ORB_OS_IOS )
@@ -37,11 +35,11 @@ void ApplicationBase::RunInstance()
 
 #else
 
-	if( !_application_initializer )
+	if( !Bootstrap::trampoline )
 		return;
 
 	/* Initialize application instance */
-	auto instance = std::static_pointer_cast< ApplicationBase >( _application_initializer() );
+	auto instance = std::static_pointer_cast< ApplicationBase >( Bootstrap::trampoline() );
 	auto time     = std::chrono::high_resolution_clock::now();
 
 	while( instance->IsRunning() )

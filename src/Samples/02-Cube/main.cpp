@@ -117,7 +117,7 @@ const uint32_t texture_data[]
 	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
 };
 
-ORB_APP_DECL( SampleApp )
+class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 

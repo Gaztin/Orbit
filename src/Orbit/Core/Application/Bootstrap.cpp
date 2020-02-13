@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -15,39 +15,10 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include <memory>
-#include <type_traits>
-
-#include "Orbit/Core/Application/Bootstrap.h"
+#include "Bootstrap.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE ApplicationBase
-{
-public:
-
-	ApplicationBase( void ) = default;
-	virtual ~ApplicationBase( void ) = default;
-
-public:
-
-	virtual void OnFrame  ( float delta_time ) = 0;
-	virtual bool IsRunning( void ) = 0;
-
-public:
-
-	static void RunInstance( void );
-
-};
-
-template< typename Derived >
-class Application : private ApplicationBase, private Bootstrapper< Derived >
-{
-public:
-
-	virtual ~Application( void ) = default;
-
-};
+Bootstrap::Trampoline Bootstrap::trampoline = nullptr;
 
 ORB_NAMESPACE_END
