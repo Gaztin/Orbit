@@ -180,7 +180,7 @@ void Model::GenerateNormals( uint8_t* vertex_data, const uint8_t* index_data, si
 
 	const size_t stride        = vertex_layout.GetStride();
 	const size_t pos_offset    = vertex_layout.OffsetOf( VertexComponent::Position );
-	const size_t normal_offset = vertex_layout.OffsetOf( VertexComponent::Position );
+	const size_t normal_offset = vertex_layout.OffsetOf( VertexComponent::Normal );
 
 	for( uint32_t face = 0; face < face_count; ++face )
 	{
