@@ -25,9 +25,12 @@
 
 #include "Orbit/Core/IO/Parser/XML/XMLParser.h"
 #include "Orbit/Core/IO/Log.h"
+#include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
+#include "Orbit/Math/Vector2.h"
 #include "Orbit/Math/Vector3.h"
+#include "Orbit/Math/Vector4.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -37,6 +40,203 @@ Model::Model( ByteSpan data, const VertexLayout& layout )
 	       ParseOBJ( data, layout ) ) )
 	{
 		LogError( "Failed to load model. Unsupported format." );
+	}
+}
+
+void Model::ClearVertexData( uint8_t* vertex_data, size_t vertex_count, const VertexLayout& vertex_layout )
+{
+	const size_t stride = vertex_layout.GetStride();
+
+	if( vertex_layout.Contains( VertexComponent::Position ) )
+	{
+		const size_t offset = vertex_layout.OffsetOf( VertexComponent::Position );
+
+		for( size_t i = 0; i < vertex_count; ++i )
+		{
+			Vector4* w = reinterpret_cast< Vector4* >( &vertex_data[ stride * i + offset ] );
+			*w = Vector4( 0.0f, 0.0f, 0.0f, 1.0f );
+		}
+	}
+
+	if( vertex_layout.Contains( VertexComponent::Normal ) )
+	{
+		const size_t offset = vertex_layout.OffsetOf( VertexComponent::Normal );
+
+		for( size_t i = 0; i < vertex_count; ++i )
+		{
+			Vector3* w = reinterpret_cast< Vector3* >( &vertex_data[ stride * i + offset ] );
+			*w = Vector3( 0.0f, 0.0f, 1.0f );
+		}
+	}
+
+	if( vertex_layout.Contains( VertexComponent::Color ) )
+	{
+		const size_t offset = vertex_layout.OffsetOf( VertexComponent::Color );
+
+		for( size_t i = 0; i < vertex_count; ++i )
+		{
+			Color* w = reinterpret_cast< Color* >( &vertex_data[ stride * i + offset ] );
+			*w = Color( 0.5f, 0.5f, 0.5f, 1.0f );
+		}
+	}
+
+	if( vertex_layout.Contains( VertexComponent::TexCoord ) )
+	{
+		const size_t offset = vertex_layout.OffsetOf( VertexComponent::TexCoord );
+
+		for( size_t i = 0; i < vertex_count; ++i )
+		{
+			Vector2* w = reinterpret_cast< Vector2* >( &vertex_data[ stride * i + offset ] );
+			*w = Vector2( 0.0f, 0.0f );
+		}
+	}
+
+	if( vertex_layout.Contains( VertexComponent::JointIDs ) )
+	{
+		const size_t offset = vertex_layout.OffsetOf( VertexComponent::JointIDs );
+
+		for( size_t i = 0; i < vertex_count; ++i )
+		{
+			int* joint_ids_write = reinterpret_cast< int* >( &vertex_data[ stride * i + offset ] );
+			joint_ids_write[ 0 ] = 0;
+			joint_ids_write[ 1 ] = 0;
+			joint_ids_write[ 2 ] = 0;
+			joint_ids_write[ 3 ] = 0;
+		}
+	}
+
+	if( vertex_layout.Contains( VertexComponent::Weights ) )
+	{
+		const size_t offset = vertex_layout.OffsetOf( VertexComponent::Weights );
+
+		for( size_t i = 0; i < vertex_count; ++i )
+		{
+			float* weights_write = reinterpret_cast< float* >( &vertex_data[ stride * i + offset ] );
+			weights_write[ 0 ] = 1.0f;
+			weights_write[ 1 ] = 0.0f;
+			weights_write[ 2 ] = 0.0f;
+			weights_write[ 3 ] = 0.0f;
+		}
+	}
+}
+
+void Model::WriteIndexHelper( uint8_t* index_data, size_t index_size, size_t index, size_t value )
+{
+	switch( index_size )
+	{
+		case 1:
+		{
+			uint8_t* w = &index_data[ index ];
+			*w = static_cast< uint8_t >( value );
+		} break;
+
+		case 2:
+		{
+			uint16_t* w = reinterpret_cast< uint16_t* >( &index_data[ index * 2 ] );
+			*w = static_cast< uint16_t >( value );
+		} break;
+
+		case 4:
+		{
+			uint32_t* w = reinterpret_cast< uint32_t* >( &index_data[ index * 4 ] );
+			*w = static_cast< uint32_t >( value );
+		} break;
+	}
+}
+
+size_t Model::ReadIndexHelper( const uint8_t* index_data, size_t index_size, size_t index )
+{
+	switch( index_size )
+	{
+		case 1:
+		{
+			const uint8_t* r = &index_data[ index ];
+			return static_cast< size_t >( *r );
+		}
+
+		case 2:
+		{
+			const uint16_t* r = reinterpret_cast< const uint16_t* >( &index_data[ index * 2 ] );
+			return static_cast< size_t >( *r );
+		}
+
+		case 4:
+		{
+			const uint32_t* r = reinterpret_cast< const uint32_t* >( &index_data[ index * 4 ] );
+			return static_cast< size_t >( *r );
+		}
+
+		default:
+		{
+			return static_cast< size_t >( ~0 );
+		}
+	}
+}
+
+void Model::GenerateNormals( uint8_t* vertex_data, const uint8_t* index_data, size_t face_count, size_t index_size, const VertexLayout& vertex_layout )
+{
+	if( !vertex_layout.Contains( VertexComponent::Position ) || !vertex_layout.Contains( VertexComponent::Normal ) )
+		return;
+
+	const size_t stride        = vertex_layout.GetStride();
+	const size_t pos_offset    = vertex_layout.OffsetOf( VertexComponent::Position );
+	const size_t normal_offset = vertex_layout.OffsetOf( VertexComponent::Position );
+
+	for( uint32_t face = 0; face < face_count; ++face )
+	{
+		const size_t triangle_indices[ 3 ]
+		{
+			ReadIndexHelper( index_data, index_size, ( face * 3 + 0 ) ),
+			ReadIndexHelper( index_data, index_size, ( face * 3 + 1 ) ),
+			ReadIndexHelper( index_data, index_size, ( face * 3 + 2 ) ),
+		};
+
+		const Orbit::Vector3* triangle_positions[ 3 ]
+		{
+			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 0 ] + pos_offset ] ),
+			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 1 ] + pos_offset ] ),
+			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 2 ] + pos_offset ] ),
+		};
+
+		const Orbit::Vector3 pos0_to_pos1 = ( *triangle_positions[ 1 ] - *triangle_positions[ 0 ] );
+		const Orbit::Vector3 pos0_to_pos2 = ( *triangle_positions[ 2 ] - *triangle_positions[ 0 ] );
+		const Orbit::Vector3 normal       = ( pos0_to_pos1.CrossProduct( pos0_to_pos2 ) ).Normalized();
+
+		for( size_t triangle_index : triangle_indices )
+		{
+			Vector3* w = reinterpret_cast< Vector3* >( &vertex_data[ stride * triangle_index + normal_offset ] );
+			*w = normal;
+		}
+	}
+}
+
+size_t Model::EvalIndexSize( size_t vertex_count )
+{
+
+#if( !ORB_HAS_D3D11 )
+
+	if( vertex_count <= std::numeric_limits< uint8_t >::max() )
+		return 1;
+
+#endif // !ORB_HAS_D3D11
+
+	if( vertex_count <= std::numeric_limits< uint16_t >::max() )
+		return 2;
+
+	if( vertex_count <= std::numeric_limits< uint32_t >::max() )
+		return 4;
+
+	return 0;
+}
+
+IndexFormat Model::EvalIndexFormat( size_t index_size )
+{
+	switch( index_size )
+	{
+		case 1:  return IndexFormat::Byte;
+		case 2:  return IndexFormat::Word;
+		case 4:  return IndexFormat::DoubleWord;
+		default: return static_cast< IndexFormat >( ~0 );
 	}
 }
 
@@ -84,10 +284,10 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 	if( !xml_parser.IsGood() )
 		return false;
 
-	const XMLElement& collada = xml_parser.GetRootElement()[ "COLLADA" ];
-
+	const XMLElement&          collada = xml_parser.GetRootElement()[ "COLLADA" ];
 	std::vector< std::string > all_joint_names;
 	std::vector< Matrix4 >     all_joint_transforms;
+
 	for( const XMLElement& geometry : collada[ "library_geometries" ] )
 	{
 		if( geometry.name == "geometry" )
@@ -123,77 +323,17 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 			if( vertex_count == 0 || face_count == 0 )
 				return false;
 
-			uint8_t index_size = 4;
-			if( vertex_count < std::numeric_limits< uint16_t >::max() ) { index_size = 2; }
+			const size_t index_size    = EvalIndexSize( vertex_count );
+			const size_t vertex_stride = layout.GetStride();
+			auto         vertex_data   = std::unique_ptr< uint8_t[] >( new uint8_t[ vertex_stride * vertex_count ] );
+			auto         index_data    = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
 
-			const size_t vertex_stride    = layout.GetStride();
-			const size_t pos_offset       = layout.OffsetOf( VertexComponent::Position );
-			const size_t normal_offset    = layout.OffsetOf( VertexComponent::Normal );
-			const size_t color_offset     = layout.OffsetOf( VertexComponent::Color );
-			const size_t texcoord_offset  = layout.OffsetOf( VertexComponent::TexCoord );
-			const size_t joint_ids_offset = layout.OffsetOf( VertexComponent::JointIDs );
-			const size_t weights_offset   = layout.OffsetOf( VertexComponent::Weights );
-			auto         vertex_data      = std::unique_ptr< uint8_t[] >( new uint8_t[ vertex_stride * vertex_count ] );
-			auto         index_data       = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
-
-			/* Clear data before read */
-			for( size_t i = 0; i < vertex_count; ++i )
-			{
-				if( layout.Contains( VertexComponent::Position ) )
-				{
-					float* pos_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + pos_offset ] );
-					pos_write[ 0 ] = 0.0f;
-					pos_write[ 1 ] = 0.0f;
-					pos_write[ 2 ] = 0.0f;
-					pos_write[ 3 ] = 1.0f;
-				}
-
-				if( layout.Contains( VertexComponent::Normal ) )
-				{
-					float* normal_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + normal_offset ] );
-					normal_write[ 0 ] = 0.0f;
-					normal_write[ 1 ] = 0.0f;
-					normal_write[ 2 ] = 0.0f;
-				}
-
-				if( layout.Contains( VertexComponent::Color ) )
-				{
-					float* color_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + color_offset ] );
-					color_write[ 0 ] = 0.75f;
-					color_write[ 1 ] = 0.75f;
-					color_write[ 2 ] = 0.75f;
-					color_write[ 3 ] = 1.0f;
-				}
-
-				if( layout.Contains( VertexComponent::TexCoord ) )
-				{
-					float* texcoord_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + texcoord_offset ] );
-					texcoord_write[ 0 ] = 0.0f;
-					texcoord_write[ 1 ] = 0.0f;
-				}
-
-				if( layout.Contains( VertexComponent::JointIDs ) )
-				{
-					int* joint_ids_write = reinterpret_cast< int* >( &vertex_data[ vertex_stride * i + joint_ids_offset ] );
-					joint_ids_write[ 0 ] = 0;
-					joint_ids_write[ 1 ] = 0;
-					joint_ids_write[ 2 ] = 0;
-					joint_ids_write[ 3 ] = 0;
-				}
-
-				if( layout.Contains( VertexComponent::Weights ) )
-				{
-					float* weights_write = reinterpret_cast< float* >( &vertex_data[ vertex_stride * i + weights_offset ] );
-					weights_write[ 0 ] = 1.0f;
-					weights_write[ 1 ] = 0.0f;
-					weights_write[ 2 ] = 0.0f;
-					weights_write[ 3 ] = 0.0f;
-				}
-			}
+			ClearVertexData( vertex_data.get(), vertex_count, layout );
 
 			if( layout.Contains( VertexComponent::Position ) )
 			{
-				std::string source_id( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
+				const size_t offset = layout.OffsetOf( VertexComponent::Position );
+				std::string  source_id( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
 				source_id.erase( source_id.begin() );
 
 				const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
@@ -208,16 +348,17 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 				for( size_t i = 0; i < vertex_count; ++i )
 				{
-					float* pos_write = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + pos_offset ] );
+					Vector4* w = reinterpret_cast< Vector4* >( &vertex_data[ i * vertex_stride + offset ] );
 
 					for( size_t c = 0; c < stride; ++c )
-						ss >> pos_write[ c ];
+						ss >> ( *w )[ c ];
 				}
 			}
 
 			if( layout.Contains( VertexComponent::Normal ) )
 			{
-				std::string source_id( polylist.ChildWithAttribute( "input", "semantic", "NORMAL" ).Attribute( "source" ) );
+				const size_t offset = layout.OffsetOf( VertexComponent::Normal );
+				std::string  source_id( polylist.ChildWithAttribute( "input", "semantic", "NORMAL" ).Attribute( "source" ) );
 				source_id.erase( source_id.begin() );
 
 				const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
@@ -232,10 +373,10 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 				for( size_t i = 0; i < vertex_count; ++i )
 				{
-					float* normal_write = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + normal_offset ] );
+					Vector3* w = reinterpret_cast< Vector3* >( &vertex_data[ i * vertex_stride + offset ] );
 
 					for( size_t c = 0; c < stride; ++c )
-						ss >> normal_write[ c ];
+						ss >> ( *w )[ c ];
 				}
 			}
 
@@ -252,45 +393,33 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 				for( size_t i = 0; i < face_count * 3; ++i )
 				{
-					switch( index_size )
-					{
-						case 1:
-						{
-							uint8_t* index_write = &index_data[ i ];
-							ss >> *index_write;
-						} break;
+					size_t index = ~0ul;
+					ss >> index;
 
-						case 2:
-						{
-							uint16_t* index_write = reinterpret_cast< uint16_t* >( &index_data[ i * 2 ] );
-							ss >> *index_write;
-						} break;
-
-						case 4:
-						{
-							uint32_t* index_write = reinterpret_cast< uint32_t* >( &index_data[ i * 4 ] );
-							ss >> *index_write;
-						} break;
-					}
+					WriteIndexHelper( index_data.get(), index_size, i, index );
 
 					for( size_t input = 1; input < input_count; ++input )
 					{
 						size_t dummy;
 						ss >> dummy;
+
+						assert( dummy == index );
 					}
 				}
 			}
 
-			/* Find controller data in other library */
-			for( const XMLElement& controller : collada[ "library_controllers" ] )
+			if( layout.Contains( VertexComponent::JointIDs ) || layout.Contains( VertexComponent::Weights ) )
 			{
-				const std::string controller_id( controller.Attribute( "id" ) );
-				const XMLElement& skin = controller[ "skin" ];
-				std::string       skin_source_id( skin.Attribute( "source" ) );
-				skin_source_id.erase( skin_source_id.begin() );
-
-				if( skin_source_id == geometry_id )
+				for( const XMLElement& controller : collada[ "library_controllers" ] )
 				{
+					const std::string controller_id( controller.Attribute( "id" ) );
+					const XMLElement& skin = controller[ "skin" ];
+					std::string       skin_source_id( skin.Attribute( "source" ) );
+					skin_source_id.erase( skin_source_id.begin() );
+
+					if( skin_source_id != geometry_id )
+						continue;
+
 					const XMLElement& vertex_weights = skin[ "vertex_weights" ];
 					std::string       weight_source_id( vertex_weights.ChildWithAttribute( "input", "semantic", "WEIGHT" ).Attribute( "source" ) );
 					std::string       joints_source_id( skin[ "joints" ].ChildWithAttribute( "input", "semantic", "JOINT" ).Attribute( "source" ) );
@@ -419,7 +548,7 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 						std::vector< WeightPair > weight_pairs;
 						for( size_t v = 0; v < vcount; ++v )
 						{
-							int    joint_index  = 0;
+							int    joint_index = 0;
 							size_t weight_index = 0;
 
 							ss >> joint_index;
@@ -443,13 +572,22 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 							vcount = 4;
 						}
 
-						int*   joint_ids_write = reinterpret_cast< int*   >( &vertex_data[ i * vertex_stride + joint_ids_offset ] );
-						float* weights_write   = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + weights_offset ] );
-
-						for( size_t v = 0; v < vcount; ++v )
+						if( layout.Contains( VertexComponent::JointIDs ) )
 						{
-							joint_ids_write[ v ] = weight_pairs[ v ].first;
-							weights_write[ v ]   = weight_pairs[ v ].second;
+							const size_t offset = layout.OffsetOf( VertexComponent::JointIDs );
+							int*         w      = reinterpret_cast< int* >( &vertex_data[ i * vertex_stride + offset ] );
+
+							for( size_t v = 0; v < vcount; ++v )
+								w[ v ] = weight_pairs[ v ].first;
+						}
+
+						if( layout.Contains( VertexComponent::Weights ) )
+						{
+							const size_t offset = layout.OffsetOf( VertexComponent::Weights );
+							float*       w      = reinterpret_cast< float* >( &vertex_data[ i * vertex_stride + offset ] );
+
+							for( size_t v = 0; v < vcount; ++v )
+								w[ v ] = weight_pairs[ v ].second;
 						}
 					}
 
@@ -457,13 +595,7 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 				}
 			}
 
-			IndexFormat index_format;
-			switch( index_size )
-			{
-				case 1: { index_format = IndexFormat::Byte;       } break;
-				case 2: { index_format = IndexFormat::Word;       } break;
-				case 4: { index_format = IndexFormat::DoubleWord; } break;
-			}
+			const IndexFormat index_format = EvalIndexFormat( index_size );
 
 			mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, vertex_stride );
 			mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
@@ -503,54 +635,12 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 	if( vertex_count == 0 && face_count == 0 )
 		return false;
 
-	uint8_t index_size = 4;
-	/**/ if( vertex_count < std::numeric_limits< uint8_t  >::max() ) { index_size = 1; }
-	else if( vertex_count < std::numeric_limits< uint16_t >::max() ) { index_size = 2; }
+	const size_t index_size  = EvalIndexSize( vertex_count );
+	const size_t stride      = layout.GetStride();
+	auto         vertex_data = std::unique_ptr< uint8_t[] >( new uint8_t[ stride * vertex_count ] );
+	auto         index_data  = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
 
-	size_t stride          = layout.GetStride();
-	size_t pos_offset      = layout.OffsetOf( VertexComponent::Position );
-	size_t normal_offset   = layout.OffsetOf( VertexComponent::Normal );
-	size_t color_offset    = layout.OffsetOf( VertexComponent::Color );
-	size_t texcoord_offset = layout.OffsetOf( VertexComponent::TexCoord );
-	auto   vertex_data     = std::unique_ptr< uint8_t[] >( new uint8_t[ stride * vertex_count ] );
-	auto   index_data      = std::unique_ptr< uint8_t[] >( new uint8_t[ index_size * face_count * 3 ] );
-
-	/* Clear data before read */
-	for( size_t i = 0; i < vertex_count; ++i )
-	{
-		if( layout.Contains( VertexComponent::Position ) )
-		{
-			float* pos_write = reinterpret_cast< float* >( &vertex_data[ stride * i + pos_offset ] );
-			pos_write[ 0 ] = 0.0f;
-			pos_write[ 1 ] = 0.0f;
-			pos_write[ 2 ] = 0.0f;
-			pos_write[ 3 ] = 1.0f;
-		}
-
-		if( layout.Contains( VertexComponent::Normal ) )
-		{
-			float* normal_write = reinterpret_cast< float* >( &vertex_data[ stride * i + normal_offset ] );
-			normal_write[ 0 ] = 0.0f;
-			normal_write[ 1 ] = 0.0f;
-			normal_write[ 2 ] = 0.0f;
-		}
-
-		if( layout.Contains( VertexComponent::Color ) )
-		{
-			float* color_write = reinterpret_cast< float* >( &vertex_data[ stride * i + color_offset ] );
-			color_write[ 0 ] = 0.0f;
-			color_write[ 1 ] = 0.0f;
-			color_write[ 2 ] = 0.0f;
-			color_write[ 3 ] = 1.0f;
-		}
-
-		if( layout.Contains( VertexComponent::TexCoord ) )
-		{
-			float* texcoord_write = reinterpret_cast< float* >( &vertex_data[ stride * i + texcoord_offset ] );
-			texcoord_write[ 0 ] = 0.0f;
-			texcoord_write[ 1 ] = 0.0f;
-		}
-	}
+	ClearVertexData( vertex_data.get(), vertex_count, layout );
 
 	uint32_t vertices_read  = 0;
 	uint32_t faces_read     = 0;
@@ -563,15 +653,13 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 		/* Vertex position */
 		if( layout.Contains( VertexComponent::Position ) )
 		{
-			float pos[ 3 ];
+			const size_t offset = layout.OffsetOf( VertexComponent::Position );
+			float        pos[ 3 ];
 
 			if( std::sscanf( it, "v %f %f %f\n%n", &pos[ 0 ], &pos[ 1 ], &pos[ 2 ], &bytes_read ) == 3 )
 			{
-				float* pos_write = reinterpret_cast< float* >( &vertex_data[ stride * vertices_read + pos_offset ] );
-				pos_write[ 0 ] = pos[ 0 ];
-				pos_write[ 1 ] = pos[ 1 ];
-				pos_write[ 2 ] = pos[ 2 ];
-				pos_write[ 3 ] = 1.0f;
+				Vector4* w = reinterpret_cast< Vector4* >( &vertex_data[ stride * vertices_read + offset ] );
+				*w = Vector4( pos[ 0 ], pos[ 1 ], pos[ 2 ], 1.0f );
 
 				++vertices_read;
 				it += bytes_read;
@@ -582,40 +670,12 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 		/* Face indices */
 		{
-			uint32_t indices[ 3 ];
+			size_t indices[ 3 ];
 
-			if( std::sscanf( it, "f %u %u %u\n%n", &indices[ 0 ], &indices[ 1 ], &indices[ 2 ], &bytes_read ) == 3 )
+			if( std::sscanf( it, "f %zd %zd %zd\n%n", &indices[ 0 ], &indices[ 1 ], &indices[ 2 ], &bytes_read ) == 3 )
 			{
-				switch( index_size )
-				{
-					case 1:
-					{
-						uint8_t* index_write = &index_data[ index_size * faces_read * 3 ];
-						*( index_write + 0 ) = static_cast< uint8_t >( indices[ 0 ] - 1 );
-						*( index_write + 1 ) = static_cast< uint8_t >( indices[ 1 ] - 1 );
-						*( index_write + 2 ) = static_cast< uint8_t >( indices[ 2 ] - 1 );
-
-					} break;
-
-					case 2:
-					{
-						uint16_t* index_write = reinterpret_cast< uint16_t* >( &index_data[ index_size * faces_read * 3 ] );
-						*( index_write + 0 ) = static_cast< uint16_t >( indices[ 0 ] - 1 );
-						*( index_write + 1 ) = static_cast< uint16_t >( indices[ 1 ] - 1 );
-						*( index_write + 2 ) = static_cast< uint16_t >( indices[ 2 ] - 1 );
-						
-
-					} break;
-
-					case 4:
-					{
-						uint32_t* index_write = reinterpret_cast< uint32_t* >( &index_data[ index_size * faces_read * 3 ] );
-						*( index_write + 0 ) = static_cast< uint32_t >( indices[ 0 ] - 1 );
-						*( index_write + 1 ) = static_cast< uint32_t >( indices[ 1 ] - 1 );
-						*( index_write + 2 ) = static_cast< uint32_t >( indices[ 2 ] - 1 );
-
-					} break;
-				}
+				for( size_t i = 0; i < 3; ++i )
+					WriteIndexHelper( index_data.get(), index_size, ( ( faces_read * 3 ) + i ), ( indices[ i ] - 1 ) );
 
 				++faces_read;
 				it += bytes_read;
@@ -628,75 +688,10 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 		while( it < end && *( it++ ) != '\n' );
 	}
 
-	/* Generate normals */
-	if( layout.Contains( VertexComponent::Normal ) )
-	{
-		for( uint32_t face = 0; face < face_count; ++face )
-		{
-			uint32_t indices[ 3 ];
+	GenerateNormals( vertex_data.get(), index_data.get(), face_count, index_size, layout );
 
-			switch( index_size )
-			{
-				case 1:
-				{
-					const uint8_t* index_read = &index_data[ 1 * face * 3 ];
-					indices[ 0 ] = static_cast< size_t >( index_read[ 0 ] );
-					indices[ 1 ] = static_cast< size_t >( index_read[ 1 ] );
-					indices[ 2 ] = static_cast< size_t >( index_read[ 2 ] );
+	const IndexFormat index_format = EvalIndexFormat( index_size );
 
-				} break;
-
-				case 2:
-				{
-					const uint16_t* index_read = reinterpret_cast< const uint16_t* >( &index_data[ 2 * face * 3 ] );
-					indices[ 0 ] = static_cast< size_t >( index_read[ 0 ] );
-					indices[ 1 ] = static_cast< size_t >( index_read[ 1 ] );
-					indices[ 2 ] = static_cast< size_t >( index_read[ 2 ] );
-
-				} break;
-
-				case 4:
-				{
-					const uint32_t* index_read = reinterpret_cast< const uint32_t* >( &index_data[ 4 * face * 3 ] );
-					indices[ 0 ] = static_cast< size_t >( index_read[ 0 ] );
-					indices[ 1 ] = static_cast< size_t >( index_read[ 1 ] );
-					indices[ 2 ] = static_cast< size_t >( index_read[ 2 ] );
-
-				} break;
-			}
-
-			const Orbit::Vector3* positions[ 3 ]
-			{
-				reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * indices[ 0 ] + pos_offset ] ),
-				reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * indices[ 1 ] + pos_offset ] ),
-				reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * indices[ 2 ] + pos_offset ] ),
-			};
-
-			const Orbit::Vector3 pos0_to_pos1 = ( *positions[ 1 ] - *positions[ 0 ] );
-			const Orbit::Vector3 pos0_to_pos2 = ( *positions[ 2 ] - *positions[ 0 ] );
-
-			Orbit::Vector3 normal = pos0_to_pos1.CrossProduct( pos0_to_pos2 );
-			normal.Normalize();
-
-			Orbit::Vector3* normal0_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 0 ] + normal_offset ] );
-			Orbit::Vector3* normal1_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 1 ] + normal_offset ] );
-			Orbit::Vector3* normal2_write = reinterpret_cast< Orbit::Vector3* >( &vertex_data[ stride * indices[ 2 ] + normal_offset ] );
-
-			*normal0_write = normal;
-			*normal1_write = normal;
-			*normal2_write = normal;
-		}
-	}
-
-	IndexFormat index_format;
-	switch( index_size )
-	{
-		case 1: { index_format = IndexFormat::Byte;       } break;
-		case 2: { index_format = IndexFormat::Word;       } break;
-		case 4: { index_format = IndexFormat::DoubleWord; } break;
-	}
-
-	/* Create mesh */
 	Mesh mesh;
 	mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, stride );
 	mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
