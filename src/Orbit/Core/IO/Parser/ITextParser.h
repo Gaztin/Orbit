@@ -39,7 +39,7 @@ protected:
 
 protected:
 
-	bool ExpectString( std::string_view str ) override;
+	bool ExpectString( std::string_view str );
 
 };
 

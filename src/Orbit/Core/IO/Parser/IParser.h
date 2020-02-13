@@ -44,10 +44,6 @@ protected:
 
 protected:
 
-	virtual bool ExpectString( std::string_view str ) = 0;
-
-protected:
-
 	std::unique_ptr< uint8_t[] > m_data;
 	size_t                       m_size;
 	size_t                       m_offset;
