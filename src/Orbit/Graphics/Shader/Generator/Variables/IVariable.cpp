@@ -162,13 +162,13 @@ namespace ShaderGen
 		return ( *this )[ IVariable( static_cast< int >( index ) ) ];
 	}
 
-	Swizzle* IVariable::operator->( void )
+	SwizzlePermutations* IVariable::operator->( void )
 	{
-		static Swizzle swizzle;
+		static SwizzlePermutations swizzle;
 
 		SetUsed();
 
-		Swizzle::latest_accessed_variable = this;
+		SwizzlePermutations::latest_accessed_variable = this;
 		return &swizzle;
 	}
 

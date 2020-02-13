@@ -24,7 +24,7 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	struct Swizzle;
+	struct SwizzlePermutations;
 
 	class ORB_API_GRAPHICS IVariable
 	{
@@ -65,7 +65,7 @@ namespace ShaderGen
 		IVariable operator- ( void )                   const;
 		IVariable operator[]( size_t index )           const;
 
-		Swizzle* operator->( void );
+		SwizzlePermutations* operator->( void );
 		void     operator= ( const IVariable& rhs );
 		void     operator+=( const IVariable& rhs );
 		void     operator*=( const IVariable& rhs );

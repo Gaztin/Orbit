@@ -26,7 +26,7 @@ namespace ShaderGen
 	class IVariable;
 
 	template< char... Name >
-	class SwizzleComponent
+	class Swizzle
 	{
 	public:
 
@@ -71,7 +71,7 @@ namespace ShaderGen
 
 		void operator+=( const IVariable& rhs ) const
 		{
-			IVariable* parent = Swizzle::latest_accessed_variable;
+			IVariable* parent = SwizzlePermutations::latest_accessed_variable;
 
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
@@ -82,7 +82,7 @@ namespace ShaderGen
 
 		void operator*=( const IVariable& rhs ) const
 		{
-			IVariable* parent = Swizzle::latest_accessed_variable;
+			IVariable* parent = SwizzlePermutations::latest_accessed_variable;
 
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
@@ -93,7 +93,7 @@ namespace ShaderGen
 
 		void operator=( const IVariable& rhs ) const
 		{
-			IVariable* parent = Swizzle::latest_accessed_variable;
+			IVariable* parent = SwizzlePermutations::latest_accessed_variable;
 
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
@@ -104,7 +104,7 @@ namespace ShaderGen
 
 		operator IVariable( void ) const
 		{
-			IVariable* parent = Swizzle::latest_accessed_variable;
+			IVariable* parent = SwizzlePermutations::latest_accessed_variable;
 			IVariable  component_variable( parent->GetValue() + "." + name.value, GetDataType() );
 
 			/* If parent is stored, then the swizzle component can be considered stored too.
@@ -120,13 +120,13 @@ namespace ShaderGen
 	};
 
 #define ORB_SWIZZLE_COMPONENT( NAME )                    \
-	decltype( ORB_NAMESPACE ShaderGen::SwizzleComponent< \
+	decltype( ORB_NAMESPACE ShaderGen::Swizzle<          \
 		ORB_NAMESPACE StringLiteralGrab< 0 >( NAME ),    \
 		ORB_NAMESPACE StringLiteralGrab< 1 >( NAME ),    \
 		ORB_NAMESPACE StringLiteralGrab< 2 >( NAME ),    \
 		ORB_NAMESPACE StringLiteralGrab< 3 >( NAME ) >() )
 
-	struct Swizzle
+	struct SwizzlePermutations
 	{
 		static ORB_API_GRAPHICS IVariable* latest_accessed_variable;
 
