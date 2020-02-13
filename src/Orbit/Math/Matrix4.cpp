@@ -19,17 +19,12 @@
 
 #include <cmath>
 
-#include "Orbit/Math/Vector3.h"
-#include "Orbit/Math/Vector4.h"
-
 ORB_NAMESPACE_BEGIN
 
 Matrix4::Matrix4( float diagonal )
 {
 	for( size_t i = 0; i < 16; ++i )
-	{
-		m_elements[ i ] = ( i % 5 == 0 ) ? diagonal : 0.0f;
-	}
+		elements[ i ] = ( i % 5 == 0 ) ? diagonal : 0.0f;
 }
 
 Matrix4::Matrix4( std::initializer_list< float > elements )
@@ -37,9 +32,7 @@ Matrix4::Matrix4( std::initializer_list< float > elements )
 	const size_t size = std::min( static_cast< size_t >( 16u ), elements.size() );
 
 	for( size_t i = 0; i < size; ++i )
-	{
-		m_elements[ i ] = *( elements.begin() + i );
-	}
+		this->elements[ i ] = *( elements.begin() + i );
 }
 
 void Matrix4::Translate( const Vector3& translation )
@@ -48,9 +41,7 @@ void Matrix4::Translate( const Vector3& translation )
 	const Vector4 t4( translation.x, translation.y, translation.z, 1.f );
 
 	for( size_t i = 0; i < 4; ++i )
-	{
 		self( i, 3 ) = Vector4( self( i, 0 ), self( i, 1 ), self( i, 2 ), self( i, 3 ) ).DotProduct( t4 );
-	}
 }
 
 void Matrix4::Rotate( const Vector3& rotation )
@@ -91,9 +82,7 @@ void Matrix4::Transpose( void )
 	for( size_t x = 0; x < 4; ++x )
 	{
 		for( size_t y = 0; y < 4; ++y )
-		{
 			self( x, y ) = temp( y, x );
-		}
 	}
 }
 
@@ -103,9 +92,7 @@ void Matrix4::Invert( void )
 	for( size_t column = 0; column < 4; ++column )
 	{
 		for( size_t row = 0; row < 4; ++row )
-		{
 			minors( column, row ) = GetDeterminant3x3( column, row );
-		}
 	}
 
 	Matrix4 cofactors;
@@ -120,52 +107,48 @@ void Matrix4::Invert( void )
 
 	cofactors.Transpose();
 
-	const float one_over_determinant = 1.0f / ( m_elements[ 0 ] * minors[ 0 ] -
-	                                            m_elements[ 1 ] * minors[ 1 ] +
-	                                            m_elements[ 2 ] * minors[ 2 ] -
-	                                            m_elements[ 3 ] * minors[ 3 ] );
+	const float one_over_determinant = 1.0f / ( elements[ 0 ] * minors[ 0 ] -
+	                                            elements[ 1 ] * minors[ 1 ] +
+	                                            elements[ 2 ] * minors[ 2 ] -
+	                                            elements[ 3 ] * minors[ 3 ] );
 	for( size_t i = 0; i < 16; ++i )
-	{
-		m_elements[ i ] = cofactors[ i ] * one_over_determinant;
-	}
+		elements[ i ] = cofactors[ i ] * one_over_determinant;
 }
 
 void Matrix4::SetIdentity( void )
 {
 	for( size_t i = 0; i < 16; ++i )
-	{
-		m_elements[ i ] = ( i % 5 == 0 ) ? 1.0f : 0.0f;
-	}
+		elements[ i ] = ( i % 5 == 0 ) ? 1.0f : 0.0f;
 }
 
 void Matrix4::SetPerspective( float aspect_ratio, float fov, float near_clip, float far_clip )
 {
 	const float fov_tangent = tanf( fov / 2 );
 
-	m_elements[ 0  ] = 1.0f / ( aspect_ratio * fov_tangent );
-	m_elements[ 1  ] = 0.0f;
-	m_elements[ 2  ] = 0.0f;
-	m_elements[ 3  ] = 0.0f;
-	m_elements[ 4  ] = 0.0f;
-	m_elements[ 5  ] = 1.0f / fov_tangent;
-	m_elements[ 6  ] = 0.0f;
-	m_elements[ 7  ] = 0.0f;
-	m_elements[ 8  ] = 0.0f;
-	m_elements[ 9  ] = 0.0f;
-	m_elements[ 10 ] = far_clip / ( far_clip - near_clip );
-	m_elements[ 11 ] = 1.0f;
-	m_elements[ 12 ] = 0.0f;
-	m_elements[ 13 ] = 0.0f;
-	m_elements[ 14 ] = ( far_clip * near_clip ) / ( near_clip - far_clip );
-	m_elements[ 15 ] = 0.0f;
+	elements[ 0  ] = 1.0f / ( aspect_ratio * fov_tangent );
+	elements[ 1  ] = 0.0f;
+	elements[ 2  ] = 0.0f;
+	elements[ 3  ] = 0.0f;
+	elements[ 4  ] = 0.0f;
+	elements[ 5  ] = 1.0f / fov_tangent;
+	elements[ 6  ] = 0.0f;
+	elements[ 7  ] = 0.0f;
+	elements[ 8  ] = 0.0f;
+	elements[ 9  ] = 0.0f;
+	elements[ 10 ] = far_clip / ( far_clip - near_clip );
+	elements[ 11 ] = 1.0f;
+	elements[ 12 ] = 0.0f;
+	elements[ 13 ] = 0.0f;
+	elements[ 14 ] = ( far_clip * near_clip ) / ( near_clip - far_clip );
+	elements[ 15 ] = 0.0f;
 }
 
 float Matrix4::GetDeterminant( void ) const
 {
-	return ( m_elements[ 0 ] * GetDeterminant3x3( 0, 0 ) -
-	         m_elements[ 1 ] * GetDeterminant3x3( 1, 0 ) +
-	         m_elements[ 2 ] * GetDeterminant3x3( 2, 0 ) -
-	         m_elements[ 3 ] * GetDeterminant3x3( 3, 0 ) );
+	return ( elements[ 0 ] * GetDeterminant3x3( 0, 0 ) -
+	         elements[ 1 ] * GetDeterminant3x3( 1, 0 ) +
+	         elements[ 2 ] * GetDeterminant3x3( 2, 0 ) -
+	         elements[ 3 ] * GetDeterminant3x3( 3, 0 ) );
 }
 
 float Matrix4::GetDeterminant3x3( size_t column, size_t row ) const
@@ -183,39 +166,63 @@ float Matrix4::GetDeterminant3x3( size_t column, size_t row ) const
 	       self( c3, r1 ) * ( self( c1, r2 ) * self( c2, r3 ) - self( c2, r2 ) * self( c1, r3 ) );
 }
 
-Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
+Matrix4 Matrix4::Transposed( void ) const
 {
-	return ( Matrix4( *this ) *= rhs );
+	Matrix4 result( *this );
+	result.Transpose();
+
+	return result;
 }
 
-Matrix4& Matrix4::operator*=( const Matrix4& rhs )
+Matrix4 Matrix4::Inverted( void ) const
 {
-	Matrix4& self = *this;
+	Matrix4 result( *this );
+	result.Invert();
 
-	/* Columns */
-	std::array< Vector4, 4 > columns;
-	for( size_t i = 0; i < 4; ++i )
-	{
-		columns[ i ] = Vector4( self( 0, i ), self( 1, i ), self( 2, i ), self( 3, i ) );
-	}
+	return result;
+}
 
-	/* Rows */
-	std::array< Vector4, 4 > rows;
-	for( size_t i = 0; i < 4; ++i )
-	{
-		rows[ i ] = Vector4( rhs( i, 0 ), rhs( i, 1 ), rhs( i, 2 ), rhs( i, 3 ) );
-	}
+Matrix4 Matrix4::operator*( const Matrix4& rhs ) const
+{
+	Matrix4 ret;
 
-	/* Calculate dot products */
 	for( size_t row = 0; row < 4; ++row )
 	{
 		for( size_t col = 0; col < 4; ++col )
 		{
-			self( col, row ) = columns[ row ].DotProduct( rows[ col ] );
+			ret( col, row ) = ( *this )( 0, row ) * rhs( col, 0 ) +
+			                  ( *this )( 1, row ) * rhs( col, 1 ) +
+			                  ( *this )( 2, row ) * rhs( col, 2 ) +
+			                  ( *this )( 3, row ) * rhs( col, 3 );
 		}
 	}
 
-	return self;
+	return ret;
+}
+
+Vector4 Matrix4::operator*( const Vector4& rhs ) const
+{
+	Vector4 ret;
+
+	for( size_t row = 0; row < 4; ++row )
+	{
+		for( size_t col = 0; col < 4; ++col )
+			ret[ row ] += ( *this )( col, row ) * rhs[ col ];
+	}
+
+	return ret;
+}
+
+Matrix4& Matrix4::operator*=( const Matrix4& rhs )
+{
+	return( *this = ( ( *this ) * rhs ) );
+}
+
+Matrix4& Matrix4::operator=( const Matrix4& rhs )
+{
+	elements = rhs.elements;
+
+	return *this;
 }
 
 ORB_NAMESPACE_END

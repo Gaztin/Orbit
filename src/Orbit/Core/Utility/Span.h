@@ -19,7 +19,7 @@
 #include <string_view>
 #include <vector>
 
-#include "Orbit/Core/Core.h"
+#include "Orbit/Core/IO/Asset.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -53,6 +53,12 @@ public:
 	{
 	}
 
+	Span( const Asset& asset )
+		: m_ptr   { asset.GetData() }
+		, m_count { asset.GetSize() }
+	{
+	}
+
 	Span( const T* data, size_t count )
 		: m_ptr   { data }
 		, m_count { count }
@@ -61,8 +67,20 @@ public:
 
 public:
 
-	const T* begin( void ) const { return m_ptr; }
-	const T* end  ( void ) const { return ( m_ptr + m_count ); }
+	size_t GetSize( void ) const { return m_count; }
+
+	std::unique_ptr< T[] > Copy( void ) const
+	{
+		std::unique_ptr< T[] > ptr( new T[ m_count ] );
+		std::copy( begin(), end(), &ptr[ 0 ] );
+
+		return ptr;
+	}
+
+public:
+
+	const T* begin  ( void ) const { return m_ptr; }
+	const T* end    ( void ) const { return ( m_ptr + m_count ); }
 
 private:
 

@@ -16,9 +16,15 @@
  */
 
 #pragma once
-#include "Orbit/Math/Math.h"
+#include "Orbit/Math/Vector3.h"
+#include "Orbit/Math/Vector4.h"
 
 #include <array>
+
+#if defined( ORB_CC_MSVC )
+#  pragma warning( push )
+#  pragma warning( disable : 4201 ) // "nonstandard extension used: nameless struct/union"
+#endif // ORB_CC_MSVC
 
 ORB_NAMESPACE_BEGIN
 
@@ -42,36 +48,48 @@ public:
 
 public:
 
-	float GetDeterminant   ( void ) const;
-	float GetDeterminant3x3( size_t column, size_t row ) const;
-
-public:
-
-	Vector3&       Right   ( void )       { return *reinterpret_cast<       Vector3* >( &m_elements[  0 ] ); }
-	const Vector3& Right   ( void ) const { return *reinterpret_cast< const Vector3* >( &m_elements[  0 ] ); }
-	Vector3&       Up      ( void )       { return *reinterpret_cast<       Vector3* >( &m_elements[  4 ] ); }
-	const Vector3& Up      ( void ) const { return *reinterpret_cast< const Vector3* >( &m_elements[  4 ] ); }
-	Vector3&       Forward ( void )       { return *reinterpret_cast<       Vector3* >( &m_elements[  8 ] ); }
-	const Vector3& Forward ( void ) const { return *reinterpret_cast< const Vector3* >( &m_elements[  8 ] ); }
-	Vector3&       Position( void )       { return *reinterpret_cast<       Vector3* >( &m_elements[ 12 ] ); }
-	const Vector3& Position( void ) const { return *reinterpret_cast< const Vector3* >( &m_elements[ 12 ] ); }
+	float   GetDeterminant   ( void ) const;
+	float   GetDeterminant3x3( size_t column, size_t row ) const;
+	Matrix4 Transposed       ( void ) const;
+	Matrix4 Inverted         ( void ) const;
 
 public:
 
 	Matrix4  operator* ( const Matrix4& rhs ) const;
+	Vector4  operator* ( const Vector4& rhs ) const;
 	Matrix4& operator*=( const Matrix4& rhs );
+	Matrix4& operator= ( const Matrix4& rhs );
 
 public:
 
-	float&       operator[]( size_t i )                        { return m_elements[ i ]; }
-	const float& operator[]( size_t i ) const                  { return m_elements[ i ]; }
-	float&       operator()( size_t column, size_t row )       { return m_elements[ row * 4 + column ]; }
-	const float& operator()( size_t column, size_t row ) const { return m_elements[ row * 4 + column ]; };
+	float&       operator[]( size_t i )                        { return elements[ i ]; }
+	const float& operator[]( size_t i ) const                  { return elements[ i ]; }
+	float&       operator()( size_t column, size_t row )       { return elements[ row * 4 + column ]; }
+	const float& operator()( size_t column, size_t row ) const { return elements[ row * 4 + column ]; };
 
-private:
+public:
 
-	std::array< float, 16 > m_elements;
+	union
+	{
+		std::array< float, 16 > elements;
+
+		struct
+		{
+			Vector3 right;
+			float   pad0;
+			Vector3 up;
+			float   pad1;
+			Vector3 forward;
+			float   pad2;
+			Vector3 pos;
+			float   pad3;
+		};
+	};
 
 };
 
 ORB_NAMESPACE_END
+
+#if defined( ORB_CC_MSVC )
+#  pragma warning( pop )
+#endif // ORB_CC_MSVC

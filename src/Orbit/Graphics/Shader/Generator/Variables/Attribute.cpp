@@ -37,20 +37,8 @@ namespace ShaderGen
 		return ss.str();
 	}
 
-	static DataType VertexComponentDataType( VertexComponent component )
-	{
-		switch( ( IndexedVertexComponent{ component, 0 } ).GetDataCount() )
-		{
-			default: { assert( false );        };
-			case 1:  { return DataType::Float; };
-			case 2:  { return DataType::Vec2;  };
-			case 3:  { return DataType::Vec3;  };
-			case 4:  { return DataType::Vec4;  };
-		}
-	}
-
 	Attribute::Attribute( VertexComponent component )
-		: IVariable( NewName(), VertexComponentDataType( component ) )
+		: IVariable( NewName(), DataTypeFromVertexComponent( component ) )
 	{
 		m_stored = true;
 

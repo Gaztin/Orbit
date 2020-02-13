@@ -24,7 +24,7 @@
 Camera::Camera( void )
 	: m_on_resize( Orbit::Window::Get().Subscribe( [ this ]( const Orbit::WindowResized& e ){ OnResized( e ); } ) )
 {
-	m_view.Translate( Orbit::Vector3( 0.0f, 0.0f, -5.0f ) );
+	position.z = -5.0f;
 }
 
 void Camera::Update( float delta_time )
@@ -50,8 +50,16 @@ void Camera::OnResized( const Orbit::WindowResized& e )
 
 void Camera::UpdateView( float delta_time )
 {
-	Orbit::Matrix4 translate;
-	Orbit::Matrix4 rotate;
+	/* Rotate */
+	{
+		if( Orbit::Input::GetPointerHeld( Orbit::Input::pointer_index_mouse_left ) || Orbit::Input::GetPointerHeld( Orbit::Input::pointer_index_mouse_right ) )
+		{
+			auto [ x, y ] = Orbit::Input::GetPointerMove( 0 );
+
+			this->rotation.x += (  static_cast< float >( y ) * Orbit::Pi ) / m_height;
+			this->rotation.y += ( -static_cast< float >( x ) * Orbit::Pi ) / m_height;
+		}
+	}
 
 	/* Translate */
 	{
@@ -71,31 +79,16 @@ void Camera::UpdateView( float delta_time )
 
 		if( direction.DotProduct() > 0.0f )
 		{
+			Orbit::Matrix4 rotation_matrix;
+			rotation_matrix.Rotate( this->rotation );
+
 			const float step = ( this->speed * speed_modifier * delta_time );
 
-			translate.Translate( direction * step );
+			this->position += ( rotation_matrix.right   * direction.x * step );
+			this->position += ( rotation_matrix.up      * direction.y * step );
+			this->position += ( rotation_matrix.forward * direction.z * step );
 		}
 	}
-
-	/* Rotate */
-	{
-		Orbit::Vector3 rotation;
-
-		if( Orbit::Input::GetPointerHeld( Orbit::Input::pointer_index_mouse_left ) || Orbit::Input::GetPointerHeld( Orbit::Input::pointer_index_mouse_right ) )
-		{
-			auto [ x, y ] = Orbit::Input::GetPointerMove( 0 );
-
-			rotation.x =  static_cast< float >( y );
-			rotation.y = -static_cast< float >( x );
-			rotation  *= Orbit::Pi;
-			rotation  /= static_cast< float >( m_height );
-		}
-
-		rotate.Rotate( rotation );
-	}
-
-	/* Calculate view matrix */
-	m_view = rotate * translate * m_view;
 }
 
 Orbit::Matrix4 Camera::GetViewProjection( void ) const
@@ -103,7 +96,13 @@ Orbit::Matrix4 Camera::GetViewProjection( void ) const
 	const float fov_rad = ( this->fov * Orbit::Pi ) / 180.0f;
 	const float aspect  = static_cast< float >( m_width ) / static_cast< float >( m_height );
 
-	Orbit::Matrix4 view_inverse( m_view );
+	Orbit::Matrix4 view_rotate;
+	view_rotate.Rotate( this->rotation );
+
+	Orbit::Matrix4 view_translate;
+	view_translate.Translate( this->position );
+
+	Orbit::Matrix4 view_inverse( view_rotate * view_translate );
 	view_inverse.Invert();
 
 	Orbit::Matrix4 projection;

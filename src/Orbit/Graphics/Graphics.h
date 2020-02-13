@@ -105,6 +105,12 @@ enum class IndexFormat
 	DoubleWord,
 };
 
+enum class PrimitiveDataType
+{
+	Float,
+	Int,
+};
+
 #if( ORB_HAS_D3D11 )
 constexpr GraphicsAPI default_graphics_api = GraphicsAPI::D3D11;
 #elif( ORB_HAS_OPENGL )

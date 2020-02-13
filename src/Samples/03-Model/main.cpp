@@ -34,13 +34,23 @@
 #include <Orbit/Math/Vector4.h>
 
 #include "Framework/Camera.h"
-#include "ModelData.h"
 #include "ModelShader.h"
 
 static ModelShader model_shader;
 
-std::tuple vertex_constant_data   = std::make_tuple( Orbit::Matrix4(), Orbit::Matrix4(), Orbit::Matrix4() );
-std::tuple fragment_constant_data = std::make_tuple( Orbit::Vector3() );
+struct VertexConstantData
+{
+	Orbit::Matrix4 view_projection;
+	Orbit::Matrix4 model;
+	Orbit::Matrix4 model_inverse;
+
+} vertex_constant_data;
+
+struct FragmentConstantData
+{
+	Orbit::Vector3 light_dir;
+
+} fragment_constant_data;
 
 const uint32_t texture_data[]
 {
@@ -57,9 +67,9 @@ public:
 	SampleApp( void )
 		: m_window( 800, 600 )
 		, m_shader( model_shader )
-		, m_model( model_data, model_shader.GetVertexLayout() )
-		, m_vertex_constant_buffer( vertex_constant_data )
-		, m_fragment_constant_buffer( fragment_constant_data )
+		, m_model( Orbit::Asset( "models/teapot.obj" ), model_shader.GetVertexLayout() )
+		, m_vertex_constant_buffer( sizeof( VertexConstantData ) )
+		, m_fragment_constant_buffer( sizeof( FragmentConstantData ) )
 		, m_texture( 4, 4, texture_data )
 	{
 		m_window.SetTitle( "Orbit Sample (03-Model)" );
@@ -74,26 +84,18 @@ public:
 	{
 		/* Update constant buffers */
 		{
-			auto& [ view_projection, model, model_inverse ] = vertex_constant_data;
-			auto& [ light_dir ]                             = fragment_constant_data;
+			m_model_matrix.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
-			/* Calculate model-view-projection matrix */
-			{
-				using namespace Orbit::MathLiterals;
-
-				m_model_matrix.Rotate( Orbit::Vector3( 0_pi, 0.5_pi * delta_time, 0_pi ) );
-
-				view_projection = m_camera.GetViewProjection();
-				model           = m_model_matrix;
-				model_inverse   = m_model_matrix;
-				model_inverse.Invert();
-			}
+			vertex_constant_data.view_projection = m_camera.GetViewProjection();
+			vertex_constant_data.model           = m_model_matrix;
+			vertex_constant_data.model_inverse   = m_model_matrix;
+			vertex_constant_data.model_inverse.Invert();
 
 			/* Light position */
-			light_dir = Orbit::Vector3( 1.0f, -1.0f, 1.0f );
+			fragment_constant_data.light_dir = Orbit::Vector3( 1.0f, -1.0f, 1.0f );
 
-			m_vertex_constant_buffer.Update( vertex_constant_data );
-			m_fragment_constant_buffer.Update( fragment_constant_data );
+			m_vertex_constant_buffer.Update( &vertex_constant_data, sizeof( VertexConstantData ) );
+			m_fragment_constant_buffer.Update( &fragment_constant_data, sizeof( FragmentConstantData ) );
 		}
 
 		m_window.PollEvents();
@@ -101,15 +103,20 @@ public:
 
 		m_camera.Update( delta_time );
 
-		Orbit::RenderCommand command = m_model.MakeRenderCommand();
-		command.shader = &m_shader;
-		command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &m_vertex_constant_buffer );
-		command.constant_buffers[ Orbit::ShaderType::Fragment ].push_back( &m_fragment_constant_buffer );
-		command.textures.push_back( &m_texture );
+		for( const Orbit::Mesh& mesh : m_model )
+		{
+			Orbit::RenderCommand command;
+			command.vertex_buffer = mesh.vertex_buffer.get();
+			command.index_buffer  = mesh.index_buffer.get();
+			command.shader        = &m_shader;
+			command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &m_vertex_constant_buffer );
+			command.constant_buffers[ Orbit::ShaderType::Fragment ].push_back( &m_fragment_constant_buffer );
+			command.textures.push_back( &m_texture );
 
-		m_renderer.QueueCommand( command );
+			m_renderer.QueueCommand( command );
+		}
+
 		m_renderer.Render();
-
 		m_render_context.SwapBuffers();
 	}
 

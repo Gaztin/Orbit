@@ -28,6 +28,13 @@ class VectorBase
 {
 public:
 
+	void Normalize( void )
+	{
+		*this /= Length();
+	}
+
+public:
+
 	float DotProduct( const VectorBase& rhs ) const
 	{
 		float d = 0.f;
@@ -46,9 +53,9 @@ public:
 		return sqrtf( DotProduct() );
 	}
 
-	void Normalize( void )
+	Derived Normalized( void )
 	{
-		*this /= Length();
+		return ( *this / Length() );
 	}
 
 public:

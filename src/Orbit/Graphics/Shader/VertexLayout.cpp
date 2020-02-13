@@ -27,18 +27,38 @@ static size_t DataCountOf( VertexComponent component )
 {
 	switch( component )
 	{
-		default: { assert( false ); return 0; } break;
+		default: { assert( false ); return 0; }
 
 		case VertexComponent::Position: return 4;
 		case VertexComponent::Normal:   return 3;
 		case VertexComponent::Color:    return 4;
 		case VertexComponent::TexCoord: return 2;
+		case VertexComponent::JointIDs: return 4;
+		case VertexComponent::Weights:  return 4;
+	}
+}
+
+static PrimitiveDataType DataTypeOf( VertexComponent component )
+{
+	switch( component )
+	{
+		default: { assert( false ); return static_cast< PrimitiveDataType >( ~0 ); }
+
+		case Orbit::VertexComponent::Position:
+		case Orbit::VertexComponent::Normal:
+		case Orbit::VertexComponent::Color:
+		case Orbit::VertexComponent::TexCoord:
+		case Orbit::VertexComponent::Weights:
+			return PrimitiveDataType::Float;
+
+		case Orbit::VertexComponent::JointIDs:
+			return PrimitiveDataType::Int;
 	}
 }
 
 static size_t SizeOf( VertexComponent component )
 {
-	return ( sizeof( float ) * DataCountOf( component ) );
+	return ( 4 * DataCountOf( component ) );
 }
 
 size_t IndexedVertexComponent::GetSize( void ) const
@@ -49,6 +69,11 @@ size_t IndexedVertexComponent::GetSize( void ) const
 size_t IndexedVertexComponent::GetDataCount( void ) const
 {
 	return DataCountOf( type );
+}
+
+PrimitiveDataType IndexedVertexComponent::GetDataType( void ) const
+{
+	return DataTypeOf( type );
 }
 
 bool VertexComponentIterator::operator!=( const VertexComponentIterator& other ) const

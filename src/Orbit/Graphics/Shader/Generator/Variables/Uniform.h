@@ -28,11 +28,32 @@ namespace ShaderGen
 	class Vec4;
 	class Mat4;
 
+	template< DataType DT >
+	struct DataTypeTraits
+	{
+		static constexpr DataType data_type = DT;
+	};
+
+	template< typename T >
+	struct UniformTraits
+	{
+	};
+
+	template<> struct UniformTraits< Float > : DataTypeTraits< DataType::Float > { };
+	template<> struct UniformTraits< Vec2  > : DataTypeTraits< DataType::FVec2 > { };
+	template<> struct UniformTraits< Vec3  > : DataTypeTraits< DataType::FVec3 > { };
+	template<> struct UniformTraits< Vec4  > : DataTypeTraits< DataType::FVec4 > { };
+	template<> struct UniformTraits< Mat4  > : DataTypeTraits< DataType::Mat4  > { };
+
 	class ORB_API_GRAPHICS UniformBase : public IVariable
 	{
 	public:
 
 		UniformBase( DataType type );
+
+	public:
+
+		virtual bool IsArray( void ) const { return false; }
 
 	};
 
@@ -41,15 +62,54 @@ namespace ShaderGen
 	{
 	public:
 
-		Uniform( void );
+		Uniform( void )
+			: UniformBase( UniformTraits< T >::data_type )
+		{
+		}
 
 	};
 
-	template<> inline Uniform< Float >::Uniform( void ) : UniformBase( DataType::Float ) { }
-	template<> inline Uniform< Vec2  >::Uniform( void ) : UniformBase( DataType::Vec2  ) { }
-	template<> inline Uniform< Vec3  >::Uniform( void ) : UniformBase( DataType::Vec3  ) { }
-	template<> inline Uniform< Vec4  >::Uniform( void ) : UniformBase( DataType::Vec4  ) { }
-	template<> inline Uniform< Mat4  >::Uniform( void ) : UniformBase( DataType::Mat4  ) { }
+	class ORB_API_GRAPHICS UniformArrayBase : public UniformBase
+	{
+	public:
+
+		explicit UniformArrayBase( DataType element_type );
+
+	public:
+
+		bool IsArray( void ) const override { return true; }
+
+	public:
+
+		virtual DataType GetElementType( void ) const = 0;
+		virtual size_t   GetArraySize  ( void ) const = 0;
+
+	public:
+
+		IVariable operator[]( const IVariable& index ) const override;
+
+	private:
+
+		DataType m_element_type;
+
+	};
+
+	template< typename T, size_t N >
+	class UniformArray : public UniformArrayBase
+	{
+	public:
+
+		UniformArray( void )
+			: UniformArrayBase( UniformTraits< T >::data_type )
+		{
+		}
+
+	public:
+
+		DataType GetElementType( void ) const override { return UniformTraits< T >::data_type; }
+		size_t   GetArraySize  ( void ) const override { return N; }
+
+	};
 }
 
 ORB_NAMESPACE_END

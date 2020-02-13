@@ -28,12 +28,15 @@ enum class VertexComponent : uint8_t
 	Normal,
 	Color,
 	TexCoord,
+	JointIDs,
+	Weights,
 };
 
 struct IndexedVertexComponent
 {
-	size_t   GetSize     ( void ) const;
-	size_t   GetDataCount( void ) const;
+	size_t            GetSize     ( void ) const;
+	size_t            GetDataCount( void ) const;
+	PrimitiveDataType GetDataType ( void ) const;
 
 	VertexComponent type;
 	size_t          index;

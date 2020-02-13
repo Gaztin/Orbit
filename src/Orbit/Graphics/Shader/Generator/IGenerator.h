@@ -57,6 +57,9 @@ namespace ShaderGen
 		template< typename T >
 		using Uniform = Uniform< T >;
 
+		template< typename T, size_t N >
+		using UniformArray = UniformArray< T, N >;
+
 		using Float = Float;
 		using Vec2  = Vec2;
 		using Vec3  = Vec3;
@@ -73,6 +76,7 @@ namespace ShaderGen
 		IVariable Transpose( const IVariable& matrix );
 		IVariable Sample   ( const IVariable& sampler, const IVariable& texcoord );
 		IVariable Dot      ( const IVariable& lhs, const IVariable& rhs );
+		IVariable Normalize( const IVariable& vec );
 
 	private:
 

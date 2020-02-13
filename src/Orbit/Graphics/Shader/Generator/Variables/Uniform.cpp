@@ -19,6 +19,7 @@
 
 #include "Orbit/Graphics/Shader/Generator/IGenerator.h"
 
+#include <cassert>
 #include <sstream>
 
 ORB_NAMESPACE_BEGIN
@@ -41,6 +42,22 @@ namespace ShaderGen
 		m_stored = true;
 
 		IGenerator::GetCurrentGenerator()->m_uniforms.push_back( this );
+	}
+
+	UniformArrayBase::UniformArrayBase( DataType element_type )
+		: UniformBase   ( DataType::Array )
+		, m_element_type( element_type )
+	{
+	}
+
+	IVariable UniformArrayBase::operator[]( const IVariable& index ) const
+	{
+		assert( index.GetDataType() == DataType::Int );
+
+		SetUsed();
+		index.SetUsed();
+
+		return IVariable( GetValue() + "[ " + index.GetValue() + " ]", m_element_type );
 	}
 }
 

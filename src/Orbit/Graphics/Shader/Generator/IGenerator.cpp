@@ -35,14 +35,32 @@ namespace ShaderGen
 
 	static std::string_view VertexComponentTypeString( IndexedVertexComponent component )
 	{
-		switch( component.GetDataCount() )
+		switch( component.GetDataType() )
 		{
-			case 1:  return "float";
-			case 2:  return "vec2";
-			case 3:  return "vec3";
-			case 4:  return "vec4";
-			default: return "error_type";
+			case PrimitiveDataType::Float:
+			{
+				switch( component.GetDataCount() )
+				{
+					case 1:  return "float";
+					case 2:  return "vec2";
+					case 3:  return "vec3";
+					case 4:  return "vec4";
+				}
+			} break;
+
+			case PrimitiveDataType::Int:
+			{
+				switch( component.GetDataCount() )
+				{
+					case 1:  return "int";
+					case 2:  return "ivec2";
+					case 3:  return "ivec3";
+					case 4:  return "ivec4";
+				}
+			} break;
 		}
+
+		return "error_type";
 	}
 
 	static std::string_view VertexComponentSemanticName( VertexComponent component, ShaderType shader_type )
@@ -53,6 +71,8 @@ namespace ShaderGen
 			case VertexComponent::Normal:   return "NORMAL";
 			case VertexComponent::Color:    return "COLOR";
 			case VertexComponent::TexCoord: return "TEXCOORD";
+			case VertexComponent::JointIDs: return "JOINTIDS";
+			case VertexComponent::Weights:  return "WEIGHTS";
 			default:                        return "ERROR";
 		}
 	};
@@ -126,12 +146,12 @@ namespace ShaderGen
 
 			case ShaderLanguage::HLSL:
 			{
-				return IVariable( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::Vec4 );
+				return IVariable( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
 			}
 
 			case ShaderLanguage::GLSL:
 			{
-				return IVariable( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::Vec4 );
+				return IVariable( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
 			}
 		}
 	}
@@ -144,6 +164,13 @@ namespace ShaderGen
 		return IVariable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
 	}
 
+	IVariable IGenerator::Normalize( const IVariable& vec )
+	{
+		vec.SetUsed();
+
+		return IVariable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
+	}
+
 	std::string IGenerator::GenerateHLSL( void )
 	{
 		std::string full_source_code;
@@ -153,6 +180,9 @@ namespace ShaderGen
 		full_source_code.append( "#define vec3 float3\n" );
 		full_source_code.append( "#define vec4 float4\n" );
 		full_source_code.append( "#define mat4 matrix\n" );
+		full_source_code.append( "#define ivec2 int2\n" );
+		full_source_code.append( "#define ivec3 int3\n" );
+		full_source_code.append( "#define ivec4 int4\n" );
 
 		if( m_sampler_count > 0 )
 		{
@@ -224,16 +254,28 @@ namespace ShaderGen
 			{
 				if( m_uniforms[ i ]->m_used )
 				{
-					ss << "\t" << DataTypeToString( m_uniforms[ i ]->m_data_type ) << " uniform_" << i << ";\n";
+					if( m_uniforms[ i ]->IsArray() )
+					{
+						const UniformArrayBase* uniform_array = static_cast< const UniformArrayBase* >( m_uniforms[ i ] );
+
+						ss << "\t" << DataTypeToString( uniform_array->GetElementType() ) << " uniform_" << i << "[ " << uniform_array->GetArraySize() << " ];\n";
+					}
+					else
+					{
+						ss << "\t" << DataTypeToString( m_uniforms[ i ]->m_data_type ) << " uniform_" << i << ";\n";
+					}
+
 
 					/* Reset state for next shader pass */
 					m_uniforms[ i ]->m_used = false;
 				}
 			}
 
-			if( ss.rdbuf()->in_avail() == 0 )
+			const std::string ss_str = ss.str();
+
+			if( !ss_str.empty() )
 			{
-				const std::string what = "\ncbuffer VertexUniforms\n{\n" + ss.str() + "};\n";
+				const std::string what = "\ncbuffer VertexUniforms\n{\n" + ss_str + "};\n";
 
 				full_source_code.insert( uniforms_offset, what );
 
@@ -273,9 +315,11 @@ namespace ShaderGen
 				}
 			}
 
-			if( ss.rdbuf()->in_avail() == 0 )
+			const std::string ss_str = ss.str();
+
+			if( !ss_str.empty() )
 			{
-				const std::string what = "\ncbuffer PixelUniforms\n{\n" + ss.str() + "};\n";
+				const std::string what = "\ncbuffer PixelUniforms\n{\n" + ss_str + "};\n";
 
 				full_source_code.insert( uniforms_offset, what );
 
@@ -337,16 +381,27 @@ namespace ShaderGen
 			{
 				if( m_uniforms[ i ]->m_used )
 				{
-					ss << "\tORB_CONSTANT( " << DataTypeToString( m_uniforms[ i ]->m_data_type ) << ", uniform_" << i << " );\n";
+					if( m_uniforms[ i ]->IsArray() )
+					{
+						const UniformArrayBase* uniform_array = static_cast< const UniformArrayBase* >( m_uniforms[ i ] );
+
+						ss << "\tORB_CONSTANT( " << DataTypeToString( uniform_array->GetElementType() ) << ", uniform_" << i << "[ " << uniform_array->GetArraySize() << " ] );\n";
+					}
+					else
+					{
+						ss << "\tORB_CONSTANT( " << DataTypeToString( m_uniforms[ i ]->m_data_type ) << ", uniform_" << i << " );\n";
+					}
 
 					/* Reset state for next shader pass */
 					m_uniforms[ i ]->m_used = false;
 				}
 			}
 
-			if( ss.rdbuf()->in_avail() == 0 )
+			const std::string ss_str = ss.str();
+
+			if( !ss_str.empty() )
 			{
-				const std::string what = "\nORB_CONSTANTS_BEGIN( VertexConstants )\n" + ss.str() + "ORB_CONSTANTS_END\n";
+				const std::string what = "\nORB_CONSTANTS_BEGIN( VertexConstants )\n" + ss_str + "ORB_CONSTANTS_END\n";
 
 				full_source_code.insert( vertex_uniforms_offset, what );
 			}
@@ -408,9 +463,11 @@ namespace ShaderGen
 				}
 			}
 
-			if( ss.rdbuf()->in_avail() == 0 )
+			const std::string ss_str = ss.str();
+
+			if( !ss_str.empty() )
 			{
-				const std::string what = "\nORB_CONSTANTS_BEGIN( PixelConstants )\n" + ss.str() + "ORB_CONSTANTS_END\n";
+				const std::string what = "\nORB_CONSTANTS_BEGIN( PixelConstants )\n" + ss_str + "ORB_CONSTANTS_END\n";
 
 				full_source_code.insert( pixel_uniforms_insert_offset, what );
 			}

@@ -26,7 +26,7 @@ namespace ShaderGen
 	class IVariable;
 
 	template< char... Name >
-	class SwizzleComponent
+	class Swizzle
 	{
 	public:
 
@@ -36,12 +36,12 @@ namespace ShaderGen
 
 		static constexpr DataType GetDataType( void )
 		{
-			switch( name.length )
+			switch( name.Length() )
 			{
 				case 1: { return DataType::Float; }
-				case 2: { return DataType::Vec2;  }
-				case 3: { return DataType::Vec3;  }
-				case 4: { return DataType::Vec4;  }
+				case 2: { return DataType::FVec2; }
+				case 3: { return DataType::FVec3; }
+				case 4: { return DataType::FVec4; }
 			}
 
 			return DataType::Unknown;
@@ -49,22 +49,62 @@ namespace ShaderGen
 
 	public:
 
-		void operator*=( const IVariable& rhs ) const
+		IVariable operator+( const IVariable& rhs ) const
 		{
-			IVariable* parent = Swizzle::latest_accessed_variable;
+			return ( static_cast< IVariable >( *this ) + rhs );
+		}
+
+		IVariable operator-( const IVariable& rhs ) const
+		{
+			return ( static_cast< IVariable >( *this ) - rhs );
+		}
+
+		IVariable operator*( const IVariable& rhs ) const
+		{
+			return ( static_cast< IVariable >( *this ) * rhs );
+		}
+
+		IVariable operator/( const IVariable& rhs ) const
+		{
+			return ( static_cast< IVariable >( *this ) / rhs );
+		}
+
+		void operator+=( const IVariable& rhs ) const
+		{
+			IVariable* parent = SwizzlePermutations::latest_accessed_variable;
 
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
-			/* Make sure the parent is stored, otherwise it might attempt to modify temporary
-			 * variables. */
+			parent->StoreValue();
+
+			static_cast< IVariable >( *this ) += rhs;
+		}
+
+		void operator*=( const IVariable& rhs ) const
+		{
+			IVariable* parent = SwizzlePermutations::latest_accessed_variable;
+
+			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
+
 			parent->StoreValue();
 
 			static_cast< IVariable >( *this ) *= rhs;
 		}
 
+		void operator=( const IVariable& rhs ) const
+		{
+			IVariable* parent = SwizzlePermutations::latest_accessed_variable;
+
+			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
+
+			parent->StoreValue();
+
+			static_cast< IVariable >( *this ) = rhs;
+		}
+
 		operator IVariable( void ) const
 		{
-			IVariable* parent = Swizzle::latest_accessed_variable;
+			IVariable* parent = SwizzlePermutations::latest_accessed_variable;
 			IVariable  component_variable( parent->GetValue() + "." + name.value, GetDataType() );
 
 			/* If parent is stored, then the swizzle component can be considered stored too.
@@ -80,13 +120,13 @@ namespace ShaderGen
 	};
 
 #define ORB_SWIZZLE_COMPONENT( NAME )                    \
-	decltype( ORB_NAMESPACE ShaderGen::SwizzleComponent< \
+	decltype( ORB_NAMESPACE ShaderGen::Swizzle<          \
 		ORB_NAMESPACE StringLiteralGrab< 0 >( NAME ),    \
 		ORB_NAMESPACE StringLiteralGrab< 1 >( NAME ),    \
 		ORB_NAMESPACE StringLiteralGrab< 2 >( NAME ),    \
 		ORB_NAMESPACE StringLiteralGrab< 3 >( NAME ) >() )
 
-	struct Swizzle
+	struct SwizzlePermutations
 	{
 		static ORB_API_GRAPHICS IVariable* latest_accessed_variable;
 

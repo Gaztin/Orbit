@@ -25,4 +25,8 @@ Introduces a first-person free-flight camera and the usage of constant buffers a
 
 **Model**</br>
 ![](res/readme/model.gif)</br>
-Loads a teapot model from an embedded OBJ file and renders it with a simple directional light.
+Loads a teapot model from an OBJ file and renders it with a simple directional light.
+
+**Animation**</br>
+![](res/readme/animation.gif)</br>
+Loads a rigged mannequin model and a jump animation from separate COLLADA files and animates the model on a loop.

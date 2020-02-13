@@ -21,7 +21,7 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	IVariable* Swizzle::latest_accessed_variable = nullptr;
+	IVariable* SwizzlePermutations::latest_accessed_variable = nullptr;
 }
 
 ORB_NAMESPACE_END

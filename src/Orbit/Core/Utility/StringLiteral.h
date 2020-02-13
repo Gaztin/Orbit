@@ -25,10 +25,14 @@ class StringLiteral
 {
 public:
 
-	static constexpr size_t length              = sizeof...( Chars );
-	static constexpr char   value[ length + 1 ] = { Chars..., '\0' };
+	static constexpr char value[ sizeof...( Chars ) + 1 ] = { Chars..., '\0' };
 
 public:
+
+	static constexpr size_t Length( void )
+	{
+		return Length< 0, Chars... >();
+	}
 
 	static constexpr bool HasDuplicateChar( void )
 	{
@@ -36,6 +40,19 @@ public:
 	}
 
 private:
+
+	template< size_t Index, char Arg0, char... Args >
+	static constexpr size_t Length( void )
+	{
+		if constexpr( Arg0 == '\0' )
+		{
+			return Index;
+		}
+		else
+		{
+			return Length< Index + 1, Args... >();
+		}
+	}
 
 	template< size_t Index, char Arg0, char... Args >
 	static constexpr bool HasDuplicateChar( void )

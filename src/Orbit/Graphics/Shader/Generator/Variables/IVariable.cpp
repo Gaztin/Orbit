@@ -26,6 +26,7 @@
 #include "Orbit/Graphics/Shader/Generator/MainFunction.h"
 #include "Orbit/Graphics/Shader/Generator/Swizzle.h"
 
+#include <cassert>
 #include <map>
 #include <sstream>
 #include <string>
@@ -60,6 +61,14 @@ namespace ShaderGen
 	{
 	}
 
+	IVariable::IVariable( int i )
+		: m_value    ( std::to_string( i ) )
+		, m_data_type( DataType::Int )
+		, m_stored   ( false )
+		, m_used     ( false )
+	{
+	}
+
 	IVariable::IVariable( std::string_view value, DataType data_type )
 		: m_value    ( value )
 		, m_data_type( data_type )
@@ -86,21 +95,51 @@ namespace ShaderGen
 
 	IVariable IVariable::operator*( const IVariable& rhs ) const
 	{
+		assert( ( m_data_type == rhs.m_data_type ) ||
+		        ( m_data_type == DataType::Mat4  && ( rhs.m_data_type == DataType::FVec4                                                                             ) ) ||
+		        ( m_data_type == DataType::FVec4 && ( rhs.m_data_type == DataType::Mat4  || rhs.m_data_type == DataType::Float                                       ) ) ||
+		        ( m_data_type == DataType::FVec3 && ( rhs.m_data_type == DataType::Float                                                                             ) ) ||
+		        ( m_data_type == DataType::FVec2 && ( rhs.m_data_type == DataType::Float                                                                             ) ) ||
+		        ( m_data_type == DataType::Float && ( rhs.m_data_type == DataType::FVec4 || rhs.m_data_type == DataType::FVec3 || rhs.m_data_type == DataType::FVec2 ) ) );
+
 		SetUsed();
 		rhs.SetUsed();
 
-		switch( IGenerator::GetCurrentMainFunction()->shader_language )
+		DataType result_type = DataType::Unknown;
+		switch( m_data_type )
 		{
-			case ShaderLanguage::HLSL:
+			case DataType::Float:
+			case DataType::Mat4:
 			{
-				return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", GetDataType() );
+				result_type = rhs.m_data_type;
 			} break;
 
-			default:
+			case DataType::FVec2:
+			case DataType::FVec3:
+			case DataType::FVec4:
 			{
-				return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", GetDataType() );
+				result_type = m_data_type;
 			} break;
 		}
+
+		if( IGenerator::GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
+		    ( m_data_type == DataType::Mat4 || rhs.m_data_type == DataType::Mat4 ) )
+		{
+			return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", result_type );
+		}
+
+		return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", result_type );
+	}
+
+	IVariable IVariable::operator/( const IVariable& rhs ) const
+	{
+		assert( ( ( m_data_type == DataType::Float ) || ( m_data_type == DataType::FVec2 ) || ( m_data_type == DataType::FVec3 ) || ( m_data_type == DataType::FVec4 ) ) &&
+		        ( rhs.m_data_type == DataType::Float ) );
+
+		SetUsed();
+		rhs.SetUsed();
+
+		return IVariable( "( " + GetValue() + " / " + rhs.GetValue() + " )", m_data_type );
 	}
 
 	IVariable IVariable::operator+( const IVariable& rhs ) const
@@ -118,13 +157,18 @@ namespace ShaderGen
 		return IVariable( "( -" + GetValue() + " )", m_data_type );
 	}
 
-	Swizzle* IVariable::operator->( void )
+	IVariable IVariable::operator[]( size_t index ) const
 	{
-		static Swizzle swizzle;
+		return ( *this )[ IVariable( static_cast< int >( index ) ) ];
+	}
+
+	SwizzlePermutations* IVariable::operator->( void )
+	{
+		static SwizzlePermutations swizzle;
 
 		SetUsed();
 
-		Swizzle::latest_accessed_variable = this;
+		SwizzlePermutations::latest_accessed_variable = this;
 		return &swizzle;
 	}
 
@@ -152,6 +196,41 @@ namespace ShaderGen
 
 		StoreValue();
 		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
+	}
+
+	IVariable IVariable::operator[]( const IVariable& index ) const
+	{
+		DataType data_type = DataType::Unknown;
+		switch( m_data_type )
+		{
+			default: { assert( false ); } break;
+
+			case DataType::FVec2:
+			case DataType::FVec3:
+			case DataType::FVec4:
+			{
+				data_type = DataType::Float;
+			} break;
+
+			case DataType::IVec2:
+			case DataType::IVec3:
+			case DataType::IVec4:
+			{
+				data_type = DataType::Int;
+			} break;
+
+			case DataType::Mat4:
+			{
+				data_type = DataType::FVec4;
+			} break;
+		}
+
+		SetUsed();
+
+		std::ostringstream ss;
+		ss << GetValue() << "[ " << index.GetValue() << " ]";
+
+		return IVariable( ss.str(), data_type );
 	}
 }
 

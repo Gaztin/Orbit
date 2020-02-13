@@ -34,6 +34,8 @@ namespace ShaderGen
 		using Normal   = AttributeHelper< VertexComponent::Normal >;
 		using Color    = AttributeHelper< VertexComponent::Color >;
 		using TexCoord = AttributeHelper< VertexComponent::TexCoord >;
+		using JointIDs = AttributeHelper< VertexComponent::JointIDs >;
+		using Weights  = AttributeHelper< VertexComponent::Weights >;
 		using IVariable::operator=;
 
 	public:

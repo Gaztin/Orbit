@@ -128,15 +128,35 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 						case VertexComponent::Normal:   { desc.SemanticName = "NORMAL";   } break;
 						case VertexComponent::Color:    { desc.SemanticName = "COLOR";    } break;
 						case VertexComponent::TexCoord: { desc.SemanticName = "TEXCOORD"; } break;
+						case VertexComponent::JointIDs: { desc.SemanticName = "JOINTIDS"; } break;
+						case VertexComponent::Weights:  { desc.SemanticName = "WEIGHTS";  } break;
 					}
 
-					switch( component.GetDataCount() )
+					switch( component.GetDataType() )
 					{
-						default: { assert( false );                              } break;
-						case 1:  { desc.Format = DXGI_FORMAT_R32_FLOAT;          } break;
-						case 2:  { desc.Format = DXGI_FORMAT_R32G32_FLOAT;       } break;
-						case 3:  { desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;    } break;
-						case 4:  { desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; } break;
+						case PrimitiveDataType::Float:
+						{
+							switch( component.GetDataCount() )
+							{
+								default: { assert( false );                              } break;
+								case 1:  { desc.Format = DXGI_FORMAT_R32_FLOAT;          } break;
+								case 2:  { desc.Format = DXGI_FORMAT_R32G32_FLOAT;       } break;
+								case 3:  { desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;    } break;
+								case 4:  { desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; } break;
+							}
+						} break;
+
+						case PrimitiveDataType::Int:
+						{
+							switch( component.GetDataCount() )
+							{
+								default: { assert( false );                             } break;
+								case 1:  { desc.Format = DXGI_FORMAT_R32_SINT;          } break;
+								case 2:  { desc.Format = DXGI_FORMAT_R32G32_SINT;       } break;
+								case 3:  { desc.Format = DXGI_FORMAT_R32G32B32_SINT;    } break;
+								case 4:  { desc.Format = DXGI_FORMAT_R32G32B32A32_SINT; } break;
+							}
+						} break;
 					}
 
 					descriptors.push_back( desc );
@@ -299,7 +319,19 @@ void Shader::Bind( void )
 			for( IndexedVertexComponent component : details.layout )
 			{
 				glEnableVertexAttribArray( static_cast< GLuint >( component.index ) );
-				glVertexAttribPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Float, GL_FALSE, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
+
+				switch( component.GetDataType() )
+				{
+					case PrimitiveDataType::Float:
+					{
+						glVertexAttribPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Float, GL_FALSE, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
+					} break;
+
+					case PrimitiveDataType::Int:
+					{
+						glVertexAttribIPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Int, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
+					} break;
+				}
 
 				ptr += component.GetSize();
 			}

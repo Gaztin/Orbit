@@ -17,7 +17,6 @@
 
 #pragma once
 #include <memory>
-#include <tuple>
 
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Graphics/Private/ConstantBufferDetails.h"
@@ -29,39 +28,17 @@ class ORB_API_GRAPHICS ConstantBuffer
 public:
 
 	explicit ConstantBuffer( size_t size );
-
-	template< typename... Types >
-	ConstantBuffer( const std::tuple< Types... >& constants )
-		: ConstantBuffer( ( 0 + ... + sizeof( Types ) ) )
-	{
-		Update( constants );
-	}
-
 	~ConstantBuffer( void );
 
 public:
 
 	void Bind  ( ShaderType type, uint32_t local_slot, uint32_t global_slot );
-	void Update( void* dst, size_t location, const void* data, size_t size );
-
-	template< typename... Types >
-	void Update( const std::tuple< Types... >& constants )
-	{
-		void* dst = UpdateBegin( ( sizeof( Types ) + ... ) );
-		UpdateSequencial( dst, constants, MakeSequence< sizeof...( Types ) >{ } );
-		UpdateEnd();
-	}
+	void Update( const void* data, size_t size );
 
 private:
 
 	void* UpdateBegin( size_t size );
 	void  UpdateEnd  ( void );
-
-	template< typename Tup, size_t... Is >
-	void UpdateSequencial( void* dst, const Tup& tup, Sequence< Is... > )
-	{
-		[[ maybe_unused ]] auto l = { ( Update( reinterpret_cast< uint8_t* >( dst ) + std::distance( reinterpret_cast< const uint8_t* >( &std::get< Is >( tup ) ), reinterpret_cast< const uint8_t* >( &std::get< 0 >( tup ) ) ), Is, &std::get< Is >( tup ), sizeof( std::get< Is >( tup ) ) ), 0 )... };
-	}
 
 private:
 
