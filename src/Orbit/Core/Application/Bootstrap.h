@@ -27,6 +27,18 @@ namespace Bootstrap
 	using Trampoline = std::shared_ptr< void >( * )( void );
 
 	extern ORB_API_CORE Trampoline trampoline;
+
+#if defined( ORB_CC_CLANG ) || defined( ORB_CC_GCC )
+
+	template< typename T >
+	__attribute__(( constructor )) auto Load( void )
+	{
+		trampoline = []( void ){ return std::static_pointer_cast< void >( std::make_shared< T >() ); };
+		return 0;
+	}
+
+#endif // ORB_CC_CLANG || defined( ORB_CC_GCC )
+
 }
 
 template< typename T >
@@ -34,7 +46,15 @@ class Bootstrapper
 {
 private:
 
-	static inline volatile int bootstrap_eval = ( Bootstrap::trampoline = []( void ){ return std::static_pointer_cast< void >( std::make_shared< T >() ); }, 0 );
+#if defined( ORB_CC_MSVC )
+
+	static inline int bootstrap_eval = ( Bootstrap::trampoline = []( void ){ return std::static_pointer_cast< void >( std::make_shared< T >() ); }, 0 );
+
+#elif defined( ORB_CC_CLANG ) || defined( ORB_CC_GCC ) // ORB_CC_MSVC
+
+	using BootstrapEval = decltype( Bootstrap::Load< T >() );
+
+#endif // ORB_CC_CLANG || ORB_CC_GCC
 
 };
 
