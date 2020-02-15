@@ -32,6 +32,11 @@ namespace ShaderGen
 
 		f.SetUsed();
 	}
+
+	Float::Float( double f )
+		: IVariable( f )
+	{
+	}
  }
 
 ORB_NAMESPACE_END

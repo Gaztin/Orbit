@@ -19,6 +19,7 @@
 #include "Orbit/Graphics/Shader/Generator/DataType.h"
 
 #include <string_view>
+#include <string>
 
 ORB_NAMESPACE_BEGIN
 
@@ -62,6 +63,7 @@ namespace ShaderGen
 		IVariable operator* ( const IVariable& rhs )   const;
 		IVariable operator/ ( const IVariable& rhs )   const;
 		IVariable operator+ ( const IVariable& rhs )   const;
+		IVariable operator- ( const IVariable& rhs )   const;
 		IVariable operator- ( void )                   const;
 		IVariable operator[]( size_t index )           const;
 

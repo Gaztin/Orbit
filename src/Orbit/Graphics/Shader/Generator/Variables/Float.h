@@ -27,6 +27,7 @@ namespace ShaderGen
 	public:
 
 		Float( const IVariable& f );
+		Float( double f );
 
 	};
 }
