@@ -17,6 +17,7 @@
 
 #include "Model.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <sstream>

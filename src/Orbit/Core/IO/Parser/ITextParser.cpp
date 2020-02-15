@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstring>
 
 ORB_NAMESPACE_BEGIN
 

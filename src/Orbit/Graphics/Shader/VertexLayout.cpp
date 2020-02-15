@@ -18,6 +18,7 @@
 #include "VertexLayout.h"
 
 #include <cassert>
+#include <limits>
 
 ORB_NAMESPACE_BEGIN
 

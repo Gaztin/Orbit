@@ -18,7 +18,7 @@
 #pragma once
 #include "Orbit/Core/Core.h"
 
-#include <cstdint>
+#include <cstddef>
 
 ORB_NAMESPACE_BEGIN
 

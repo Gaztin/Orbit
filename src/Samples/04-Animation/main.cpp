@@ -30,6 +30,8 @@
 #include "Framework/Camera.h"
 #include "AnimationShader.h"
 
+#include <cmath>
+
 static AnimationShader animation_shader;
 
 struct ConstantData
@@ -75,7 +77,7 @@ public:
 
 	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& parent_pose )
 	{
-		const float          animation_time = std::fmodf( m_life_time, m_animation.GetDuration() );
+		const float          animation_time = std::fmod( m_life_time, m_animation.GetDuration() );
 		const Orbit::Matrix4 local_pose     = m_animation.JointPoseAtTime( joint.name, animation_time );
 		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 
