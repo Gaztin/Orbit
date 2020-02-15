@@ -245,8 +245,10 @@ static Joint ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& p
 {
 	Joint joint;
 	joint.name = node.Attribute( "id" );
+	
+	auto find_joint = [ &joint ]( const std::string& str ) { return str == joint.name; };
 
-	if( auto it = std::find( all_joint_names.begin(), all_joint_names.end(), joint.name ); it != all_joint_names.end() )
+	if( auto it = std::find_if( all_joint_names.begin(), all_joint_names.end(), find_joint ); it != all_joint_names.end() )
 	{
 		joint.id                     = static_cast< int >( it - all_joint_names.begin() );
 		joint.inverse_bind_transform = all_joint_transforms[ joint.id ];
