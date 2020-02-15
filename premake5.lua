@@ -158,7 +158,7 @@ local function decl_sample( name )
 	filter { 'system:ios' }
 		files { 'res/Info.plist', 'assets' }
 	filter { 'system:android' }
-		files { 'src/Samples/' .. fullname .. '/Android/**', 'res/**' }
+		files { 'src/Samples/' .. fullname .. '/Android/**' }
 	filter { 'system:android' }
 		assetdirs { 'assets/' }
 	filter { }
