@@ -23,9 +23,7 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	class IVariable;
-
-	extern ORB_API_GRAPHICS IVariable* variable_to_be_swizzled;
+	extern ORB_API_GRAPHICS Variables::IVariable* variable_to_be_swizzled;
 
 	template< char... Name >
 	class Swizzle
@@ -51,56 +49,56 @@ namespace ShaderGen
 
 	public:
 
-		IVariable operator+( const IVariable& rhs ) const
+		Variables::IVariable operator+( const Variables::IVariable& rhs ) const
 		{
-			return ( static_cast< IVariable >( *this ) + rhs );
+			return ( static_cast< Variables::IVariable >( *this ) + rhs );
 		}
 
-		IVariable operator-( const IVariable& rhs ) const
+		Variables::IVariable operator-( const Variables::IVariable& rhs ) const
 		{
-			return ( static_cast< IVariable >( *this ) - rhs );
+			return ( static_cast< Variables::IVariable >( *this ) - rhs );
 		}
 
-		IVariable operator*( const IVariable& rhs ) const
+		Variables::IVariable operator*( const Variables::IVariable& rhs ) const
 		{
-			return ( static_cast< IVariable >( *this ) * rhs );
+			return ( static_cast< Variables::IVariable >( *this ) * rhs );
 		}
 
-		IVariable operator/( const IVariable& rhs ) const
+		Variables::IVariable operator/( const Variables::IVariable& rhs ) const
 		{
-			return ( static_cast< IVariable >( *this ) / rhs );
+			return ( static_cast< Variables::IVariable >( *this ) / rhs );
 		}
 
-		void operator+=( const IVariable& rhs ) const
+		void operator+=( const Variables::IVariable& rhs ) const
 		{
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
 			variable_to_be_swizzled->StoreValue();
 
-			static_cast< IVariable >( *this ) += rhs;
+			static_cast< Variables::IVariable >( *this ) += rhs;
 		}
 
-		void operator*=( const IVariable& rhs ) const
+		void operator*=( const Variables::IVariable& rhs ) const
 		{
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
 			variable_to_be_swizzled->StoreValue();
 
-			static_cast< IVariable >( *this ) *= rhs;
+			static_cast< Variables::IVariable >( *this ) *= rhs;
 		}
 
-		void operator=( const IVariable& rhs ) const
+		void operator=( const Variables::IVariable& rhs ) const
 		{
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
 			variable_to_be_swizzled->StoreValue();
 
-			static_cast< IVariable >( *this ) = rhs;
+			static_cast< Variables::IVariable >( *this ) = rhs;
 		}
 
-		operator IVariable( void ) const
+		operator Variables::IVariable( void ) const
 		{
-			IVariable component_variable( variable_to_be_swizzled->GetValue() + "." + name.value, GetDataType() );
+			Variables::IVariable component_variable( variable_to_be_swizzled->GetValue() + "." + name.value, GetDataType() );
 
 			/* If parent is stored, then the swizzle component can be considered stored too.
 			 * Otherwise, we'd not be able to manipulate the components within variables.

@@ -21,7 +21,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen
+namespace ShaderGen { namespace Variables
 {
 	template< VertexComponent VC >
 	class VaryingHelper;
@@ -61,6 +61,6 @@ namespace ShaderGen
 		}
 	
 	};
-}
+} }
 
 ORB_NAMESPACE_END

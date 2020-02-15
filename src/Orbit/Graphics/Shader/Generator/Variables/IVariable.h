@@ -23,13 +23,11 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen
+namespace ShaderGen { class IGenerator; struct SwizzlePermutations; namespace Variables
 {
-	struct SwizzlePermutations;
-
 	class ORB_API_GRAPHICS IVariable
 	{
-		friend class IGenerator;
+		friend class ShaderGen::IGenerator;
 
 	public:
 
@@ -85,6 +83,6 @@ namespace ShaderGen
 
 	};
 
-}
+} }
 
 ORB_NAMESPACE_END

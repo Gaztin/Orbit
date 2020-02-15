@@ -23,7 +23,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen
+namespace ShaderGen { namespace Variables
 {
 	Float::Float( const IVariable& f )
 		: IVariable( "float( " + f.GetValue() + " )", DataType::Float )
@@ -37,6 +37,6 @@ namespace ShaderGen
 		: IVariable( f )
 	{
 	}
- }
+} }
 
 ORB_NAMESPACE_END

@@ -23,7 +23,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen
+namespace ShaderGen { namespace Variables
 {
 	static std::string NewName( void )
 	{
@@ -42,6 +42,6 @@ namespace ShaderGen
 
 		++IGenerator::GetCurrentGenerator()->m_sampler_count;
 	}
-}
+} }
 
 ORB_NAMESPACE_END
