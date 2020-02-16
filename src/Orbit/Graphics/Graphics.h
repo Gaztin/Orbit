@@ -111,6 +111,12 @@ enum class PrimitiveDataType
 	Int,
 };
 
+enum class PixelFormat
+{
+	R,
+	RGBA,
+};
+
 #if( ORB_HAS_D3D11 )
 constexpr GraphicsAPI default_graphics_api = GraphicsAPI::D3D11;
 #elif( ORB_HAS_OPENGL )

@@ -24,7 +24,7 @@ class ORB_API_GRAPHICS Texture2D
 {
 public:
 
-	 Texture2D( uint32_t width, uint32_t height, const void* data );
+	 Texture2D( uint32_t width, uint32_t height, const void* data, PixelFormat pixel_format );
 	~Texture2D();
 
 public:

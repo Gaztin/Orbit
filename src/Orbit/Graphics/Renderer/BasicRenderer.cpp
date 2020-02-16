@@ -20,10 +20,10 @@
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Buffer/ConstantBuffer.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/Texture2D.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
 #include "Orbit/Graphics/Shader/Shader.h"
+#include "Orbit/Graphics/Texture/Texture2D.h"
 
 ORB_NAMESPACE_BEGIN
 
