@@ -22,7 +22,7 @@
 
             <meta-data
                 android:name="android.app.lib_name"
-                android:value="03-Model" />
+                android:value="04-Animation" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

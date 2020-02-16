@@ -16,7 +16,8 @@
  */
 
 #pragma once
-#include <cstdint>
+#include <cstddef>
+#include <memory>
 #include <type_traits>
 
 #include "Orbit/Core/IO/IO.h"

@@ -18,6 +18,8 @@
 #pragma once
 #include "Orbit/Core/Core.h"
 
+#include <cstddef>
+
 ORB_NAMESPACE_BEGIN
 
 template< char... Chars >

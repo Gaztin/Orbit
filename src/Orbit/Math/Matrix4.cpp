@@ -24,7 +24,7 @@ ORB_NAMESPACE_BEGIN
 Matrix4::Matrix4( float diagonal )
 {
 	for( size_t i = 0; i < 16; ++i )
-		elements[ i ] = ( i % 5 == 0 ) ? diagonal : 0.0f;
+		( *this )[ i ] = ( i % 5 == 0 ) ? diagonal : 0.0f;
 }
 
 Matrix4::Matrix4( std::initializer_list< float > elements )
@@ -32,7 +32,7 @@ Matrix4::Matrix4( std::initializer_list< float > elements )
 	const size_t size = std::min( static_cast< size_t >( 16u ), elements.size() );
 
 	for( size_t i = 0; i < size; ++i )
-		this->elements[ i ] = *( elements.begin() + i );
+		( *this )[ i ] = *( elements.begin() + i );
 }
 
 void Matrix4::Translate( const Vector3& translation )
@@ -107,48 +107,48 @@ void Matrix4::Invert( void )
 
 	cofactors.Transpose();
 
-	const float one_over_determinant = 1.0f / ( elements[ 0 ] * minors[ 0 ] -
-	                                            elements[ 1 ] * minors[ 1 ] +
-	                                            elements[ 2 ] * minors[ 2 ] -
-	                                            elements[ 3 ] * minors[ 3 ] );
+	const float one_over_determinant = 1.0f / ( ( *this )[ 0 ] * minors[ 0 ] -
+	                                            ( *this )[ 1 ] * minors[ 1 ] +
+	                                            ( *this )[ 2 ] * minors[ 2 ] -
+	                                            ( *this )[ 3 ] * minors[ 3 ] );
 	for( size_t i = 0; i < 16; ++i )
-		elements[ i ] = cofactors[ i ] * one_over_determinant;
+		( *this )[ i ] = cofactors[ i ] * one_over_determinant;
 }
 
 void Matrix4::SetIdentity( void )
 {
 	for( size_t i = 0; i < 16; ++i )
-		elements[ i ] = ( i % 5 == 0 ) ? 1.0f : 0.0f;
+		( *this )[ i ] = ( i % 5 == 0 ) ? 1.0f : 0.0f;
 }
 
 void Matrix4::SetPerspective( float aspect_ratio, float fov, float near_clip, float far_clip )
 {
 	const float fov_tangent = tanf( fov / 2 );
 
-	elements[ 0  ] = 1.0f / ( aspect_ratio * fov_tangent );
-	elements[ 1  ] = 0.0f;
-	elements[ 2  ] = 0.0f;
-	elements[ 3  ] = 0.0f;
-	elements[ 4  ] = 0.0f;
-	elements[ 5  ] = 1.0f / fov_tangent;
-	elements[ 6  ] = 0.0f;
-	elements[ 7  ] = 0.0f;
-	elements[ 8  ] = 0.0f;
-	elements[ 9  ] = 0.0f;
-	elements[ 10 ] = far_clip / ( far_clip - near_clip );
-	elements[ 11 ] = 1.0f;
-	elements[ 12 ] = 0.0f;
-	elements[ 13 ] = 0.0f;
-	elements[ 14 ] = ( far_clip * near_clip ) / ( near_clip - far_clip );
-	elements[ 15 ] = 0.0f;
+	( *this )[  0 ] = 1.0f / ( aspect_ratio * fov_tangent );
+	( *this )[  1 ] = 0.0f;
+	( *this )[  2 ] = 0.0f;
+	( *this )[  3 ] = 0.0f;
+	( *this )[  4 ] = 0.0f;
+	( *this )[  5 ] = 1.0f / fov_tangent;
+	( *this )[  6 ] = 0.0f;
+	( *this )[  7 ] = 0.0f;
+	( *this )[  8 ] = 0.0f;
+	( *this )[  9 ] = 0.0f;
+	( *this )[ 10 ] = far_clip / ( far_clip - near_clip );
+	( *this )[ 11 ] = 1.0f;
+	( *this )[ 12 ] = 0.0f;
+	( *this )[ 13 ] = 0.0f;
+	( *this )[ 14 ] = ( far_clip * near_clip ) / ( near_clip - far_clip );
+	( *this )[ 15 ] = 0.0f;
 }
 
 float Matrix4::GetDeterminant( void ) const
 {
-	return ( elements[ 0 ] * GetDeterminant3x3( 0, 0 ) -
-	         elements[ 1 ] * GetDeterminant3x3( 1, 0 ) +
-	         elements[ 2 ] * GetDeterminant3x3( 2, 0 ) -
-	         elements[ 3 ] * GetDeterminant3x3( 3, 0 ) );
+	return ( ( *this )[ 0 ] * GetDeterminant3x3( 0, 0 ) -
+	         ( *this )[ 1 ] * GetDeterminant3x3( 1, 0 ) +
+	         ( *this )[ 2 ] * GetDeterminant3x3( 2, 0 ) -
+	         ( *this )[ 3 ] * GetDeterminant3x3( 3, 0 ) );
 }
 
 float Matrix4::GetDeterminant3x3( size_t column, size_t row ) const
@@ -220,7 +220,8 @@ Matrix4& Matrix4::operator*=( const Matrix4& rhs )
 
 Matrix4& Matrix4::operator=( const Matrix4& rhs )
 {
-	elements = rhs.elements;
+	for( size_t i = 0; i < 16; ++i )
+		( *this )[ i ] = rhs[ i ];
 
 	return *this;
 }

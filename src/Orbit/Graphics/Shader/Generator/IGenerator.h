@@ -17,7 +17,10 @@
 
 #pragma once
 #include "Orbit/Core/Utility/StringLiteral.h"
+#include "Orbit/Graphics/Shader/Generator/Variables/Attribute.h"
+#include "Orbit/Graphics/Shader/Generator/Variables/Sampler.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Uniform.h"
+#include "Orbit/Graphics/Shader/Generator/Variables/Varying.h"
 #include "Orbit/Graphics/Shader/Generator/Swizzle.h"
 #include "Orbit/Graphics/Shader/VertexLayout.h"
 
@@ -32,11 +35,11 @@ namespace ShaderGen
 
 	class ORB_API_GRAPHICS IGenerator
 	{
-		friend class IVariable;
-		friend class Attribute;
-		friend class Sampler;
-		friend class UniformBase;
-		friend class Varying;
+		friend class Variables::IVariable;
+		friend class Variables::Attribute;
+		friend class Variables::Sampler;
+		friend class Variables::UniformBase;
+		friend class Variables::Varying;
 
 	public:
 
@@ -50,21 +53,21 @@ namespace ShaderGen
 
 	protected:
 
-		using Sampler   = Sampler;
-		using Attribute = Attribute;
-		using Varying   = Varying;
+		using Sampler   = Variables::Sampler;
+		using Attribute = Variables::Attribute;
+		using Varying   = Variables::Varying;
 
 		template< typename T >
-		using Uniform = Uniform< T >;
+		using Uniform = Variables::Uniform< T >;
 
 		template< typename T, size_t N >
-		using UniformArray = UniformArray< T, N >;
+		using UniformArray = Variables::UniformArray< T, N >;
 
-		using Float = Float;
-		using Vec2  = Vec2;
-		using Vec3  = Vec3;
-		using Vec4  = Vec4;
-		using Mat4  = Mat4;
+		using Float = Variables::Float;
+		using Vec2  = Variables::Vec2;
+		using Vec3  = Variables::Vec3;
+		using Vec4  = Variables::Vec4;
+		using Mat4  = Variables::Mat4;
 
 	protected:
 
@@ -73,10 +76,10 @@ namespace ShaderGen
 
 	protected:
 
-		IVariable Transpose( const IVariable& matrix );
-		IVariable Sample   ( const IVariable& sampler, const IVariable& texcoord );
-		IVariable Dot      ( const IVariable& lhs, const IVariable& rhs );
-		IVariable Normalize( const IVariable& vec );
+		Variables::IVariable Transpose( const Variables::IVariable& matrix );
+		Variables::IVariable Sample   ( const Variables::IVariable& sampler, const Variables::IVariable& texcoord );
+		Variables::IVariable Dot      ( const Variables::IVariable& lhs, const Variables::IVariable& rhs );
+		Variables::IVariable Normalize( const Variables::IVariable& vec );
 
 	private:
 
@@ -90,10 +93,10 @@ namespace ShaderGen
 
 	private:
 
-		std::vector< UniformBase* > m_uniforms;
-		VertexLayout                m_attribute_layout;
-		VertexLayout                m_varying_layout;
-		uint32_t                    m_sampler_count;
+		std::vector< Variables::UniformBase* > m_uniforms;
+		VertexLayout                           m_attribute_layout;
+		VertexLayout                           m_varying_layout;
+		uint32_t                               m_sampler_count;
 
 	};
 }

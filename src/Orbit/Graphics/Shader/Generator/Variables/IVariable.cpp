@@ -33,7 +33,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen
+namespace ShaderGen { namespace Variables
 {
 	IVariable::IVariable( const IVariable& other )
 		: m_value    ( other.m_value )
@@ -150,6 +150,14 @@ namespace ShaderGen
 		return IVariable( "( " + GetValue() + " + " + rhs.GetValue() + " )", m_data_type );
 	}
 
+	IVariable IVariable::operator-( const IVariable& rhs ) const
+	{
+		SetUsed();
+		rhs.SetUsed();
+
+		return IVariable( "( " + GetValue() + " - " + rhs.GetValue() + " )", m_data_type );
+	}
+
 	IVariable IVariable::operator-( void ) const
 	{
 		SetUsed();
@@ -168,7 +176,7 @@ namespace ShaderGen
 
 		SetUsed();
 
-		SwizzlePermutations::latest_accessed_variable = this;
+		variable_to_be_swizzled = this;
 		return &swizzle;
 	}
 
@@ -232,6 +240,6 @@ namespace ShaderGen
 
 		return IVariable( ss.str(), data_type );
 	}
-}
+} }
 
 ORB_NAMESPACE_END

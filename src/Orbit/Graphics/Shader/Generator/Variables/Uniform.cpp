@@ -24,7 +24,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen
+namespace ShaderGen { namespace Variables
 {
 	static std::string NewName( void )
 	{
@@ -59,6 +59,6 @@ namespace ShaderGen
 
 		return IVariable( GetValue() + "[ " + index.GetValue() + " ]", m_element_type );
 	}
-}
+} }
 
 ORB_NAMESPACE_END

@@ -21,6 +21,7 @@
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Math/Matrix4.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <sstream>
 

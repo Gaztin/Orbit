@@ -30,6 +30,8 @@
 #include "Framework/Camera.h"
 #include "AnimationShader.h"
 
+#include <cmath>
+
 static AnimationShader animation_shader;
 
 struct ConstantData
@@ -48,7 +50,7 @@ const uint32_t texture_data[]
 	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
 };
 
-ORB_APP_DECL( SampleApp )
+class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
@@ -75,7 +77,7 @@ public:
 
 	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& parent_pose )
 	{
-		const float          animation_time = std::fmodf( m_life_time, m_animation.GetDuration() );
+		const float          animation_time = std::fmod( m_life_time, m_animation.GetDuration() );
 		const Orbit::Matrix4 local_pose     = m_animation.JointPoseAtTime( joint.name, animation_time );
 		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 

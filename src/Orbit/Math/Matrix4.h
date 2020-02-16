@@ -62,29 +62,21 @@ public:
 
 public:
 
-	float&       operator[]( size_t i )                        { return elements[ i ]; }
-	const float& operator[]( size_t i ) const                  { return elements[ i ]; }
-	float&       operator()( size_t column, size_t row )       { return elements[ row * 4 + column ]; }
-	const float& operator()( size_t column, size_t row ) const { return elements[ row * 4 + column ]; };
+	float&       operator[]( size_t i )                        { return reinterpret_cast<       float* >( this )[ i ]; }
+	const float& operator[]( size_t i ) const                  { return reinterpret_cast< const float* >( this )[ i ]; }
+	float&       operator()( size_t column, size_t row )       { return reinterpret_cast<       float* >( this )[ row * 4 + column ]; }
+	const float& operator()( size_t column, size_t row ) const { return reinterpret_cast< const float* >( this )[ row * 4 + column ]; }
 
 public:
 
-	union
-	{
-		std::array< float, 16 > elements;
-
-		struct
-		{
-			Vector3 right;
-			float   pad0;
-			Vector3 up;
-			float   pad1;
-			Vector3 forward;
-			float   pad2;
-			Vector3 pos;
-			float   pad3;
-		};
-	};
+	Vector3 right;
+	float   pad0;
+	Vector3 up;
+	float   pad1;
+	Vector3 forward;
+	float   pad2;
+	Vector3 pos;
+	float   pad3;
 
 };
 

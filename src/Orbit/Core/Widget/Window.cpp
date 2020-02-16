@@ -734,7 +734,7 @@ void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
 
 		case NSEventTypeLeftMouseDown:
 		{
-			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			NSPoint relative_mouse_pos = [ nswindow convertPointFromScreen:NSEvent.mouseLocation ];
 			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
 
 			Input::SetPointerPressed( Input::pointer_index_mouse_left, pos );
@@ -744,7 +744,7 @@ void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
 
 		case NSEventTypeLeftMouseUp:
 		{
-			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			NSPoint relative_mouse_pos = [ nswindow convertPointFromScreen:NSEvent.mouseLocation ];
 			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
 
 			Input::SetPointerReleased( Input::pointer_index_mouse_left, pos );
@@ -754,7 +754,7 @@ void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
 
 		case NSEventTypeRightMouseDown:
 		{
-			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			NSPoint relative_mouse_pos = [ nswindow convertPointFromScreen:NSEvent.mouseLocation ];
 			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
 
 			Input::SetPointerPressed( Input::pointer_index_mouse_right, pos );
@@ -764,7 +764,7 @@ void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
 
 		case NSEventTypeRightMouseUp:
 		{
-			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			NSPoint relative_mouse_pos = [ nswindow convertPointFromScreen:NSEvent.mouseLocation ];
 			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
 
 			Input::SetPointerReleased( Input::pointer_index_mouse_right, pos );
@@ -774,7 +774,7 @@ void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
 
 		case NSEventTypeOtherMouseDown:
 		{
-			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			NSPoint relative_mouse_pos = [ nswindow convertPointFromScreen:NSEvent.mouseLocation ];
 			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
 
 			Input::SetPointerPressed( Input::pointer_index_mouse_middle, pos );
@@ -784,7 +784,7 @@ void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
 
 		case NSEventTypeOtherMouseUp:
 		{
-			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			NSPoint relative_mouse_pos = [ nswindow convertPointFromScreen:NSEvent.mouseLocation ];
 			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
 
 			Input::SetPointerReleased( Input::pointer_index_mouse_middle, pos );
@@ -794,7 +794,7 @@ void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow )
 
 		case NSEventTypeMouseMoved:
 		{
-			NSPoint relative_mouse_pos = [ nswindow convertScreenToBase:nsevent.mouseLocation ];
+			NSPoint relative_mouse_pos = [ nswindow convertPointFromScreen:NSEvent.mouseLocation ];
 			Point   pos( relative_mouse_pos.x, relative_mouse_pos.y );
 
 			/* FIXME: Mouse pos won't be tracked until any mouse button has been pressed */

@@ -19,12 +19,7 @@
 #include <memory>
 #include <type_traits>
 
-#include "Orbit/Core/Core.h"
-
-#define ORB_APP_DECL( APP_TYPE )                                                                       \
-    class APP_TYPE;                                                                                    \
-    volatile int _orb_app_initializer_eval = ORB_NAMESPACE Application< APP_TYPE >::_initializer_eval; \
-    class APP_TYPE final : public ORB_NAMESPACE Application< APP_TYPE >
+#include "Orbit/Core/Application/Bootstrap.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -46,22 +41,13 @@ public:
 
 };
 
-extern ORB_API_CORE std::shared_ptr< void >( *_application_initializer )( void );
-
 template< typename Derived >
-class Application : private ApplicationBase
+class Application : private ApplicationBase, private Bootstrapper< Derived >
 {
 public:
 
 	virtual ~Application( void ) = default;
 
-public:
-
-	static volatile int _initializer_eval;
-
 };
-
-template< typename Derived >
-volatile int Application< Derived >::_initializer_eval = ( _application_initializer = []( void ) { return std::static_pointer_cast< void >( std::make_shared< Derived >() ); }, 1 );
 
 ORB_NAMESPACE_END
