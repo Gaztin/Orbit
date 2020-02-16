@@ -17,13 +17,15 @@
 
 #include "UIApplicationDelegate.h"
 
+#include "Orbit/Core/Application/Bootstrap.h"
+
 #if defined( ORB_OS_IOS )
 
 @implementation ORB_NAMESPACED_OBJC( UIApplicationDelegate )
 
 -( BOOL )application:( UIApplication* )__unused application didFinishLaunchingWithOptions:( NSDictionary* )__unused launchOptions
 {
-	application_instance = std::static_pointer_cast< ORB_NAMESPACE ApplicationBase >( ORB_NAMESPACE _application_initializer() );
+	application_instance = std::static_pointer_cast< ORB_NAMESPACE ApplicationBase >( ORB_NAMESPACE Bootstrap::trampoline() );
 
 	CADisplayLink* display_link = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( OnFrame: ) ];
 	[ display_link addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
