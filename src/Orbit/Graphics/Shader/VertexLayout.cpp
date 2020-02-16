@@ -101,7 +101,7 @@ VertexComponentIterator& VertexComponentIterator::operator++( void )
 }
 
 VertexLayout::VertexLayout( std::initializer_list< VertexComponent > components )
-	: components_( components )
+	: components_{ components }
 {
 }
 

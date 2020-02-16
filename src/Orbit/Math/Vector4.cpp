@@ -20,26 +20,26 @@
 ORB_NAMESPACE_BEGIN
 
 Vector4::Vector4( void )
-	: x( 0.0f )
-	, y( 0.0f )
-	, z( 0.0f )
-	, w( 0.0f )
+	: x{ 0.0f }
+	, y{ 0.0f }
+	, z{ 0.0f }
+	, w{ 0.0f }
 {
 }
 
 Vector4::Vector4( float scalar )
-	: x( scalar )
-	, y( scalar )
-	, z( scalar )
-	, w( scalar )
+	: x{ scalar }
+	, y{ scalar }
+	, z{ scalar }
+	, w{ scalar }
 {
 }
 
 Vector4::Vector4( float x, float y, float z, float w )
-	: x( x )
-	, y( y )
-	, z( z )
-	, w( w )
+	: x{ x }
+	, y{ y }
+	, z{ z }
+	, w{ w }
 {
 }
 

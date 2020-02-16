@@ -22,7 +22,7 @@
 #include <Orbit/Math/Vector3.h>
 
 Camera::Camera( void )
-	: on_resize_( Orbit::Window::GetInstance().Subscribe( [ this ]( const Orbit::WindowResized& e ){ OnResized( e ); } ) )
+	: on_resize_{ Orbit::Window::GetInstance().Subscribe( [ this ]( const Orbit::WindowResized& e ){ OnResized( e ); } ) }
 {
 	position.z = -5.0f;
 }
