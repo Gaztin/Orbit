@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,22 +16,22 @@
  */
 
 #pragma once
-#include <optional>
-#include <type_traits>
-#include <variant>
-
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
 #include "Orbit/Core/Private/WindowDetails.h"
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLVersion.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"
 
+#include <optional>
+#include <type_traits>
+#include <variant>
+
 #if defined( ORB_OS_MACOS )
 @class NSOpenGLView;
-#elif defined( ORB_OS_IOS )
+#elif defined( ORB_OS_IOS ) // ORB_OS_MACOS
 @class EAGLContext;
 @class GLKView;
-#endif
+#endif // ORB_OS_IOS
 
 ORB_NAMESPACE_BEGIN
 
@@ -49,32 +49,32 @@ namespace Private
 		HDC   hdc;
 		HGLRC hglrc;
 
-	#elif defined( ORB_OS_LINUX )
+	#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
 		GC         gc;
 		GLXContext context;
 
-	#elif defined( ORB_OS_MACOS )
+	#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
 		NSOpenGLView* view;
 
-	#elif defined( ORB_OS_ANDROID )
+	#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 		EGLDisplay display;
 		EGLConfig  config;
 		EGLSurface surface;
 		EGLContext context;
 
-	#elif defined( ORB_OS_IOS )
+	#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
 		EAGLContext* context;
 		GLKView*     view;
 
-	#endif
+	#endif // ORB_OS_IOS
 
 	};
 
-#endif
+#endif // ORB_HAS_OPENGL
 #if( ORB_HAS_D3D11 )
 
 	struct _RenderContextDetailsD3D11
@@ -90,15 +90,15 @@ namespace Private
 		Color                             clear_color;
 	};
 
-#endif
+#endif // ORB_HAS_D3D11
 
 	using RenderContextDetails = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
 		, _RenderContextDetailsOpenGL
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 		, _RenderContextDetailsD3D11
-	#endif
+	#endif // ORB_HAS_D3D11
 	>;
 
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+* Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
 *
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -20,78 +20,74 @@
 ORB_NAMESPACE_BEGIN
 
 EventSubscription::EventSubscription( void )
-	: m_id            { 0 }
-	, m_deleter       { nullptr, nullptr }
-	, m_control_block { nullptr }
+	: id_           { 0 }
+	, deleter_      { nullptr, nullptr }
+	, control_block_{ nullptr }
 {
 }
 
 EventSubscription::EventSubscription( uint64_t id, Deleter deleter )
-	: m_id            { id }
-	, m_deleter       { deleter }
-	, m_control_block { new ControlBlock{ 1 } }
+	: id_           { id }
+	, deleter_      { deleter }
+	, control_block_{ new ControlBlock{ 1 } }
 {
 }
 
 EventSubscription::EventSubscription( const EventSubscription& other )
-	: m_id            { other.m_id }
-	, m_deleter       { other.m_deleter }
-	, m_control_block { other.m_control_block }
+	: id_           { other.id_ }
+	, deleter_      { other.deleter_ }
+	, control_block_{ other.control_block_ }
 {
-	if( m_control_block )
-	{
-		++m_control_block->m_ref_count;
-	}
+	if( control_block_ )
+		++control_block_->ref_count;
 }
 
 EventSubscription::EventSubscription( EventSubscription&& other )
-	: m_id            { other.m_id }
-	, m_deleter       { other.m_deleter }
-	, m_control_block { other.m_control_block }
+	: id_           { other.id_ }
+	, deleter_      { other.deleter_ }
+	, control_block_{ other.control_block_ }
 {
-	other.m_id                = 0;
-	other.m_deleter.user_data = nullptr;
-	other.m_deleter.functor   = nullptr;
-	other.m_control_block     = nullptr;
+	other.id_                = 0;
+	other.deleter_.user_data = nullptr;
+	other.deleter_.functor   = nullptr;
+	other.control_block_     = nullptr;
 }
 
 EventSubscription::~EventSubscription( void )
 {
-	if( m_control_block )
+	if( control_block_ )
 	{
-		if( --m_control_block->m_ref_count == 0 )
+		if( ( --control_block_->ref_count ) == 0 )
 		{
-			m_deleter.functor( m_id, m_deleter.user_data );
+			deleter_.functor( id_, deleter_.user_data );
 
-			delete m_control_block;
+			delete control_block_;
 		}
 	}
 }
 
 EventSubscription& EventSubscription::operator=( const EventSubscription& other )
 {
-	m_id            = other.m_id;
-	m_deleter       = other.m_deleter;
-	m_control_block = other.m_control_block;
+	id_            = other.id_;
+	deleter_       = other.deleter_;
+	control_block_ = other.control_block_;
 
-	if( m_control_block )
-	{
-		++m_control_block->m_ref_count;
-	}
+	if( control_block_ )
+		++control_block_->ref_count;
 
 	return *this;
 }
 
 EventSubscription& EventSubscription::operator=( EventSubscription&& other )
 {
-	m_id            = other.m_id;
-	m_deleter       = other.m_deleter;
-	m_control_block = other.m_control_block;
+	id_                      = other.id_;
+	deleter_                 = other.deleter_;
+	control_block_           = other.control_block_;
 
-	other.m_id                = 0;
-	other.m_deleter.user_data = nullptr;
-	other.m_deleter.functor   = nullptr;
-	other.m_control_block     = nullptr;
+	other.id_                = 0;
+	other.deleter_.user_data = nullptr;
+	other.deleter_.functor   = nullptr;
+	other.control_block_     = nullptr;
 
 	return *this;
 }

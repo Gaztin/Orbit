@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,11 +16,11 @@
  */
 
 #pragma once
+#include "Orbit/Core/IO/Asset.h"
+
 #include <memory>
 #include <string_view>
 #include <vector>
-
-#include "Orbit/Core/IO/Asset.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -30,49 +30,49 @@ class Span
 public:
 
 	Span( void )
-		: m_ptr   { nullptr }
-		, m_count { 0 }
+		: ptr_  { nullptr }
+		, count_{ 0 }
 	{
 	}
 
 	template< size_t N >
 	Span( const T ( &arr )[ N ] )
-		: m_ptr   { arr }
-		, m_count { N }
+		: ptr_  { arr }
+		, count_{ N }
 	{
 	}
 
 	Span( std::initializer_list< T > args )
-		: m_ptr   { args.begin() }
-		, m_count { args.size() }
+		: ptr_  { args.begin() }
+		, count_{ args.size() }
 	{
 	}
 
 	Span( const std::vector< T >& vec )
-		: m_ptr   { vec.data() }
-		, m_count { vec.size() }
+		: ptr_  { vec.data() }
+		, count_{ vec.size() }
 	{
 	}
 
 	Span( const Asset& asset )
-		: m_ptr   { asset.GetData() }
-		, m_count { asset.GetSize() }
+		: ptr_  { asset.GetData() }
+		, count_{ asset.GetSize() }
 	{
 	}
 
 	Span( const T* data, size_t count )
-		: m_ptr   { data }
-		, m_count { count }
+		: ptr_  { data }
+		, count_{ count }
 	{
 	}
 
 public:
 
-	size_t GetSize( void ) const { return m_count; }
+	size_t GetSize( void ) const { return count_; }
 
 	std::unique_ptr< T[] > Copy( void ) const
 	{
-		std::unique_ptr< T[] > ptr( new T[ m_count ] );
+		std::unique_ptr< T[] > ptr( new T[ count_ ] );
 		std::copy( begin(), end(), &ptr[ 0 ] );
 
 		return ptr;
@@ -80,13 +80,13 @@ public:
 
 public:
 
-	const T* begin  ( void ) const { return m_ptr; }
-	const T* end    ( void ) const { return ( m_ptr + m_count ); }
+	const T* begin( void ) const { return ptr_; }
+	const T* end  ( void ) const { return ( ptr_ + count_ ); }
 
 private:
 
-	const T* m_ptr;
-	size_t   m_count;
+	const T* ptr_;
+	size_t   count_;
 
 };
 

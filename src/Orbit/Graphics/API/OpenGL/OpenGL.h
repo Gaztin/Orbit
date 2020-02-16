@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -19,13 +19,12 @@
 #include "Orbit/Graphics/Graphics.h"
 
 #if( ORB_HAS_OPENGL )
+#  include "Orbit/Core/Utility/Bitmask.h"
 
-#include <cstddef>
-#include <string_view>
-#include <type_traits>
-#include <utility>
-
-#include "Orbit/Core/Utility/Bitmask.h"
+#  include <cstddef>
+#  include <string_view>
+#  include <type_traits>
+#  include <utility>
 
 ORB_NAMESPACE_BEGIN
 
@@ -41,4 +40,4 @@ extern ORB_API_GRAPHICS void  HandleOpenGLError   ( GLenum err, std::string_view
 
 ORB_NAMESPACE_END
 
-#endif
+#endif // ORB_HAS_OPENGL

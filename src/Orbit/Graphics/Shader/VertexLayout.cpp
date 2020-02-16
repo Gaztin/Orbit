@@ -94,27 +94,27 @@ VertexComponentIterator& VertexComponentIterator::operator++( void )
 {
 	++indexed_component.index;
 
-	if( indexed_component.index < layout->m_components.size() )
-		indexed_component.type = layout->m_components[ indexed_component.index ];
+	if( indexed_component.index < layout->components_.size() )
+		indexed_component.type = layout->components_[ indexed_component.index ];
 
 	return *this;
 }
 
 VertexLayout::VertexLayout( std::initializer_list< VertexComponent > components )
-	: m_components( components )
+	: components_( components )
 {
 }
 
 void VertexLayout::Add( VertexComponent component )
 {
-	m_components.push_back( component );
+	components_.push_back( component );
 }
 
 size_t VertexLayout::GetStride( void ) const
 {
 	size_t stride = 0;
 
-	for( VertexComponent vc : m_components )
+	for( VertexComponent vc : components_ )
 		stride += SizeOf( vc );
 
 	return stride;
@@ -124,7 +124,7 @@ size_t VertexLayout::OffsetOf( VertexComponent component ) const
 {
 	size_t offset = 0;
 
-	for( VertexComponent vc : m_components )
+	for( VertexComponent vc : components_ )
 	{
 		if( vc == component )
 			return offset;
@@ -137,7 +137,7 @@ size_t VertexLayout::OffsetOf( VertexComponent component ) const
 
 bool VertexLayout::Contains( VertexComponent component ) const
 {
-	for( VertexComponent vc : m_components )
+	for( VertexComponent vc : components_ )
 	{
 		if( vc == component )
 			return true;
@@ -148,9 +148,9 @@ bool VertexLayout::Contains( VertexComponent component ) const
 
 VertexComponentIterator VertexLayout::begin( void ) const
 {
-	if( !m_components.empty() )
+	if( !components_.empty() )
 	{
-		IndexedVertexComponent indexed_component{ m_components.front(), 0 };
+		IndexedVertexComponent indexed_component{ components_.front(), 0 };
 
 		return { this, indexed_component };
 	}
@@ -160,7 +160,7 @@ VertexComponentIterator VertexLayout::begin( void ) const
 
 VertexComponentIterator VertexLayout::end( void ) const
 {
-	IndexedVertexComponent indexed_component{ std::numeric_limits< VertexComponent >::max(), m_components.size() };
+	IndexedVertexComponent indexed_component{ std::numeric_limits< VertexComponent >::max(), components_.size() };
 
 	return { this, indexed_component };
 }

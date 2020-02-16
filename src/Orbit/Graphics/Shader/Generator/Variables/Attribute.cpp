@@ -40,9 +40,9 @@ namespace ShaderGen { namespace Variables
 	Attribute::Attribute( VertexComponent component )
 		: IVariable( NewName(), DataTypeFromVertexComponent( component ) )
 	{
-		m_stored = true;
+		stored_ = true;
 
-		IGenerator::GetCurrentGenerator()->m_attribute_layout.Add( component );
+		IGenerator::GetCurrentGenerator()->attribute_layout_.Add( component );
 	}
 
 	std::string Attribute::GetValue( void ) const
@@ -53,12 +53,12 @@ namespace ShaderGen { namespace Variables
 		{
 			switch( main->shader_type )
 			{
-				case ShaderType::Vertex: { return "input." + m_value; }
+				case ShaderType::Vertex: { return "input." + value_; }
 				default:                 { assert( false );           } break;
 			}
 		}
 
-		return m_value;
+		return value_;
 	}
 } }
 

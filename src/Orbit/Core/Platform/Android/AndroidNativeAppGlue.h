@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -19,6 +19,8 @@
 #include "Orbit/Core/Core.h"
 
 #if defined( ORB_OS_ANDROID )
+#  include "Orbit/Core/IO/Pipe.h"
+
 #  include <condition_variable>
 #  include <mutex>
 #  include <thread>
@@ -26,8 +28,6 @@
 #  include <android/configuration.h>
 #  include <android/looper.h>
 #  include <android/native_activity.h>
-
-#  include "Orbit/Core/IO/Pipe.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -105,4 +105,4 @@ extern void AndroidMain( AndroidApp* app );
 
 ORB_NAMESPACE_END
 
-#endif
+#endif // ORB_OS_ANDROID

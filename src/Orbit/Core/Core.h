@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+* Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
 * 
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -20,6 +20,6 @@
 
 #if defined( ORB_BUILD_CORE )
 #  define ORB_API_CORE ORB_DLL_EXPORT
-#else
+#else // ORB_BUILD_CORE
 #  define ORB_API_CORE ORB_DLL_IMPORT
-#endif
+#endif // !ORB_BUILD_CORE

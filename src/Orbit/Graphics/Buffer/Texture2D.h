@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -33,12 +33,12 @@ public:
 
 public:
 
-	Private::Texture2DDetails&       GetPrivateDetails( void )       { return m_details; }
-	const Private::Texture2DDetails& GetPrivateDetails( void ) const { return m_details; }
+	Private::Texture2DDetails&       GetPrivateDetails( void )       { return details_; }
+	const Private::Texture2DDetails& GetPrivateDetails( void ) const { return details_; }
 
 private:
 
-	Private::Texture2DDetails m_details;
+	Private::Texture2DDetails details_;
 
 };
 

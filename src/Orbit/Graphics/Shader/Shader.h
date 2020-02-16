@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -39,11 +39,11 @@ public:
 
 public:
 
-	const Private::ShaderDetails& GetPrivateDetails( void ) const { return m_details; }
+	const Private::ShaderDetails& GetPrivateDetails( void ) const { return details_; }
 
 private:
 
-	Private::ShaderDetails m_details;
+	Private::ShaderDetails details_;
 
 };
 

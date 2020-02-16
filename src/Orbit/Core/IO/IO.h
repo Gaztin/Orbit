@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -20,7 +20,7 @@
 
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
-#endif
+#endif // ORB_OS_WINDOWS
 
 ORB_NAMESPACE_BEGIN
 
@@ -30,12 +30,12 @@ using NativeFileHandle = HANDLE;
 
 inline const NativeFileHandle invalid_file_handle = INVALID_HANDLE_VALUE;
 
-#else
+#else // ORB_OS_WINDOWS
 
 using NativeFileHandle = int;
 
 constexpr NativeFileHandle invalid_file_handle = -1;
 
-#endif
+#endif // !ORB_OS_WINDOWS
 
 ORB_NAMESPACE_END

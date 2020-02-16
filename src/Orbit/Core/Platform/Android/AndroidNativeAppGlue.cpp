@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -18,13 +18,13 @@
 #include "AndroidNativeAppGlue.h"
 
 #if defined( ORB_OS_ANDROID )
+#  include "Orbit/Core/IO/Log.h"
+
 #  include <cerrno>
 #  include <cstdlib>
 #  include <cstring>
 
 #  include <unistd.h>
-
-#  include "Orbit/Core/IO/Log.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -40,9 +40,7 @@ static AndroidAppCommand AndroidAppReadCommand( AndroidApp* android_app )
 	auto cmd = android_app->pipe.Read< AndroidAppCommand >();
 
 	if( cmd == AndroidAppCommand::SaveState )
-	{
 		FreeSavedState( android_app );
-	}
 
 	return cmd;
 }
@@ -58,16 +56,12 @@ static void AndroidAppPreExecCommand( AndroidApp* android_app, AndroidAppCommand
 			std::unique_lock lock( android_app->mutex );
 
 			if( android_app->input_queue != nullptr )
-			{
 				AInputQueue_detachLooper( android_app->input_queue );
-			}
 
 			android_app->input_queue = android_app->pending_input_queue;
 
 			if( android_app->input_queue != nullptr )
-			{
 				AInputQueue_attachLooper( android_app->input_queue, android_app->looper, static_cast< int >( AndroidLooperID::Input ), nullptr, &android_app->input_poll_source );
-			}
 
 			android_app->cond.notify_all();
 
@@ -155,9 +149,7 @@ static void AndroidAppDestroy( AndroidApp* android_app )
 		std::unique_lock lock( android_app->mutex );
 
 		if( android_app->input_queue != nullptr )
-		{
 			AInputQueue_detachLooper( android_app->input_queue );
-		}
 
 		AConfiguration_delete( android_app->config );
 
@@ -175,14 +167,10 @@ static void ProcessInput( AndroidApp* app, AndroidPollSource* /*source*/ )
 		int32_t handled = 0;
 
 		if( AInputQueue_preDispatchEvent( app->input_queue, event ) )
-		{
 			continue;
-		}
 
 		if( app->on_input_event != nullptr )
-		{
 			handled = app->on_input_event( app, event );
-		}
 
 		AInputQueue_finishEvent( app->input_queue, event, handled );
 	}
@@ -195,9 +183,7 @@ static void ProcessCommand( AndroidApp* app, AndroidPollSource* /*source*/ )
 	AndroidAppPreExecCommand( app, cmd );
 
 	if( app->on_app_cmd != nullptr )
-	{
 		app->on_app_cmd( app, cmd );
-	}
 
 	AndroidAppPostExecCommand( app, cmd );
 }
@@ -241,9 +227,7 @@ static void AndroidAppSetActivityState( AndroidApp* android_app, AndroidAppComma
 	AndroidAppWriteCommand( android_app, cmd );
 
 	while( android_app->activity_state != cmd )
-	{
 		android_app->cond.wait( lock );
-	}
 }
 
 static void AndroidAppSetWindow( AndroidApp* android_app, ANativeWindow* window )
@@ -251,21 +235,15 @@ static void AndroidAppSetWindow( AndroidApp* android_app, ANativeWindow* window 
 	std::unique_lock lock( android_app->mutex );
 
 	if( android_app->pending_window != nullptr )
-	{
 		AndroidAppWriteCommand( android_app, AndroidAppCommand::TermWindow );
-	}
 
 	android_app->pending_window = window;
 
 	if( window != nullptr )
-	{
 		AndroidAppWriteCommand( android_app, AndroidAppCommand::InitWindow );
-	}
 
 	while( android_app->window != android_app->pending_window )
-	{
 		android_app->cond.wait( lock );
-	}
 }
 
 static void AndroidAppSetInput( AndroidApp* android_app, AInputQueue* input_queue )
@@ -277,9 +255,7 @@ static void AndroidAppSetInput( AndroidApp* android_app, AInputQueue* input_queu
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::InputChanged );
 
 	while( android_app->input_queue != android_app->pending_input_queue )
-	{
 		android_app->cond.wait( lock );
-	}
 }
 
 static void AndroidAppFree( AndroidApp* android_app )
@@ -289,9 +265,7 @@ static void AndroidAppFree( AndroidApp* android_app )
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::Destroy );
 
 	while( !android_app->destroyed )
-	{
 		android_app->cond.wait( lock );
-	}
 
 	delete android_app;
 }
@@ -321,9 +295,7 @@ static void* OnSaveInstanceState( ANativeActivity* activity, size_t* outLen )
 	AndroidAppWriteCommand( android_app, AndroidAppCommand::SaveState );
 
 	while( !android_app->state_saved )
-	{
 		android_app->cond.wait( lock );
-	}
 
 	if( android_app->saved_state )
 	{
@@ -404,9 +376,7 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 		std::unique_lock lock( android_app->mutex );
 
 		while( !android_app->running )
-		{
 			android_app->cond.wait( lock );
-		}
 	}
 
 	activity->callbacks->onDestroy               = OnDestroy;
@@ -428,4 +398,4 @@ AndroidApp* AndroidAppCreate( ANativeActivity* activity, void* saved_state, size
 
 ORB_NAMESPACE_END
 
-#endif
+#endif // ORB_OS_ANDROID

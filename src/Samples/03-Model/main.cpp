@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -14,6 +14,9 @@
  *    being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
+#include "Framework/Camera.h"
+#include "ModelShader.h"
 
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
@@ -32,9 +35,6 @@
 #include <Orbit/Math/Vector2.h>
 #include <Orbit/Math/Vector3.h>
 #include <Orbit/Math/Vector4.h>
-
-#include "Framework/Camera.h"
-#include "ModelShader.h"
 
 static ModelShader model_shader;
 
@@ -65,17 +65,17 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: m_window( 800, 600 )
-		, m_shader( model_shader )
-		, m_model( Orbit::Asset( "models/teapot.obj" ), model_shader.GetVertexLayout() )
-		, m_vertex_constant_buffer( sizeof( VertexConstantData ) )
-		, m_fragment_constant_buffer( sizeof( FragmentConstantData ) )
-		, m_texture( 4, 4, texture_data )
+		: window_                  { 800, 600 }
+		, shader_                  { model_shader }
+		, model_                   { Orbit::Asset( "models/teapot.obj" ), model_shader.GetVertexLayout() }
+		, vertex_constant_buffer_  { sizeof( VertexConstantData ) }
+		, fragment_constant_buffer_{ sizeof( FragmentConstantData ) }
+		, texture_                 { 4, 4, texture_data }
 	{
-		m_window.SetTitle( "Orbit Sample (03-Model)" );
-		m_window.Show();
-		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
-		m_model_matrix.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
+		window_.SetTitle( "Orbit Sample (03-Model)" );
+		window_.Show();
+		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
+		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
 	}
 
 public:
@@ -84,56 +84,56 @@ public:
 	{
 		/* Update constant buffers */
 		{
-			m_model_matrix.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
+			model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
-			vertex_constant_data.view_projection = m_camera.GetViewProjection();
-			vertex_constant_data.model           = m_model_matrix;
-			vertex_constant_data.model_inverse   = m_model_matrix;
+			vertex_constant_data.view_projection = camera_.GetViewProjection();
+			vertex_constant_data.model           = model_matrix_;
+			vertex_constant_data.model_inverse   = model_matrix_;
 			vertex_constant_data.model_inverse.Invert();
 
 			/* Light position */
 			fragment_constant_data.light_dir = Orbit::Vector3( 1.0f, -1.0f, 1.0f );
 
-			m_vertex_constant_buffer.Update( &vertex_constant_data, sizeof( VertexConstantData ) );
-			m_fragment_constant_buffer.Update( &fragment_constant_data, sizeof( FragmentConstantData ) );
+			vertex_constant_buffer_.Update( &vertex_constant_data, sizeof( VertexConstantData ) );
+			fragment_constant_buffer_.Update( &fragment_constant_data, sizeof( FragmentConstantData ) );
 		}
 
-		m_window.PollEvents();
-		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
+		window_.PollEvents();
+		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
-		m_camera.Update( delta_time );
+		camera_.Update( delta_time );
 
-		for( const Orbit::Mesh& mesh : m_model )
+		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
 			command.vertex_buffer = mesh.vertex_buffer.get();
 			command.index_buffer  = mesh.index_buffer.get();
-			command.shader        = &m_shader;
-			command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &m_vertex_constant_buffer );
-			command.constant_buffers[ Orbit::ShaderType::Fragment ].push_back( &m_fragment_constant_buffer );
-			command.textures.push_back( &m_texture );
+			command.shader        = &shader_;
+			command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &vertex_constant_buffer_ );
+			command.constant_buffers[ Orbit::ShaderType::Fragment ].push_back( &fragment_constant_buffer_ );
+			command.textures.push_back( &texture_ );
 
-			m_renderer.QueueCommand( command );
+			renderer_.QueueCommand( command );
 		}
 
-		m_renderer.Render();
-		m_render_context.SwapBuffers();
+		renderer_.Render();
+		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning() override { return m_window.IsOpen(); }
+	bool IsRunning() override { return window_.IsOpen(); }
 
 private:
 
-	Orbit::Window            m_window;
-	Orbit::RenderContext     m_render_context;
-	Orbit::Shader            m_shader;
-	Orbit::Model             m_model;
-	Orbit::ConstantBuffer    m_vertex_constant_buffer;
-	Orbit::ConstantBuffer    m_fragment_constant_buffer;
-	Orbit::Texture2D         m_texture;
-	Orbit::BasicRenderer     m_renderer;
-	Orbit::Matrix4           m_model_matrix;
+	Orbit::Window            window_;
+	Orbit::RenderContext     render_context_;
+	Orbit::Shader            shader_;
+	Orbit::Model             model_;
+	Orbit::ConstantBuffer    vertex_constant_buffer_;
+	Orbit::ConstantBuffer    fragment_constant_buffer_;
+	Orbit::Texture2D         texture_;
+	Orbit::BasicRenderer     renderer_;
+	Orbit::Matrix4           model_matrix_;
 
-	Camera m_camera;
+	Camera camera_;
 
 };

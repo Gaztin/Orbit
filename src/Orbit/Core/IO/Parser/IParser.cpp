@@ -22,24 +22,22 @@
 ORB_NAMESPACE_BEGIN
 
 IParser::IParser( ByteSpan data )
-	: m_data  ( data.Copy() )
-	, m_size  ( data.GetSize() )
-	, m_offset( 0 )
-	, m_good  ( false )
+	: data_  { data.Copy() }
+	, size_  { data.GetSize() }
+	, offset_{ 0 }
+	, good_  { false }
 {
 }
 
 void IParser::Skip( size_t size )
 {
-	if( ( m_offset + size ) < m_size )
-		m_offset += size;
-	else
-		m_offset = m_size;
+	if( ( offset_ + size ) < size_ ) offset_ += size;
+	else                             offset_  = size_;
 }
 
 bool IParser::IsEOF( void ) const
 {
-	return ( m_offset == m_size );
+	return ( offset_ == size_ );
 }
 
 ORB_NAMESPACE_END

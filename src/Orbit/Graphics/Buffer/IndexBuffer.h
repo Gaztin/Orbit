@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,10 +16,10 @@
  */
 
 #pragma once
+#include "Orbit/Graphics/Private/IndexBufferDetails.h"
+
 #include <initializer_list>
 #include <type_traits>
-
-#include "Orbit/Graphics/Private/IndexBufferDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -44,14 +44,14 @@ public:
 
 public:
 
-	IndexFormat GetFormat( void ) const { return m_format; }
-	size_t      GetCount ( void ) const { return m_count; }
+	IndexFormat GetFormat( void ) const { return format_; }
+	size_t      GetCount ( void ) const { return count_; }
 
 private:
 
-	Private::IndexBufferDetails m_details;
-	IndexFormat                 m_format;
-	size_t                      m_count;
+	Private::IndexBufferDetails details_;
+	IndexFormat                 format_;
+	size_t                      count_;
 
 };
 

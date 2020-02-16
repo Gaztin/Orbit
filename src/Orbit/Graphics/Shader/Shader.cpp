@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -17,8 +17,6 @@
 
 #include "Shader.h"
 
-#include <array>
-
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/API/OpenGL/GLSL.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
@@ -26,15 +24,17 @@
 #include "Orbit/Graphics/Context/RenderContext.h"
 #include "Orbit/Graphics/Shader/Generator/IGenerator.h"
 
+#include <array>
+
 #if( ORB_HAS_D3D11 )
 #  include <d3dcompiler.h>
-#endif
+#endif // ORB_HAS_D3D11
 
 ORB_NAMESPACE_BEGIN
 
 #if( ORB_HAS_OPENGL )
 GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShaderType gl_shader_type );
-#endif
+#endif // ORB_HAS_OPENGL
 
 Shader::Shader( ShaderGen::IGenerator& generator )
 	: Shader( generator.Generate(), generator.GetVertexLayout() )
@@ -43,7 +43,7 @@ Shader::Shader( ShaderGen::IGenerator& generator )
 
 Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 {
-	auto& context_details = RenderContext::Get().GetPrivateDetails();
+	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
 	switch( context_details.index() )
 	{
@@ -54,15 +54,15 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
-			auto& details = m_details.emplace< Private::_ShaderDetailsD3D11 >();
+			auto& details = details_.emplace< Private::_ShaderDetailsD3D11 >();
 
 			UINT flags = D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS;
 
 		#if defined( _DEBUG )
 			flags |= ( D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION );
-		#else
+		#else // _DEBUG
 			flags |= ( D3DCOMPILE_OPTIMIZATION_LEVEL3 );
-		#endif
+		#endif // !_DEBUG
 
 			const D3D_SHADER_MACRO macros[]
 			{
@@ -195,13 +195,13 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
 			auto& gl      = std::get< Private::_RenderContextDetailsOpenGL >( context_details );
-			auto& details = m_details.emplace< Private::_ShaderDetailsOpenGL >();
+			auto& details = details_.emplace< Private::_ShaderDetailsOpenGL >();
 
 			/* Create shader program */
 			{
@@ -247,7 +247,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 
 	}
 }
@@ -257,25 +257,23 @@ Shader::~Shader( void )
 
 #if( ORB_HAS_OPENGL )
 
-	if( m_details.index() == unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > )
+	if( details_.index() == unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > )
 	{
-		auto& details = std::get< Private::_ShaderDetailsOpenGL >( m_details );
+		auto& details = std::get< Private::_ShaderDetailsOpenGL >( details_ );
 
 		if( details.vao )
-		{
 			glDeleteVertexArrays( 1, &details.vao );
-		}
 
 		glDeleteProgram( details.program );
 	}
 
-#endif
+#endif // ORB_HAS_OPENGL
 
 }
 
 void Shader::Bind( void )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -283,8 +281,8 @@ void Shader::Bind( void )
 
 		case( unique_index_v< Private::_ShaderDetailsD3D11, Private::ShaderDetails > ):
 		{
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
-			auto& details = std::get< Private::_ShaderDetailsD3D11 >( m_details );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& details = std::get< Private::_ShaderDetailsD3D11 >( details_ );
 
 			if( details.input_layout )
 				d3d11.device_context->IASetInputLayout( details.input_layout.get() );
@@ -304,12 +302,12 @@ void Shader::Bind( void )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > ):
 		{
-			auto& details = std::get< Private::_ShaderDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_ShaderDetailsOpenGL >( details_ );
 
 			glBindVertexArray( details.vao );
 			glUseProgram( details.program );
@@ -339,14 +337,14 @@ void Shader::Bind( void )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 
 	}
 }
 
 void Shader::Unbind( void )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -354,8 +352,8 @@ void Shader::Unbind( void )
 
 		case( unique_index_v< Private::_ShaderDetailsD3D11, Private::ShaderDetails > ):
 		{
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
-			auto& details = std::get< Private::_ShaderDetailsD3D11 >( m_details );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& details = std::get< Private::_ShaderDetailsD3D11 >( details_ );
 
 			if( details.input_layout )
 			{
@@ -404,12 +402,12 @@ void Shader::Unbind( void )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > ):
 		{
-			auto& details = std::get< Private::_ShaderDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_ShaderDetailsOpenGL >( details_ );
 
 			for( IndexedVertexComponent component : details.layout )
 				glDisableVertexAttribArray( static_cast< GLuint >( component.index ) );
@@ -422,7 +420,7 @@ void Shader::Unbind( void )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 
 	}
 }
@@ -431,7 +429,7 @@ void Shader::Unbind( void )
 
 GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShaderType gl_shader_type )
 {
-	auto& gl = std::get< Private::_RenderContextDetailsOpenGL >( RenderContext::Get().GetPrivateDetails() );
+	auto& gl = std::get< Private::_RenderContextDetailsOpenGL >( RenderContext::GetInstance().GetPrivateDetails() );
 
 	const std::string_view version_directive  = GLSL::GetVersionDirective( gl.version );
 	const std::string_view glsl_define        = GLSL::GetGLSLDefine();
@@ -491,6 +489,6 @@ GLuint CompileGLSL( std::string_view source, ShaderType shader_type, OpenGLShade
 	return shader;
 }
 
-#endif
+#endif // ORB_HAS_OPENGL
 
 ORB_NAMESPACE_END

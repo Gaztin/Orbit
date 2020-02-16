@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,15 +16,15 @@
  */
 
 #pragma once
+#include "Orbit/Core/Event/EventSubscription.h"
+#include "Orbit/Core/Utility/Utility.h"
+
 #include <algorithm>
 #include <functional>
 #include <list>
 #include <mutex>
 #include <tuple>
 #include <vector>
-
-#include "Orbit/Core/Event/EventSubscription.h"
-#include "Orbit/Core/Utility/Utility.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -33,7 +33,7 @@ class EventDispatcher
 {
 public:
 
-	EventDispatcher( void ) = default;
+	         EventDispatcher( void ) = default;
 	virtual ~EventDispatcher( void ) = default;
 
 	ORB_DISABLE_COPY_AND_MOVE( EventDispatcher );
@@ -48,7 +48,7 @@ public:
 		const uint64_t unique_id = GenerateUniqueID();
 
 		{
-			const Queue< Arg >& queue      = std::get< Queue< Arg > >( m_queues );
+			const Queue< Arg >& queue      = std::get< Queue< Arg > >( queues_ );
 			Subscriber< Arg >   subscriber = { unique_id, std::forward< Functor >( functor ) };
 			std::scoped_lock    lock       = std::scoped_lock( queue.mutex );
 			queue.subscribers.push_back( subscriber );
@@ -68,7 +68,7 @@ public:
 	template< typename T >
 	void QueueEvent( const T& e )
 	{
-		Queue< T >&      queue = std::get< Queue< T > >( m_queues );
+		Queue< T >&      queue = std::get< Queue< T > >( queues_ );
 		std::scoped_lock lock  = std::scoped_lock( queue.mutex );
 
 		queue.events.push_back( e );
@@ -78,7 +78,7 @@ protected:
 
 	void SendEvents()
 	{
-		( SendEventsInQueue( std::get< Queue< Types > >( m_queues ) ), ... );
+		( SendEventsInQueue( std::get< Queue< Types > >( queues_ ) ), ... );
 	}
 
 private:
@@ -109,7 +109,7 @@ private:
 	template< typename T >
 	void Unsubscribe( uint64_t id ) const
 	{
-		const Queue< T >& queue = std::get< Queue< T > >( m_queues );
+		const Queue< T >& queue = std::get< Queue< T > >( queues_ );
 		std::scoped_lock  lock  = std::scoped_lock( queue.mutex );
 
 		for( auto it = queue.subscribers.begin(); it != queue.subscribers.end(); ++it )
@@ -138,7 +138,7 @@ private:
 
 private:
 
-	std::tuple< Queue< Types >... > m_queues;
+	std::tuple< Queue< Types >... > queues_;
 
 };
 

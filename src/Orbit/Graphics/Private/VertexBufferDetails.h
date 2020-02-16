@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,10 +16,10 @@
  */
 
 #pragma once
-#include <variant>
-
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
 #include "Orbit/Graphics/Graphics.h"
+
+#include <variant>
 
 ORB_NAMESPACE_BEGIN
 
@@ -33,7 +33,7 @@ namespace Private
 		GLuint id;
 	};
 
-#endif
+#endif // ORB_HAS_OPENGL
 #if( ORB_HAS_D3D11 )
 
 	struct _VertexBufferDetailsD3D11
@@ -42,15 +42,15 @@ namespace Private
 		UINT                   stride;
 	};
 
-#endif
+#endif // ORB_HAS_D3D11
 
 	using VertexBufferDetails = std::variant< std::monostate
 	#if( ORB_HAS_OPENGL )
 		, _VertexBufferDetailsOpenGL
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 		, _VertexBufferDetailsD3D11
-	#endif
+	#endif // ORB_HAS_D3D11
 	>;
 }
 

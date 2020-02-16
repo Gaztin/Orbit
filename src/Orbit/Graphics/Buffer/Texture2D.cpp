@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -24,7 +24,7 @@ ORB_NAMESPACE_BEGIN
 
 Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 {
-	auto& context_details = RenderContext::Get().GetPrivateDetails();
+	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
 	switch( context_details.index() )
 	{
@@ -34,7 +34,7 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& details = m_details.emplace< Private::_Texture2DDetailsOpenGL >();
+			auto& details = details_.emplace< Private::_Texture2DDetailsOpenGL >();
 
 			glGenTextures( 1, &details.id );
 			glBindTexture( GL_TEXTURE_2D, details.id );
@@ -53,12 +53,12 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& details = m_details.emplace< Private::_Texture2DDetailsD3D11 >();
+			auto& details = details_.emplace< Private::_Texture2DDetailsD3D11 >();
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 			D3D11_TEXTURE2D_DESC texture2d_desc { };
@@ -110,14 +110,14 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 				break;
 			}
 		}
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }
 
 Texture2D::~Texture2D( void )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -125,21 +125,21 @@ Texture2D::~Texture2D( void )
 
 		case( unique_index_v< Private::_Texture2DDetailsOpenGL, Private::Texture2DDetails > ):
 		{
-			auto& details = std::get< Private::_Texture2DDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_Texture2DDetailsOpenGL >( details_ );
 			
 			glDeleteTextures( 1, &details.id );
 
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 
 	}
 }
 
 void Texture2D::Bind( uint32_t slot )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -147,7 +147,7 @@ void Texture2D::Bind( uint32_t slot )
 
 		case( unique_index_v< Private::_Texture2DDetailsOpenGL, Private::Texture2DDetails > ):
 		{
-			auto&          details   = std::get< Private::_Texture2DDetailsOpenGL >( m_details );
+			auto&          details   = std::get< Private::_Texture2DDetailsOpenGL >( details_ );
 			const uint32_t unit_base = static_cast< GLenum >( OpenGLTextureUnit::Texture0 );
 
 			glActiveTexture( static_cast< OpenGLTextureUnit >( unit_base + slot ) );
@@ -156,13 +156,13 @@ void Texture2D::Bind( uint32_t slot )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_Texture2DDetailsD3D11, Private::Texture2DDetails > ):
 		{
-			auto&                     details = std::get< Private::_Texture2DDetailsD3D11 >( m_details );
-			auto&                     d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
+			auto&                     details = std::get< Private::_Texture2DDetailsD3D11 >( details_ );
+			auto&                     d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 			ID3D11ShaderResourceView* srv     = details.shader_resource_view.get();
 
 			d3d11.device_context->PSSetShaderResources( slot, 1, &srv );
@@ -170,7 +170,7 @@ void Texture2D::Bind( uint32_t slot )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }

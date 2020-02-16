@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -58,7 +58,7 @@ static void BindConstantBuffers( const RenderCommand& command )
 
 static void APIDraw( const RenderCommand& command )
 {
-	Private::RenderContextDetails& context_details = RenderContext::Get().GetPrivateDetails();
+	Private::RenderContextDetails& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
 	switch( context_details.index() )
 	{
@@ -99,12 +99,12 @@ static void APIDraw( const RenderCommand& command )
 
 void BasicRenderer::QueueCommand( const RenderCommand& command )
 {
-	m_commands.push_back( command );
+	commands_.push_back( command );
 }
 
 void BasicRenderer::Render( void )
 {
-	for( RenderCommand& command : m_commands )
+	for( RenderCommand& command : commands_ )
 	{
 		for( size_t i = 0; i < command.textures.size(); ++i )
 			command.textures[ i ]->Bind( static_cast< uint32_t >( i ) );
@@ -121,7 +121,7 @@ void BasicRenderer::Render( void )
 //		command.vertex_buffer->Unbind();
 	}
 
-	m_commands.clear();
+	commands_.clear();
 }
 
 ORB_NAMESPACE_END

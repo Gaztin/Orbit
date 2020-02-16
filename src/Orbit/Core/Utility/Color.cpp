@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -20,18 +20,18 @@
 ORB_NAMESPACE_BEGIN
 
 Color::Color( void )
-	: r( 0.0f )
-	, g( 0.0f )
-	, b( 0.0f )
-	, a( 0.0f )
+	: r{ 0.0f }
+	, g{ 0.0f }
+	, b{ 0.0f }
+	, a{ 0.0f }
 {
 }
 
 Color::Color( float r, float g, float b, float a )
-	: r( r )
-	, g( g )
-	, b( b )
-	, a( a )
+	: r{ r }
+	, g{ g }
+	, b{ b }
+	, a{ a }
 {
 }
 

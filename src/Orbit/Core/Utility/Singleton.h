@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,66 +16,62 @@
  */
 
 #pragma once
-#include <cassert>
-
 #include "Orbit/Core/Core.h"
+
+#include <cassert>
 
 ORB_NAMESPACE_BEGIN
 
-template< typename Derived, bool AutomaticInitialization >
-class Singleton;
-
 template< typename Derived >
-class Singleton< Derived, false >
+class ManualSingleton
 {
 public:
 
-	static Derived& Get( void )
+	static Derived& GetInstance( void )
 	{
-		assert( s_instance != nullptr );
-		return *s_instance;
+		assert( instance_ != nullptr );
+		return *instance_;
 	}
 
-	static Derived* GetPtr( void )
+	static Derived* GetInstancePtr( void )
 	{
-		assert( s_instance != nullptr );
-		return s_instance;
+		return instance_;
 	}
 
 protected:
 
-	Singleton( void )
+	ManualSingleton( void )
 	{
-		assert( s_instance == nullptr );
-		s_instance = static_cast< Derived* >( this );
+		assert( instance_ == nullptr );
+		instance_ = static_cast< Derived* >( this );
 	}
 
-	~Singleton( void )
+	~ManualSingleton( void )
 	{
-		assert( s_instance == this );
-		s_instance = nullptr;
+		assert( instance_ == this );
+		instance_ = nullptr;
 	}
 
 private:
 
-	static Derived* s_instance;
+	static Derived* instance_;
 
 };
 
 template< typename Derived >
-class Singleton< Derived, true >
+class Singleton
 {
 public:
 
 	static Derived& Get( void )
 	{
-		static Derived instance { };
+		static Derived instance{ };
 		return instance;
 	}
 
 };
 
 template< typename Derived >
-Derived* Singleton< Derived, false >::s_instance = nullptr;
+Derived* ManualSingleton< Derived >::instance_ = nullptr;
 
 ORB_NAMESPACE_END

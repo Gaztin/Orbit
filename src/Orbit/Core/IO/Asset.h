@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,10 +16,10 @@
  */
 
 #pragma once
+#include "Orbit/Core/Core.h"
+
 #include <vector>
 #include <string>
-
-#include "Orbit/Core/Core.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -31,12 +31,12 @@ public:
 
 public:
 
-	const uint8_t* GetData( void ) const { return m_data.data(); }
-	size_t         GetSize( void ) const { return m_data.size(); }
+	const uint8_t* GetData( void ) const { return data_.data(); }
+	size_t         GetSize( void ) const { return data_.size(); }
 
 private:
 
-	std::vector< uint8_t > m_data;
+	std::vector< uint8_t > data_;
 
 };
 

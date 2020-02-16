@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -17,18 +17,19 @@
 
 #include "Log.h"
 
-#include <cstdio>
-
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_WINDOWS
 #  include <android/log.h>
-#endif
+#endif // ORB_OS_ANDROID
+
+#include <cstdio>
 
 ORB_NAMESPACE_BEGIN
 
 void LogInfoString( std::string_view msg )
 {
+
 #if defined( ORB_OS_WINDOWS )
 
 	if( IsDebuggerPresent() )
@@ -41,19 +42,21 @@ void LogInfoString( std::string_view msg )
 		printf( "%s\n", msg.data() );
 	}
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_WINDOWS
 
 	__android_log_write( ANDROID_LOG_INFO, "Orbit", msg.data() );
 
-#else
+#else // ORB_OS_ANDROID
 
 	printf( "%s\n", msg.data() );
 
-#endif
+#endif // !ORB_OS_ANDROID
+
 }
 
 void LogWarningString( std::string_view msg )
 {
+
 #if defined( ORB_OS_WINDOWS )
 
 	if( IsDebuggerPresent() )
@@ -72,19 +75,21 @@ void LogWarningString( std::string_view msg )
 		SetConsoleTextAttribute( h, old_buffer_info.wAttributes );
 	}
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_WINDOWS
 
 	__android_log_write( ANDROID_LOG_WARN, "Orbit", msg.data() );
 
-#else
+#else // ORB_OS_ANDROID
 
 	printf( "\x1B[33m%s\x1B[0m\n", msg.data() );
 
-#endif
+#endif // !ORB_OS_ANDROID
+
 }
 
 void LogErrorString( std::string_view msg )
 {
+
 #if defined( ORB_OS_WINDOWS )
 
 	if( IsDebuggerPresent() )
@@ -103,15 +108,16 @@ void LogErrorString( std::string_view msg )
 		SetConsoleTextAttribute( h, old_buffer_info.wAttributes );
 	}
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_WINDOWS
 
 	__android_log_write( ANDROID_LOG_ERROR, "Orbit", msg.data() );
 
-#else
+#else // ORB_OS_ANDROID
 
 	printf( "\x1B[31m%s\x1B[0m\n", msg.data() );
 
-#endif
+#endif // !ORB_OS_ANDROID
+
 }
 
 ORB_NAMESPACE_END

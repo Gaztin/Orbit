@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -22,12 +22,12 @@
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS RenderContext : public Singleton< RenderContext, false >
+class ORB_API_GRAPHICS RenderContext : public ManualSingleton< RenderContext >
 {
 public:
 
 	explicit RenderContext( GraphicsAPI api = default_graphics_api );
-	~RenderContext( void );
+	        ~RenderContext( void );
 
 public:
 
@@ -39,14 +39,14 @@ public:
 
 public:
 
-	Private::RenderContextDetails&       GetPrivateDetails( void )       { return m_details; }
-	const Private::RenderContextDetails& GetPrivateDetails( void ) const { return m_details; }
+	Private::RenderContextDetails&       GetPrivateDetails( void )       { return details_; }
+	const Private::RenderContextDetails& GetPrivateDetails( void ) const { return details_; }
 
 private:
 
-	Private::RenderContextDetails m_details;
-	EventSubscription             m_window_resized;
-	EventSubscription             m_window_state_changed;
+	Private::RenderContextDetails details_;
+	EventSubscription             window_resized_;
+	EventSubscription             window_state_changed_;
 
 };
 

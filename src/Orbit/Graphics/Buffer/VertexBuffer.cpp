@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -24,10 +24,10 @@
 ORB_NAMESPACE_BEGIN
 
 VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
-	: m_details { }
-	, m_count   { count }
+	: details_{ }
+	, count_  { count }
 {
-	auto&        context_details = RenderContext::Get().GetPrivateDetails();
+	auto&        context_details = RenderContext::GetInstance().GetPrivateDetails();
 	const size_t total_size      = ( count * stride );
 
 	switch( context_details.index() )
@@ -38,7 +38,7 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& details = m_details.emplace< Private::_VertexBufferDetailsOpenGL >();
+			auto& details = details_.emplace< Private::_VertexBufferDetailsOpenGL >();
 
 			glGenBuffers( 1, &details.id );
 			glBindBuffer( OpenGLBufferTarget::Array, details.id );
@@ -48,12 +48,12 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& details = m_details.emplace< Private::_VertexBufferDetailsD3D11 >();
+			auto& details = details_.emplace< Private::_VertexBufferDetailsD3D11 >();
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 			D3D11_BUFFER_DESC desc { };
@@ -79,14 +79,14 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }
 
 VertexBuffer::~VertexBuffer( void )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -94,21 +94,21 @@ VertexBuffer::~VertexBuffer( void )
 
 		case( unique_index_v< Private::_VertexBufferDetailsOpenGL, Private::VertexBufferDetails > ):
 		{
-			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( details_ );
 
 			glDeleteBuffers( 1, &details.id );
 
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 
 	}
 }
 
 void VertexBuffer::Bind( void )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -116,20 +116,20 @@ void VertexBuffer::Bind( void )
 
 		case( unique_index_v< Private::_VertexBufferDetailsOpenGL, Private::VertexBufferDetails > ):
 		{
-			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( details_ );
 
 			glBindBuffer( OpenGLBufferTarget::Array, details.id );
 
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_VertexBufferDetailsD3D11, Private::VertexBufferDetails > ):
 		{
-			auto&         details = std::get< Private::_VertexBufferDetailsD3D11 >( m_details );
-			auto&         d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
+			auto&         details = std::get< Private::_VertexBufferDetailsD3D11 >( details_ );
+			auto&         d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 			ID3D11Buffer* buffer  = details.buffer.get();
 			UINT          stride  = details.stride;
 			UINT          offset  = 0;
@@ -139,7 +139,7 @@ void VertexBuffer::Bind( void )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }

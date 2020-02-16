@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -22,7 +22,7 @@
 #include <Orbit/Math/Vector3.h>
 
 Camera::Camera( void )
-	: m_on_resize( Orbit::Window::Get().Subscribe( [ this ]( const Orbit::WindowResized& e ){ OnResized( e ); } ) )
+	: on_resize_( Orbit::Window::GetInstance().Subscribe( [ this ]( const Orbit::WindowResized& e ){ OnResized( e ); } ) )
 {
 	position.z = -5.0f;
 }
@@ -44,8 +44,8 @@ void Camera::Update( float delta_time )
 
 void Camera::OnResized( const Orbit::WindowResized& e )
 {
-	m_width  = e.width;
-	m_height = e.height;
+	width_  = e.width;
+	height_ = e.height;
 }
 
 void Camera::UpdateView( float delta_time )
@@ -56,8 +56,8 @@ void Camera::UpdateView( float delta_time )
 		{
 			auto [ x, y ] = Orbit::Input::GetPointerMove( 0 );
 
-			this->rotation.x += (  static_cast< float >( y ) * Orbit::Pi ) / m_height;
-			this->rotation.y += ( -static_cast< float >( x ) * Orbit::Pi ) / m_height;
+			this->rotation.x += (  static_cast< float >( y ) * Orbit::Pi ) / height_;
+			this->rotation.y += ( -static_cast< float >( x ) * Orbit::Pi ) / height_;
 		}
 	}
 
@@ -94,7 +94,7 @@ void Camera::UpdateView( float delta_time )
 Orbit::Matrix4 Camera::GetViewProjection( void ) const
 {
 	const float fov_rad = ( this->fov * Orbit::Pi ) / 180.0f;
-	const float aspect  = static_cast< float >( m_width ) / static_cast< float >( m_height );
+	const float aspect  = static_cast< float >( width_ ) / static_cast< float >( height_ );
 
 	Orbit::Matrix4 view_rotate;
 	view_rotate.Rotate( this->rotation );

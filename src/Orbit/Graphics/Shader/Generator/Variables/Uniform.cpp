@@ -39,14 +39,14 @@ namespace ShaderGen { namespace Variables
 	UniformBase::UniformBase( DataType type )
 		: IVariable( NewName(), type )
 	{
-		m_stored = true;
+		stored_ = true;
 
-		IGenerator::GetCurrentGenerator()->m_uniforms.push_back( this );
+		IGenerator::GetCurrentGenerator()->uniforms_.push_back( this );
 	}
 
 	UniformArrayBase::UniformArrayBase( DataType element_type )
 		: UniformBase   ( DataType::Array )
-		, m_element_type( element_type )
+		, element_type_( element_type )
 	{
 	}
 
@@ -57,7 +57,7 @@ namespace ShaderGen { namespace Variables
 		SetUsed();
 		index.SetUsed();
 
-		return IVariable( GetValue() + "[ " + index.GetValue() + " ]", m_element_type );
+		return IVariable( GetValue() + "[ " + index.GetValue() + " ]", element_type_ );
 	}
 } }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -24,9 +24,9 @@ ORB_NAMESPACE_BEGIN
 
 #if defined( ORB_OS_WINDOWS )
 #  define ORB_GL_CALL __stdcall
-#else
+#else // ORB_OS_WINDOWS
 #  define ORB_GL_CALL
-#endif
+#endif // !ORB_OS_WINDOWS
 
 template< typename SL, typename Func >
 class OpenGLFunction;
@@ -37,7 +37,7 @@ class OpenGLFunction< SL, R( Args... ) >
 public:
 
 	OpenGLFunction( void )
-		: m_ptr( nullptr )
+		: ptr_( nullptr )
 	{
 	}
 
@@ -49,9 +49,9 @@ public:
 	{
 		using Proc = R( ORB_GL_CALL* )( Args... );
 
-		if( m_ptr == nullptr )
+		if( ptr_ == nullptr )
 		{
-			m_ptr = GetOpenGLProcAddress( SL::value );
+			ptr_ = GetOpenGLProcAddress( SL::value );
 		}
 
 		// Reset error code to 0
@@ -59,12 +59,12 @@ public:
 
 		if constexpr( std::is_void_v< R > )
 		{
-			reinterpret_cast< Proc >( m_ptr )( args... );
+			reinterpret_cast< Proc >( ptr_ )( args... );
 			HandleOpenGLError( glGetError(), SL::value );
 		}
 		else
 		{
-			R res = reinterpret_cast< Proc >( m_ptr )( args... );
+			R res = reinterpret_cast< Proc >( ptr_ )( args... );
 			HandleOpenGLError( glGetError(), SL::value );
 			return res;
 		}
@@ -72,7 +72,7 @@ public:
 
 private:
 
-	void* m_ptr;
+	void* ptr_;
 
 };
 

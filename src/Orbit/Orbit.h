@@ -42,35 +42,35 @@
 #  define ORB_DLL_EXPORT __declspec( dllexport )
 #  define ORB_DLL_IMPORT __declspec( dllimport )
 #  define ORB_DLL_LOCAL
-#elif defined( __clang__ )
+#elif defined( __clang__ ) // _MSC_VER
 #  define ORB_CC_CLANG 1
 #  define ORB_DLL_EXPORT __attribute__( ( visibility( "default" ) ) )
 #  define ORB_DLL_IMPORT __attribute__( ( visibility( "default" ) ) )
 #  define ORB_DLL_LOCAL  __attribute__( ( visibility( "hidden" ) ) )
-#elif defined( __GNUC__ )
+#elif defined( __GNUC__ ) // __clang__
 #  define ORB_CC_GCC 1
 #  define ORB_DLL_EXPORT __attribute__( ( visibility( "default" ) ) )
 #  define ORB_DLL_IMPORT __attribute__( ( visibility( "default" ) ) )
 #  define ORB_DLL_LOCAL  __attribute__( ( visibility( "hidden" ) ) )
-#endif
+#endif // __GNUC__
 
 /* Per-system macros. */
 #if defined( _WIN32 )
 #  define ORB_OS_WINDOWS 1
-#elif defined( __ANDROID__ )
+#elif defined( __ANDROID__ ) // _WIN32
 #  define ORB_OS_ANDROID 1
-#elif defined( __linux__ )
+#elif defined( __linux__ ) // __ANDROID__
 #  define ORB_OS_LINUX 1
-#elif defined( __APPLE__ )
+#elif defined( __APPLE__ ) //  __linux__
 #  include <TargetConditionals.h>
-#  if TARGET_OS_IPHONE
+#  if( TARGET_OS_IPHONE )
 #    define ORB_OS_IOS 1
-#  elif TARGET_OS_MAC
+#  elif( TARGET_OS_MAC ) // TARGET_OS_IPHONE
 #    define ORB_OS_MACOS 1
-#  endif
-#endif
+#  endif // TARGET_OS_MAC
+#endif // __APPLE__
 
 #if defined( ORB_CC_MSVC )
 /* Suppress MSVC warnings about DLL-interfaces */
 #  pragma warning( disable: 4251 )
-#endif
+#endif // ORB_CC_MSVC

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,11 +16,11 @@
  */
 
 #pragma once
+#include "Orbit/Core/IO/IO.h"
+
 #include <cstddef>
 #include <memory>
 #include <type_traits>
-
-#include "Orbit/Core/IO/IO.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -38,8 +38,8 @@ public:
 
 public:
 
-	NativeFileHandle GetFileHandleRead ( void ) const { return m_handle_read; }
-	NativeFileHandle GetFileHandleWrite( void ) const { return m_handle_write; }
+	NativeFileHandle GetFileHandleRead ( void ) const { return handle_read_; }
+	NativeFileHandle GetFileHandleWrite( void ) const { return handle_write_; }
 
 public:
 
@@ -48,9 +48,7 @@ public:
 	T Read( void )
 	{
 		if( T val; Read( std::addressof( val ), sizeof( T ) ) == sizeof( T ) )
-		{
 			return val;
-		}
 
 		return T { };
 	}
@@ -64,8 +62,8 @@ public:
 
 private:
 
-	NativeFileHandle m_handle_read;
-	NativeFileHandle m_handle_write;
+	NativeFileHandle handle_read_;
+	NativeFileHandle handle_write_;
 
 };
 

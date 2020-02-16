@@ -93,10 +93,10 @@ namespace ShaderGen
 
 	private:
 
-		std::vector< Variables::UniformBase* > m_uniforms;
-		VertexLayout                           m_attribute_layout;
-		VertexLayout                           m_varying_layout;
-		uint32_t                               m_sampler_count;
+		std::vector< Variables::UniformBase* > uniforms_;
+		VertexLayout                           attribute_layout_;
+		VertexLayout                           varying_layout_;
+		uint32_t                               sampler_count_;
 
 	};
 }

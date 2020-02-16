@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -21,10 +21,10 @@
 
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_WINDOWS
 #  include <AppKit/AppKit.h>
 #  include <CoreGraphics/CoreGraphics.h>
-#endif
+#endif // ORB_OS_MACOS
 
 ORB_NAMESPACE_BEGIN
 
@@ -209,9 +209,9 @@ namespace Input
 		/* Toggle cursor visibility */
 		ShowCursor( !enable );
 
-	#elif defined( ORB_OS_LINUX )
+	#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-		if( Window* window = Window::GetPtr(); window != nullptr )
+		if( Window* window = Window::GetInstancePtr(); window != nullptr )
 		{
 			auto& details = window->GetPrivateDetails();
 			
@@ -234,12 +234,12 @@ namespace Input
 			XDefineCursor( details.display, details.window, enable ? invisible_cursor : None );
 		}
 
-	#elif defined( ORB_OS_MACOS )
+	#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
 		if( enable ) [ NSCursor hide ];
 		else         [ NSCursor unhide ];
 
-	#endif
+	#endif // ORB_OS_MACOS
 
 	}
 
@@ -250,7 +250,7 @@ namespace Input
 
 		if( fps_cursor.enabled )
 		{
-			if( Window* window = Window::GetPtr(); window != nullptr )
+			if( Window* window = Window::GetInstancePtr(); window != nullptr )
 			{
 				HWND hwnd = window->GetPrivateDetails().hwnd;
 				RECT client_rect;
@@ -270,9 +270,9 @@ namespace Input
 			}
 		}
 
-	#elif defined( ORB_OS_LINUX )
+	#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-		if( Window* window = Window::GetPtr(); window != nullptr )
+		if( Window* window = Window::GetInstancePtr(); window != nullptr )
 		{
 			auto&    details = window->GetPrivateDetails();
 			XID      root_window;
@@ -296,9 +296,9 @@ namespace Input
 			}
 		}
 
-	#elif defined( ORB_OS_MACOS )
+	#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
-		if( Window* window = Window::GetPtr(); window != nullptr )
+		if( Window* window = Window::GetInstancePtr(); window != nullptr )
 		{
 			auto&   details    = window->GetPrivateDetails();
 			CGSize  size       = details.window.frame.size;
@@ -311,7 +311,7 @@ namespace Input
 				CGWarpMouseCursorPosition( cursor_pos );
 		}
 
-	#endif
+	#endif // ORB_OS_MACOS
 
 		for( auto& it : key_states )
 		{

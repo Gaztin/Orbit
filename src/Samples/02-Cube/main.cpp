@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -14,6 +14,9 @@
  *    being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
+#include "Framework/Camera.h"
+#include "CubeShader.h"
 
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
@@ -34,9 +37,6 @@
 #include <Orbit/Math/Vector2.h>
 #include <Orbit/Math/Vector3.h>
 #include <Orbit/Math/Vector4.h>
-
-#include "Framework/Camera.h"
-#include "CubeShader.h"
 
 struct Vertex
 {
@@ -122,16 +122,16 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: m_window( 800, 600 )
-		, m_shader( cube_shader )
-		, m_vertex_buffer( vertex_data )
-		, m_index_buffer( index_data )
-		, m_constant_buffer( sizeof( ConstantData ) )
-		, m_texture( 4, 4, texture_data )
+		: window_         { 800, 600 }
+		, shader_         { cube_shader }
+		, vertex_buffer_  { vertex_data }
+		, index_buffer_   { index_data }
+		, constant_buffer_{ sizeof( ConstantData ) }
+		, texture_        { 4, 4, texture_data }
 	{
-		m_window.SetTitle( "Orbit Sample (02-Cube)" );
-		m_window.Show();
-		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
+		window_.SetTitle( "Orbit Sample (02-Cube)" );
+		window_.Show();
+		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 	}
 
 public:
@@ -140,45 +140,45 @@ public:
 	{
 		/* Update constant buffer */
 		{
-			m_model.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
+			model_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
-			constant_data.mvp = m_model * m_camera.GetViewProjection();
+			constant_data.mvp = model_ * camera_.GetViewProjection();
 
-			m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
+			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 		}
 
-		m_window.PollEvents();
-		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
+		window_.PollEvents();
+		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
-		m_camera.Update( delta_time );
+		camera_.Update( delta_time );
 
 		Orbit::RenderCommand command;
-		command.vertex_buffer = &m_vertex_buffer;
-		command.index_buffer  = &m_index_buffer;
-		command.shader        = &m_shader;
-		command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &m_constant_buffer );
-		command.textures.push_back( &m_texture );
+		command.vertex_buffer = &vertex_buffer_;
+		command.index_buffer  = &index_buffer_;
+		command.shader        = &shader_;
+		command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &constant_buffer_ );
+		command.textures.push_back( &texture_ );
 
-		m_renderer.QueueCommand( command );
-		m_renderer.Render();
+		renderer_.QueueCommand( command );
+		renderer_.Render();
 
-		m_render_context.SwapBuffers();
+		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning( void ) override { return m_window.IsOpen(); }
+	bool IsRunning( void ) override { return window_.IsOpen(); }
 
 private:
 
-	Orbit::Window            m_window;
-	Orbit::RenderContext     m_render_context;
-	Orbit::Shader            m_shader;
-	Orbit::VertexBuffer      m_vertex_buffer;
-	Orbit::IndexBuffer       m_index_buffer;
-	Orbit::ConstantBuffer    m_constant_buffer;
-	Orbit::Texture2D         m_texture;
-	Orbit::BasicRenderer     m_renderer;
-	Orbit::Matrix4           m_model;
+	Orbit::Window            window_;
+	Orbit::RenderContext     render_context_;
+	Orbit::Shader            shader_;
+	Orbit::VertexBuffer      vertex_buffer_;
+	Orbit::IndexBuffer       index_buffer_;
+	Orbit::ConstantBuffer    constant_buffer_;
+	Orbit::Texture2D         texture_;
+	Orbit::BasicRenderer     renderer_;
+	Orbit::Matrix4           model_;
 
-	Camera m_camera;
+	Camera camera_;
 
 };

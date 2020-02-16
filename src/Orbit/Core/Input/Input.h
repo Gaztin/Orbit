@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,12 +16,12 @@
  */
 
 #pragma once
-#include <map>
-#include <tuple>
-
 #include "Orbit/Core/Input/Key.h"
 #include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Core/Widget/Point.h"
+
+#include <map>
+#include <tuple>
 
 ORB_NAMESPACE_BEGIN
 
@@ -42,12 +42,11 @@ namespace Input
 		PointerIterator end  ( void ) const;
 	};
 
-	extern ORB_API_CORE void SetKeyPressed ( Key key );
-	extern ORB_API_CORE void SetKeyReleased( Key key );
-	extern ORB_API_CORE bool GetKeyPressed ( Key key );
-	extern ORB_API_CORE bool GetKeyReleased( Key key );
-	extern ORB_API_CORE bool GetKeyHeld    ( Key key );
-
+	extern ORB_API_CORE void           SetKeyPressed     ( Key key );
+	extern ORB_API_CORE void           SetKeyReleased    ( Key key );
+	extern ORB_API_CORE bool           GetKeyPressed     ( Key key );
+	extern ORB_API_CORE bool           GetKeyReleased    ( Key key );
+	extern ORB_API_CORE bool           GetKeyHeld        ( Key key );
 	extern ORB_API_CORE void           SetPointerPressed ( size_t index, Point pos );
 	extern ORB_API_CORE void           SetPointerReleased( size_t index, Point pos );
 	extern ORB_API_CORE void           SetPointerPos     ( size_t index, Point pos );
@@ -57,10 +56,8 @@ namespace Input
 	extern ORB_API_CORE Point          GetPointerPos     ( size_t index );
 	extern ORB_API_CORE Point          GetPointerMove    ( size_t index );
 	extern ORB_API_CORE PointerIndices GetPointerIndices ( void );
-
-	extern ORB_API_CORE void SetFPSCursor( bool enable );
-
-	extern ORB_API_CORE void ResetStates( void );
+	extern ORB_API_CORE void           SetFPSCursor      ( bool enable );
+	extern ORB_API_CORE void           ResetStates       ( void );
 
 	constexpr size_t pointer_index_mouse_left    = 0;
 	constexpr size_t pointer_index_mouse_right   = 1;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -41,12 +41,12 @@ public:
 
 public:
 
-	size_t GetCount( void ) const { return m_count; }
+	size_t GetCount( void ) const { return count_; }
 
 private:
 
-	Private::VertexBufferDetails m_details;
-	size_t                       m_count;
+	Private::VertexBufferDetails details_;
+	size_t                       count_;
 
 };
 
