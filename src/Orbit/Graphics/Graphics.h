@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+* Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
 * 
 * This software is provided 'as-is', without any express or implied warranty. In no event will
 * the authors be held liable for any damages arising from the use of this software.
@@ -16,57 +16,57 @@
 */
 
 #pragma once
-#include <cstdint>
-
 #include "Orbit/Core/Utility/Bitmask.h"
+
+#include <cstdint>
 
 #if defined( ORB_BUILD_GRAPHICS )
 #  define ORB_API_GRAPHICS ORB_DLL_EXPORT
-#else
+#else // ORB_BUILD_GRAPHICS
 #  define ORB_API_GRAPHICS ORB_DLL_IMPORT
-#endif
+#endif // !ORB_BUILD_GRAPHICS
 
 /* Graphics API macros. */
 #if defined( ORB_OS_WINDOWS )
 #  define ORB_HAS_D3D11  1
 #  define ORB_HAS_OPENGL 1
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 #  define ORB_HAS_D3D11  0
 #  define ORB_HAS_OPENGL 1
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 #  define ORB_HAS_D3D11  0
 #  define ORB_HAS_OPENGL 1
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 #  define ORB_HAS_D3D11  0
 #  define ORB_HAS_OPENGL 1
-#elif defined( ORB_OS_IOS )
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 #  define ORB_HAS_D3D11  0
 #  define ORB_HAS_OPENGL 1
-#endif
+#endif // ORB_OS_IOS
 
 /* Direct3D includes */
 #if( ORB_HAS_D3D11 )
 #  include <d3d11.h>
-#endif
+#endif // ORB_HAS_D3D11
 
 /* OpenGL includes */
 #if( ORB_HAS_OPENGL )
 #  if defined( ORB_OS_WINDOWS )
 #    include <Windows.h>
 #    include <gl/GL.h>
-#  elif defined( ORB_OS_LINUX )
+#  elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 #    include <GL/glx.h>
 #    include <GL/gl.h>
-#  elif defined( ORB_OS_MACOS )
+#  elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 #    include <OpenGL/gl.h>
-#  elif defined( ORB_OS_ANDROID )
+#  elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 #    include <EGL/egl.h>
 #    include <EGL/eglext.h>
 #    include <GLES3/gl3.h>
-#  elif defined( ORB_OS_IOS )
+#  elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 #    include <OpenGLES/ES3/gl.h>
-#  endif
-#endif
+#  endif // ORB_OS_IOS
+#endif // ORB_HAS_OPENGL
 
 ORB_NAMESPACE_BEGIN
 

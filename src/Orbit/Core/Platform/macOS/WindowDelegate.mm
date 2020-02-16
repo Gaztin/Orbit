@@ -85,4 +85,4 @@
 
 @end
 
-#endif
+#endif // ORB_OS_MACOS

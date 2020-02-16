@@ -90,7 +90,7 @@ namespace ShaderGen
 
 	std::string IGenerator::Generate( void )
 	{
-		switch( RenderContext::Get().GetPrivateDetails().index() )
+		switch( RenderContext::GetInstance().GetPrivateDetails().index() )
 		{
 			default:
 			{
@@ -119,7 +119,7 @@ namespace ShaderGen
 
 	VertexLayout IGenerator::GetVertexLayout( void ) const
 	{
-		return m_attribute_layout;
+		return attribute_layout_;
 	}
 
 	Variables::IVariable IGenerator::Transpose( const Variables::IVariable& matrix )
@@ -184,12 +184,12 @@ namespace ShaderGen
 		full_source_code.append( "#define ivec3 int3\n" );
 		full_source_code.append( "#define ivec4 int4\n" );
 
-		if( m_sampler_count > 0 )
+		if( sampler_count_ > 0 )
 		{
 			std::ostringstream ss;
 			ss << "\n";
 
-			for( size_t i = 0; i < m_sampler_count; ++i )
+			for( size_t i = 0; i < sampler_count_; ++i )
 			{
 				ss << "Texture2D sampler_";
 				ss << i;
@@ -204,7 +204,7 @@ namespace ShaderGen
 		size_t uniforms_offset = full_source_code.size();
 
 		full_source_code.append( "\nstruct VertexData\n{\n" );
-		for( auto it : m_attribute_layout )
+		for( auto it : attribute_layout_ )
 		{
 			auto type_string   = VertexComponentTypeString( it );
 			auto semantic_name = VertexComponentSemanticName( it.type, ShaderType::Vertex );
@@ -217,7 +217,7 @@ namespace ShaderGen
 		full_source_code.append( "};\n" );
 
 		full_source_code.append( "\nstruct PixelData\n{\n" );
-		for( auto it : m_varying_layout )
+		for( auto it : varying_layout_ )
 		{
 			auto type_string   = VertexComponentTypeString( it );
 			auto semantic_name = VertexComponentSemanticName( it.type, ShaderType::Fragment );
@@ -250,24 +250,24 @@ namespace ShaderGen
 		{
 			std::ostringstream ss;
 
-			for( size_t i = 0; i < m_uniforms.size(); ++i )
+			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( m_uniforms[ i ]->m_used )
+				if( uniforms_[ i ]->used_ )
 				{
-					if( m_uniforms[ i ]->IsArray() )
+					if( uniforms_[ i ]->IsArray() )
 					{
-						const Variables::UniformArrayBase* uniform_array = static_cast< const Variables::UniformArrayBase* >( m_uniforms[ i ] );
+						const Variables::UniformArrayBase* uniform_array = static_cast< const Variables::UniformArrayBase* >( uniforms_[ i ] );
 
 						ss << "\t" << DataTypeToString( uniform_array->GetElementType() ) << " uniform_" << i << "[ " << uniform_array->GetArraySize() << " ];\n";
 					}
 					else
 					{
-						ss << "\t" << DataTypeToString( m_uniforms[ i ]->m_data_type ) << " uniform_" << i << ";\n";
+						ss << "\t" << DataTypeToString( uniforms_[ i ]->data_type_ ) << " uniform_" << i << ";\n";
 					}
 
 
 					/* Reset state for next shader pass */
-					m_uniforms[ i ]->m_used = false;
+					uniforms_[ i ]->used_ = false;
 				}
 			}
 
@@ -304,14 +304,14 @@ namespace ShaderGen
 		{
 			std::ostringstream ss;
 
-			for( size_t i = 0; i < m_uniforms.size(); ++i )
+			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( m_uniforms[ i ]->m_used )
+				if( uniforms_[ i ]->used_ )
 				{
-					ss << "\t" << DataTypeToString( m_uniforms[ i ]->m_data_type ) << " uniform_" << i << ";\n";
+					ss << "\t" << DataTypeToString( uniforms_[ i ]->data_type_ ) << " uniform_" << i << ";\n";
 
 					/* Reset state for next shader pass */
-					m_uniforms[ i ]->m_used = false;
+					uniforms_[ i ]->used_ = false;
 				}
 			}
 
@@ -339,7 +339,7 @@ namespace ShaderGen
 		const size_t vertex_uniforms_offset = full_source_code.size();
 
 		full_source_code.append( "\n" );
-		for( auto it : m_attribute_layout )
+		for( auto it : attribute_layout_ )
 		{
 			std::ostringstream ss;
 			ss << "ORB_ATTRIBUTE( " << it.index << " ) " << VertexComponentTypeString( it ) << " attribute_" << it.index << ";\n";
@@ -348,7 +348,7 @@ namespace ShaderGen
 		}
 
 		full_source_code.append( "\n" );
-		for( auto it : m_varying_layout )
+		for( auto it : varying_layout_ )
 		{
 			std::ostringstream ss;
 			ss << "ORB_VARYING " << VertexComponentTypeString( it ) << " varying_" << it.index << ";\n";
@@ -377,23 +377,23 @@ namespace ShaderGen
 		{
 			std::ostringstream ss;
 
-			for( size_t i = 0; i < m_uniforms.size(); ++i )
+			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( m_uniforms[ i ]->m_used )
+				if( uniforms_[ i ]->used_ )
 				{
-					if( m_uniforms[ i ]->IsArray() )
+					if( uniforms_[ i ]->IsArray() )
 					{
-						const Variables::UniformArrayBase* uniform_array = static_cast< const Variables::UniformArrayBase* >( m_uniforms[ i ] );
+						const Variables::UniformArrayBase* uniform_array = static_cast< const Variables::UniformArrayBase* >( uniforms_[ i ] );
 
 						ss << "\tORB_CONSTANT( " << DataTypeToString( uniform_array->GetElementType() ) << ", uniform_" << i << "[ " << uniform_array->GetArraySize() << " ] );\n";
 					}
 					else
 					{
-						ss << "\tORB_CONSTANT( " << DataTypeToString( m_uniforms[ i ]->m_data_type ) << ", uniform_" << i << " );\n";
+						ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->data_type_ ) << ", uniform_" << i << " );\n";
 					}
 
 					/* Reset state for next shader pass */
-					m_uniforms[ i ]->m_used = false;
+					uniforms_[ i ]->used_ = false;
 				}
 			}
 
@@ -412,7 +412,7 @@ namespace ShaderGen
 		const size_t pixel_uniforms_insert_offset = full_source_code.size();
 
 		full_source_code.append( "\n" );
-		for( uint32_t i = 0; i < m_sampler_count; ++i )
+		for( uint32_t i = 0; i < sampler_count_; ++i )
 		{
 			std::ostringstream ss;
 			ss << "uniform sampler2D sampler_";
@@ -423,7 +423,7 @@ namespace ShaderGen
 		}
 
 		full_source_code.append( "\n" );
-		for( auto it : m_varying_layout )
+		for( auto it : varying_layout_ )
 		{
 			std::ostringstream ss;
 			ss << "ORB_VARYING " << VertexComponentTypeString( it ) << " varying_" << it.index << ";\n";
@@ -452,14 +452,14 @@ namespace ShaderGen
 		{
 			std::ostringstream ss;
 
-			for( size_t i = 0; i < m_uniforms.size(); ++i )
+			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( m_uniforms[ i ]->m_used )
+				if( uniforms_[ i ]->used_ )
 				{
-					ss << "\tORB_CONSTANT( " << DataTypeToString( m_uniforms[ i ]->m_data_type ) << ", uniform_" << i << " );\n";
+					ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->data_type_ ) << ", uniform_" << i << " );\n";
 
 					/* Reset state for next shader pass */
-					m_uniforms[ i ]->m_used = false;
+					uniforms_[ i ]->used_ = false;
 				}
 			}
 

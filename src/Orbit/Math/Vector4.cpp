@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -20,26 +20,26 @@
 ORB_NAMESPACE_BEGIN
 
 Vector4::Vector4( void )
-	: x( 0.0f )
-	, y( 0.0f )
-	, z( 0.0f )
-	, w( 0.0f )
+	: x{ 0.0f }
+	, y{ 0.0f }
+	, z{ 0.0f }
+	, w{ 0.0f }
 {
 }
 
 Vector4::Vector4( float scalar )
-	: x( scalar )
-	, y( scalar )
-	, z( scalar )
-	, w( scalar )
+	: x{ scalar }
+	, y{ scalar }
+	, z{ scalar }
+	, w{ scalar }
 {
 }
 
 Vector4::Vector4( float x, float y, float z, float w )
-	: x( x )
-	, y( y )
-	, z( z )
-	, w( w )
+	: x{ x }
+	, y{ y }
+	, z{ z }
+	, w{ w }
 {
 }
 

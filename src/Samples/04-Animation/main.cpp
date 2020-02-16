@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -55,30 +55,30 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: m_window( 800, 600 )
-		, m_shader( animation_shader )
-		, m_model( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
-		, m_animation( Orbit::Asset( "animations/jump.dae" ) )
-		, m_constant_buffer( sizeof( ConstantData ) )
-		, m_life_time( 0.0f )
+		: window_         { 800, 600 }
+		, shader_         { animation_shader }
+		, model_          { Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() }
+		, animation_      { Orbit::Asset( "animations/jump.dae" ) }
+		, constant_buffer_{ sizeof( ConstantData ) }
+		, life_time_      { 0.0f }
 	{
-		m_window.SetTitle( "Orbit Sample (03-Model)" );
-		m_window.Show();
-		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
-		m_model_matrix.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
-		m_model_matrix.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
-		m_camera.position  = Orbit::Vector3( 0.0f, 540.0f, 600.0f );
-		m_camera.rotation  = Orbit::Vector3( 0.1f * Orbit::Pi, 1.0f * Orbit::Pi, 0.0f );
-		m_camera.near_clip = 256.0f;
-		m_camera.far_clip  = 1024.0f;
+		window_.SetTitle( "Orbit Sample (03-Model)" );
+		window_.Show();
+		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
+		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
+		model_matrix_.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
+		camera_.position  = Orbit::Vector3( 0.0f, 540.0f, 600.0f );
+		camera_.rotation  = Orbit::Vector3( 0.1f * Orbit::Pi, 1.0f * Orbit::Pi, 0.0f );
+		camera_.near_clip = 256.0f;
+		camera_.far_clip  = 1024.0f;
 	}
 
 public:
 
 	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& parent_pose )
 	{
-		const float          animation_time = std::fmod( m_life_time, m_animation.GetDuration() );
-		const Orbit::Matrix4 local_pose     = m_animation.JointPoseAtTime( joint.name, animation_time );
+		const float          animation_time = std::fmod( life_time_, animation_.GetDuration() );
+		const Orbit::Matrix4 local_pose     = animation_.JointPoseAtTime( joint.name, animation_time );
 		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 
 		if( joint.id >= 0 )
@@ -90,55 +90,55 @@ public:
 
 	void OnFrame( float delta_time ) override
 	{
-		m_life_time += delta_time;
+		life_time_ += delta_time;
 
-		m_window.PollEvents();
-		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
+		window_.PollEvents();
+		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
-		m_camera.Update( delta_time );
+		camera_.Update( delta_time );
 
-		constant_data.view_projection = m_camera.GetViewProjection();
+		constant_data.view_projection = camera_.GetViewProjection();
 
-		if( m_model.HasJoints() )
+		if( model_.HasJoints() )
 		{
-			const Orbit::Joint& root_joint = m_model.GetRootJoint();
+			const Orbit::Joint& root_joint = model_.GetRootJoint();
 
 			UpdateJointTransformsRecursive( root_joint, Orbit::Matrix4() );
 		}
 
-		m_constant_buffer.Update( &constant_data, sizeof( ConstantData ) );
+		constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 
-		for( const Orbit::Mesh& mesh : m_model )
+		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
 			command.vertex_buffer = mesh.vertex_buffer.get();
 			command.index_buffer  = mesh.index_buffer.get();
-			command.shader        = &m_shader;
-			command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &m_constant_buffer );
+			command.shader        = &shader_;
+			command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &constant_buffer_ );
 
-			m_renderer.QueueCommand( command );
+			renderer_.QueueCommand( command );
 		}
 
-		m_renderer.Render();
+		renderer_.Render();
 
-		m_render_context.SwapBuffers();
+		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning() override { return m_window.IsOpen(); }
+	bool IsRunning() override { return window_.IsOpen(); }
 
 private:
 
-	Orbit::Window         m_window;
-	Orbit::RenderContext  m_render_context;
-	Orbit::Shader         m_shader;
-	Orbit::Model          m_model;
-	Orbit::Animation      m_animation;
-	Orbit::ConstantBuffer m_constant_buffer;
-	Orbit::BasicRenderer  m_renderer;
-	Orbit::Matrix4        m_model_matrix;
+	Orbit::Window         window_;
+	Orbit::RenderContext  render_context_;
+	Orbit::Shader         shader_;
+	Orbit::Model          model_;
+	Orbit::Animation      animation_;
+	Orbit::ConstantBuffer constant_buffer_;
+	Orbit::BasicRenderer  renderer_;
+	Orbit::Matrix4        model_matrix_;
 
-	Camera m_camera;
+	Camera camera_;
 
-	float m_life_time;
+	float life_time_;
 
 };

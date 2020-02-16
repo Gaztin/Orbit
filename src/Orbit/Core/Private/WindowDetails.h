@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -20,18 +20,18 @@
 
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 #  include <X11/Xlib.h>
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 @class NSWindow;
 @class ORB_NAMESPACED_OBJC( WindowDelegate );
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 struct ASensorEventQueue;
 struct ASensorManager;
 struct ASensor;
-#elif defined( ORB_OS_IOS )
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 @class ORB_NAMESPACED_OBJC( UIWindow );
-#endif
+#endif // ORB_OS_IOS
 
 ORB_NAMESPACE_BEGIN
 
@@ -40,32 +40,32 @@ namespace Private
 	struct WindowDetails
 	{
 
-#if defined( ORB_OS_WINDOWS )
+	#if defined( ORB_OS_WINDOWS )
 
 		HWND hwnd;
 
-#elif defined( ORB_OS_LINUX )
+	#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
 		_XDisplay* display;
 		XID        window;
 		Atom       wm_delete_window;
 
-#elif defined( ORB_OS_MACOS )
+	#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
 		NSWindow*                              window;
 		ORB_NAMESPACED_OBJC( WindowDelegate )* delegate;
 
-#elif defined( ORB_OS_ANDROID )
+	#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 		ASensorManager*    sensor_manager;
 		const ASensor*     accelerometer_sensor;
 		ASensorEventQueue* sensor_event_queue;
 
-#elif defined( ORB_OS_IOS )
+	#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
 		ORB_NAMESPACED_OBJC( UIWindow )* ui_window;
 
-#endif
+	#endif // ORB_OS_IOS
 
 	};
 }

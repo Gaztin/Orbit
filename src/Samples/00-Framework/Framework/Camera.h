@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,11 +16,11 @@
  */
 
 #pragma once
-#include <cstdint>
-
 #include <Orbit/Core/Event/EventSubscription.h>
 #include <Orbit/Math/Matrix4.h>
 #include <Orbit/Math/Vector3.h>
+
+#include <cstdint>
 
 namespace Orbit { struct WindowResized; }
 
@@ -55,9 +55,9 @@ private:
 
 private:
 
-	Orbit::EventSubscription m_on_resize;
+	Orbit::EventSubscription on_resize_;
 
-	uint32_t m_width  = 512;
-	uint32_t m_height = 512;
+	uint32_t width_  = 512;
+	uint32_t height_ = 512;
 
 };

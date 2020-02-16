@@ -37,7 +37,7 @@ public:
 
 public:
 
-	float GetDuration( void ) const { return m_duration; }
+	float GetDuration( void ) const { return duration_; }
 
 private:
 
@@ -45,9 +45,9 @@ private:
 
 private:
 
-	std::map< std::string, std::vector< KeyFrame > > m_joint_key_frames;
+	std::map< std::string, std::vector< KeyFrame > > joint_key_frames_;
 
-	float m_duration;
+	float duration_;
 
 };
 

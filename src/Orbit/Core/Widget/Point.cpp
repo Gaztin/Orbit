@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -22,20 +22,20 @@
 ORB_NAMESPACE_BEGIN
 
 Point::Point( void )
-	: x( 0 )
-	, y( 0 )
+	: x{ 0 }
+	, y{ 0 }
 {
 }
 
 Point::Point( int x, int y )
-	: x( x )
-	, y( y )
+	: x{ x }
+	, y{ y }
 {
 }
 
 Point::Point( float fx, float fy )
-	: x( static_cast< int >( std::round( fx ) ) )
-	, y( static_cast< int >( std::round( fy ) ) )
+	: x{ static_cast< int >( std::round( fx ) ) }
+	, y{ static_cast< int >( std::round( fy ) ) }
 {
 }
 

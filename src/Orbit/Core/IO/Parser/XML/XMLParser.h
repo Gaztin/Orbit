@@ -28,11 +28,11 @@ class ORB_API_CORE XMLParser : public ITextParser
 public:
 
 	explicit XMLParser( ByteSpan data );
-	~XMLParser( void ) = default;
+	        ~XMLParser( void ) = default;
 
 public:
 
-	const XMLElement& GetRootElement( void ) const { return m_root_element; }
+	const XMLElement& GetRootElement( void ) const { return root_element_; }
 
 private:
 
@@ -42,7 +42,7 @@ private:
 
 private:
 
-	XMLElement m_root_element;
+	XMLElement root_element_;
 
 };
 

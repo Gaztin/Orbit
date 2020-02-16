@@ -30,76 +30,76 @@ ITextParser::ITextParser( ByteSpan data )
 
 void ITextParser::SkipWhitespace( void )
 {
-	while( m_offset < m_size && std::isspace( m_data[ m_offset ] ) )
-		++m_offset;
+	while( offset_ < size_ && std::isspace( data_[ offset_ ] ) )
+		++offset_;
 }
 
 std::string ITextParser::ReadAlphaNumeric( void )
 {
-	size_t off = m_offset;
+	size_t off = offset_;
 
-	while( off < m_size && std::isalnum( m_data[ off ] ) )
+	while( off < size_ && std::isalnum( data_[ off ] ) )
 		++off;
 
-	const std::string alphanumeric( reinterpret_cast< const char* >( &m_data[ m_offset ] ), ( off - m_offset ) );
+	const std::string alphanumeric( reinterpret_cast< const char* >( &data_[ offset_ ] ), ( off - offset_ ) );
 
-	m_offset = off;
+	offset_ = off;
 
 	return alphanumeric;
 }
 
 std::string ITextParser::ReadPrintable( void )
 {
-	size_t off = m_offset;
+	size_t off = offset_;
 
-	while( off < m_size && std::isprint( m_data[ off ] ) )
+	while( off < size_ && std::isprint( data_[ off ] ) )
 		++off;
 
-	const std::string printable( reinterpret_cast< const char* >( &m_data[ m_offset ] ), ( off - m_offset ) );
+	const std::string printable( reinterpret_cast< const char* >( &data_[ offset_ ] ), ( off - offset_ ) );
 
-	m_offset = off;
+	offset_ = off;
 
 	return printable;
 }
 
 std::string ITextParser::ReadLiteral( void )
 {
-	if( m_data[ m_offset ] != '"' )
+	if( data_[ offset_ ] != '"' )
 		return std::string();
 
-	size_t off = ( ++m_offset );
+	size_t off = ( ++offset_ );
 
-	while( off < m_size && m_data[ off ] != '"' )
+	while( off < size_ && data_[ off ] != '"' )
 		++off;
 
-	const std::string literal( reinterpret_cast< const char* >( &m_data[ m_offset ] ), off - m_offset );
+	const std::string literal( reinterpret_cast< const char* >( &data_[ offset_ ] ), off - offset_ );
 
-	m_offset = off;
+	offset_ = off;
 
-	if( m_offset < m_size )
-		++m_offset;
+	if( offset_ < size_ )
+		++offset_;
 
 	return literal;
 }
 
 std::string ITextParser::Peek( size_t length ) const
 {
-	if( ( m_offset + length ) > m_size )
-		length = ( m_size - m_offset );
+	if( ( offset_ + length ) > size_ )
+		length = ( size_ - offset_ );
 
-	return std::string( reinterpret_cast< const char* >( &m_data[ m_offset ] ), length );
+	return std::string( reinterpret_cast< const char* >( &data_[ offset_ ] ), length );
 }
 
 bool ITextParser::ExpectString( std::string_view str )
 {
-	if( ( m_offset + str.length() ) > m_size )
+	if( ( offset_ + str.length() ) > size_ )
 		return false;
 
-	const char* data = reinterpret_cast< const char* >( &m_data[ m_offset ] );
+	const char* data = reinterpret_cast< const char* >( &data_[ offset_ ] );
 
 	if( std::strncmp( data, str.data(), str.length() ) == 0 )
 	{
-		m_offset += str.length();
+		offset_ += str.length();
 		return true;
 	}
 

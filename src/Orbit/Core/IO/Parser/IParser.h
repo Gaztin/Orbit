@@ -32,7 +32,7 @@ public:
 
 public:
 
-	bool IsGood( void ) const { return m_good; }
+	bool IsGood( void ) const { return good_; }
 
 protected:
 
@@ -44,10 +44,12 @@ protected:
 
 protected:
 
-	std::unique_ptr< uint8_t[] > m_data;
-	size_t                       m_size;
-	size_t                       m_offset;
-	bool                         m_good;
+	std::unique_ptr< uint8_t[] > data_;
+
+	size_t                       size_;
+	size_t                       offset_;
+
+	bool                         good_;
 
 };
 

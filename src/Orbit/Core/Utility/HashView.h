@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -28,14 +28,16 @@ class HashView
 public:
 
 	constexpr HashView( void )
-		: m_value { }
-	{ }
+		: value_{ }
+	{
+	}
 
 	constexpr HashView( std::string_view str )
-		: m_value { Hash( str ) }
-	{ }
+		: value_{ Hash( str ) }
+	{
+	}
 
-	constexpr ValueType GetValue() const { return m_value; }
+	constexpr ValueType GetValue( void ) const { return value_; }
 
 private:
 
@@ -57,7 +59,7 @@ private:
 
 private:
 
-	ValueType m_value;
+	ValueType value_;
 
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -17,22 +17,22 @@
 
 #include "OpenGL.h"
 
-#include <map>
-#include <vector>
-
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
 
+#include <map>
+#include <vector>
+
 #if defined( ORB_OS_LINUX )
 #  include <GL/glx.h>
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 #  include <dlfcn.h>
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 #  include <EGL/egl.h>
-#elif defined( ORB_OS_IOS )
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 #  include <dlfcn.h>
-#endif
+#endif // ORB_OS_IOS
 
 ORB_NAMESPACE_BEGIN
 
@@ -47,21 +47,21 @@ const std::map< GLenum, std::string_view > error_codes
 #if defined( GL_STACK_OVERFLOW )
 	{ GL_STACK_OVERFLOW, "This command would cause a stack overflow. The offending command is ignored and has no other"
 	                     " side effect than to set the error flag." },
-#endif
+#endif // GL_STACK_OVERFLOW
 #if defined( GL_STACK_UNDERFLOW )
 	{ GL_STACK_UNDERFLOW, "This command would cause a stack underflow. The offending command is ignored and has no other"
 	                    " side effect than to set the error flag." },
-#endif
+#endif // GL_STACK_UNDERFLOW
 	{ GL_OUT_OF_MEMORY, "There is not enough memory left to execute the command. The state of the GL is undefined,"
 	                    " except for the state of the error flags, after this error is recorded." },
 #if defined( GL_TABLE_TOO_LARGE )
 	{ GL_TABLE_TOO_LARGE, "The specified table exceeds the implementation's maximum supported table size. The offending"
 	                      " command is ignored and has no other side effect than to set the error flag." },
-#endif
+#endif // GL_TABLE_TOO_LARGE
 #if defined( GL_INVALID_FRAMEBUFFER_OPERATION )
 	{ GL_INVALID_FRAMEBUFFER_OPERATION, "The framebuffer object is not complete. The offending command is ignored and"
 	                                    " has no other side effect than to set the error flag." },
-#endif
+#endif // GL_INVALID_FRAMEBUFFER_OPERATION
 };
 
 void* GetOpenGLProcAddress( std::string_view name )
@@ -71,24 +71,24 @@ void* GetOpenGLProcAddress( std::string_view name )
 
 	return static_cast< void* >( wglGetProcAddress( name.data() ) );
 
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
 	return reinterpret_cast< void* >( glXGetProcAddress( reinterpret_cast< const GLubyte* >( name.data() ) ) );
 
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
 	static void* lib = dlopen( "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_LAZY );
 	return dlsym( lib, name.data() );
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 	return reinterpret_cast< void* >( eglGetProcAddress( name.data() ) );
 
-#elif defined( ORB_OS_IOS )
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
 	return dlsym( RTLD_DEFAULT, name.data() );
 
-#endif
+#endif // ORB_OS_IOS
 
 }
 

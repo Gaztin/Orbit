@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,9 +16,9 @@
  */
 
 #pragma once
-#include <array>
-
 #include "Orbit/Graphics/Graphics.h"
+
+#include <array>
 
 #if( ORB_HAS_OPENGL )
 
@@ -27,12 +27,12 @@
 #  pragma push_macro( "major" )
 #  undef major
 #  define UNDEFINED_major
-#endif
+#endif // major
 #ifdef minor
 #  pragma push_macro( "minor" )
 #  undef minor
 #  define UNDEFINED_minor
-#endif
+#endif // minor
 
 ORB_NAMESPACE_BEGIN
 
@@ -53,9 +53,9 @@ public:
 
 public:
 
-	bool    IsEmbedded ( void ) const { return ( m_embedded != 0 ); }
-	uint8_t GetMajor   ( void ) const { return m_major; }
-	uint8_t GetMinor   ( void ) const { return m_minor; }
+	bool    IsEmbedded ( void ) const { return ( embedded_ != 0 ); }
+	uint8_t GetMajor   ( void ) const { return major_; }
+	uint8_t GetMinor   ( void ) const { return minor_; }
 
 private:
 
@@ -63,9 +63,9 @@ private:
 
 private:
 
-	uint8_t m_embedded : 1;
-	uint8_t m_major    : 3;
-	uint8_t m_minor    : 4;
+	uint8_t embedded_ : 1;
+	uint8_t major_    : 3;
+	uint8_t minor_    : 4;
 
 };
 
@@ -74,10 +74,10 @@ ORB_NAMESPACE_END
 #if defined( UNDEFINED_minor )
 #  pragma pop_macro( "minor" )
 #  undef UNDEFINED_minor
-#endif
+#endif // UNDEFINED_minor
 #if defined( UNDEFINED_major )
 #  pragma pop_macro( "major" )
 #  undef UNDEFINED_major
-#endif
+#endif // UNDEFINED_major
 
-#endif
+#endif // ORB_HAS_OPENGL

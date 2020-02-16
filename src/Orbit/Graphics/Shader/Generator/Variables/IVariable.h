@@ -47,14 +47,14 @@ namespace ShaderGen { class IGenerator; struct SwizzlePermutations; namespace Va
 
 	public:
 
-		DataType GetDataType( void ) const { return m_data_type; };
-		void     SetUsed    ( void ) const { m_used = true; }
-		void     SetStored  ( void )       { m_stored = true; }
-		bool     IsStored   ( void ) const { return m_stored; };
+		DataType GetDataType( void ) const { return data_type_; };
+		void     SetUsed    ( void ) const { used_ = true; }
+		void     SetStored  ( void )       { stored_ = true; }
+		bool     IsStored   ( void ) const { return stored_; };
 
 	public:
 
-		virtual std::string GetValue( void ) const { return m_value; }
+		virtual std::string GetValue( void ) const { return value_; }
 
 	public:
 
@@ -76,10 +76,10 @@ namespace ShaderGen { class IGenerator; struct SwizzlePermutations; namespace Va
 
 	protected:
 
-		std::string  m_value;
-		DataType     m_data_type;
-		bool         m_stored = false;
-		mutable bool m_used   = false;
+		std::string  value_;
+		DataType     data_type_;
+		bool         stored_ = false;
+		mutable bool used_   = false;
 
 	};
 

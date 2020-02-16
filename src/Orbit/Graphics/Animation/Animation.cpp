@@ -33,7 +33,7 @@ static bool SortKeyFrames( const KeyFrame& a, const KeyFrame& b )
 }
 
 Animation::Animation( ByteSpan data )
-	: m_duration( 0.0 )
+	: duration_{ 0.0 }
 {
 	if( !ParseCollada( data ) )
 	{
@@ -43,7 +43,7 @@ Animation::Animation( ByteSpan data )
 
 Matrix4 Animation::JointPoseAtTime( std::string_view joint, float time ) const
 {
-	if( auto it = m_joint_key_frames.find( std::string( joint ) ); it != m_joint_key_frames.end() )
+	if( auto it = joint_key_frames_.find( std::string( joint ) ); it != joint_key_frames_.end() )
 	{
 		for( const KeyFrame& kf : it->second )
 		{
@@ -155,11 +155,11 @@ bool Animation::ParseCollada( ByteSpan data )
 		{
 			const KeyFrame& last_frame = key_frames.back();
 
-			if( last_frame.time > m_duration )
-				m_duration = last_frame.time;
+			if( last_frame.time > duration_ )
+				duration_ = last_frame.time;
 		}
 
-		m_joint_key_frames.try_emplace( std::move( target_joint ), std::move( key_frames ) );
+		joint_key_frames_.try_emplace( std::move( target_joint ), std::move( key_frames ) );
 	}
 
 	return true;

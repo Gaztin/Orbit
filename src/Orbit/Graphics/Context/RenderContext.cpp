@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -17,9 +17,6 @@
 
 #include "RenderContext.h"
 
-#include <array>
-#include <cstring>
-
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
@@ -27,18 +24,21 @@
 #include "Orbit/Core/Widget/Window.h"
 #include "Orbit/Graphics/Platform/iOS/GLKViewDelegate.h"
 
+#include <array>
+#include <cstring>
+
 #if defined( ORB_OS_MACOS )
 #  include <AppKit/AppKit.h>
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 #  include <android/native_window.h>
-#endif
+#endif // ORB_OS_ANDROID
 
 ORB_NAMESPACE_BEGIN
 
 RenderContext::RenderContext( GraphicsAPI api )
-	: m_details              { }
-	, m_window_resized       { }
-	, m_window_state_changed { }
+	: details_             { }
+	, window_resized_      { }
+	, window_state_changed_{ }
 {
 	switch( api )
 	{
@@ -48,11 +48,11 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 		case GraphicsAPI::OpenGL:
 		{
-			auto& details = m_details.emplace< Private::_RenderContextDetailsOpenGL >();
+			auto& details = details_.emplace< Private::_RenderContextDetailsOpenGL >();
 
 		#if defined( ORB_OS_WINDOWS )
 
-			auto& window_details = Window::Get().GetPrivateDetails();
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			/* Set pixel format */
 			{
@@ -127,9 +127,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 			/* Destroy dummy context */
 			wglDeleteContext( dummy_context );
 
-		#elif defined( ORB_OS_LINUX )
+		#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-			auto& window_details = Window::Get().GetPrivateDetails();
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			details.gc      = XCreateGC( window_details.display, window_details.window, 0, nullptr );
 			details.context = [ & ]
@@ -221,9 +221,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 				}
 			}();
 
-		#elif defined( ORB_OS_MACOS )
+		#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
-			auto& window_details = Window::Get().GetPrivateDetails();
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			const NSOpenGLPixelFormatAttribute attribs[]
 			{
@@ -242,7 +242,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 			[ details.view prepareOpenGL ];
 			[ window_details.window.contentView addSubview:details.view ];
 
-		#elif defined( ORB_OS_ANDROID )
+		#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 			/* Initialize display */
 			{
@@ -343,9 +343,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 				details.context = eglCreateContext( details.display, details.config, EGL_NO_CONTEXT, attribs );
 			}
 
-		#elif defined( ORB_OS_IOS )
+		#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
-			auto& window_details = Window::Get().GetPrivateDetails();
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			ORB_NAMESPACED_OBJC( GLKViewDelegate )* delegate = [ ORB_NAMESPACED_OBJC( GLKViewDelegate ) alloc ];
 			[ delegate init ];
@@ -363,7 +363,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 			details.view.enableSetNeedsDisplay = NO;
 			[ window_details.ui_window addSubview:details.view ];
 
-		#endif
+		#endif // ORB_OS_IOS
 
 			/* Load functions */
 			MakeCurrent();
@@ -381,13 +381,13 @@ RenderContext::RenderContext( GraphicsAPI api )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case GraphicsAPI::D3D11:
 		{
-			auto& details        = m_details.emplace< Private::_RenderContextDetailsD3D11 >();
-			auto& window_details = Window::Get().GetPrivateDetails();
+			auto& details        = details_.emplace< Private::_RenderContextDetailsD3D11 >();
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			constexpr DXGI_FORMAT back_buffer_format  = DXGI_FORMAT_R8G8B8A8_UNORM;
 			constexpr DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -446,7 +446,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 				constexpr UINT device_flags = 0
 				#if !defined( NDEBUG )
 					| D3D11_CREATE_DEVICE_DEBUG
-				#endif
+				#endif // NDEBUG
 					;
 				constexpr std::array feature_levels
 				{
@@ -575,19 +575,19 @@ RenderContext::RenderContext( GraphicsAPI api )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 
 	/* Resize context when window is updated */
-	m_window_resized = Window::Get().Subscribe( [ this ]( const WindowResized& e )
+	window_resized_ = Window::GetInstance().Subscribe( [ this ]( const WindowResized& e )
 		{
 			Resize( e.width, e.height );
 		}
 	);
 
 	/* Disable rendering when minimized */
-	m_window_state_changed = Window::Get().Subscribe( [ this ]( const WindowStateChanged& e )
+	window_state_changed_ = Window::GetInstance().Subscribe( [ this ]( const WindowStateChanged& e )
 		{
 			if( e.state == WindowState::Suspend )
 			{
@@ -602,7 +602,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 RenderContext::~RenderContext()
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -610,7 +610,7 @@ RenderContext::~RenderContext()
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( details_ );
 
 		#if defined( ORB_OS_WINDOWS )
 
@@ -620,39 +620,39 @@ RenderContext::~RenderContext()
 			wglDeleteContext( details.hglrc );
 			ReleaseDC( hwnd, details.hdc );
 
-		#elif defined( ORB_OS_LINUX )
+		#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-			auto& window_details = Window::Get().GetPrivateDetails();
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			glXMakeCurrent( window_details.display, None, nullptr );
 			glXDestroyContext( window_details.display, details.context );
 			XFreeGC( window_details.display, details.gc );
 
-		#elif defined( ORB_OS_MACOS )
+		#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
 			[ NSOpenGLContext clearCurrentContext ];
 			[ details.view removeFromSuperview ];
 			[ details.view dealloc ];
 
-		#elif defined( ORB_OS_ANDROID )
+		#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 			eglMakeCurrent( details.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
 			eglDestroyContext( details.display, details.context );
 			eglDestroySurface( details.display, details.surface );
 			eglTerminate( details.display );
 
-		#elif defined( ORB_OS_IOS )
+		#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
 			[ EAGLContext setCurrentContext:nullptr ];
 			[ details.view dealloc ];
 			[ details.context dealloc ];
 
-		#endif
+		#endif // ORB_OS_IOS
 
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 
 	}
 }
@@ -662,46 +662,46 @@ bool RenderContext::MakeCurrent()
 
 #if( ORB_HAS_OPENGL )
 
-	if( m_details.index() == unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > )
+	if( details_.index() == unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > )
 	{
-		auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+		auto& details = std::get< Private::_RenderContextDetailsOpenGL >( details_ );
 
 	#if defined( ORB_OS_WINDOWS )
 
 		if( !wglMakeCurrent( details.hdc, details.hglrc ) )
 			return false;
 
-	#elif defined( ORB_OS_LINUX )
+	#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-		auto& window_details = Window::Get().GetPrivateDetails();
+		auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 		if( !glXMakeCurrent( window_details.display, window_details.window, details.context ) )
 			return false;
 
-	#elif defined( ORB_OS_MACOS )
+	#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
 		[ [ ( const NSOpenGLView* )details.view openGLContext ] makeCurrentContext ];
 
-	#elif defined( ORB_OS_ANDROID )
+	#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 		eglMakeCurrent( details.display, details.surface, details.surface, details.context );
 
-	#elif defined( ORB_OS_IOS )
+	#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
 		[ EAGLContext setCurrentContext:details.context ];
 
-	#endif
+	#endif // ORB_OS_IOS
 
 	}
 
-#endif
+#endif // ORB_HAS_OPENGL
 
 	return true;
 }
 
 void RenderContext::Resize( uint32_t width, uint32_t height )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -712,7 +712,7 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 		#if defined( ORB_OS_ANDROID )
 
-			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( details_ );
 
 			eglMakeCurrent( details.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
 
@@ -723,25 +723,25 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 			eglMakeCurrent( details.display, details.surface, details.surface, details.context );
 
-		#elif defined( ORB_OS_IOS )
+		#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
-			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( details_ );
 
 			details.view.layer.frame = CGRectMake( 0.f, 0.f, width, height );
 
-		#endif
+		#endif // ORB_OS_IOS
 
 			glViewport( 0, 0, width, height );
 
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( details_ );
 
 			details.device_context->OMSetRenderTargets( 0, nullptr, nullptr );
 			details.device_context->ClearState();
@@ -817,14 +817,14 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }
 
 void RenderContext::SwapBuffers( void )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -835,59 +835,59 @@ void RenderContext::SwapBuffers( void )
 
 		#if defined( ORB_OS_WINDOWS )
 
-			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( details_ );
 
 			::SwapBuffers( details.hdc );
 
-		#elif defined( ORB_OS_LINUX )
+		#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-			auto& window_details = Window::Get().GetPrivateDetails();
+			auto& window_details = Window::GetInstance().GetPrivateDetails();
 
 			glXSwapBuffers( window_details.display, window_details.window );
 
-		#elif defined( ORB_OS_MACOS )
+		#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
-			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( details_ );
 
 			[ [ ( const NSOpenGLView* )details.view openGLContext ] flushBuffer ];
 
-		#elif defined( ORB_OS_ANDROID )
+		#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
-			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( details_ );
 
 			eglSwapBuffers( details.display, details.surface );
 
-		#elif defined( ORB_OS_IOS )
+		#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
-			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsOpenGL >( details_ );
 
 			[ details.view display ];
 
-		#endif
+		#endif // ORB_OS_IOS
 
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( details_ );
 
 			details.swap_chain->Present( 0, 0 );
 
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }
 
 void RenderContext::Clear( BufferMask mask )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -904,12 +904,12 @@ void RenderContext::Clear( BufferMask mask )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( details_ );
 
 			if( !!( mask & BufferMask::Color ) )
 				details.device_context->ClearRenderTargetView( details.render_target_view.get(), &details.clear_color[ 0 ] );
@@ -920,14 +920,14 @@ void RenderContext::Clear( BufferMask mask )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }
 
 void RenderContext::SetClearColor( float r, float g, float b )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -940,12 +940,12 @@ void RenderContext::SetClearColor( float r, float g, float b )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( m_details );
+			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( details_ );
 			details.clear_color.r = r;
 			details.clear_color.g = g;
 			details.clear_color.b = b;
@@ -954,7 +954,7 @@ void RenderContext::SetClearColor( float r, float g, float b )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }

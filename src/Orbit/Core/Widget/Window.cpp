@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -17,8 +17,6 @@
 
 #include "Window.h"
 
-#include <cmath>
-
 #include "Orbit/Core/Input/Input.h"
 #include "Orbit/Core/Input/Key.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
@@ -27,30 +25,32 @@
 #include "Orbit/Core/Platform/macOS/WindowDelegate.h"
 #include "Orbit/Core/Utility/Utility.h"
 
+#include <cmath>
+
 #if defined( ORB_OS_WINDOWS )
 #  include <windowsx.h>
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_WINDOWS
 #  include <AppKit/AppKit.h>
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 #  include <android/sensor.h>
-#endif
+#endif // ORB_OS_ANDROID
 
 ORB_NAMESPACE_BEGIN
 
 #if defined( ORB_OS_WINDOWS )
 static ATOM RegisterWindowClass( LPCSTR name );
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 static void HandleXEvent( Window* w, const XEvent& xevent );
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 static void HandleNSEvent( NSEvent* nsevent, NSWindow* nswindow );
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 static void AppCMD ( AndroidApp* state, AndroidAppCommand cmd );
 static int  OnInput( AndroidApp* state, AInputEvent* e );
-#endif
+#endif // ORB_OS_ANDROID
 
-Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height )
-	: m_details { }
-	, m_open    { true }
+Window::Window( uint32_t width, uint32_t height )
+	: details_{ }
+	, open_   { true }
 {
 
 #if defined( ORB_OS_WINDOWS )
@@ -59,54 +59,54 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	static ATOM      window_class = RegisterWindowClass( class_name );
 
 	/* Create window */
-	m_details.hwnd = CreateWindowExA( WS_EX_OVERLAPPEDWINDOW, class_name, NULL, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, NULL, NULL, GetModuleHandleA( NULL ), NULL );
+	details_.hwnd = CreateWindowExA( WS_EX_OVERLAPPEDWINDOW, class_name, NULL, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, NULL, NULL, GetModuleHandleA( NULL ), NULL );
 
 	/* Set user data */
-	SetWindowLongPtrA( m_details.hwnd, GWLP_USERDATA, reinterpret_cast< LONG_PTR >( this ) );
+	SetWindowLongPtrA( details_.hwnd, GWLP_USERDATA, reinterpret_cast< LONG_PTR >( this ) );
 
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
 	/* Open display */
-	m_details.display = XOpenDisplay( nullptr );
+	details_.display = XOpenDisplay( nullptr );
 
 	/* Create window */
-	const int               screen      = DefaultScreen( m_details.display );
-	XID                     root_window = XRootWindow( m_details.display, screen );
-	int                     depth       = DefaultDepth( m_details.display, screen );
-	Visual*                 visual      = DefaultVisual( m_details.display, screen );
+	const int               screen      = DefaultScreen( details_.display );
+	XID                     root_window = XRootWindow( details_.display, screen );
+	int                     depth       = DefaultDepth( details_.display, screen );
+	Visual*                 visual      = DefaultVisual( details_.display, screen );
 	constexpr unsigned long value_mask  = ( CWBackPixel | CWEventMask );
 	XSetWindowAttributes    attribs     = { };
 	attribs.event_mask                  = ( FocusChangeMask | ResizeRedirectMask | StructureNotifyMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask );
-	m_details.window                    = XCreateWindow( m_details.display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, value_mask, &attribs );
+	details_.window                     = XCreateWindow( details_.display, root_window, 0, 0, width, height, 0, depth, InputOutput, visual, value_mask, &attribs );
 
 	/* Allows us to capture the window close event */
-	m_details.wm_delete_window = XInternAtom( m_details.display, "WM_DELETE_WINDOW", True );
-	XSetWMProtocols( m_details.display, m_details.window, &m_details.wm_delete_window, 1 );
+	details_.wm_delete_window = XInternAtom( details_.display, "WM_DELETE_WINDOW", True );
+	XSetWMProtocols( details_.display, details_.window, &details_.wm_delete_window, 1 );
 	
 	/* Send initial resize event */
 	XEvent xevent;
 	xevent.xresizerequest.type       = ResizeRequest;
-	xevent.xresizerequest.display    = m_details.display;
-	xevent.xresizerequest.window     = m_details.window;
+	xevent.xresizerequest.display    = details_.display;
+	xevent.xresizerequest.window     = details_.window;
 	xevent.xresizerequest.width      = width;
 	xevent.xresizerequest.height     = height;
 	xevent.xresizerequest.send_event = True;
 	xevent.xresizerequest.serial     = 0;
-	XSendEvent( m_details.display, m_details.window, False, 0, &xevent );
+	XSendEvent( details_.display, details_.window, False, 0, &xevent );
 
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
 	NSRect             frame      = NSMakeRect( 0.0f, 0.0f, width, height );
 	NSWindowStyleMask  style_mask = ( NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable );
 	NSBackingStoreType backing    = ( NSBackingStoreBuffered );
 
 	/* Create window */
-	m_details.window = [ NSWindow alloc ];
-	[ m_details.window initWithContentRect:frame styleMask:style_mask backing:backing defer:NO ];
+	details_.window = [ NSWindow alloc ];
+	[ details_.window initWithContentRect:frame styleMask:style_mask backing:backing defer:NO ];
 
 	/* Create window delegate */
-	m_details.delegate = [ OrbitWindowDelegate alloc ];
-	[ m_details.window setDelegate:m_details.delegate ];
+	details_.delegate = [ OrbitWindowDelegate alloc ];
+	[ details_.window setDelegate:details_.delegate ];
 
 	/* Send initial resize event */
 	WindowResized e;
@@ -114,13 +114,13 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 	e.height = height;
 	QueueEvent( e );
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 	AndroidOnly::app->on_input_event = OnInput;
 
-	m_details.sensor_manager       = ASensorManager_getInstance();
-	m_details.accelerometer_sensor = ASensorManager_getDefaultSensor( m_details.sensor_manager, ASENSOR_TYPE_ACCELEROMETER );
-	m_details.sensor_event_queue   = ASensorManager_createEventQueue( m_details.sensor_manager, AndroidOnly::app->looper, static_cast< int >( AndroidLooperID::User ), nullptr, nullptr );
+	details_.sensor_manager       = ASensorManager_getInstance();
+	details_.accelerometer_sensor = ASensorManager_getDefaultSensor( details_.sensor_manager, ASENSOR_TYPE_ACCELEROMETER );
+	details_.sensor_event_queue   = ASensorManager_createEventQueue( details_.sensor_manager, AndroidOnly::app->looper, static_cast< int >( AndroidLooperID::User ), nullptr, nullptr );
 
 	AndroidOnly::app->user_data  = this;
 	AndroidOnly::app->on_app_cmd = AppCMD;
@@ -134,21 +134,21 @@ Window::Window( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t h
 			source->process( AndroidOnly::app, source );
 	}
 
-#elif defined( ORB_OS_IOS )
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
 	/* Initialize window */
-	m_details.ui_window = [ OrbitUIWindow alloc ];
-	[ m_details.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
-	m_details.ui_window.backgroundColor = [ UIColor whiteColor ];
-	[ m_details.ui_window makeKeyAndVisible ];
-	[ m_details.ui_window setMultipleTouchEnabled:YES ];
+	details_.ui_window = [ OrbitUIWindow alloc ];
+	[ details_.ui_window initWithFrame:[ [ UIScreen mainScreen ] bounds ] ];
+	details_.ui_window.backgroundColor = [ UIColor whiteColor ];
+	[ details_.ui_window makeKeyAndVisible ];
+	[ details_.ui_window setMultipleTouchEnabled:YES ];
 
 	/* Create view controller */
 	UIViewController* vc = [ UIViewController alloc ];
 	[ vc initWithNibName:nil bundle:nil ];
-	m_details.ui_window.rootViewController = vc;
+	details_.ui_window.rootViewController = vc;
 
-#endif
+#endif // ORB_OS_IOS
 
 }
 
@@ -157,30 +157,30 @@ Window::~Window( void )
 
 #if defined( ORB_OS_WINDOWS )
 
-	DestroyWindow( m_details.hwnd );
+	DestroyWindow( details_.hwnd );
 
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-	XDestroyWindow( m_details.display, m_details.window );
-	XCloseDisplay( m_details.display );
+	XDestroyWindow( details_.display, details_.window );
+	XCloseDisplay( details_.display );
 
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
-	[ m_details.window close ];
-	[ m_details.delegate dealloc ];
-	[ m_details.window dealloc ];
+	[ details_.window close ];
+	[ details_.delegate dealloc ];
+	[ details_.window dealloc ];
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
-	ASensorManager_destroyEventQueue( m_details.sensor_manager, m_details.sensor_event_queue );
+	ASensorManager_destroyEventQueue( details_.sensor_manager, details_.sensor_event_queue );
 	AndroidOnly::app->user_data  = nullptr;
 	AndroidOnly::app->on_app_cmd = nullptr;
 
-#elif defined( ORB_OS_IOS )
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
-	[ m_details.ui_window dealloc ];
+	[ details_.ui_window dealloc ];
 
-#endif
+#endif // ORB_OS_IOS
 
 }
 
@@ -192,41 +192,41 @@ void Window::PollEvents( void )
 
 	MSG msg;
 
-	while( PeekMessageA( &msg, m_details.hwnd, 0, 0, PM_REMOVE ) )
+	while( PeekMessageA( &msg, details_.hwnd, 0, 0, PM_REMOVE ) )
 	{
 		TranslateMessage( &msg );
 		DispatchMessageA( &msg );
 	}
 
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-	while( XPending( m_details.display ) )
+	while( XPending( details_.display ) )
 	{
 		XEvent xevent;
-		XNextEvent( m_details.display, &xevent );
+		XNextEvent( details_.display, &xevent );
 
 		HandleXEvent( this, xevent );
 	}
 
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
 	NSEvent* event;
 
-	while( ( event = [ m_details.window nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
+	while( ( event = [ details_.window nextEventMatchingMask:NSEventMaskAny untilDate:nullptr inMode:NSDefaultRunLoopMode dequeue:YES ] ) != nullptr )
 	{
-		HandleNSEvent( event, m_details.window );
+		HandleNSEvent( event, details_.window );
 
-		[ m_details.window sendEvent:event ];
+		[ details_.window sendEvent:event ];
 	}
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 	AndroidPollSource* source;
 
 	if( ALooper_pollAll( 0, nullptr, nullptr, reinterpret_cast< void** >( &source ) ) >= 0 && source )
 		source->process( AndroidOnly::app, source );
 
-#endif
+#endif // ORB_OS_ANDROID
 
 	/* Send events */
 	SendEvents();
@@ -237,81 +237,81 @@ void Window::SetTitle( std::string_view title )
 
 #if defined( ORB_OS_WINDOWS )
 
-	SetWindowTextA( m_details.hwnd, title.data() );
+	SetWindowTextA( details_.hwnd, title.data() );
 
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-	XStoreName( m_details.display, m_details.window, title.data() );
+	XStoreName( details_.display, details_.window, title.data() );
 
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
 	NSString* title_objc = [ NSString stringWithUTF8String:title.data() ];
-	[ m_details.window setTitle:title_objc ];
+	[ details_.window setTitle:title_objc ];
 	[ title_objc release ];
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 	// #TODO: Activity.setTitle
 	( void )title;
 
-#endif
+#endif // ORB_OS_ANDROID
 
 }
 
-void Window::Move( [[ maybe_unused ]] int32_t x, [[ maybe_unused ]] int32_t y )
+void Window::Move( int32_t x, int32_t y )
 {
 
 #if defined( ORB_OS_WINDOWS )
 
 	RECT rect;
 
-	if( GetWindowRect( m_details.hwnd, &rect ) )
+	if( GetWindowRect( details_.hwnd, &rect ) )
 	{
 		const int width  = ( rect.right - rect.left );
 		const int height = ( rect.bottom - rect.top );
 
-		MoveWindow( m_details.hwnd, x, y, width, height, FALSE );
+		MoveWindow( details_.hwnd, x, y, width, height, FALSE );
 	}
 
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-	XMoveWindow( m_details.display, m_details.window, x, y );
+	XMoveWindow( details_.display, details_.window, x, y );
 
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
-	NSRect frame   = [ m_details.window frame ];
+	NSRect frame   = [ details_.window frame ];
 	frame.origin.x = x;
 	frame.origin.y = y;
 
-	[ m_details.window setFrame:frame display:YES ];
+	[ details_.window setFrame:frame display:YES ];
 
-#endif
+#endif // ORB_OS_MACOS
 
 }
 
-void Window::Resize( [[ maybe_unused ]] uint32_t width, [[ maybe_unused ]] uint32_t height )
+void Window::Resize( uint32_t width, uint32_t height )
 {
 
 #if defined( ORB_OS_WINDOWS )
 
 	RECT rect;
 	
-	if( GetWindowRect( m_details.hwnd, &rect ) )
-		MoveWindow( m_details.hwnd, rect.left, rect.top, width, height, TRUE );
+	if( GetWindowRect( details_.hwnd, &rect ) )
+		MoveWindow( details_.hwnd, rect.left, rect.top, width, height, TRUE );
 
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-	XResizeWindow( m_details.display, m_details.window, width, height );
+	XResizeWindow( details_.display, details_.window, width, height );
 
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
-	NSRect frame      = [ m_details.window frame ];
+	NSRect frame      = [ details_.window frame ];
 	frame.size.width  = width;
 	frame.size.height = height;
 
-	[ m_details.window setFrame:frame display:YES ];
+	[ details_.window setFrame:frame display:YES ];
 
-#endif
+#endif // ORB_OS_MACOS
 
 }
 
@@ -320,25 +320,25 @@ void Window::Show( void )
 
 #if defined( ORB_OS_WINDOWS )
 
-	ShowWindow( m_details.hwnd, SW_SHOW );
+	ShowWindow( details_.hwnd, SW_SHOW );
 
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-	XMapWindow( m_details.display, m_details.window );
+	XMapWindow( details_.display, details_.window );
 
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
-	[ m_details.window setIsVisible:YES ];
+	[ details_.window setIsVisible:YES ];
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 	// #TODO: Activity.setVisible
 
-#elif defined( ORB_OS_IOS )
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
-	[ ( OrbitUIWindow* )m_details.ui_window setHidden:NO ];
+	[ ( OrbitUIWindow* )details_.ui_window setHidden:NO ];
 
-#endif
+#endif // ORB_OS_IOS
 
 }
 
@@ -347,31 +347,31 @@ void Window::Hide( void )
 
 #if defined( ORB_OS_WINDOWS )
 
-	ShowWindow( m_details.hwnd, SW_HIDE );
+	ShowWindow( details_.hwnd, SW_HIDE );
 
-#elif defined( ORB_OS_LINUX )
+#elif defined( ORB_OS_LINUX ) // ORB_OS_WINDOWS
 
-	XUnmapWindow( m_details.display, m_details.window );
+	XUnmapWindow( details_.display, details_.window );
 
-#elif defined( ORB_OS_MACOS )
+#elif defined( ORB_OS_MACOS ) // ORB_OS_LINUX
 
-	[ m_details.window setIsVisible:NO ];
+	[ details_.window setIsVisible:NO ];
 
-#elif defined( ORB_OS_ANDROID )
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
 	// #TODO: Activity.setVisible
 
-#elif defined( ORB_OS_IOS )
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
-	[ m_details.ui_window setHidden:YES ];
+	[ details_.ui_window setHidden:YES ];
 
-#endif
+#endif // ORB_OS_IOS
 
 }
 
 void Window::Close( void )
 {
-	m_open = false;
+	open_ = false;
 }
 
 #if defined( ORB_OS_WINDOWS )

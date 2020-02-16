@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -17,13 +17,6 @@
 
 #include "Model.h"
 
-#include <algorithm>
-#include <cassert>
-#include <cstdio>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include "Orbit/Core/IO/Parser/XML/XMLParser.h"
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Utility/Color.h"
@@ -32,6 +25,13 @@
 #include "Orbit/Math/Vector2.h"
 #include "Orbit/Math/Vector3.h"
 #include "Orbit/Math/Vector4.h"
+
+#include <algorithm>
+#include <cassert>
+#include <cstdio>
+#include <sstream>
+#include <string>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
@@ -603,13 +603,13 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 		mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, vertex_stride );
 		mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
 
-		m_meshes.emplace_back( std::move( mesh ) );
+		meshes_.emplace_back( std::move( mesh ) );
 	}
 
 	const XMLElement& visual_scene = collada[ "library_visual_scenes" ][ "visual_scene" ];
 
 	if( !visual_scene.children.empty() )
-		m_root_joint = std::make_unique< Joint >( ColladaParseNodeRecursive( visual_scene, Matrix4(), all_joint_names, all_joint_transforms ) );
+		root_joint_ = std::make_unique< Joint >( ColladaParseNodeRecursive( visual_scene, Matrix4(), all_joint_names, all_joint_transforms ) );
 
 	return true;
 }
@@ -698,7 +698,7 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 	mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, stride );
 	mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
 
-	m_meshes.emplace_back( std::move( mesh ) );
+	meshes_.emplace_back( std::move( mesh ) );
 
 	return true;
 }

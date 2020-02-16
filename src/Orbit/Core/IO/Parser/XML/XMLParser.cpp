@@ -31,37 +31,37 @@ XMLParser::XMLParser( ByteSpan data )
 
 	while( !IsEOF() )
 	{
-		if( !ParseElement( &m_root_element ) )
+		if( !ParseElement( &root_element_ ) )
 			return;
 	}
 
-	m_good = true;
+	good_ = true;
 }
 
 std::string XMLParser::ReadName( void )
 {
-	size_t off = m_offset;
+	size_t off = offset_;
 
-	while( off < m_size && ( std::isalnum( m_data[ off ] ) || m_data[ off ] == '_' ) )
+	while( off < size_ && ( std::isalnum( data_[ off ] ) || data_[ off ] == '_' ) )
 		++off;
 
-	const std::string name( reinterpret_cast< const char* >( &m_data[ m_offset ] ), ( off - m_offset ) );
+	const std::string name( reinterpret_cast< const char* >( &data_[ offset_ ] ), ( off - offset_ ) );
 
-	m_offset = off;
+	offset_ = off;
 
 	return name;
 }
 
 std::string XMLParser::ReadContent( void )
 {
-	size_t off = m_offset;
+	size_t off = offset_;
 
-	while( off < m_size && m_data[ off ] != '<' && ( std::isprint( m_data[ off ] ) || std::isspace( m_data[ off ] ) ) )
+	while( off < size_ && data_[ off ] != '<' && ( std::isprint( data_[ off ] ) || std::isspace( data_[ off ] ) ) )
 		++off;
 
-	const std::string name( reinterpret_cast< const char* >( &m_data[ m_offset ] ), ( off - m_offset ) );
+	const std::string name( reinterpret_cast< const char* >( &data_[ offset_ ] ), ( off - offset_ ) );
 
-	m_offset = off;
+	offset_ = off;
 
 	return name;
 }

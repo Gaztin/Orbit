@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -25,9 +25,9 @@
 ORB_NAMESPACE_BEGIN
 
 OpenGLVersion::OpenGLVersion( void )
-	: m_embedded { 0 }
-	, m_major    { 0 }
-	, m_minor    { 0 }
+	: embedded_{ 0 }
+	, major_   { 0 }
+	, minor_   { 0 }
 {
 }
 
@@ -36,20 +36,20 @@ void OpenGLVersion::Init( void )
 	const char* string                     = reinterpret_cast< const char* >( glGetString( GL_VERSION ) );
 	auto        [ major, minor, embedded ] = TraverseVersionString( string );
 
-	m_major    = static_cast< uint8_t >( major );
-	m_minor    = static_cast< uint8_t >( minor );
-	m_embedded = static_cast< uint8_t >( embedded );
+	major_    = static_cast< uint8_t >( major );
+	minor_    = static_cast< uint8_t >( minor );
+	embedded_ = static_cast< uint8_t >( embedded );
 }
 
 bool OpenGLVersion::RequireGL( uint8_t major, uint8_t minor ) const
 {
-	if( m_embedded )
+	if( embedded_ )
 		return false;
 
-	if( major > m_major )
+	if( major > major_ )
 		return false;
 
-	if( major == m_major && minor > m_minor )
+	if( major == major_ && minor > minor_ )
 		return false;
 
 	return true;
@@ -57,13 +57,13 @@ bool OpenGLVersion::RequireGL( uint8_t major, uint8_t minor ) const
 
 bool OpenGLVersion::RequireGLES( uint8_t major, uint8_t minor ) const
 {
-	if( !m_embedded )
+	if( !embedded_ )
 		return false;
 
-	if( major > m_major )
+	if( major > major_ )
 		return false;
 
-	if( major == m_major && minor > m_minor )
+	if( major == major_ && minor > minor_ )
 		return false;
 
 	return true;

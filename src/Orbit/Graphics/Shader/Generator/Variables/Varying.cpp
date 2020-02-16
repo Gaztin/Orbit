@@ -40,9 +40,9 @@ namespace ShaderGen { namespace Variables
 	Varying::Varying( VertexComponent component )
 		: IVariable( NewName(), DataTypeFromVertexComponent( component ) )
 	{
-		m_stored = true;
+		stored_ = true;
 
-		IGenerator::GetCurrentGenerator()->m_varying_layout.Add( component );
+		IGenerator::GetCurrentGenerator()->varying_layout_.Add( component );
 	}
 
 	std::string Varying::GetValue( void ) const
@@ -53,13 +53,13 @@ namespace ShaderGen { namespace Variables
 		{
 			switch( main->shader_type )
 			{
-				case ShaderType::Vertex:   { return "output." + m_value; }
-				case ShaderType::Fragment: { return "input."  + m_value; }
+				case ShaderType::Vertex:   { return "output." + value_; }
+				case ShaderType::Fragment: { return "input."  + value_; }
 				default:                   { assert( false ); } break;
 			}
 		}
 
-		return m_value;
+		return value_;
 	}
 } }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -20,11 +20,6 @@
 #include "Orbit/Math/Vector4.h"
 
 #include <array>
-
-#if defined( ORB_CC_MSVC )
-#  pragma warning( push )
-#  pragma warning( disable : 4201 ) // "nonstandard extension used: nameless struct/union"
-#endif // ORB_CC_MSVC
 
 ORB_NAMESPACE_BEGIN
 
@@ -81,7 +76,3 @@ public:
 };
 
 ORB_NAMESPACE_END
-
-#if defined( ORB_CC_MSVC )
-#  pragma warning( pop )
-#endif // ORB_CC_MSVC

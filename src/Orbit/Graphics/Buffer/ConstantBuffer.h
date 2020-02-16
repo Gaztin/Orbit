@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,10 +16,10 @@
  */
 
 #pragma once
-#include <memory>
-
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Graphics/Private/ConstantBufferDetails.h"
+
+#include <memory>
 
 ORB_NAMESPACE_BEGIN
 
@@ -28,7 +28,7 @@ class ORB_API_GRAPHICS ConstantBuffer
 public:
 
 	explicit ConstantBuffer( size_t size );
-	~ConstantBuffer( void );
+	        ~ConstantBuffer( void );
 
 public:
 
@@ -42,7 +42,7 @@ private:
 
 private:
 
-	Private::ConstantBufferDetails m_details;
+	Private::ConstantBufferDetails details_;
 
 };
 

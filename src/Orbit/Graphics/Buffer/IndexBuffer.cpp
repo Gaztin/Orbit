@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -35,11 +35,11 @@ static size_t GetFormatSize( IndexFormat format )
 }
 
 IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
-	: m_details { }
-	, m_format  { format }
-	, m_count   { count }
+	: details_{ }
+	, format_ { format }
+	, count_  { count }
 {
-	auto&        context_details = RenderContext::Get().GetPrivateDetails();
+	auto&        context_details = RenderContext::GetInstance().GetPrivateDetails();
 	const size_t total_size      = ( count * GetFormatSize( format ) );
 
 	switch( context_details.index() )
@@ -50,7 +50,7 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			auto& details = m_details.emplace< Private::_IndexBufferDetailsOpenGL >();
+			auto& details = details_.emplace< Private::_IndexBufferDetailsOpenGL >();
 
 			glGenBuffers( 1, &details.id );
 			glBindBuffer( OpenGLBufferTarget::ElementArray, details.id );
@@ -60,12 +60,12 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
-			auto& details = m_details.emplace< Private::_IndexBufferDetailsD3D11 >();
+			auto& details = details_.emplace< Private::_IndexBufferDetailsD3D11 >();
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 			D3D11_BUFFER_DESC desc { };
@@ -90,14 +90,14 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }
 
 IndexBuffer::~IndexBuffer( void )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -105,14 +105,14 @@ IndexBuffer::~IndexBuffer( void )
 
 		case( unique_index_v< Private::_IndexBufferDetailsOpenGL, Private::IndexBufferDetails > ):
 		{
-			auto& details = std::get< Private::_IndexBufferDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_IndexBufferDetailsOpenGL >( details_ );
 
 			glDeleteBuffers( 1, &details.id );
 
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_IndexBufferDetailsD3D11, Private::IndexBufferDetails > ):
@@ -120,14 +120,14 @@ IndexBuffer::~IndexBuffer( void )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }
 
 void IndexBuffer::Bind( void )
 {
-	switch( m_details.index() )
+	switch( details_.index() )
 	{
 		default: break;
 
@@ -135,24 +135,24 @@ void IndexBuffer::Bind( void )
 
 		case( unique_index_v< Private::_IndexBufferDetailsOpenGL, Private::IndexBufferDetails > ):
 		{
-			auto& details = std::get< Private::_IndexBufferDetailsOpenGL >( m_details );
+			auto& details = std::get< Private::_IndexBufferDetailsOpenGL >( details_ );
 
 			glBindBuffer( OpenGLBufferTarget::ElementArray, details.id );
 
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_IndexBufferDetailsD3D11, Private::IndexBufferDetails > ):
 		{
-			auto& details = std::get< Private::_IndexBufferDetailsD3D11 >( m_details );
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::Get().GetPrivateDetails() );
+			auto& details = std::get< Private::_IndexBufferDetailsD3D11 >( details_ );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 
 			/* Translate format to DXGI_FORMAT */
 			DXGI_FORMAT format;
-			switch( m_format )
+			switch( format_ )
 			{
 				default:                      { format = DXGI_FORMAT_UNKNOWN;  } break;
 				case IndexFormat::Byte:       { format = DXGI_FORMAT_R8_UINT;  } break;
@@ -165,7 +165,7 @@ void IndexBuffer::Bind( void )
 			break;
 		}
 
-	#endif
+	#endif // ORB_HAS_D3D11
 
 	}
 }

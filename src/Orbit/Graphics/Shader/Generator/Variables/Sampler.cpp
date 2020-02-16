@@ -38,9 +38,9 @@ namespace ShaderGen { namespace Variables
 	Sampler::Sampler( void )
 		: IVariable( NewName(), DataType::Unknown )
 	{
-		m_stored = true;
+		stored_ = true;
 
-		++IGenerator::GetCurrentGenerator()->m_sampler_count;
+		++IGenerator::GetCurrentGenerator()->sampler_count_;
 	}
 } }
 

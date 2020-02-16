@@ -90,7 +90,7 @@ namespace ShaderGen { namespace Variables
 
 	private:
 
-		DataType m_element_type;
+		DataType element_type_;
 
 	};
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -15,6 +15,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
+#include "TriangleShader.h"
+
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
@@ -27,8 +29,6 @@
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Math/Vector2.h>
 #include <Orbit/Math/Vector4.h>
-
-#include "TriangleShader.h"
 
 struct Vertex
 {
@@ -64,45 +64,45 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: m_window( 800, 600 )
-		, m_shader( triangle_shader )
-		, m_vertex_buffer( vertex_data )
-		, m_index_buffer( index_data )
-		, m_texture( 4, 4, texture_data )
-		, m_time( 0.0f )
+		: window_       { 800, 600 }
+		, shader_       { triangle_shader }
+		, vertex_buffer_{ vertex_data }
+		, index_buffer_ { index_data }
+		, texture_      { 4, 4, texture_data }
+		, time_         { 0.0f }
 	{
-		m_window.SetTitle( "Orbit Sample (01-Triangle)" );
-		m_window.Show();
-		m_render_context.SetClearColor( 0.0f, 0.0f, 0.5f );
+		window_.SetTitle( "Orbit Sample (01-Triangle)" );
+		window_.Show();
+		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 	}
 
 	void OnFrame( float /*delta_time*/ ) override
 	{
-		m_window.PollEvents();
-		m_render_context.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
+		window_.PollEvents();
+		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
 		Orbit::RenderCommand command;
-		command.vertex_buffer = &m_vertex_buffer;
-		command.index_buffer  = &m_index_buffer;
-		command.shader        = &m_shader;
-		command.textures.push_back( &m_texture );
-		m_renderer.QueueCommand( command );
-		m_renderer.Render();
+		command.vertex_buffer = &vertex_buffer_;
+		command.index_buffer  = &index_buffer_;
+		command.shader        = &shader_;
+		command.textures.push_back( &texture_ );
+		renderer_.QueueCommand( command );
+		renderer_.Render();
 
-		m_render_context.SwapBuffers();
+		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning( void ) override { return m_window.IsOpen(); }
+	bool IsRunning( void ) override { return window_.IsOpen(); }
 
 private:
 
-	Orbit::Window           m_window;
-	Orbit::RenderContext    m_render_context;
-	Orbit::Shader           m_shader;
-	Orbit::VertexBuffer     m_vertex_buffer;
-	Orbit::IndexBuffer      m_index_buffer;
-	Orbit::Texture2D        m_texture;
-	Orbit::BasicRenderer    m_renderer;
-	float                   m_time;
+	Orbit::Window           window_;
+	Orbit::RenderContext    render_context_;
+	Orbit::Shader           shader_;
+	Orbit::VertexBuffer     vertex_buffer_;
+	Orbit::IndexBuffer      index_buffer_;
+	Orbit::Texture2D        texture_;
+	Orbit::BasicRenderer    renderer_;
+	float                   time_;
 
 };

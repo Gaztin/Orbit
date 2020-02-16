@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Sebastian Kylander https://gaztin.com/
+ * Copyright (c) 2020 Sebastian Kylander https://gaztin.com/
  *
  * This software is provided 'as-is', without any express or implied warranty. In no event will
  * the authors be held liable for any damages arising from the use of this software.
@@ -16,11 +16,11 @@
  */
 
 #pragma once
-#include <string_view>
-
 #include "Orbit/Core/Event/EventDispatcher.h"
 #include "Orbit/Core/Private/WindowDetails.h"
 #include "Orbit/Core/Utility/Singleton.h"
+
+#include <string_view>
 
 ORB_NAMESPACE_BEGIN
 
@@ -52,7 +52,7 @@ struct ORB_API_CORE WindowStateChanged
 
 class ORB_API_CORE Window
 	: public EventDispatcher< WindowResized, WindowMoved, WindowStateChanged >
-	, public Singleton< Window, false >
+	, public ManualSingleton< Window >
 {
 public:
 
@@ -71,14 +71,14 @@ public:
 
 public:
 
-	Private::WindowDetails&       GetPrivateDetails( void )       { return m_details; }
-	const Private::WindowDetails& GetPrivateDetails( void ) const { return m_details; }
-	bool                          IsOpen           ( void ) const { return m_open; }
+	Private::WindowDetails&       GetPrivateDetails( void )       { return details_; }
+	const Private::WindowDetails& GetPrivateDetails( void ) const { return details_; }
+	bool                          IsOpen           ( void ) const { return open_; }
 
 private:
 
-	Private::WindowDetails m_details;
-	bool                   m_open;
+	Private::WindowDetails details_;
+	bool                   open_;
 
 };
 
