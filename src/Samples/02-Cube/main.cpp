@@ -27,11 +27,11 @@
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
-#include <Orbit/Graphics/Buffer/Texture2D.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
+#include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Literals.h>
 #include <Orbit/Math/Matrix4.h>
 #include <Orbit/Math/Vector2.h>
@@ -109,14 +109,6 @@ struct ConstantData
 
 } constant_data;
 
-const uint32_t texture_data[]
-{
-	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
-	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
-	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
-	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
-};
-
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
@@ -127,7 +119,7 @@ public:
 		, vertex_buffer_  ( vertex_data )
 		, index_buffer_   ( index_data )
 		, constant_buffer_( sizeof( ConstantData ) )
-		, texture_        ( 4, 4, texture_data )
+		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
 		window_.SetTitle( "Orbit Sample (02-Cube)" );
 		window_.Show();
@@ -157,7 +149,7 @@ public:
 		command.index_buffer  = &index_buffer_;
 		command.shader        = &shader_;
 		command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &constant_buffer_ );
-		command.textures.push_back( &texture_ );
+		command.textures.push_back( texture_.Texture2DPtr() );
 
 		renderer_.QueueCommand( command );
 		renderer_.Render();
@@ -175,7 +167,7 @@ private:
 	Orbit::VertexBuffer      vertex_buffer_;
 	Orbit::IndexBuffer       index_buffer_;
 	Orbit::ConstantBuffer    constant_buffer_;
-	Orbit::Texture2D         texture_;
+	Orbit::Texture           texture_;
 	Orbit::BasicRenderer     renderer_;
 	Orbit::Matrix4           model_;
 

@@ -24,12 +24,12 @@
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
-#include <Orbit/Graphics/Buffer/Texture2D.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Model/Model.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
+#include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Literals.h>
 #include <Orbit/Math/Matrix4.h>
 #include <Orbit/Math/Vector2.h>
@@ -52,14 +52,6 @@ struct FragmentConstantData
 
 } fragment_constant_data;
 
-const uint32_t texture_data[]
-{
-	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
-	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
-	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
-	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
-};
-
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
@@ -70,7 +62,7 @@ public:
 		, model_                   ( Orbit::Asset( "models/teapot.obj" ), model_shader.GetVertexLayout() )
 		, vertex_constant_buffer_  ( sizeof( VertexConstantData ) )
 		, fragment_constant_buffer_( sizeof( FragmentConstantData ) )
-		, texture_                 ( 4, 4, texture_data )
+		, texture_                 ( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
 		window_.SetTitle( "Orbit Sample (03-Model)" );
 		window_.Show();
@@ -111,7 +103,7 @@ public:
 			command.shader        = &shader_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &vertex_constant_buffer_ );
 			command.constant_buffers[ Orbit::ShaderType::Fragment ].push_back( &fragment_constant_buffer_ );
-			command.textures.push_back( &texture_ );
+			command.textures.push_back( texture_.Texture2DPtr() );
 
 			renderer_.QueueCommand( command );
 		}
@@ -130,7 +122,7 @@ private:
 	Orbit::Model             model_;
 	Orbit::ConstantBuffer    vertex_constant_buffer_;
 	Orbit::ConstantBuffer    fragment_constant_buffer_;
-	Orbit::Texture2D         texture_;
+	Orbit::Texture           texture_;
 	Orbit::BasicRenderer     renderer_;
 	Orbit::Matrix4           model_matrix_;
 

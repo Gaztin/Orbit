@@ -22,11 +22,11 @@
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
-#include <Orbit/Graphics/Buffer/Texture2D.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
+#include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Vector2.h>
 #include <Orbit/Math/Vector4.h>
 
@@ -51,14 +51,6 @@ const std::initializer_list< uint16_t > index_data
 	0, 1, 2,
 };
 
-const uint32_t texture_data[]
-{
-	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
-	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
-	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
-	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
-};
-
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
@@ -68,7 +60,7 @@ public:
 		, shader_       ( triangle_shader )
 		, vertex_buffer_( vertex_data )
 		, index_buffer_ ( index_data )
-		, texture_      ( 4, 4, texture_data )
+		, texture_      ( Orbit::Asset( "textures/checkerboard.tga" ) )
 		, time_         ( 0.0f )
 	{
 		window_.SetTitle( "Orbit Sample (01-Triangle)" );
@@ -85,7 +77,7 @@ public:
 		command.vertex_buffer = &vertex_buffer_;
 		command.index_buffer  = &index_buffer_;
 		command.shader        = &shader_;
-		command.textures.push_back( &texture_ );
+		command.textures.push_back( texture_.Texture2DPtr() );
 		renderer_.QueueCommand( command );
 		renderer_.Render();
 
@@ -101,7 +93,7 @@ private:
 	Orbit::Shader           shader_;
 	Orbit::VertexBuffer     vertex_buffer_;
 	Orbit::IndexBuffer      index_buffer_;
-	Orbit::Texture2D        texture_;
+	Orbit::Texture          texture_;
 	Orbit::BasicRenderer    renderer_;
 	float                   time_;
 
