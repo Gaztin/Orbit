@@ -21,11 +21,6 @@
 
 #include <array>
 
-#if defined( ORB_CC_MSVC )
-#  pragma warning( push )
-#  pragma warning( disable : 4201 ) // "nonstandard extension used: nameless struct/union"
-#endif // ORB_CC_MSVC
-
 ORB_NAMESPACE_BEGIN
 
 class Vector3;
@@ -81,7 +76,3 @@ public:
 };
 
 ORB_NAMESPACE_END
-
-#if defined( ORB_CC_MSVC )
-#  pragma warning( pop )
-#endif // ORB_CC_MSVC
