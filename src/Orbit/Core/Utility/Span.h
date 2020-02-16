@@ -68,7 +68,8 @@ public:
 
 public:
 
-	size_t GetSize( void ) const { return count_; }
+	const T* Ptr ( void ) const { return ptr_; }
+	size_t   Size( void ) const { return count_; }
 
 	std::unique_ptr< T[] > Copy( void ) const
 	{
@@ -82,6 +83,10 @@ public:
 
 	const T* begin( void ) const { return ptr_; }
 	const T* end  ( void ) const { return ( ptr_ + count_ ); }
+
+public:
+
+	operator bool( void ) const { return ( ptr_ != nullptr ); }
 
 private:
 

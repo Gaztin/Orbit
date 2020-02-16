@@ -23,7 +23,7 @@ ORB_NAMESPACE_BEGIN
 
 IParser::IParser( ByteSpan data )
 	: data_  { data.Copy() }
-	, size_  { data.GetSize() }
+	, size_  { data.Size() }
 	, offset_{ 0 }
 	, good_  { false }
 {
