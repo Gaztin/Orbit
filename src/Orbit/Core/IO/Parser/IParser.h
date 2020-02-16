@@ -36,7 +36,8 @@ public:
 
 protected:
 
-	void Skip( size_t size );
+	void Skip     ( size_t size );
+	void ReadBytes( void* dst, size_t count );
 
 protected:
 
