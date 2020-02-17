@@ -207,6 +207,7 @@ decl_sample( 'Triangle' )
 decl_sample( 'Cube' )
 decl_sample( 'Model' )
 decl_sample( 'Animation' )
+decl_sample( 'Instancing' )
 
 workspace( workspace_name )
 	startproject( samples[ 1 ] )
