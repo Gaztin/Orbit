@@ -54,7 +54,7 @@ public:
 		, constant_buffer_( sizeof( ConstantData ) )
 		, life_time_      ( 0.0f )
 	{
-		window_.SetTitle( "Orbit Sample (03-Model)" );
+		window_.SetTitle( "Orbit Sample (04-Animation)" );
 		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
