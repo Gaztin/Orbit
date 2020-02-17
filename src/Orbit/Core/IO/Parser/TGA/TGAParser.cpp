@@ -32,6 +32,12 @@ enum class ImageType : uint8_t
 	RunLengthEncodedBlackAndWhite = 11,
 };
 
+enum class PacketType : uint8_t
+{
+	Raw       = 0,
+	RunLength = 1,
+};
+
 struct ColorMapSpecification
 {
 	uint16_t first_entry_index;
@@ -146,22 +152,25 @@ size_t TGAParser::ReadNextRLEPacket( uint32_t* dst )
 	uint8_t repetition_count_and_packet_type = 0;
 	ReadBytes( &repetition_count_and_packet_type, 1 );
 
-	const uint8_t packet_type      = ( ( repetition_count_and_packet_type & 0x80 ) >> 7 );
-	const uint8_t repetition_count = ( ( repetition_count_and_packet_type & 0x7f ) + 1 );
+	const PacketType packet_type      = static_cast< PacketType >( ( repetition_count_and_packet_type & 0x80 ) >> 7 );
+	const uint8_t    repetition_count = ( ( repetition_count_and_packet_type & 0x7f ) + 1 );
 
-	if( packet_type == 1 )
+	switch( packet_type )
 	{
-		/* Run-length Packet */
-		const uint32_t pixel_value = ReadTrueColor();
+		case PacketType::Raw:
+		{
+			for( size_t i = 0; i < repetition_count; ++i )
+				dst[ i ] = ReadTrueColor();
+		} break;
 
-		for( size_t i = 0; i < repetition_count; ++i )
-			dst[ i ] = pixel_value;
-	}
-	else
-	{
-		/* Raw Packet */
-		for( size_t i = 0; i < repetition_count; ++i )
-			dst[ i ] = ReadTrueColor();
+		case PacketType::RunLength:
+		{
+			const uint32_t pixel_value = ReadTrueColor();
+
+			for( size_t i = 0; i < repetition_count; ++i )
+				dst[ i ] = pixel_value;
+
+		} break;
 	}
 
 	return repetition_count;
