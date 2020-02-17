@@ -84,10 +84,7 @@ TGAParser::TGAParser( ByteSpan data )
 	ReadBytes( &header.image_specification.descriptor, 1 );
 
 	if( header.id_length > 0 )
-	{
-		std::unique_ptr< uint8_t[] > image_id( new uint8_t[ header.id_length ] );
-		ReadBytes( image_id.get(), header.id_length );
-	}
+		Skip( header.id_length );
 
 	if( header.color_map_type != 0 )
 	{
