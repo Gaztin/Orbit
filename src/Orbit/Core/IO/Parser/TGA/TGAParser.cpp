@@ -161,6 +161,7 @@ size_t TGAParser::ReadNextRLEPacket( uint32_t* dst )
 		{
 			for( size_t i = 0; i < repetition_count; ++i )
 				dst[ i ] = ReadTrueColor();
+
 		} break;
 
 		case PacketType::RunLength:
