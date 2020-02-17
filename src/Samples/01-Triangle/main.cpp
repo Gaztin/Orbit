@@ -64,12 +64,12 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: window_       { 800, 600 }
-		, shader_       { triangle_shader }
-		, vertex_buffer_{ vertex_data }
-		, index_buffer_ { index_data }
-		, texture_      { 4, 4, texture_data }
-		, time_         { 0.0f }
+		: window_       ( 800, 600 )
+		, shader_       ( triangle_shader )
+		, vertex_buffer_( vertex_data )
+		, index_buffer_ ( index_data )
+		, texture_      ( 4, 4, texture_data )
+		, time_         ( 0.0f )
 	{
 		window_.SetTitle( "Orbit Sample (01-Triangle)" );
 		window_.Show();

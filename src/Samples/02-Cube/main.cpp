@@ -122,12 +122,12 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: window_         { 800, 600 }
-		, shader_         { cube_shader }
-		, vertex_buffer_  { vertex_data }
-		, index_buffer_   { index_data }
-		, constant_buffer_{ sizeof( ConstantData ) }
-		, texture_        { 4, 4, texture_data }
+		: window_         ( 800, 600 )
+		, shader_         ( cube_shader )
+		, vertex_buffer_  ( vertex_data )
+		, index_buffer_   ( index_data )
+		, constant_buffer_( sizeof( ConstantData ) )
+		, texture_        ( 4, 4, texture_data )
 	{
 		window_.SetTitle( "Orbit Sample (02-Cube)" );
 		window_.Show();
