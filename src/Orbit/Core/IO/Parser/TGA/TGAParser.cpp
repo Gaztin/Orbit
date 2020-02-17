@@ -108,7 +108,7 @@ TGAParser::TGAParser( ByteSpan data )
 			image_data_.reset( new uint32_t[ pixel_count ] );
 
 			for( size_t i = 0; i < pixel_count; ++i )
-				image_data_[ i ] = ReadColor();
+				image_data_[ i ] = ReadTrueColor();
 
 		} break;
 
@@ -132,7 +132,7 @@ TGAParser::TGAParser( ByteSpan data )
 	good_   = true;
 }
 
-uint32_t TGAParser::ReadColor( void )
+uint32_t TGAParser::ReadTrueColor( void )
 {
 	uint32_t argb = 0xFF000000;
 	ReadBytes( &argb, bytes_per_pixel_ );
@@ -152,7 +152,7 @@ size_t TGAParser::ReadNextRLEPacket( uint32_t* dst )
 	if( packet_type == 1 )
 	{
 		/* Run-length Packet */
-		const uint32_t pixel_value = ReadColor();
+		const uint32_t pixel_value = ReadTrueColor();
 
 		for( size_t i = 0; i < repetition_count; ++i )
 			dst[ i ] = pixel_value;
@@ -161,7 +161,7 @@ size_t TGAParser::ReadNextRLEPacket( uint32_t* dst )
 	{
 		/* Raw Packet */
 		for( size_t i = 0; i < repetition_count; ++i )
-			dst[ i ] = ReadColor();
+			dst[ i ] = ReadTrueColor();
 	}
 
 	return repetition_count;

@@ -38,7 +38,7 @@ public:
 
 private:
 
-	uint32_t ReadColor        ( void );
+	uint32_t ReadTrueColor    ( void );
 	size_t   ReadNextRLEPacket( uint32_t* dst );
 
 private:
