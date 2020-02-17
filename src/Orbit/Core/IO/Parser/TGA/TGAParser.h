@@ -16,7 +16,6 @@
  */
 
 #pragma once
-#include "Orbit/Core/IO/Parser/TGA/TGAColorMapEntry.h"
 #include "Orbit/Core/IO/Parser/IParser.h"
 
 #include <cstdint>
@@ -40,8 +39,6 @@ public:
 private:
 
 	std::unique_ptr< uint8_t[] > image_data_;
-
-	std::vector< TGAColorMapEntry > color_map_entries_;
 
 	uint16_t width_;
 	uint16_t height_;
