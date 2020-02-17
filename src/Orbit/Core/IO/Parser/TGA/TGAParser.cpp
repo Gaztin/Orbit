@@ -108,7 +108,15 @@ TGAParser::TGAParser( ByteSpan data )
 			}
 
 		} break;
+
+		default:
+		{
+			return;
+		}
 	}
+
+	if( ( header.image_specification.width == 0 ) || ( header.image_specification.height == 0 ) )
+		return;
 
 	width_  = header.image_specification.width;
 	height_ = header.image_specification.height;
