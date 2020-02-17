@@ -23,7 +23,7 @@ ORB_NAMESPACE_BEGIN
 
 IParser::IParser( ByteSpan data )
 	: data_  { data.Copy() }
-	, size_  { data.GetSize() }
+	, size_  { data.Size() }
 	, offset_{ 0 }
 	, good_  { false }
 {
@@ -33,6 +33,20 @@ void IParser::Skip( size_t size )
 {
 	if( ( offset_ + size ) < size_ ) offset_ += size;
 	else                             offset_  = size_;
+}
+
+void IParser::ReadBytes( void* dst, size_t count )
+{
+	if( ( offset_ + count ) < size_ )
+	{
+		std::memcpy( dst, &data_[ offset_ ], count );
+		offset_ += count;
+	}
+	else
+	{
+		std::memcpy( dst, &data_[ offset_ ], ( offset_ - size_ ) );
+		offset_ = size_;
+	}
 }
 
 bool IParser::IsEOF( void ) const

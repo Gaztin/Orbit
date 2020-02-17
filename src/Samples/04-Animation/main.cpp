@@ -42,14 +42,6 @@ struct ConstantData
 
 } constant_data;
 
-const uint32_t texture_data[]
-{
-	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
-	0xffff00ff, 0xffff00ff, 0xff00ff00, 0xff00ff00,
-	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
-	0xff00ff00, 0xff00ff00, 0xffff00ff, 0xffff00ff,
-};
-
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:

@@ -16,29 +16,39 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Private/Texture2DDetails.h"
+#include "Orbit/Core/IO/Parser/IParser.h"
+
+#include <cstdint>
+#include <memory>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS Texture2D
+class ORB_API_CORE TGAParser : public IParser
 {
 public:
 
-	 Texture2D( uint32_t width, uint32_t height, const void* data );
-	~Texture2D();
+	explicit TGAParser( ByteSpan data );
 
 public:
 
-	void Bind( uint32_t slot );
-
-public:
-
-	Private::Texture2DDetails&       GetPrivateDetails( void )       { return details_; }
-	const Private::Texture2DDetails& GetPrivateDetails( void ) const { return details_; }
+	const uint32_t* ImageData( void ) const { return image_data_.get(); }
+	uint16_t        Width    ( void ) const { return width_; }
+	uint16_t        Height   ( void ) const { return height_; }
 
 private:
 
-	Private::Texture2DDetails details_;
+	uint32_t ReadTrueColor    ( void );
+	size_t   ReadNextRLEPacket( uint32_t* dst );
+
+private:
+
+	std::unique_ptr< uint32_t[] > image_data_;
+
+	size_t bytes_per_pixel_;
+
+	uint16_t width_;
+	uint16_t height_;
 
 };
 

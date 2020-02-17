@@ -16,41 +16,29 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Span.h"
-
-#include <memory>
-#include <string_view>
+#include "Orbit/Graphics/Private/Texture2DDetails.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE IParser
+class ORB_API_GRAPHICS Texture2D
 {
 public:
 
-	explicit IParser( ByteSpan data );
-	virtual ~IParser( void ) = default;
+	 Texture2D( uint32_t width, uint32_t height, const void* data, PixelFormat pixel_format );
+	~Texture2D();
 
 public:
 
-	bool IsGood( void ) const { return good_; }
+	void Bind( uint32_t slot );
 
-protected:
+public:
 
-	void Skip     ( size_t size );
-	void ReadBytes( void* dst, size_t count );
+	Private::Texture2DDetails&       GetPrivateDetails( void )       { return details_; }
+	const Private::Texture2DDetails& GetPrivateDetails( void ) const { return details_; }
 
-protected:
+private:
 
-	bool IsEOF( void ) const;
-
-protected:
-
-	std::unique_ptr< uint8_t[] > data_;
-
-	size_t                       size_;
-	size_t                       offset_;
-
-	bool                         good_;
+	Private::Texture2DDetails details_;
 
 };
 

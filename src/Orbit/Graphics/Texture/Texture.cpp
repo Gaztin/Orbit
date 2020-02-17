@@ -15,43 +15,28 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Utility/Span.h"
+#include "Texture.h"
 
-#include <memory>
-#include <string_view>
+#include "Orbit/Core/IO/Parser/TGA/TGAParser.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE IParser
+Texture::Texture( ByteSpan data )
 {
-public:
+	TGAParser tga_parser( data );
+	if( tga_parser.IsGood() )
+	{
+		texture2d_.emplace( tga_parser.Width(), tga_parser.Height(), tga_parser.ImageData(), PixelFormat::RGBA );
+		return;
+	}
+}
 
-	explicit IParser( ByteSpan data );
-	virtual ~IParser( void ) = default;
+Texture2D* Texture::Texture2DPtr( void )
+{
+	if( texture2d_ )
+		return &texture2d_.value();
 
-public:
-
-	bool IsGood( void ) const { return good_; }
-
-protected:
-
-	void Skip     ( size_t size );
-	void ReadBytes( void* dst, size_t count );
-
-protected:
-
-	bool IsEOF( void ) const;
-
-protected:
-
-	std::unique_ptr< uint8_t[] > data_;
-
-	size_t                       size_;
-	size_t                       offset_;
-
-	bool                         good_;
-
-};
+	return nullptr;
+}
 
 ORB_NAMESPACE_END

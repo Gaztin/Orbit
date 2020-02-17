@@ -22,7 +22,34 @@
 
 ORB_NAMESPACE_BEGIN
 
-Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
+#if defined( ORB_HAS_OPENGL )
+
+static GLuint PixelFormatToGLFormat( PixelFormat pixel_format )
+{
+	switch( pixel_format )
+	{
+		case PixelFormat::R:    return GL_LUMINANCE;
+		case PixelFormat::RGBA: return GL_RGBA;
+		default:                return 0;
+	}
+}
+
+#endif // ORB_HAS_OPENGL
+#if defined( ORB_HAS_D3D11 )
+
+static DXGI_FORMAT PixelFormatToDXGIFormat( PixelFormat pixel_format )
+{
+	switch( pixel_format )
+	{
+		case Orbit::PixelFormat::R:    return DXGI_FORMAT_R8_UNORM;
+		case Orbit::PixelFormat::RGBA: return DXGI_FORMAT_R8G8B8A8_UNORM;
+		default:                       return DXGI_FORMAT_UNKNOWN;
+	}
+}
+
+#endif // ORB_HAS_D3D11
+
+Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data, PixelFormat pixel_format )
 {
 	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
@@ -45,7 +72,9 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 
 			if( data )
 			{
-				glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+				const GLenum format = PixelFormatToGLFormat( pixel_format );
+
+				glTexImage2D( GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data );
 			}
 
 			glBindTexture( GL_TEXTURE_2D, 0 );
@@ -66,7 +95,7 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data )
 			texture2d_desc.Height             = height;
 			texture2d_desc.MipLevels          = 1;
 			texture2d_desc.ArraySize          = 1;
-			texture2d_desc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM;
+			texture2d_desc.Format             = PixelFormatToDXGIFormat( pixel_format );
 			texture2d_desc.SampleDesc.Count   = 1;
 			texture2d_desc.SampleDesc.Quality = 0;
 			texture2d_desc.Usage              = D3D11_USAGE_DEFAULT;
