@@ -18,7 +18,6 @@
 #include "TGAParser.h"
 
 #include <algorithm>
-#include <intrin.h>
 
 ORB_NAMESPACE_BEGIN
 
@@ -70,6 +69,7 @@ TGAParser::TGAParser( ByteSpan data )
 	: IParser( data )
 {
 	Header header;
+
 	ReadBytes( &header.id_length, 1 );
 	ReadBytes( &header.color_map_type, 1 );
 	ReadBytes( &header.image_type, 1 );
@@ -83,6 +83,9 @@ TGAParser::TGAParser( ByteSpan data )
 	ReadBytes( &header.image_specification.depth, 1 );
 	ReadBytes( &header.image_specification.descriptor, 1 );
 
+	if( ( header.image_specification.width == 0 ) || ( header.image_specification.height == 0 ) )
+		return;
+
 	if( header.id_length > 0 )
 		Skip( header.id_length );
 
@@ -92,20 +95,29 @@ TGAParser::TGAParser( ByteSpan data )
 			Skip( header.color_map_specification.color_map_entry_size );
 	}
 
+//////////////////////////////////////////////////////////////////////////
+
+	const size_t pixel_count = ( header.image_specification.width * header.image_specification.height );
+
+	bytes_per_pixel_ = ( ( header.image_specification.depth + 7 ) / 8 );
+
 	switch( header.image_type )
 	{
 		case ImageType::UncompressedTrueColor:
 		{
-			const size_t bits_per_pixel = header.image_specification.depth;
-			const size_t pixel_count    = ( header.image_specification.width * header.image_specification.height );
-
-			image_data_.reset( new uint8_t[ pixel_count * 4 ] );
+			image_data_.reset( new uint32_t[ pixel_count ] );
 
 			for( size_t i = 0; i < pixel_count; ++i )
-			{
-				ReadBytes( &image_data_[ i * 4 + 0 ], ( bits_per_pixel / 8 ) );
-				image_data_[ i * 4 + 3 ] = 255;
-			}
+				image_data_[ i ] = ReadColor();
+
+		} break;
+
+		case ImageType::RunLengthEncodedTrueColor:
+		{
+			image_data_.reset( new uint32_t[ pixel_count ] );
+
+			for( size_t pixels_read = 0; pixels_read < pixel_count; )
+				pixels_read += ReadNextRLEPacket( &image_data_[ pixels_read ] );
 
 		} break;
 
@@ -115,12 +127,44 @@ TGAParser::TGAParser( ByteSpan data )
 		}
 	}
 
-	if( ( header.image_specification.width == 0 ) || ( header.image_specification.height == 0 ) )
-		return;
-
 	width_  = header.image_specification.width;
 	height_ = header.image_specification.height;
 	good_   = true;
+}
+
+uint32_t TGAParser::ReadColor( void )
+{
+	uint32_t argb = 0xFF000000;
+	ReadBytes( &argb, bytes_per_pixel_ );
+
+	const uint32_t abgr = ( ( argb & 0xFF00FF00 ) | ( ( argb & 0x00FF0000 ) >> 16 ) | ( ( argb & 0x000000FF ) << 16 ) );
+	return abgr;
+}
+
+size_t TGAParser::ReadNextRLEPacket( uint32_t* dst )
+{
+	uint8_t repetition_count_and_packet_type = 0;
+	ReadBytes( &repetition_count_and_packet_type, 1 );
+
+	const uint8_t packet_type      = ( ( repetition_count_and_packet_type & 0x80 ) >> 7 );
+	const uint8_t repetition_count = ( ( repetition_count_and_packet_type & 0x7f ) + 1 );
+
+	if( packet_type == 1 )
+	{
+		/* Run-length Packet */
+		const uint32_t pixel_value = ReadColor();
+
+		for( size_t i = 0; i < repetition_count; ++i )
+			dst[ i ] = pixel_value;
+	}
+	else
+	{
+		/* Raw Packet */
+		for( size_t i = 0; i < repetition_count; ++i )
+			dst[ i ] = ReadColor();
+	}
+
+	return repetition_count;
 }
 
 ORB_NAMESPACE_END

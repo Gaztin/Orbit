@@ -32,13 +32,20 @@ public:
 
 public:
 
-	const uint8_t* ImageData( void ) const { return image_data_.get(); }
-	uint16_t       Width    ( void ) const { return width_; }
-	uint16_t       Height   ( void ) const { return height_; }
+	const uint32_t* ImageData( void ) const { return image_data_.get(); }
+	uint16_t        Width    ( void ) const { return width_; }
+	uint16_t        Height   ( void ) const { return height_; }
 
 private:
 
-	std::unique_ptr< uint8_t[] > image_data_;
+	uint32_t ReadColor        ( void );
+	size_t   ReadNextRLEPacket( uint32_t* dst );
+
+private:
+
+	std::unique_ptr< uint32_t[] > image_data_;
+
+	size_t bytes_per_pixel_;
 
 	uint16_t width_;
 	uint16_t height_;
