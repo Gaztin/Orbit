@@ -18,6 +18,7 @@
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
+#include <Orbit/Core/Widget/Console.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
@@ -120,6 +121,7 @@ public:
 
 private:
 
+	Orbit::Console        console_;
 	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
 	Orbit::Shader         shader_;
