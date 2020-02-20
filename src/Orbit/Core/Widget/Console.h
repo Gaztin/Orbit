@@ -16,11 +16,11 @@
  */
 
 #pragma once
-#include "Orbit/Core/Core.h"
+#include "Orbit/Core/Utility/Singleton.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE Console
+class ORB_API_CORE Console : Singleton< Console >
 {
 public:
 
