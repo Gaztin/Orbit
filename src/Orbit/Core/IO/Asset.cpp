@@ -17,6 +17,7 @@
 
 #include "Asset.h"
 
+#include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
 
 #include <algorithm>
@@ -36,6 +37,10 @@ ORB_NAMESPACE_BEGIN
 
 Asset::Asset( std::string_view path )
 {
+
+#if defined( _DEBUG )
+	LogInfo( "Loading asset: %s", path.data() );
+#endif // _DEBUG
 
 #if defined( ORB_OS_WINDOWS )
 
