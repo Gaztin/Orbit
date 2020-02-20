@@ -90,6 +90,7 @@ void LogString( std::string_view msg )
 		GetConsoleScreenBufferInfo( handle, &old_buffer_info );
 		SetConsoleTextAttribute( handle, AttributesByLogType( Type ) );
 		WriteConsoleA( handle, msg.data(), static_cast< DWORD >( msg.size() ), NULL, NULL );
+		WriteConsoleA( handle, "\n", 1, NULL, NULL );
 		SetConsoleTextAttribute( handle, old_buffer_info.wAttributes );
 	}
 	else if( IsDebuggerPresent() )
