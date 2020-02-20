@@ -63,7 +63,7 @@ class Singleton
 {
 public:
 
-	static Derived& Get( void )
+	static Derived& GetInstance( void )
 	{
 		static Derived instance{ };
 		return instance;
