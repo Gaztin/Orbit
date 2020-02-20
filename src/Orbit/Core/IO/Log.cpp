@@ -21,11 +21,12 @@
 #  include <Windows.h>
 #elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS ) // ORB_OS_WINDOWS
 #  include <unistd.h>
+#  include <cstdio>
 #elif defined( ORB_OS_ANDROID ) // ORB_OS_LINUX || ORB_OS_MACOS
 #  include <android/log.h>
-#endif // ORB_OS_ANDROID
-
-#include <cstdio>
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
+#  include <cstdio>
+#endif // ORB_OS_IOS
 
 ORB_NAMESPACE_BEGIN
 
@@ -103,8 +104,8 @@ void LogString( std::string_view msg )
 
 	const bool is_terminal = ( isatty( STDOUT_FILENO ) != 0 );
 
-	if( is_terminal ) printf( "\x1B[%dm%s\x1B[0m\n", AnsiCodeByLogType( Type ), msg.data() );
-	else              printf( "%s\n", msg.data() );
+	if( is_terminal ) std::printf( "\x1B[%dm%s\x1B[0m\n", AnsiCodeByLogType( Type ), msg.data() );
+	else              std::printf( "%s\n", msg.data() );
 
 #elif defined( ORB_OS_ANDROID ) // ORB_OS_LINUX || ORB_OS_MACOS
 
@@ -112,7 +113,7 @@ void LogString( std::string_view msg )
 
 #elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
-	printf( "%s\n", msg.data() );
+	std::printf( "%s\n", msg.data() );
 
 #endif // ORB_OS_IOS
 
