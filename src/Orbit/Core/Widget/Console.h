@@ -18,6 +18,10 @@
 #pragma once
 #include "Orbit/Core/Utility/Singleton.h"
 
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+#endif // ORB_OS_WINDOWS
+
 ORB_NAMESPACE_BEGIN
 
 class ORB_API_CORE Console : Singleton< Console >
@@ -26,6 +30,12 @@ public:
 
 	 Console( void );
 	~Console( void );
+
+private:
+
+#if defined( ORB_OS_WINDOWS )
+	HANDLE handle_;
+#endif // ORB_OS_WINDOWS
 
 };
 

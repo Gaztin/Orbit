@@ -25,7 +25,13 @@ Console::Console( void )
 {
 
 #if defined( ORB_OS_WINDOWS )
-	ORB_CHECK_SYSTEM_ERROR( AllocConsole() );
+
+	if( ( handle_ = GetStdHandle( STD_OUTPUT_HANDLE ) ) == NULL )
+	{
+		AllocConsole();
+		handle_ = GetStdHandle( STD_OUTPUT_HANDLE );
+	}
+
 #endif // ORB_OS_WINDOWS
 
 }
@@ -34,7 +40,10 @@ Console::~Console( void )
 {
 
 #if defined( ORB_OS_WINDOWS )
-	ORB_CHECK_SYSTEM_ERROR( FreeConsole() );
+
+	ORB_CHECK_SYSTEM_ERROR( SetStdHandle( STD_OUTPUT_HANDLE, NULL ) );
+	FreeConsole();
+
 #endif // ORB_OS_WINDOWS
 
 }
