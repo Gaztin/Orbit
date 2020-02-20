@@ -19,7 +19,9 @@
 
 #if defined( ORB_OS_WINDOWS )
 #  include <Windows.h>
-#elif defined( ORB_OS_ANDROID ) // ORB_OS_WINDOWS
+#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS ) // ORB_OS_WINDOWS
+#  include <unistd.h>
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_LINUX || ORB_OS_MACOS
 #  include <android/log.h>
 #endif // ORB_OS_ANDROID
 
@@ -27,97 +29,107 @@
 
 ORB_NAMESPACE_BEGIN
 
-void LogInfoString( std::string_view msg )
+enum class LogType
+{
+	Info,
+	Warning,
+	Error,
+};
+
+#if defined( ORB_OS_WINDOWS )
+
+constexpr WORD AttributesByLogType( LogType type )
+{
+	switch( type )
+	{
+		case LogType::Info:    return ( FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE );
+		case LogType::Warning: return ( FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN );
+		case LogType::Error:   return ( FOREGROUND_INTENSITY | FOREGROUND_RED );
+		default:               return 0;
+	}
+}
+
+#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS ) // ORB_OS_WINDOWS
+
+constexpr int AnsiCodeByLogType( LogType type )
+{
+	switch( type )
+	{
+		case LogType::Info:    return 0;
+		case LogType::Warning: return 33;
+		case LogType::Error:   return 31;
+		default:               return 0;
+	}
+}
+
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_LINUX || ORB_OS_MACOS
+
+constexpr int PriorityByLogType( LogType type )
+{
+	switch( type )
+	{
+		case LogType::Info:    return ANDROID_LOG_INFO;
+		case LogType::Warning: return ANDROID_LOG_WARN;
+		case LogType::Error:   return ANDROID_LOG_ERROR;
+		default:               return ANDROID_LOG_UNKNOWN;
+	}
+}
+
+#endif // ORB_OS_ANDROID
+
+template< LogType Type >
+void LogString( std::string_view msg )
 {
 
 #if defined( ORB_OS_WINDOWS )
 
-	if( IsDebuggerPresent() )
+	if( HANDLE handle = GetStdHandle( STD_OUTPUT_HANDLE ); ( handle != NULL ) )
+	{
+		CONSOLE_SCREEN_BUFFER_INFO old_buffer_info;
+
+		GetConsoleScreenBufferInfo( handle, &old_buffer_info );
+		SetConsoleTextAttribute( handle, AttributesByLogType( Type ) );
+		WriteConsoleA( handle, msg.data(), static_cast< DWORD >( msg.size() ), NULL, NULL );
+		SetConsoleTextAttribute( handle, old_buffer_info.wAttributes );
+	}
+	else if( IsDebuggerPresent() )
 	{
 		OutputDebugStringA( msg.data() );
 		OutputDebugStringA( "\n" );
 	}
-	else
-	{
-		printf( "%s\n", msg.data() );
-	}
 
-#elif defined( ORB_OS_ANDROID ) // ORB_OS_WINDOWS
+#elif defined( ORB_OS_LINUX ) || defined( ORB_OS_MACOS ) // ORB_OS_WINDOWS
 
-	__android_log_write( ANDROID_LOG_INFO, "Orbit", msg.data() );
+	const bool is_terminal = ( isatty( STDOUT_FILENO ) != 0 );
 
-#else // ORB_OS_ANDROID
+	if( is_terminal ) printf( "\x1B[%dm%s\x1B[0m\n", AnsiCodeByLogType( Type ), msg.data() );
+	else              printf( "%s\n", msg.data() );
+
+#elif defined( ORB_OS_ANDROID ) // ORB_OS_LINUX || ORB_OS_MACOS
+
+	__android_log_write( AttributesByLogType( Type ), "Orbit", msg.data() );
+
+#elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 
 	printf( "%s\n", msg.data() );
 
-#endif // !ORB_OS_ANDROID
+#endif // ORB_OS_IOS
 
+}
+
+void LogInfoString( std::string_view msg )
+{
+	LogString< LogType::Info >( msg );
 }
 
 void LogWarningString( std::string_view msg )
 {
-
-#if defined( ORB_OS_WINDOWS )
-
-	if( IsDebuggerPresent() )
-	{
-		OutputDebugStringA( msg.data() );
-		OutputDebugStringA( "\n" );
-	}
-	else
-	{
-		HANDLE                     h = GetStdHandle( STD_OUTPUT_HANDLE );
-		CONSOLE_SCREEN_BUFFER_INFO old_buffer_info;
-
-		GetConsoleScreenBufferInfo( h, &old_buffer_info );
-		SetConsoleTextAttribute( h, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN );
-		printf( "%s\n", msg.data() );
-		SetConsoleTextAttribute( h, old_buffer_info.wAttributes );
-	}
-
-#elif defined( ORB_OS_ANDROID ) // ORB_OS_WINDOWS
-
-	__android_log_write( ANDROID_LOG_WARN, "Orbit", msg.data() );
-
-#else // ORB_OS_ANDROID
-
-	printf( "\x1B[33m%s\x1B[0m\n", msg.data() );
-
-#endif // !ORB_OS_ANDROID
-
+	LogString< LogType::Warning >( msg );
 }
 
 void LogErrorString( std::string_view msg )
 {
-
-#if defined( ORB_OS_WINDOWS )
-
-	if( IsDebuggerPresent() )
-	{
-		OutputDebugStringA( msg.data() );
-		OutputDebugStringA( "\n" );
-	}
-	else
-	{
-		HANDLE                     h = GetStdHandle( STD_OUTPUT_HANDLE );
-		CONSOLE_SCREEN_BUFFER_INFO old_buffer_info;
-
-		GetConsoleScreenBufferInfo( h, &old_buffer_info );
-		SetConsoleTextAttribute( h, FOREGROUND_INTENSITY | FOREGROUND_RED );
-		printf( "%s\n", msg.data() );
-		SetConsoleTextAttribute( h, old_buffer_info.wAttributes );
-	}
-
-#elif defined( ORB_OS_ANDROID ) // ORB_OS_WINDOWS
-
-	__android_log_write( ANDROID_LOG_ERROR, "Orbit", msg.data() );
-
-#else // ORB_OS_ANDROID
-
-	printf( "\x1B[31m%s\x1B[0m\n", msg.data() );
-
-#endif // !ORB_OS_ANDROID
-
+	LogString< LogType::Error >( msg );
 }
 
 ORB_NAMESPACE_END
