@@ -24,7 +24,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE Console : Singleton< Console >
+class ORB_API_CORE Console : public ManualSingleton< Console >
 {
 public:
 
