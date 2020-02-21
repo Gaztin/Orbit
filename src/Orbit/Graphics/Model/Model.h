@@ -46,14 +46,15 @@ public:
 
 private:
 
-	void        ClearVertexData ( uint8_t* vertex_data, size_t vertex_count, const VertexLayout& vertex_layout );
-	void        WriteIndexHelper( uint8_t* index_data, size_t index_size, size_t index, size_t value );
-	size_t      ReadIndexHelper ( const uint8_t* index_data, size_t index_size, size_t index );
-	void        GenerateNormals ( uint8_t* vertex_data, const uint8_t* index_data, size_t face_count, size_t index_size, const VertexLayout& vertex_layout );
-	size_t      EvalIndexSize   ( size_t vertex_count );
-	IndexFormat EvalIndexFormat ( size_t index_size );
-	bool        ParseCollada    ( ByteSpan data, const VertexLayout& layout );
-	bool        ParseOBJ        ( ByteSpan data, const VertexLayout& layout );
+	void        ClearVertexData  ( uint8_t* vertex_data, size_t vertex_count, const VertexLayout& vertex_layout );
+	void        WriteIndexHelper ( uint8_t* index_data, size_t index_size, size_t index, size_t value );
+	size_t      ReadIndexHelper  ( const uint8_t* index_data, size_t index_size, size_t index );
+	void        GenerateNormals  ( uint8_t* vertex_data, const uint8_t* index_data, size_t face_count, size_t index_size, const VertexLayout& vertex_layout );
+	void        GenerateTexCoords( uint8_t* vertex_data, const uint8_t* index_data, size_t face_count, size_t index_size, const VertexLayout& vertex_layout );
+	size_t      EvalIndexSize    ( size_t vertex_count );
+	IndexFormat EvalIndexFormat  ( size_t index_size );
+	bool        ParseCollada     ( ByteSpan data, const VertexLayout& layout );
+	bool        ParseOBJ         ( ByteSpan data, const VertexLayout& layout );
 
 private:
 

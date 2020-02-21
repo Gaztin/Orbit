@@ -25,6 +25,7 @@
 #include <Orbit/Graphics/Model/Model.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
+#include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Vector3.h>
 
 #include "Framework/Camera.h"
@@ -49,6 +50,7 @@ public:
 	SampleApp( void )
 		: window_         ( 800, 600 )
 		, shader_         ( animation_shader )
+		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
 		, model_          ( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
 		, animation_      ( Orbit::Asset( "animations/jump.dae" ) )
 		, constant_buffer_( sizeof( ConstantData ) )
@@ -106,6 +108,7 @@ public:
 			command.vertex_buffer = mesh.vertex_buffer.get();
 			command.index_buffer  = mesh.index_buffer.get();
 			command.shader        = &shader_;
+			command.textures.push_back( texture_.Texture2DPtr() );
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &constant_buffer_ );
 
 			renderer_.QueueCommand( command );
@@ -123,6 +126,7 @@ private:
 	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
 	Orbit::Shader         shader_;
+	Orbit::Texture        texture_;
 	Orbit::Model          model_;
 	Orbit::Animation      animation_;
 	Orbit::ConstantBuffer constant_buffer_;

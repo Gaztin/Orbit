@@ -211,6 +211,39 @@ void Model::GenerateNormals( uint8_t* vertex_data, const uint8_t* index_data, si
 	}
 }
 
+void Model::GenerateTexCoords( uint8_t* vertex_data, const uint8_t* index_data, size_t face_count, size_t index_size, const VertexLayout& vertex_layout )
+{
+	if( !vertex_layout.Contains( VertexComponent::Position ) || !vertex_layout.Contains( VertexComponent::TexCoord ) )
+		return;
+
+	const size_t stride          = vertex_layout.GetStride();
+	const size_t pos_offset      = vertex_layout.OffsetOf( VertexComponent::Position );
+	const size_t texcoord_offset = vertex_layout.OffsetOf( VertexComponent::TexCoord );
+
+	for( uint32_t face = 0; face < face_count; ++face )
+	{
+		const size_t triangle_indices[ 3 ]
+		{
+			ReadIndexHelper( index_data, index_size, ( face * 3 + 0 ) ),
+			ReadIndexHelper( index_data, index_size, ( face * 3 + 1 ) ),
+			ReadIndexHelper( index_data, index_size, ( face * 3 + 2 ) ),
+		};
+
+		const Orbit::Vector3* triangle_positions[ 3 ]
+		{
+			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 0 ] + pos_offset ] ),
+			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 1 ] + pos_offset ] ),
+			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 2 ] + pos_offset ] ),
+		};
+
+		for( size_t i = 0; i < 3; ++i )
+		{
+			Vector2* w = reinterpret_cast< Vector2* >( &vertex_data[ stride * triangle_indices[ i ] + texcoord_offset ] );
+			*w = Vector2( triangle_positions[ i ]->x, triangle_positions[ i ]->y );
+		}
+	}
+}
+
 size_t Model::EvalIndexSize( size_t vertex_count )
 {
 
@@ -598,6 +631,8 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 			}
 		}
 
+		GenerateTexCoords( vertex_data.get(), index_data.get(), face_count, index_size, layout );
+
 		const IndexFormat index_format = EvalIndexFormat( index_size );
 
 		mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), vertex_count, vertex_stride );
@@ -690,6 +725,7 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 		while( it < end && *( it++ ) != '\n' );
 	}
 
+	GenerateTexCoords( vertex_data.get(), index_data.get(), face_count, index_size, layout );
 	GenerateNormals( vertex_data.get(), index_data.get(), face_count, index_size, layout );
 
 	const IndexFormat index_format = EvalIndexFormat( index_size );
