@@ -37,14 +37,14 @@ void IParser::Skip( size_t size )
 
 void IParser::ReadBytes( void* dst, size_t count )
 {
-	if( ( offset_ + count ) < size_ )
+	if( ( offset_ + count ) <= size_ )
 	{
 		std::memcpy( dst, &data_[ offset_ ], count );
 		offset_ += count;
 	}
 	else
 	{
-		std::memcpy( dst, &data_[ offset_ ], ( offset_ - size_ ) );
+		std::memcpy( dst, &data_[ offset_ ], ( size_ - offset_ ) );
 		offset_ = size_;
 	}
 }
