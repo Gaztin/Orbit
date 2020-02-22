@@ -398,15 +398,11 @@ RenderContext::RenderContext( GraphicsAPI api )
 				ComPtr< IDXGIFactory > factory;
 				ComPtr< IDXGIAdapter > adapter;
 				ComPtr< IDXGIOutput >  output;
-				{ /* Get the primary adapter output. */
-					IDXGIObject* tmp;
-					CreateDXGIFactory( __uuidof( IDXGIFactory ), reinterpret_cast< void** >( &tmp ) );
-					factory.reset( static_cast< IDXGIFactory* >( tmp ) );
-					factory->EnumAdapters( 0, reinterpret_cast< IDXGIAdapter** >( &tmp ) );
-					adapter.reset( static_cast< IDXGIAdapter* >( tmp ) );
-					adapter->EnumOutputs( 0, reinterpret_cast< IDXGIOutput** >( &tmp ) );
-					output.reset( static_cast< IDXGIOutput* >( tmp ) );
-				}
+
+				/* Get the primary adapter output. */
+				CreateDXGIFactory( __uuidof( IDXGIFactory ), reinterpret_cast< void** >( &factory.ptr_ ) );
+				factory->EnumAdapters( 0, reinterpret_cast< IDXGIAdapter** >( &adapter.ptr_ ) );
+				adapter->EnumOutputs( 0, reinterpret_cast< IDXGIOutput** >( &output.ptr_ ) );
 
 				UINT monitor_width;
 				UINT monitor_height;
@@ -474,33 +470,20 @@ RenderContext::RenderContext( GraphicsAPI api )
 				desc.Windowed               = true;
 				desc.SwapEffect             = DXGI_SWAP_EFFECT_DISCARD;
 
-				IDXGISwapChain* swap_chain;
-				D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, device_flags, feature_levels.data(), static_cast< UINT >( feature_levels.size() ), D3D11_SDK_VERSION, &desc, &swap_chain, NULL, NULL, NULL );
-				details.swap_chain.reset( swap_chain );
+				D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, device_flags, feature_levels.data(), static_cast< UINT >( feature_levels.size() ), D3D11_SDK_VERSION, &desc, &details.swap_chain.ptr_, NULL, NULL, NULL );
 			}
 
 			/* Get the device */
-			{
-				void* device;
-				details.swap_chain->GetDevice( __uuidof( ID3D11Device ), &device );
-				details.device.reset( static_cast< ID3D11Device* >( device ) );
-			}
+			details.swap_chain->GetDevice( __uuidof( ID3D11Device ), reinterpret_cast< void** >( &details.device.ptr_ ) );
 
 			/* Get the device context */
-			{
-				ID3D11DeviceContext* deviceContext;
-				details.device->GetImmediateContext( &deviceContext );
-				details.device_context.reset( deviceContext );
-			}
+			details.device->GetImmediateContext( &details.device_context.ptr_ );
 
 			/* Create the render target */
 			{
-				ID3D11Texture2D* back_buffer;
-				details.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer ) );
-				ID3D11RenderTargetView* renderTargetView;
-				details.device->CreateRenderTargetView( back_buffer, NULL, &renderTargetView );
-				details.render_target_view.reset( renderTargetView );
-				back_buffer->Release();
+				ComPtr< ID3D11Texture2D > back_buffer;
+				details.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer.ptr_ ) );
+				details.device->CreateRenderTargetView( back_buffer.ptr_, NULL, &details.render_target_view.ptr_ );
 			}
 
 			/* Create the depth stencil */
@@ -517,9 +500,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 				buffer_desc.SampleDesc.Count = 1;
 				buffer_desc.BindFlags        = D3D11_BIND_DEPTH_STENCIL;
 
-				ID3D11Texture2D* depth_stencil_buffer;
-				details.device->CreateTexture2D( &buffer_desc, NULL, &depth_stencil_buffer );
-				details.depth_stencil_buffer.reset( depth_stencil_buffer );
+				details.device->CreateTexture2D( &buffer_desc, NULL, &details.depth_stencil_buffer.ptr_ );
 
 				D3D11_DEPTH_STENCIL_DESC state_desc { };
 				state_desc.DepthEnable                  = true;
@@ -537,21 +518,15 @@ RenderContext::RenderContext( GraphicsAPI api )
 				state_desc.BackFace.StencilPassOp       = D3D11_STENCIL_OP_KEEP;
 				state_desc.BackFace.StencilFunc         = D3D11_COMPARISON_ALWAYS;
 
-				ID3D11DepthStencilState* depth_stencil_state;
-				details.device->CreateDepthStencilState( &state_desc, &depth_stencil_state );
-				details.device_context->OMSetDepthStencilState( depth_stencil_state, 1 );
-				details.depth_stencil_state.reset( depth_stencil_state );
+				details.device->CreateDepthStencilState( &state_desc, &details.depth_stencil_state.ptr_ );
+				details.device_context->OMSetDepthStencilState( details.depth_stencil_state.ptr_, 1 );
 					
 				D3D11_DEPTH_STENCIL_VIEW_DESC view_desc { };
 				view_desc.Format        = depth_buffer_format;
 				view_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
-				ID3D11DepthStencilView* depth_stencil_view;
-				details.device->CreateDepthStencilView( depth_stencil_buffer, &view_desc, &depth_stencil_view );
-
-				ID3D11RenderTargetView* render_target_views[] = { details.render_target_view.get() };
-				details.device_context->OMSetRenderTargets( 1, render_target_views, depth_stencil_view );
-				details.depth_stencil_view.reset( depth_stencil_view );
+				details.device->CreateDepthStencilView( details.depth_stencil_buffer.ptr_, &view_desc, &details.depth_stencil_view.ptr_ );
+				details.device_context->OMSetRenderTargets( 1, &details.render_target_view.ptr_, details.depth_stencil_view.ptr_ );
 			}
 
 			/* Create rasterizer */
@@ -563,10 +538,8 @@ RenderContext::RenderContext( GraphicsAPI api )
 				desc.FrontCounterClockwise = false;
 				desc.ScissorEnable         = true;
 
-				ID3D11RasterizerState* rasterizer_state;
-				details.device->CreateRasterizerState( &desc, &rasterizer_state );
-				details.device_context->RSSetState( rasterizer_state );
-				details.rasterizer_state.reset( rasterizer_state );
+				details.device->CreateRasterizerState( &desc, &details.rasterizer_state.ptr_ );
+				details.device_context->RSSetState( details.rasterizer_state.ptr_ );
 			}
 
 			/* Set default topology */
@@ -753,9 +726,9 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 			D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc { };
 			details.depth_stencil_view->GetDesc( &depth_stencil_view_desc );
 
-			details.render_target_view.reset();
-			details.depth_stencil_buffer.reset();
-			details.depth_stencil_view.reset();
+			details.render_target_view   = nullptr;
+			details.depth_stencil_buffer = nullptr;
+			details.depth_stencil_view   = nullptr;
 
 			DXGI_SWAP_CHAIN_DESC swap_chain_desc { };
 			details.swap_chain->GetDesc( &swap_chain_desc );
@@ -770,12 +743,12 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 			/* Recreate render target */
 			{
-				ID3D11Texture2D* back_buffer;
-				details.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer ) );
-				ID3D11RenderTargetView* renderTargetView;
-				details.device->CreateRenderTargetView( back_buffer, nullptr, &renderTargetView );
-				details.render_target_view.reset( renderTargetView );
-				back_buffer->Release();
+				ComPtr< ID3D11Texture2D > back_buffer;
+
+				details.render_target_view = nullptr;
+
+				details.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer.ptr_ ) );
+				details.device->CreateRenderTargetView( back_buffer.ptr_, nullptr, &details.render_target_view.ptr_ );
 			}
 
 			/* Recreate depth stencil */
@@ -783,19 +756,16 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 				depth_stencil_buffer_desc.Width  = swap_chain_desc.BufferDesc.Width;
 				depth_stencil_buffer_desc.Height = swap_chain_desc.BufferDesc.Height;
 
-				ID3D11Texture2D* depth_stencil_buffer;
-				details.device->CreateTexture2D( &depth_stencil_buffer_desc, NULL, &depth_stencil_buffer );
-				details.depth_stencil_buffer.reset( depth_stencil_buffer );
+				details.depth_stencil_buffer = nullptr;
+				details.device->CreateTexture2D( &depth_stencil_buffer_desc, NULL, &details.depth_stencil_buffer.ptr_ );
 
-				ID3D11DepthStencilView* depth_stencil_view;
-				details.device->CreateDepthStencilView( depth_stencil_buffer, &depth_stencil_view_desc, &depth_stencil_view );
-				details.depth_stencil_view.reset( depth_stencil_view );
+				details.depth_stencil_view = nullptr;
+				details.device->CreateDepthStencilView( details.depth_stencil_buffer.ptr_, &depth_stencil_view_desc, &details.depth_stencil_view.ptr_ );
 			}
 
-			ID3D11RenderTargetView* render_target_views[] = { details.render_target_view.get() };
-			details.device_context->OMSetRenderTargets( 1, render_target_views, details.depth_stencil_view.get() );
-			details.device_context->OMSetDepthStencilState( details.depth_stencil_state.get(), 0 );
-			details.device_context->RSSetState( details.rasterizer_state.get() );
+			details.device_context->OMSetRenderTargets( 1, &details.render_target_view.ptr_, details.depth_stencil_view.ptr_ );
+			details.device_context->OMSetDepthStencilState( details.depth_stencil_state.ptr_, 0 );
+			details.device_context->RSSetState( details.rasterizer_state.ptr_ );
 			details.device_context->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
 			D3D11_VIEWPORT viewport { };
@@ -912,10 +882,10 @@ void RenderContext::Clear( BufferMask mask )
 			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( details_ );
 
 			if( !!( mask & BufferMask::Color ) )
-				details.device_context->ClearRenderTargetView( details.render_target_view.get(), &details.clear_color[ 0 ] );
+				details.device_context->ClearRenderTargetView( details.render_target_view.ptr_, &details.clear_color[ 0 ] );
 
 			if( !!( mask & BufferMask::Depth ) )
-				details.device_context->ClearDepthStencilView( details.depth_stencil_view.get(), D3D11_CLEAR_DEPTH, 1.0f, 0 );
+				details.device_context->ClearDepthStencilView( details.depth_stencil_view.ptr_, D3D11_CLEAR_DEPTH, 1.0f, 0 );
 
 			break;
 		}

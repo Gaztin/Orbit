@@ -70,43 +70,34 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 				nullptr, nullptr,
 			};
 
-			ID3DBlob* vertex_data = nullptr;
+			ComPtr< ID3DBlob > vertex_data;
 
 			/* Create vertex shader */
 			{
-				ID3DBlob* errors = nullptr;
+				ComPtr< ID3DBlob > errors;
 
-				if( FAILED( D3DCompile( source.data(), source.size(), nullptr, macros, nullptr, "VSMain", "vs_5_0", flags, 0, &vertex_data, &errors ) ) )
+				if( FAILED( D3DCompile( source.data(), source.size(), nullptr, macros, nullptr, "VSMain", "vs_5_0", flags, 0, &vertex_data.ptr_, &errors.ptr_ ) ) )
 				{
 					LogError( "%s", errors->GetBufferPointer() );
-					errors->Release();
 				}
-
-				ID3D11VertexShader* vertex_shader = nullptr;
-
-				if( SUCCEEDED( d3d11.device->CreateVertexShader( vertex_data->GetBufferPointer(), vertex_data->GetBufferSize(), nullptr, &vertex_shader ) ) )
+				else
 				{
-					details.vertex_shader.reset( vertex_shader );
+					d3d11.device->CreateVertexShader( vertex_data->GetBufferPointer(), vertex_data->GetBufferSize(), nullptr, &details.vertex_shader.ptr_ );
 				}
 			}
 
 			/* Create pixel shader */
 			{
-				ID3DBlob* pixel_data;
-				ID3DBlob* errors;
+				ComPtr< ID3DBlob > pixel_data;
+				ComPtr< ID3DBlob > errors;
 
-				if( FAILED( D3DCompile( source.data(), source.size(), nullptr, macros, nullptr, "PSMain", "ps_5_0", flags, 0, &pixel_data, &errors ) ) )
+				if( FAILED( D3DCompile( source.data(), source.size(), nullptr, macros, nullptr, "PSMain", "ps_5_0", flags, 0, &pixel_data.ptr_, &errors.ptr_ ) ) )
 				{
 					LogError( "%s", errors->GetBufferPointer() );
-					errors->Release();
 				}
-
-				ID3D11PixelShader* pixel_shader;
-
-				if( SUCCEEDED( d3d11.device->CreatePixelShader( pixel_data->GetBufferPointer(), pixel_data->GetBufferSize(), nullptr, &pixel_shader ) ) )
+				else
 				{
-					pixel_data->Release();
-					details.pixel_shader.reset( pixel_shader );
+					d3d11.device->CreatePixelShader( pixel_data->GetBufferPointer(), pixel_data->GetBufferSize(), nullptr, &details.pixel_shader.ptr_ );
 				}
 			}
 
@@ -162,14 +153,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 					descriptors.push_back( desc );
 				}
 
-				ID3D11InputLayout* input_layout;
-
-				if( SUCCEEDED( d3d11.device->CreateInputLayout( descriptors.data(), static_cast< UINT >( descriptors.size() ), vertex_data->GetBufferPointer(), vertex_data->GetBufferSize(), &input_layout ) ) )
-				{
-					details.input_layout.reset( input_layout );
-				}
-
-				vertex_data->Release();
+				d3d11.device->CreateInputLayout( descriptors.data(), static_cast< UINT >( descriptors.size() ), vertex_data->GetBufferPointer(), vertex_data->GetBufferSize(), &details.input_layout.ptr_ );
 			}
 
 			/* Create sampler state */
@@ -184,12 +168,7 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 				desc.MinLOD           = 0.0f;
 				desc.MaxLOD           = D3D11_FLOAT32_MAX;
 
-				ID3D11SamplerState* sampler_state;
-
-				if( SUCCEEDED( d3d11.device->CreateSamplerState( &desc, &sampler_state ) ) )
-				{
-					details.sampler_state.reset( sampler_state );
-				}
+				d3d11.device->CreateSamplerState( &desc, &details.sampler_state.ptr_ );
 			}
 
 			break;
@@ -285,19 +264,16 @@ void Shader::Bind( void )
 			auto& details = std::get< Private::_ShaderDetailsD3D11 >( details_ );
 
 			if( details.input_layout )
-				d3d11.device_context->IASetInputLayout( details.input_layout.get() );
+				d3d11.device_context->IASetInputLayout( details.input_layout.ptr_ );
 
 			if( details.vertex_shader )
-				d3d11.device_context->VSSetShader( details.vertex_shader.get(), nullptr, 0 );
+				d3d11.device_context->VSSetShader( details.vertex_shader.ptr_, nullptr, 0 );
 
 			if( details.pixel_shader )
-				d3d11.device_context->PSSetShader( details.pixel_shader.get(), nullptr, 0 );
+				d3d11.device_context->PSSetShader( details.pixel_shader.ptr_, nullptr, 0 );
 
 			if( details.sampler_state )
-			{
-				ID3D11SamplerState* sampler_states[] = { details.sampler_state.get() };
-				d3d11.device_context->PSSetSamplers( 0, 1, sampler_states );
-			}
+				d3d11.device_context->PSSetSamplers( 0, 1, &details.sampler_state.ptr_ );
 
 			break;
 		}
@@ -357,46 +333,42 @@ void Shader::Unbind( void )
 
 			if( details.input_layout )
 			{
-				ID3D11InputLayout* bound_input_layout;
-				d3d11.device_context->IAGetInputLayout( &bound_input_layout );
-				if( bound_input_layout == details.input_layout.get() )
-				{
+				ComPtr< ID3D11InputLayout > bound_input_layout;
+
+				d3d11.device_context->IAGetInputLayout( &bound_input_layout.ptr_ );
+
+				if( bound_input_layout == details.input_layout.ptr_ )
 					d3d11.device_context->IASetInputLayout( nullptr );
-					bound_input_layout->Release();
-				}
 			}
 
 			if( details.vertex_shader )
 			{
-				ID3D11VertexShader* bound_vertex_shader;
-				d3d11.device_context->VSGetShader( &bound_vertex_shader, nullptr, nullptr );
-				if( bound_vertex_shader == details.vertex_shader.get() )
-				{
+				ComPtr< ID3D11VertexShader > bound_vertex_shader;
+
+				d3d11.device_context->VSGetShader( &bound_vertex_shader.ptr_, nullptr, nullptr );
+
+				if( bound_vertex_shader == details.vertex_shader.ptr_ )
 					d3d11.device_context->VSSetShader( nullptr, nullptr, 0 );
-					bound_vertex_shader->Release();
-				}
 			}
 
 			if( details.pixel_shader )
 			{
-				ID3D11PixelShader* bound_pixel_shader;
-				d3d11.device_context->PSGetShader( &bound_pixel_shader, nullptr, nullptr );
-				if( bound_pixel_shader == details.pixel_shader.get() )
-				{
+				ComPtr< ID3D11PixelShader > bound_pixel_shader;
+
+				d3d11.device_context->PSGetShader( &bound_pixel_shader.ptr_, nullptr, nullptr );
+
+				if( bound_pixel_shader == details.pixel_shader.ptr_ )
 					d3d11.device_context->PSSetShader( nullptr, nullptr, 0 );
-					bound_pixel_shader->Release();
-				}
 			}
 
 			if( details.sampler_state )
 			{
-				ID3D11SamplerState* bound_sampler_state;
-				d3d11.device_context->PSGetSamplers( 0, 1, &bound_sampler_state );
-				if( bound_sampler_state == details.sampler_state.get() )
-				{
+				ComPtr< ID3D11SamplerState > bound_sampler_state;
+
+				d3d11.device_context->PSGetSamplers( 0, 1, &bound_sampler_state.ptr_ );
+
+				if( bound_sampler_state == details.sampler_state.ptr_ )
 					d3d11.device_context->PSSetSamplers( 0, 0, nullptr );
-					bound_sampler_state->Release();
-				}
 			}
 
 			break;

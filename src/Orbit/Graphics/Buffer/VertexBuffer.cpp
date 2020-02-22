@@ -61,19 +61,17 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 			desc.Usage     = D3D11_USAGE_DEFAULT;
 			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-			ID3D11Buffer* buffer;
 			if( data )
 			{
 				D3D11_SUBRESOURCE_DATA initial_data { };
 				initial_data.pSysMem = data;
-				d3d11.device->CreateBuffer( &desc, &initial_data, &buffer );
+				d3d11.device->CreateBuffer( &desc, &initial_data, &details.buffer.ptr_ );
 			}
 			else
 			{
-				d3d11.device->CreateBuffer( &desc, nullptr, &buffer );
+				d3d11.device->CreateBuffer( &desc, nullptr, &details.buffer.ptr_ );
 			}
 
-			details.buffer.reset( buffer );
 			details.stride = static_cast< UINT >( stride );
 
 			break;
@@ -128,13 +126,12 @@ void VertexBuffer::Bind( void )
 
 		case( unique_index_v< Private::_VertexBufferDetailsD3D11, Private::VertexBufferDetails > ):
 		{
-			auto&         details = std::get< Private::_VertexBufferDetailsD3D11 >( details_ );
-			auto&         d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
-			ID3D11Buffer* buffer  = details.buffer.get();
-			UINT          stride  = details.stride;
-			UINT          offset  = 0;
+			auto& details = std::get< Private::_VertexBufferDetailsD3D11 >( details_ );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			UINT  stride  = details.stride;
+			UINT  offset  = 0;
 
-			d3d11.device_context->IASetVertexBuffers( 0, 1, &buffer, &stride, &offset );
+			d3d11.device_context->IASetVertexBuffers( 0, 1, &details.buffer.ptr_, &stride, &offset );
 
 			break;
 		}

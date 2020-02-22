@@ -20,22 +20,56 @@
 
 #if defined( ORB_OS_WINDOWS )
 #  include <memory>
+#  include <type_traits>
 
 #  include <Windows.h>
 
 ORB_NAMESPACE_BEGIN
 
-struct ComDeleter
+template< typename T
+	, typename = typename std::enable_if_t< std::is_base_of_v< IUnknown, T > > >
+class ComPtr final
 {
-	void operator()( IUnknown* ptr ) const
-	{
-		if( ptr )
-			ptr->Release();
-	}
-};
+public:
 
-template< typename T >
-using ComPtr = std::unique_ptr< T, ComDeleter >;
+	ComPtr( void )
+		: ptr_( nullptr )
+	{
+	}
+
+	explicit ComPtr( T* ptr )
+		: ptr_( ptr )
+	{
+	}
+
+	~ComPtr( void )
+	{
+		if( ptr_ )
+			ptr_->Release();
+	}
+
+	ComPtr& operator=( std::nullptr_t )
+	{
+		if( ptr_ )
+			ptr_->Release();
+
+		ptr_ = nullptr;
+
+		return *this;
+	}
+
+public:
+
+	operator bool      ( void )           const { return ( ptr_ != nullptr ); }
+	bool     operator==( const T* other ) const { return ( ptr_ == other ); }
+	T*       operator->( void )                 { return ptr_; }
+	const T* operator->( void )           const { return ptr_; }
+
+public:
+
+	T* ptr_;
+
+};
 
 ORB_NAMESPACE_END
 
