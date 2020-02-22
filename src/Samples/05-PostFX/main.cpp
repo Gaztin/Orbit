@@ -21,6 +21,7 @@
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
+#include <Orbit/Graphics/Buffer/FrameBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Model/Model.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
@@ -28,29 +29,40 @@
 #include <Orbit/Math/Vector3.h>
 
 #include "Framework/Camera.h"
+#include "Framework/RenderQuad.h"
+#include "PostFXShader.h"
 #include "SceneShader.h"
 
 #include <cmath>
 
-static SceneShader scene_shader;
+static SceneShader  scene_shader;
+static PostFXShader post_fx_shader;
 
-struct ConstantData
+struct VertexConstantData
 {
 	Orbit::Matrix4 view_projection;
 
-} constant_data;
+} vertex_constant_data;
+
+struct PixelConstantData
+{
+	float time;
+
+} pixel_constant_data;
 
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
 	SampleApp( void )
-		: window_         ( 800, 600 )
-		, shader_         ( scene_shader )
-		, model_          ( Orbit::Asset( "models/teapot.obj" ), scene_shader.GetVertexLayout() )
-		, constant_buffer_( sizeof( ConstantData ) )
+		: window_                ( 800, 600 )
+		, scene_shader_          ( scene_shader )
+		, post_fx_shader_        ( post_fx_shader )
+		, model_                 ( Orbit::Asset( "models/teapot.obj" ), scene_shader.GetVertexLayout() )
+		, vertex_constant_buffer_( sizeof( VertexConstantData ) )
+		, pixel_constant_buffer_ ( sizeof( PixelConstantData ) )
 	{
-		window_.SetTitle( "Orbit Sample (03-Model)" );
+		window_.SetTitle( "Orbit Sample (05-PostFX)" );
 		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
@@ -65,11 +77,15 @@ public:
 	{
 		window_.PollEvents();
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
+		frame_buffer_.Clear();
 
 		camera_.Update( delta_time );
 
-		constant_data.view_projection = camera_.GetViewProjection();
-		constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
+		vertex_constant_data.view_projection = camera_.GetViewProjection();
+		vertex_constant_buffer_.Update( &vertex_constant_data, sizeof( VertexConstantData ) );
+
+		pixel_constant_data.time += delta_time;
+		pixel_constant_buffer_.Update( &pixel_constant_data, sizeof( PixelConstantData ) );
 
 		for( const Orbit::Mesh& mesh : model_ )
 		{
@@ -77,7 +93,20 @@ public:
 			command.vertex_buffer = *mesh.vertex_buffer;
 			command.index_buffer  = *mesh.index_buffer;
 			command.shader        = scene_shader_;
-			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
+			command.frame_buffer  = frame_buffer_;
+			command.constant_buffers[ Orbit::ShaderType::Vertex   ].emplace_back( vertex_constant_buffer_ );
+			command.constant_buffers[ Orbit::ShaderType::Fragment ].emplace_back( pixel_constant_buffer_ );
+
+			renderer_.QueueCommand( command );
+		}
+
+		/* Render quad */
+		{
+			Orbit::RenderCommand command;
+			command.vertex_buffer = render_quad_.vertex_buffer_;
+			command.index_buffer  = render_quad_.index_buffer_;
+			command.shader        = post_fx_shader_;
+			command.textures.emplace_back( frame_buffer_.GetTexture2D() );
 
 			renderer_.QueueCommand( command );
 		}
@@ -92,12 +121,16 @@ private:
 
 	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
-	Orbit::Shader         shader_;
+	Orbit::Shader         scene_shader_;
+	Orbit::Shader         post_fx_shader_;
 	Orbit::Model          model_;
-	Orbit::ConstantBuffer constant_buffer_;
+	Orbit::ConstantBuffer vertex_constant_buffer_;
+	Orbit::ConstantBuffer pixel_constant_buffer_;
+	Orbit::FrameBuffer    frame_buffer_;
 	Orbit::BasicRenderer  renderer_;
 	Orbit::Matrix4        model_matrix_;
 
-	Camera camera_;
+	Camera     camera_;
+	RenderQuad render_quad_;
 
 };
