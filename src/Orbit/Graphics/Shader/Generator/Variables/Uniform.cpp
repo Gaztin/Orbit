@@ -26,18 +26,16 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { namespace Variables
 {
-	static std::string NewName( void )
+	static std::string NewName( size_t unique_index )
 	{
-		static uint32_t unique_index = 0;
-
 		std::ostringstream ss;
-		ss << "uniform_" << ( unique_index++ );
+		ss << "uniform_" << unique_index;
 
 		return ss.str();
 	}
 
 	UniformBase::UniformBase( DataType type )
-		: IVariable( NewName(), type )
+		: IVariable( NewName( IGenerator::GetCurrentGenerator()->uniforms_.size() ), type )
 	{
 		stored_ = true;
 
