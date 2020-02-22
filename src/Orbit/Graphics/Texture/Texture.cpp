@@ -31,12 +31,4 @@ Texture::Texture( ByteSpan data )
 	}
 }
 
-Texture2D* Texture::Texture2DPtr( void )
-{
-	if( texture2d_ )
-		return &texture2d_.value();
-
-	return nullptr;
-}
-
 ORB_NAMESPACE_END

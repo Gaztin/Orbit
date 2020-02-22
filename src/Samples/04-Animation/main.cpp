@@ -103,10 +103,10 @@ public:
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
-			command.vertex_buffer = mesh.vertex_buffer.get();
-			command.index_buffer  = mesh.index_buffer.get();
-			command.shader        = &shader_;
-			command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &constant_buffer_ );
+			command.vertex_buffer = *mesh.vertex_buffer;
+			command.index_buffer  = *mesh.index_buffer;
+			command.shader        = shader_;
+			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 
 			renderer_.QueueCommand( command );
 		}

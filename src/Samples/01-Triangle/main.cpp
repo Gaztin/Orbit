@@ -74,13 +74,13 @@ public:
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
 		Orbit::RenderCommand command;
-		command.vertex_buffer = &vertex_buffer_;
-		command.index_buffer  = &index_buffer_;
-		command.shader        = &shader_;
-		command.textures.push_back( texture_.Texture2DPtr() );
+		command.vertex_buffer = vertex_buffer_;
+		command.index_buffer  = index_buffer_;
+		command.shader        = shader_;
+		command.textures.emplace_back( texture_.GetTexture2D() );
 		renderer_.QueueCommand( command );
-		renderer_.Render();
 
+		renderer_.Render();
 		render_context_.SwapBuffers();
 	}
 

@@ -27,7 +27,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-static void BindConstantBuffers( const RenderCommand& command )
+static void BindConstantBuffers( RenderCommand& command )
 {
 	uint32_t global_slot = 0;
 
