@@ -190,4 +190,40 @@ void Texture2D::Bind( uint32_t slot )
 	}
 }
 
+void Texture2D::Unbind( uint32_t slot )
+{
+	switch( details_.index() )
+	{
+		default: break;
+
+		#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_Texture2DDetailsOpenGL, Private::Texture2DDetails > ):
+		{
+			const uint32_t unit_base = static_cast< GLenum >( OpenGLTextureUnit::Texture0 );
+
+			glActiveTexture( static_cast< OpenGLTextureUnit >( unit_base + slot ) );
+			glBindTexture( GL_TEXTURE_2D, 0 );
+
+			break;
+		}
+
+	#endif // ORB_HAS_OPENGL
+	#if( ORB_HAS_D3D11 )
+
+		case( unique_index_v< Private::_Texture2DDetailsD3D11, Private::Texture2DDetails > ):
+		{
+			auto& d3d11 = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+
+			ID3D11ShaderResourceView* null_view = nullptr;
+			d3d11.device_context->PSSetShaderResources( slot, 1, &null_view );
+
+			break;
+		}
+
+	#endif // ORB_HAS_D3D11
+
+	}
+}
+
 ORB_NAMESPACE_END
