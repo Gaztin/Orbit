@@ -19,6 +19,7 @@
 
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Buffer/ConstantBuffer.h"
+#include "Orbit/Graphics/Buffer/FrameBuffer.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
@@ -106,6 +107,9 @@ void BasicRenderer::Render( void )
 {
 	for( RenderCommand& command : commands_ )
 	{
+		if( command.frame_buffer )
+			command.frame_buffer->Bind();
+
 		for( size_t i = 0; i < command.textures.size(); ++i )
 			command.textures[ i ]->Bind( static_cast< uint32_t >( i ) );
 
@@ -119,6 +123,12 @@ void BasicRenderer::Render( void )
 //		command.index_buffer->Unbind();
 		command.shader->Unbind();
 //		command.vertex_buffer->Unbind();
+
+		for( size_t i = 0; i < command.textures.size(); ++i )
+			command.textures[ i ]->Unbind( static_cast< uint32_t >( i ) );
+
+		if( command.frame_buffer )
+			command.frame_buffer->Unbind();
 	}
 
 	commands_.clear();
