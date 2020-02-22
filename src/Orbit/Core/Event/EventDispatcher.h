@@ -76,7 +76,7 @@ public:
 
 protected:
 
-	void SendEvents()
+	void SendEvents( void )
 	{
 		( SendEventsInQueue( std::get< Queue< Types > >( queues_ ) ), ... );
 	}
@@ -100,7 +100,7 @@ private:
 
 private:
 
-	uint64_t GenerateUniqueID() const
+	uint64_t GenerateUniqueID( void ) const
 	{
 		static std::atomic_uint64_t counter = 0;
 		return ++counter;
