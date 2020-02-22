@@ -205,6 +205,24 @@ namespace ShaderGen
 		return Variables::IVariable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
 	}
 
+	Variables::IVariable IGenerator::Cos( const Variables::IVariable& radians )
+	{
+		assert( radians.data_type_ == DataType::Float );
+
+		radians.SetUsed();
+
+		return Variables::IVariable( "cos( " + radians.GetValue() + " )", DataType::Float );
+	}
+
+	Variables::IVariable IGenerator::Sin( const Variables::IVariable& radians )
+	{
+		assert( radians.data_type_ == DataType::Float );
+
+		radians.SetUsed();
+
+		return Variables::IVariable( "sin( " + radians.GetValue() + " )", DataType::Float );
+	}
+
 	std::string IGenerator::GenerateHLSL( void )
 	{
 		std::string full_source_code;

@@ -80,6 +80,8 @@ namespace ShaderGen
 		Variables::IVariable Sample   ( const Variables::IVariable& sampler, const Variables::IVariable& texcoord );
 		Variables::IVariable Dot      ( const Variables::IVariable& lhs, const Variables::IVariable& rhs );
 		Variables::IVariable Normalize( const Variables::IVariable& vec );
+		Variables::IVariable Cos      ( const Variables::IVariable& radians );
+		Variables::IVariable Sin      ( const Variables::IVariable& radians );
 
 	private:
 
