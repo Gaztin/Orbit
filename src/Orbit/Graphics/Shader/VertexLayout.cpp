@@ -120,6 +120,11 @@ size_t VertexLayout::GetStride( void ) const
 	return stride;
 }
 
+size_t VertexLayout::GetCount( void ) const
+{
+	return components_.size();
+}
+
 size_t VertexLayout::OffsetOf( VertexComponent component ) const
 {
 	size_t offset = 0;
