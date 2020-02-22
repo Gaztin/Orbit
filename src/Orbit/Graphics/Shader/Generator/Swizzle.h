@@ -49,6 +49,11 @@ namespace ShaderGen
 
 	public:
 
+		Variables::IVariable operator-( void ) const
+		{
+			return -static_cast< Variables::IVariable >( *this );
+		}
+
 		Variables::IVariable operator+( const Variables::IVariable& rhs ) const
 		{
 			return ( static_cast< Variables::IVariable >( *this ) + rhs );
@@ -108,6 +113,26 @@ namespace ShaderGen
 				component_variable.SetStored();
 
 			return component_variable;
+		}
+
+		friend Variables::IVariable operator+( double d, const Swizzle& rhs )
+		{
+			return ( Variables::IVariable( d ) + static_cast< Variables::IVariable >( rhs ) );
+		}
+
+		friend Variables::IVariable operator-( double d, const Swizzle& rhs )
+		{
+			return ( Variables::IVariable( d ) - static_cast< Variables::IVariable >( rhs ) );
+		}
+
+		friend Variables::IVariable operator*( double d, const Swizzle& rhs )
+		{
+			return ( Variables::IVariable( d ) * static_cast< Variables::IVariable >( rhs ) );
+		}
+
+		friend Variables::IVariable operator/( double d, const Swizzle& rhs )
+		{
+			return ( Variables::IVariable( d ) / static_cast< Variables::IVariable >( rhs ) );
 		}
 
 	};
