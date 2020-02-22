@@ -182,6 +182,8 @@ namespace ShaderGen { namespace Variables
 
 	void IVariable::operator=( const IVariable& rhs )
 	{
+		assert( data_type_ == rhs.data_type_ );
+
 		rhs.SetUsed();
 
 		StoreValue();
