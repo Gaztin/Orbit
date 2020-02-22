@@ -37,6 +37,19 @@ public:
 	{
 	}
 
+	ComPtr( const ComPtr& other )
+		: ptr_( other.ptr_ )
+	{
+		if( ptr_ )
+			ptr_->AddRef();
+	}
+
+	ComPtr( ComPtr&& other )
+		: ptr_( other.ptr_ )
+	{
+		other.ptr_ = nullptr;
+	}
+
 	explicit ComPtr( T* ptr )
 		: ptr_( ptr )
 	{
@@ -46,6 +59,26 @@ public:
 	{
 		if( ptr_ )
 			ptr_->Release();
+	}
+
+public:
+
+	ComPtr& operator=( const ComPtr& other )
+	{
+		ptr_ = other.ptr_;
+
+		if( ptr_ )
+			ptr_->AddRef();
+
+		return *this;
+	}
+
+	ComPtr& operator=( ComPtr&& other )
+	{
+		ptr_       = other.ptr_;
+		other.ptr_ = nullptr;
+
+		return *this;
 	}
 
 	ComPtr& operator=( std::nullptr_t )
