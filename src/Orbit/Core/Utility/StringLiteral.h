@@ -56,6 +56,12 @@ private:
 		}
 	}
 
+	template< size_t Index >
+	static constexpr size_t Length( void )
+	{
+		return Index;
+	}
+
 	template< size_t Index, char Arg0, char... Args >
 	static constexpr bool HasDuplicateChar( void )
 	{
