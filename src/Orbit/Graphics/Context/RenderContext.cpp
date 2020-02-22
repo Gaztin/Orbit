@@ -20,6 +20,7 @@
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
+#include "Orbit/Core/Platform/Windows/Win32Error.h"
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Core/Widget/Window.h"
 #include "Orbit/Graphics/Platform/iOS/GLKViewDelegate.h"
@@ -32,6 +33,8 @@
 #elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 #  include <android/native_window.h>
 #endif // ORB_OS_ANDROID
+
+#include <dxgi1_3.h>
 
 ORB_NAMESPACE_BEGIN
 
@@ -393,91 +396,52 @@ RenderContext::RenderContext( GraphicsAPI api )
 			constexpr DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 			/* Find the monitor refresh rate */
-			DXGI_RATIONAL refreshRate = { 60000, 1000 };
+			ComPtr< IDXGIFactory2 > factory;
+
+		#if defined( NDEBUG )
+			CreateDXGIFactory2( 0, __uuidof( IDXGIFactory2 ), reinterpret_cast< void** >( &factory.ptr_ ) );
+		#else // NDEBUG
+			CreateDXGIFactory2( DXGI_CREATE_FACTORY_DEBUG, __uuidof( IDXGIFactory2 ), reinterpret_cast< void** >( &factory.ptr_ ) );
+		#endif // !NDEBUG
+
+			/* Create the device */
 			{
-				ComPtr< IDXGIFactory > factory;
-				ComPtr< IDXGIAdapter > adapter;
-				ComPtr< IDXGIOutput >  output;
-
-				/* Get the primary adapter output. */
-				CreateDXGIFactory( __uuidof( IDXGIFactory ), reinterpret_cast< void** >( &factory.ptr_ ) );
-				factory->EnumAdapters( 0, reinterpret_cast< IDXGIAdapter** >( &adapter.ptr_ ) );
-				adapter->EnumOutputs( 0, reinterpret_cast< IDXGIOutput** >( &output.ptr_ ) );
-
-				UINT monitor_width;
-				UINT monitor_height;
-				{ /* Get monitor resolution. */
-					HMONITOR    monitor = MonitorFromWindow( window_details.hwnd, MONITOR_DEFAULTTONEAREST );
-					MONITORINFO monitor_info;
-					monitor_info.cbSize = sizeof( MONITORINFO );
-					GetMonitorInfoA( monitor, &monitor_info );
-
-					monitor_width  = ( monitor_info.rcMonitor.right - monitor_info.rcMonitor.left );
-					monitor_height = ( monitor_info.rcMonitor.bottom - monitor_info.rcMonitor.top );
-				}
-
-				std::vector< DXGI_MODE_DESC > display_modes;
-				{ /* Get display modes. */
-					UINT num_display_modes;
-					output->GetDisplayModeList( back_buffer_format, DXGI_ENUM_MODES_INTERLACED, &num_display_modes, nullptr );
-					display_modes.resize( num_display_modes );
-					output->GetDisplayModeList( back_buffer_format, DXGI_ENUM_MODES_INTERLACED, &num_display_modes, &display_modes[ 0 ] );
-				}
-
-				/* Finally, iterate all the display modes to find one matching the monitor's resolution. */
-				for( DXGI_MODE_DESC& mode : display_modes )
-				{
-					if( mode.Width == monitor_width &&
-						mode.Height == monitor_height )
-					{
-						refreshRate = mode.RefreshRate;
-
-						break;
-					}
-				}
-			}
-
-			/* Create the swap chain */
-			{
-				constexpr UINT device_flags = 0
-				#if !defined( NDEBUG )
-					| D3D11_CREATE_DEVICE_DEBUG
-				#endif // NDEBUG
-					;
 				constexpr std::array feature_levels
 				{
 					D3D_FEATURE_LEVEL_11_1,
 					D3D_FEATURE_LEVEL_11_0,
-					D3D_FEATURE_LEVEL_10_1,
-					D3D_FEATURE_LEVEL_10_0,
-					D3D_FEATURE_LEVEL_9_3,
-					D3D_FEATURE_LEVEL_9_2,
-					D3D_FEATURE_LEVEL_9_1,
 				};
 
+			#if defined( NDEBUG )
+				constexpr UINT device_flags = 0;
+			#else // NDEBUG
+				constexpr UINT device_flags = D3D11_CREATE_DEVICE_DEBUG;
+			#endif // !NDEBUG
+
+				D3D11CreateDevice( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, device_flags, feature_levels.data(), static_cast< UINT >( feature_levels.size() ), D3D11_SDK_VERSION, &details.device.ptr_, NULL, &details.device_context.ptr_ );
+			}
+
+			/* Create the swap chain */
+			{
 				RECT window_rect;
 				GetWindowRect( window_details.hwnd, &window_rect );
 
-				DXGI_SWAP_CHAIN_DESC desc { };
-				desc.BufferDesc.Width       = ( window_rect.right - window_rect.left );
-				desc.BufferDesc.Height      = ( window_rect.bottom - window_rect.top );
-				desc.BufferDesc.RefreshRate = refreshRate;
-				desc.BufferDesc.Format      = back_buffer_format;
+				DXGI_SWAP_CHAIN_DESC1 desc { };
+				desc.Width                  = ( window_rect.right - window_rect.left );
+				desc.Height                 = ( window_rect.bottom - window_rect.top );
+				desc.Format                 = back_buffer_format;
+				desc.Stereo                 = false;
 				desc.SampleDesc.Count       = 1;
+				desc.SampleDesc.Quality     = 0;
 				desc.BufferUsage            = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 				desc.BufferCount            = 1;
-				desc.OutputWindow           = window_details.hwnd;
-				desc.Windowed               = true;
+				desc.Scaling                = DXGI_SCALING_STRETCH;
 				desc.SwapEffect             = DXGI_SWAP_EFFECT_DISCARD;
+				desc.AlphaMode              = DXGI_ALPHA_MODE_IGNORE;
+				desc.Flags                  = 0;
 
-				D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, device_flags, feature_levels.data(), static_cast< UINT >( feature_levels.size() ), D3D11_SDK_VERSION, &desc, &details.swap_chain.ptr_, NULL, NULL, NULL );
+				ORB_CHECK_HRESULT( factory->CreateSwapChainForHwnd( details.device.ptr_, window_details.hwnd, &desc, NULL, NULL, &details.swap_chain.ptr_ ) );
 			}
-
-			/* Get the device */
-			details.swap_chain->GetDevice( __uuidof( ID3D11Device ), reinterpret_cast< void** >( &details.device.ptr_ ) );
-
-			/* Get the device context */
-			details.device->GetImmediateContext( &details.device_context.ptr_ );
 
 			/* Create the render target */
 			{
@@ -730,16 +694,16 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 			details.depth_stencil_buffer = nullptr;
 			details.depth_stencil_view   = nullptr;
 
-			DXGI_SWAP_CHAIN_DESC swap_chain_desc { };
-			details.swap_chain->GetDesc( &swap_chain_desc );
+			DXGI_SWAP_CHAIN_DESC1 swap_chain_desc { };
+			details.swap_chain->GetDesc1( &swap_chain_desc );
 
-			if( width && height )
+			if( ( width > 0 ) && ( height > 0 ) )
 			{
-				swap_chain_desc.BufferDesc.Width  = width;
-				swap_chain_desc.BufferDesc.Height = height;
+				swap_chain_desc.Width  = width;
+				swap_chain_desc.Height = height;
 			}
 
-			details.swap_chain->ResizeBuffers( 1, swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height, swap_chain_desc.BufferDesc.Format, swap_chain_desc.Flags );
+			details.swap_chain->ResizeBuffers( 1, swap_chain_desc.Width, swap_chain_desc.Height, swap_chain_desc.Format, swap_chain_desc.Flags );
 
 			/* Recreate render target */
 			{
@@ -753,8 +717,8 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 
 			/* Recreate depth stencil */
 			{
-				depth_stencil_buffer_desc.Width  = swap_chain_desc.BufferDesc.Width;
-				depth_stencil_buffer_desc.Height = swap_chain_desc.BufferDesc.Height;
+				depth_stencil_buffer_desc.Width  = swap_chain_desc.Width;
+				depth_stencil_buffer_desc.Height = swap_chain_desc.Height;
 
 				details.depth_stencil_buffer = nullptr;
 				details.device->CreateTexture2D( &depth_stencil_buffer_desc, NULL, &details.depth_stencil_buffer.ptr_ );

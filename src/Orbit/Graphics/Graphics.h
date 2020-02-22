@@ -47,6 +47,7 @@
 /* Direct3D includes */
 #if( ORB_HAS_D3D11 )
 #  include <d3d11.h>
+#  include <dxgi1_2.h>
 #endif // ORB_HAS_D3D11
 
 /* OpenGL includes */
