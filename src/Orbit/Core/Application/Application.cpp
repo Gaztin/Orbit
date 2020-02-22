@@ -18,6 +18,7 @@
 #include "Application.h"
 
 #include "Orbit/Core/Platform/iOS/UIApplicationDelegate.h"
+#include "Orbit/Core/Widget/Console.h"
 
 #include <chrono>
 
@@ -25,6 +26,7 @@ ORB_NAMESPACE_BEGIN
 
 void ApplicationBase::RunInstance( void )
 {
+	Console console;
 
 #if defined( ORB_OS_IOS )
 

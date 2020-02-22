@@ -15,63 +15,35 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Core.h"
+#include "Win32Error.h"
 
-#include <cassert>
+#if defined( ORB_OS_WINDOWS )
+#  include "Orbit/Core/IO/Log.h"
+
+#  include <comdef.h>
 
 ORB_NAMESPACE_BEGIN
 
-template< typename Derived >
-class ManualSingleton
+bool CheckHResult( HRESULT hresult, std::string_view statement, std::string_view file, uint32_t line )
 {
-public:
-
-	static Derived& GetInstance( void )
+	if( FAILED( hresult ) )
 	{
-		assert( instance_ != nullptr );
-		return *instance_;
+		LPSTR buffer;
+
+		FormatMessageA( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, hresult, 0, reinterpret_cast< LPSTR >( &buffer ), 0, nullptr );
+		LogError( "[%s(%d)] { %s } failed with error: %s", file.data(), line, statement.data(), buffer );
+
+		return false;
 	}
 
-	static Derived* GetInstancePtr( void )
-	{
-		return instance_;
-	}
+	return true;
+}
 
-protected:
-
-	ManualSingleton( void )
-	{
-		assert( instance_ == nullptr );
-		instance_ = static_cast< Derived* >( this );
-	}
-
-	~ManualSingleton( void )
-	{
-		assert( instance_ == this );
-		instance_ = nullptr;
-	}
-
-private:
-
-	static Derived* instance_;
-
-};
-
-template< typename Derived >
-class Singleton
+bool CheckSystemError( DWORD error, std::string_view statement, std::string_view file, uint32_t line )
 {
-public:
-
-	static Derived& GetInstance( void )
-	{
-		static Derived instance{ };
-		return instance;
-	}
-
-};
-
-template< typename Derived >
-Derived* ManualSingleton< Derived >::instance_ = nullptr;
+	return CheckHResult( HRESULT_FROM_WIN32( error ), statement, file, line );
+}
 
 ORB_NAMESPACE_END
+
+#endif // ORB_OS_WINDOWS

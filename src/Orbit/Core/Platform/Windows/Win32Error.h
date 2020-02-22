@@ -18,60 +18,19 @@
 #pragma once
 #include "Orbit/Core/Core.h"
 
-#include <cassert>
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+
+#  include <string_view>
 
 ORB_NAMESPACE_BEGIN
 
-template< typename Derived >
-class ManualSingleton
-{
-public:
-
-	static Derived& GetInstance( void )
-	{
-		assert( instance_ != nullptr );
-		return *instance_;
-	}
-
-	static Derived* GetInstancePtr( void )
-	{
-		return instance_;
-	}
-
-protected:
-
-	ManualSingleton( void )
-	{
-		assert( instance_ == nullptr );
-		instance_ = static_cast< Derived* >( this );
-	}
-
-	~ManualSingleton( void )
-	{
-		assert( instance_ == this );
-		instance_ = nullptr;
-	}
-
-private:
-
-	static Derived* instance_;
-
-};
-
-template< typename Derived >
-class Singleton
-{
-public:
-
-	static Derived& GetInstance( void )
-	{
-		static Derived instance{ };
-		return instance;
-	}
-
-};
-
-template< typename Derived >
-Derived* ManualSingleton< Derived >::instance_ = nullptr;
+extern bool CheckHResult    ( HRESULT hresult, std::string_view statement, std::string_view file, uint32_t line );
+extern bool CheckSystemError( DWORD   error,   std::string_view statement, std::string_view file, uint32_t line );
 
 ORB_NAMESPACE_END
+
+#define ORB_CHECK_HRESULT( X )      ( ORB_NAMESPACE CheckHResult( ( X ), #X, __FILE__, __LINE__ ) )
+#define ORB_CHECK_SYSTEM_ERROR( X ) ( SetLastError( ERROR_SUCCESS ), ( X ), ORB_NAMESPACE CheckSystemError( GetLastError(), #X, __FILE__, __LINE__ ) )
+
+#endif // ORB_OS_WINDOWS

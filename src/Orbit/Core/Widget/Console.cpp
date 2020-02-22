@@ -15,63 +15,29 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Core.h"
+#include "Console.h"
 
-#include <cassert>
+#include "Orbit/Core/Platform/Windows/Win32Error.h"
 
 ORB_NAMESPACE_BEGIN
 
-template< typename Derived >
-class ManualSingleton
+Console::Console( void )
 {
-public:
 
-	static Derived& GetInstance( void )
-	{
-		assert( instance_ != nullptr );
-		return *instance_;
-	}
+#if defined( ORB_OS_WINDOWS )
+	AllocConsole();
+#endif // ORB_OS_WINDOWS
 
-	static Derived* GetInstancePtr( void )
-	{
-		return instance_;
-	}
+}
 
-protected:
-
-	ManualSingleton( void )
-	{
-		assert( instance_ == nullptr );
-		instance_ = static_cast< Derived* >( this );
-	}
-
-	~ManualSingleton( void )
-	{
-		assert( instance_ == this );
-		instance_ = nullptr;
-	}
-
-private:
-
-	static Derived* instance_;
-
-};
-
-template< typename Derived >
-class Singleton
+Console::~Console( void )
 {
-public:
 
-	static Derived& GetInstance( void )
-	{
-		static Derived instance{ };
-		return instance;
-	}
+#if defined( ORB_OS_WINDOWS )
+	ORB_CHECK_SYSTEM_ERROR( SetStdHandle( STD_OUTPUT_HANDLE, NULL ) );
+	FreeConsole();
+#endif // ORB_OS_WINDOWS
 
-};
-
-template< typename Derived >
-Derived* ManualSingleton< Derived >::instance_ = nullptr;
+}
 
 ORB_NAMESPACE_END

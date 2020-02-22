@@ -16,62 +16,17 @@
  */
 
 #pragma once
-#include "Orbit/Core/Core.h"
-
-#include <cassert>
+#include "Orbit/Core/Utility/Singleton.h"
 
 ORB_NAMESPACE_BEGIN
 
-template< typename Derived >
-class ManualSingleton
+class ORB_API_CORE Console : public ManualSingleton< Console >
 {
 public:
 
-	static Derived& GetInstance( void )
-	{
-		assert( instance_ != nullptr );
-		return *instance_;
-	}
-
-	static Derived* GetInstancePtr( void )
-	{
-		return instance_;
-	}
-
-protected:
-
-	ManualSingleton( void )
-	{
-		assert( instance_ == nullptr );
-		instance_ = static_cast< Derived* >( this );
-	}
-
-	~ManualSingleton( void )
-	{
-		assert( instance_ == this );
-		instance_ = nullptr;
-	}
-
-private:
-
-	static Derived* instance_;
+	 Console( void );
+	~Console( void );
 
 };
-
-template< typename Derived >
-class Singleton
-{
-public:
-
-	static Derived& GetInstance( void )
-	{
-		static Derived instance{ };
-		return instance;
-	}
-
-};
-
-template< typename Derived >
-Derived* ManualSingleton< Derived >::instance_ = nullptr;
 
 ORB_NAMESPACE_END
