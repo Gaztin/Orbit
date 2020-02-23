@@ -38,29 +38,21 @@ ORB_NAMESPACE_BEGIN
 
 const std::map< GLenum, std::string_view > error_codes
 {
-	{ GL_INVALID_ENUM, "An unacceptable value is specified for an enumerated argument. The offending command is ignored"
-	                   " and has no other side effect than to set the error flag." },
-	{ GL_INVALID_VALUE, "A numeric argument is out of range. The offending command is ignored and has no other side"
-	                    " effect than to set the error flag." },
-	{ GL_INVALID_OPERATION, "The specified operation is not allowed in the current state. The offending command is"
-	                        " ignored and has no other side effect than to set the error flag." },
+	{ GL_INVALID_ENUM, "An unacceptable value is specified for an enumerated argument." },
+	{ GL_INVALID_VALUE, "A numeric argument is out of range." },
+	{ GL_INVALID_OPERATION, "The specified operation is not allowed in the current state." },
 #if defined( GL_STACK_OVERFLOW )
-	{ GL_STACK_OVERFLOW, "This command would cause a stack overflow. The offending command is ignored and has no other"
-	                     " side effect than to set the error flag." },
+	{ GL_STACK_OVERFLOW, "This command would cause a stack overflow." },
 #endif // GL_STACK_OVERFLOW
 #if defined( GL_STACK_UNDERFLOW )
-	{ GL_STACK_UNDERFLOW, "This command would cause a stack underflow. The offending command is ignored and has no other"
-	                    " side effect than to set the error flag." },
+	{ GL_STACK_UNDERFLOW, "This command would cause a stack underflow." },
 #endif // GL_STACK_UNDERFLOW
-	{ GL_OUT_OF_MEMORY, "There is not enough memory left to execute the command. The state of the GL is undefined,"
-	                    " except for the state of the error flags, after this error is recorded." },
+	{ GL_OUT_OF_MEMORY, "There is not enough memory left to execute the command." },
 #if defined( GL_TABLE_TOO_LARGE )
-	{ GL_TABLE_TOO_LARGE, "The specified table exceeds the implementation's maximum supported table size. The offending"
-	                      " command is ignored and has no other side effect than to set the error flag." },
+	{ GL_TABLE_TOO_LARGE, "The specified table exceeds the implementation's maximum supported table size."},
 #endif // GL_TABLE_TOO_LARGE
 #if defined( GL_INVALID_FRAMEBUFFER_OPERATION )
-	{ GL_INVALID_FRAMEBUFFER_OPERATION, "The framebuffer object is not complete. The offending command is ignored and"
-	                                    " has no other side effect than to set the error flag." },
+	{ GL_INVALID_FRAMEBUFFER_OPERATION, "The framebuffer object is not complete." },
 #endif // GL_INVALID_FRAMEBUFFER_OPERATION
 };
 
