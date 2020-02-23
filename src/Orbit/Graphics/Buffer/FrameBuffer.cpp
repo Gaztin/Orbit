@@ -19,6 +19,7 @@
 
 #include "Orbit/Core/Platform/Windows/Win32Error.h"
 #include "Orbit/Core/Widget/Window.h"
+#include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
@@ -50,6 +51,11 @@ FrameBuffer::FrameBuffer( void )
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
+			auto& details   = details_.emplace< Private::_FrameBufferDetailsOpenGL >();
+			auto& texture2d = GetTexture2D().GetPrivateDetails().emplace< Private::_Texture2DDetailsOpenGL >();
+
+			glGenFramebuffers( 1, &details.id );
+			glGenTextures( 1, &texture2d.id );
 
 		} break;
 
@@ -60,6 +66,18 @@ FrameBuffer::FrameBuffer( void )
 
 FrameBuffer::~FrameBuffer( void )
 {
+
+#if( ORB_HAS_OPENGL )
+
+	if( details_.index() == unique_index_v< Private::_FrameBufferDetailsOpenGL, Private::FrameBufferDetails > )
+	{
+		auto& details = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
+
+		glDeleteFramebuffers( 1, &details.id );
+	}
+
+#endif // ORB_HAS_OPENGL
+
 	/* Destroy opaque data */
 	GetTexture2D().~Texture2D();
 }
@@ -86,6 +104,12 @@ void FrameBuffer::Clear( void )
 
 		case( unique_index_v< Private::_FrameBufferDetailsOpenGL, Private::FrameBufferDetails > ):
 		{
+			auto& details = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
+
+			glBindFramebuffer( OpenGLFramebufferTarget::Both, details.id );
+			glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+			glClear( GL_COLOR_BUFFER_BIT );
+			glBindFramebuffer( OpenGLFramebufferTarget::Both, 0 );
 
 		} break;
 
@@ -115,6 +139,9 @@ void FrameBuffer::Bind( void )
 
 		case( unique_index_v< Private::_FrameBufferDetailsOpenGL, Private::FrameBufferDetails > ):
 		{
+			auto& details = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
+
+			glBindFramebuffer( OpenGLFramebufferTarget::Both, details.id );
 
 		} break;
 
@@ -144,6 +171,7 @@ void FrameBuffer::Unbind( void )
 
 		case( unique_index_v< Private::_FrameBufferDetailsOpenGL, Private::FrameBufferDetails > ):
 		{
+			glBindFramebuffer( OpenGLFramebufferTarget::Both, 0 );
 
 		} break;
 
@@ -211,6 +239,17 @@ void FrameBuffer::Resize( uint32_t width, uint32_t height )
 
 		case( unique_index_v< Private::_FrameBufferDetailsOpenGL, Private::FrameBufferDetails > ):
 		{
+			auto& details   = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
+			auto& texture2d = std::get< Private::_Texture2DDetailsOpenGL >( GetTexture2D().GetPrivateDetails() );
+
+			glBindFramebuffer( OpenGLFramebufferTarget::Both, details.id );
+			glBindTexture( GL_TEXTURE_2D, texture2d.id );
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+			glFramebufferTexture2D( OpenGLFramebufferTarget::Both, OpenGLFramebufferAttachment::Color0, GL_TEXTURE_2D, texture2d.id, 0 );
+			glBindTexture( GL_TEXTURE_2D, 0 );
+			glBindFramebuffer( OpenGLFramebufferTarget::Both, 0 );
 
 		} break;
 
