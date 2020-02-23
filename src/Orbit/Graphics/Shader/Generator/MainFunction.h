@@ -32,6 +32,8 @@ namespace ShaderGen
 
 		ShaderType     shader_type;
 		ShaderLanguage shader_language;
+
+		uint32_t locals_count = 0;
 	};
 }
 

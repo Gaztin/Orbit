@@ -79,15 +79,15 @@ namespace ShaderGen { namespace Variables
 	{
 		if( !stored_ )
 		{
-			static uint32_t unique_index = 0;
+			MainFunction* main = IGenerator::GetCurrentMainFunction();
 
 			std::ostringstream ss;
-			ss << "local_" << ( unique_index++ );
+			ss << "local_" << ( main->locals_count++ );
 
 			auto old_value = value_;
 			value_ = ss.str();
 
-			IGenerator::GetCurrentMainFunction()->code << "\t" << DataTypeToString( data_type_ ) << " " << value_ << " = " << old_value << ";\n";
+			main->code << "\t" << DataTypeToString( data_type_ ) << " " << value_ << " = " << old_value << ";\n";
 
 			stored_ = true;
 		}
