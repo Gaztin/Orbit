@@ -193,12 +193,16 @@ namespace ShaderGen
 
 			case ShaderLanguage::HLSL:
 			{
-				return Variables::IVariable( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
+				Variables::IVariable var( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
+				var.StoreValue();
+				return var;
 			}
 
 			case ShaderLanguage::GLSL:
 			{
-				return Variables::IVariable( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
+				Variables::IVariable var( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
+				var.StoreValue();
+				return var;
 			}
 		}
 	}
