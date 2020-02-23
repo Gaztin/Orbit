@@ -58,6 +58,12 @@ FrameBuffer::FrameBuffer( void )
 	}
 }
 
+FrameBuffer::~FrameBuffer( void )
+{
+	/* Destroy opaque data */
+	GetTexture2D().~Texture2D();
+}
+
 void FrameBuffer::Clear( void )
 {
 	switch( details_.index() )

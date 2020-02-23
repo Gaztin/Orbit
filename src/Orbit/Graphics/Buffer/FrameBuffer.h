@@ -30,7 +30,8 @@ public:
 
 public:
 
-	FrameBuffer( void );
+	 FrameBuffer( void );
+	~FrameBuffer( void );
 
 public:
 
