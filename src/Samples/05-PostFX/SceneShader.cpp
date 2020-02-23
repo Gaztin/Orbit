@@ -36,7 +36,7 @@ SceneShader::Vec4 SceneShader::PSMain( void )
 	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
 	Vec4 out_color = tex_color + v_color;
 
-	Float directional_influence = ( -Dot( v_normal, Normalize( Vec3( 0.4, -1.0, -1.0 ) ) ) * 0.75 );
+	Float directional_influence = ( -Dot( v_normal, Normalize( Vec3( 0.4, -1.0, 1.0 ) ) ) * 0.75 );
 	Float ambient_influence     = 0.5;
 
 	out_color->rgb *= ( directional_influence + ambient_influence );
