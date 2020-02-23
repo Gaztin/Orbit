@@ -721,6 +721,49 @@ enum class OpenGLUniformBlockParam : GLenum
 	ReferencedByFragmentShader = 0x8A46,
 };
 
+enum class OpenGLFramebufferTarget : GLenum
+{
+	Read = 0x8CA8,
+	Draw = 0x8CA9,
+	Both = 0x8D40,
+};
+
+enum class OpenGLFramebufferCompletenessStatus : GLenum
+{
+	Undefined                   = 0x8219,
+	Complete                    = 0x8CD5,
+	IncompleteAttachment        = 0x8CD6,
+	IncompleteMissingAttachment = 0x8CD7,
+	IncompleteDrawBuffer        = 0x8CDB,
+	IncompleteReadBuffer        = 0x8CDC,
+	Unsupported                 = 0x8CDD,
+	IncompleteMultisample       = 0x8D56,
+	IncompleteLayerTargets      = 0x8DA8,
+};
+
+enum class OpenGLFramebufferAttachment : GLenum
+{
+	DepthStencil = 0x821A,
+	Color0       = 0x8CE0,
+	Color1       = 0x8CE1,
+	Color2       = 0x8CE2,
+	Color3       = 0x8CE3,
+	Color4       = 0x8CE4,
+	Color5       = 0x8CE5,
+	Color6       = 0x8CE6,
+	Color7       = 0x8CE7,
+	Color8       = 0x8CE8,
+	Color9       = 0x8CE9,
+	Color10      = 0x8CEA,
+	Color11      = 0x8CEB,
+	Color12      = 0x8CEC,
+	Color13      = 0x8CED,
+	Color14      = 0x8CEE,
+	Color15      = 0x8CEF,
+	Depth        = 0x8D00,
+	Stencil      = 0x8D20,
+};
+
 /* Enable masking on bitfield types */
 ORB_ENABLE_BITMASKING( OpenGLMapAccess );
 
