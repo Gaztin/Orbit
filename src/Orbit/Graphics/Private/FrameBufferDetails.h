@@ -30,7 +30,8 @@ namespace Private
 
 	struct _FrameBufferDetailsOpenGL
 	{
-		GLuint id;
+		GLuint fbo;
+		GLuint rbo;
 	};
 
 #endif // ORB_HAS_OPENGL

@@ -54,7 +54,8 @@ FrameBuffer::FrameBuffer( void )
 			auto& details   = details_.emplace< Private::_FrameBufferDetailsOpenGL >();
 			auto& texture2d = GetTexture2D().GetPrivateDetails().emplace< Private::_Texture2DDetailsOpenGL >();
 
-			glGenFramebuffers( 1, &details.id );
+			glGenFramebuffers( 1, &details.fbo );
+			glGenRenderbuffers( 1, &details.rbo );
 			glGenTextures( 1, &texture2d.id );
 
 		} break;
@@ -73,7 +74,7 @@ FrameBuffer::~FrameBuffer( void )
 	{
 		auto& details = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
 
-		glDeleteFramebuffers( 1, &details.id );
+		glDeleteFramebuffers( 1, &details.fbo );
 	}
 
 #endif // ORB_HAS_OPENGL
@@ -106,7 +107,7 @@ void FrameBuffer::Clear( void )
 		{
 			auto& details = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
 
-			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.id );
+			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.fbo );
 			glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 			glClear( GL_COLOR_BUFFER_BIT );
 			glBindFramebuffer( OpenGLFramebufferTarget::Both, 0 );
@@ -141,7 +142,7 @@ void FrameBuffer::Bind( void )
 		{
 			auto& details = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
 
-			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.id );
+			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.fbo );
 
 		} break;
 
@@ -242,15 +243,22 @@ void FrameBuffer::Resize( uint32_t width, uint32_t height )
 			auto& details   = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
 			auto& texture2d = std::get< Private::_Texture2DDetailsOpenGL >( GetTexture2D().GetPrivateDetails() );
 
-			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.id );
+			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.fbo );
+
 			glBindTexture( GL_TEXTURE_2D, texture2d.id );
 			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-			glFramebufferTexture2D( OpenGLFramebufferTarget::Draw, OpenGLFramebufferAttachment::Color0, GL_TEXTURE_2D, texture2d.id, 0 );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, ORB_GL_CLAMP_TO_EDGE );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, ORB_GL_CLAMP_TO_EDGE );
+			glFramebufferTexture2D( OpenGLFramebufferTarget::Draw, OpenGLFramebufferAttachment::Color0, GL_TEXTURE_2D, texture2d.id, 0 );
 			glBindTexture( GL_TEXTURE_2D, 0 );
+
+			glBindRenderbuffer( OpenGLRenderbufferTarget::Renderbuffer, details.rbo );
+			glRenderbufferStorage( OpenGLRenderbufferTarget::Renderbuffer, ORB_GL_DEPTH24_STENCIL8, width, height );
+			glFramebufferRenderbuffer( OpenGLFramebufferTarget::Draw, OpenGLFramebufferAttachment::DepthStencil, OpenGLRenderbufferTarget::Renderbuffer, details.rbo );
+			glBindRenderbuffer( OpenGLRenderbufferTarget::Renderbuffer, 0 );
+
 			glBindFramebuffer( OpenGLFramebufferTarget::Draw, 0 );
 
 		} break;
