@@ -35,10 +35,13 @@ public:
 
 public:
 
-	void       Clear       ( void );
-	void       Bind        ( void );
-	void       Unbind      ( void );
-	Texture2D& GetTexture2D( void );
+	void Clear ( void );
+	void Bind  ( void );
+	void Unbind( void );
+
+public:
+
+	Texture2D& GetTexture2D( void ) { return *reinterpret_cast< Texture2D* >( &opaque_texture_2d_ ); }
 
 private:
 

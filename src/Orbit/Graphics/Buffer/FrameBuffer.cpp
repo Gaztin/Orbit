@@ -181,11 +181,6 @@ void FrameBuffer::Unbind( void )
 	}
 }
 
-Texture2D& FrameBuffer::GetTexture2D( void )
-{
-	return *reinterpret_cast< Texture2D* >( &opaque_texture_2d_ );
-}
-
 void FrameBuffer::Resize( uint32_t width, uint32_t height )
 {
 	switch( details_.index() )
