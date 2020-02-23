@@ -106,7 +106,7 @@ void FrameBuffer::Clear( void )
 		{
 			auto& details = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
 
-			glBindFramebuffer( OpenGLFramebufferTarget::Both, details.id );
+			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.id );
 			glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 			glClear( GL_COLOR_BUFFER_BIT );
 			glBindFramebuffer( OpenGLFramebufferTarget::Both, 0 );
@@ -141,7 +141,7 @@ void FrameBuffer::Bind( void )
 		{
 			auto& details = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
 
-			glBindFramebuffer( OpenGLFramebufferTarget::Both, details.id );
+			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.id );
 
 		} break;
 
@@ -171,7 +171,7 @@ void FrameBuffer::Unbind( void )
 
 		case( unique_index_v< Private::_FrameBufferDetailsOpenGL, Private::FrameBufferDetails > ):
 		{
-			glBindFramebuffer( OpenGLFramebufferTarget::Both, 0 );
+			glBindFramebuffer( OpenGLFramebufferTarget::Draw, 0 );
 
 		} break;
 
@@ -242,14 +242,14 @@ void FrameBuffer::Resize( uint32_t width, uint32_t height )
 			auto& details   = std::get< Private::_FrameBufferDetailsOpenGL >( details_ );
 			auto& texture2d = std::get< Private::_Texture2DDetailsOpenGL >( GetTexture2D().GetPrivateDetails() );
 
-			glBindFramebuffer( OpenGLFramebufferTarget::Both, details.id );
+			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.id );
 			glBindTexture( GL_TEXTURE_2D, texture2d.id );
 			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-			glFramebufferTexture2D( OpenGLFramebufferTarget::Both, OpenGLFramebufferAttachment::Color0, GL_TEXTURE_2D, texture2d.id, 0 );
+			glFramebufferTexture2D( OpenGLFramebufferTarget::Draw, OpenGLFramebufferAttachment::Color0, GL_TEXTURE_2D, texture2d.id, 0 );
 			glBindTexture( GL_TEXTURE_2D, 0 );
-			glBindFramebuffer( OpenGLFramebufferTarget::Both, 0 );
+			glBindFramebuffer( OpenGLFramebufferTarget::Draw, 0 );
 
 		} break;
 
