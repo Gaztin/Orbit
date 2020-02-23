@@ -23,7 +23,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-#if defined( ORB_HAS_OPENGL )
+#if( ORB_HAS_OPENGL )
 
 static GLuint PixelFormatToGLFormat( PixelFormat pixel_format )
 {
@@ -36,7 +36,7 @@ static GLuint PixelFormatToGLFormat( PixelFormat pixel_format )
 }
 
 #endif // ORB_HAS_OPENGL
-#if defined( ORB_HAS_D3D11 )
+#if( ORB_HAS_D3D11 )
 
 static DXGI_FORMAT PixelFormatToDXGIFormat( PixelFormat pixel_format )
 {

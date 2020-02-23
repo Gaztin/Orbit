@@ -34,8 +34,6 @@
 #  include <android/native_window.h>
 #endif // ORB_OS_ANDROID
 
-#include <dxgi1_3.h>
-
 ORB_NAMESPACE_BEGIN
 
 RenderContext::RenderContext( GraphicsAPI api )

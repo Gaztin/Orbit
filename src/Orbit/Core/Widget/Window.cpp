@@ -116,6 +116,9 @@ Window::Window( uint32_t width, uint32_t height )
 
 #elif defined( ORB_OS_ANDROID ) // ORB_OS_MACOS
 
+	( void )width;
+	( void )height;
+
 	AndroidOnly::app->on_input_event = OnInput;
 
 	details_.sensor_manager       = ASensorManager_getInstance();
@@ -135,6 +138,9 @@ Window::Window( uint32_t width, uint32_t height )
 	}
 
 #elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
+
+	( void )width;
+	( void )height;
 
 	/* Initialize window */
 	details_.ui_window = [ OrbitUIWindow alloc ];
@@ -285,7 +291,12 @@ void Window::Move( int32_t x, int32_t y )
 
 	[ details_.window setFrame:frame display:YES ];
 
-#endif // ORB_OS_MACOS
+#else // ORB_OS_MACOS
+
+	( void )x;
+	( void )y;
+
+#endif // !ORB_OS_MACOS
 
 }
 
@@ -311,7 +322,12 @@ void Window::Resize( uint32_t width, uint32_t height )
 
 	[ details_.window setFrame:frame display:YES ];
 
-#endif // ORB_OS_MACOS
+#else // ORB_OS_MACOS
+
+	( void )width;
+	( void )height;
+
+#endif // !ORB_OS_MACOS
 
 }
 

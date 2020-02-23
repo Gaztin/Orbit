@@ -120,6 +120,8 @@ namespace ShaderGen { namespace Variables
 			{
 				result_type = data_type_;
 			} break;
+
+			default: break;
 		}
 
 		if( IGenerator::GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
