@@ -247,9 +247,9 @@ void FrameBuffer::Resize( uint32_t width, uint32_t height )
 			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 			glFramebufferTexture2D( OpenGLFramebufferTarget::Draw, OpenGLFramebufferAttachment::Color0, GL_TEXTURE_2D, texture2d.id, 0 );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, ORB_GL_CLAMP_TO_EDGE );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, ORB_GL_CLAMP_TO_EDGE );
 			glBindTexture( GL_TEXTURE_2D, 0 );
 			glBindFramebuffer( OpenGLFramebufferTarget::Draw, 0 );
 

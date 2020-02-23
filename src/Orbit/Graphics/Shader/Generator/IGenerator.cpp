@@ -94,7 +94,7 @@ namespace ShaderGen
 
 		LogInfoString( "----------------------------------------" );
 
-		for( int32_t it = 0; it < code.size(); ++it )
+		for( int32_t it = 0; it < static_cast< int32_t >( code.size() ); ++it )
 		{
 			if( code[ it ] == '\n' )
 			{
@@ -104,7 +104,7 @@ namespace ShaderGen
 			}
 		}
 
-		if( line_begin < code.size() )
+		if( line_begin < static_cast< int32_t >( code.size() ) )
 			LogSourceCodeLine( &code[ line_begin ], static_cast< int32_t >( line_begin - code.size() ), ( ++line ) );
 
 		LogInfoString( "----------------------------------------" );
