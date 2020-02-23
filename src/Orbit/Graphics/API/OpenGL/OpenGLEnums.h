@@ -764,6 +764,11 @@ enum class OpenGLFramebufferAttachment : GLenum
 	Stencil      = 0x8D20,
 };
 
+enum class OpenGLRenderbufferTarget : GLenum
+{
+	Renderbuffer = 0x8D41,
+};
+
 /* Enable masking on bitfield types */
 ORB_ENABLE_BITMASKING( OpenGLMapAccess );
 

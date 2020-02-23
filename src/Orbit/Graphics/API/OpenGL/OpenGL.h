@@ -38,6 +38,8 @@ using GLsync     = struct __GLsync*;
 extern ORB_API_GRAPHICS void* GetOpenGLProcAddress( std::string_view name );
 extern ORB_API_GRAPHICS void  HandleOpenGLError   ( GLenum err, std::string_view func );
 
+#define ORB_GL_DEPTH24_STENCIL8 0x88F0
+
 ORB_NAMESPACE_END
 
 #endif // ORB_HAS_OPENGL
