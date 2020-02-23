@@ -22,7 +22,7 @@
 
 PostFXShader::Vec4 PostFXShader::VSMain( void )
 {
-	v_texcoord = Vec2( a_position->x, -a_position->y ) * 0.5 + 0.5;
+	v_texcoord = CanonicalScreenPos( a_position->xy ) * 0.5 + 0.5;
 	v_position = a_position;
 
 	return v_position;

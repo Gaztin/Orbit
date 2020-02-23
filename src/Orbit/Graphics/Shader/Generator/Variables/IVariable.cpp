@@ -170,13 +170,13 @@ namespace ShaderGen { namespace Variables
 		return ( *this )[ IVariable( static_cast< int >( index ) ) ];
 	}
 
-	SwizzlePermutations* IVariable::operator->( void )
+	SwizzlePermutations* IVariable::operator->( void ) const
 	{
 		static SwizzlePermutations swizzle;
 
 		SetUsed();
 
-		variable_to_be_swizzled = this;
+		variable_to_be_swizzled = const_cast< IVariable* >( this );
 		return &swizzle;
 	}
 

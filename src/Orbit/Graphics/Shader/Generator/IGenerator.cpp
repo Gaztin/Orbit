@@ -20,6 +20,7 @@
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Uniform.h"
+#include "Orbit/Graphics/Shader/Generator/Variables/Vec2.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
 #include "Orbit/Graphics/Shader/Generator/MainFunction.h"
 
@@ -154,6 +155,18 @@ namespace ShaderGen
 	VertexLayout IGenerator::GetVertexLayout( void ) const
 	{
 		return attribute_layout_;
+	}
+
+	Variables::IVariable IGenerator::CanonicalScreenPos( const Variables::IVariable& pos )
+	{
+		assert( pos.data_type_ == DataType::FVec2 );
+
+		switch( GetCurrentMainFunction()->shader_language )
+		{
+			case ShaderLanguage::HLSL: return Variables::Vec2( pos->x, -pos->y );
+			case ShaderLanguage::GLSL: return Variables::Vec2( pos->x,  pos->y );
+			default:                   return pos;
+		}
 	}
 
 	Variables::IVariable IGenerator::Transpose( const Variables::IVariable& matrix )

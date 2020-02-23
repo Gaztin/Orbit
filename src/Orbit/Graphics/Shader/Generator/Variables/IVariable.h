@@ -65,7 +65,8 @@ namespace ShaderGen { class IGenerator; struct SwizzlePermutations; namespace Va
 		IVariable operator- ( void )                   const;
 		IVariable operator[]( size_t index )           const;
 
-		SwizzlePermutations* operator->( void );
+		SwizzlePermutations* operator->( void ) const;
+
 		void     operator= ( const IVariable& rhs );
 		void     operator+=( const IVariable& rhs );
 		void     operator*=( const IVariable& rhs );
