@@ -38,29 +38,30 @@
 static SceneShader  scene_shader;
 static PostFXShader post_fx_shader;
 
-struct VertexConstantData
+struct SceneVertexConstantData
 {
 	Orbit::Matrix4 view_projection;
 
-} vertex_constant_data;
+} scene_vertex_constant_data;
 
-struct PixelConstantData
+struct PostFXPixelConstantData
 {
 	float time;
 
-} pixel_constant_data;
+} post_fx_pixel_constant_data;
 
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
 	SampleApp( void )
-		: window_                ( 800, 600 )
-		, scene_shader_          ( scene_shader )
-		, post_fx_shader_        ( post_fx_shader )
-		, model_                 ( Orbit::Asset( "models/teapot.obj" ), scene_shader.GetVertexLayout() )
-		, vertex_constant_buffer_( sizeof( VertexConstantData ) )
-		, pixel_constant_buffer_ ( sizeof( PixelConstantData ) )
+		: window_                       ( 800, 600 )
+		, render_context_               ( Orbit::GraphicsAPI::OpenGL )
+		, scene_shader_                 ( scene_shader )
+		, post_fx_shader_               ( post_fx_shader )
+		, model_                        ( Orbit::Asset( "models/teapot.obj" ), scene_shader.GetVertexLayout() )
+		, scene_vertex_constant_buffer_ ( sizeof( SceneVertexConstantData ) )
+		, post_fx_pixel_constant_buffer_( sizeof( PostFXPixelConstantData ) )
 	{
 		window_.SetTitle( "Orbit Sample (05-PostFX)" );
 		window_.Show();
@@ -81,11 +82,11 @@ public:
 
 		camera_.Update( delta_time );
 
-		vertex_constant_data.view_projection = camera_.GetViewProjection();
-		vertex_constant_buffer_.Update( &vertex_constant_data, sizeof( VertexConstantData ) );
+		scene_vertex_constant_data.view_projection = camera_.GetViewProjection();
+		scene_vertex_constant_buffer_.Update( &scene_vertex_constant_data, sizeof( SceneVertexConstantData ) );
 
-		pixel_constant_data.time += delta_time;
-		pixel_constant_buffer_.Update( &pixel_constant_data, sizeof( PixelConstantData ) );
+		post_fx_pixel_constant_data.time += delta_time;
+		post_fx_pixel_constant_buffer_.Update( &post_fx_pixel_constant_data, sizeof( PostFXPixelConstantData ) );
 
 		for( const Orbit::Mesh& mesh : model_ )
 		{
@@ -94,8 +95,7 @@ public:
 			command.index_buffer  = *mesh.index_buffer;
 			command.shader        = scene_shader_;
 			command.frame_buffer  = frame_buffer_;
-			command.constant_buffers[ Orbit::ShaderType::Vertex   ].emplace_back( vertex_constant_buffer_ );
-			command.constant_buffers[ Orbit::ShaderType::Fragment ].emplace_back( pixel_constant_buffer_ );
+			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( scene_vertex_constant_buffer_ );
 
 			renderer_.QueueCommand( command );
 		}
@@ -107,6 +107,7 @@ public:
 			command.index_buffer  = render_quad_.index_buffer_;
 			command.shader        = post_fx_shader_;
 			command.textures.emplace_back( frame_buffer_.GetTexture2D() );
+			command.constant_buffers[ Orbit::ShaderType::Fragment ].emplace_back( post_fx_pixel_constant_buffer_ );
 
 			renderer_.QueueCommand( command );
 		}
@@ -124,8 +125,8 @@ private:
 	Orbit::Shader         scene_shader_;
 	Orbit::Shader         post_fx_shader_;
 	Orbit::Model          model_;
-	Orbit::ConstantBuffer vertex_constant_buffer_;
-	Orbit::ConstantBuffer pixel_constant_buffer_;
+	Orbit::ConstantBuffer scene_vertex_constant_buffer_;
+	Orbit::ConstantBuffer post_fx_pixel_constant_buffer_;
 	Orbit::FrameBuffer    frame_buffer_;
 	Orbit::BasicRenderer  renderer_;
 	Orbit::Matrix4        model_matrix_;
