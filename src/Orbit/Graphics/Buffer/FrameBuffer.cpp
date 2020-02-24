@@ -109,7 +109,7 @@ void FrameBuffer::Clear( void )
 
 			glBindFramebuffer( OpenGLFramebufferTarget::Draw, details.fbo );
 			glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-			glClear( GL_COLOR_BUFFER_BIT );
+			glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 			glBindFramebuffer( OpenGLFramebufferTarget::Both, 0 );
 
 		} break;
