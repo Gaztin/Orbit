@@ -144,6 +144,45 @@ void ConstantBuffer::Bind( [[ maybe_unused ]] ShaderType type, [[ maybe_unused ]
 	}
 }
 
+void ConstantBuffer::Unbind( [[ maybe_unused ]] ShaderType type, [[ maybe_unused ]] uint32_t local_slot, [[ maybe_unused ]] uint32_t global_slot )
+{
+	switch( details_.index() )
+	{
+		default: break;
+
+	#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_ConstantBufferDetailsOpenGL31, Private::ConstantBufferDetails > ):
+		{
+			auto& details = std::get< Private::_ConstantBufferDetailsOpenGL31 >( details_ );
+
+			glBindBufferBase( OpenGLBufferTarget::Uniform, global_slot, 0 );
+			glBindBuffer( OpenGLBufferTarget::Uniform, 0 );
+
+		} break;
+
+	#endif // ORB_HAS_OPENGL
+	#if( ORB_HAS_D3D11 )
+
+		case( unique_index_v< Private::_ConstantBufferDetailsD3D11, Private::ConstantBufferDetails > ):
+		{
+			auto&         d3d11       = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			ID3D11Buffer* null_buffer = nullptr;
+
+			switch( type )
+			{
+				default: break;
+				case ShaderType::Vertex:   { d3d11.device_context->VSSetConstantBuffers( local_slot, 1, &null_buffer ); } break;
+				case ShaderType::Fragment: { d3d11.device_context->PSSetConstantBuffers( local_slot, 1, &null_buffer ); } break;
+			}
+
+		} break;
+
+	#endif // ORB_HAS_D3D11
+
+	}
+}
+
 void ConstantBuffer::Update( const void* data, size_t size )
 {
 	void* dst = UpdateBegin( size );

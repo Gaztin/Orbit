@@ -57,6 +57,22 @@ static void BindConstantBuffers( RenderCommand& command )
 	}
 }
 
+static void UnbindConstantBuffers( RenderCommand& command )
+{
+	uint32_t global_slot = 0;
+
+	for( auto& constant_buffers : command.constant_buffers )
+	{
+		for( size_t i = 0; i < constant_buffers.second.size(); ( ++i, ++global_slot ) )
+		{
+			const uint32_t local_slot     = static_cast< uint32_t >( i );
+			const auto&    shader_details = command.shader->GetPrivateDetails();
+
+			constant_buffers.second[ i ]->Unbind( constant_buffers.first, local_slot, global_slot );
+		}
+	}
+}
+
 static void APIDraw( const RenderCommand& command )
 {
 	Private::RenderContextDetails& context_details = RenderContext::GetInstance().GetPrivateDetails();
@@ -119,6 +135,7 @@ void BasicRenderer::Render( void )
 
 		BindConstantBuffers( command );
 		APIDraw( command );
+		UnbindConstantBuffers( command );
 
 //		command.index_buffer->Unbind();
 		command.shader->Unbind();
