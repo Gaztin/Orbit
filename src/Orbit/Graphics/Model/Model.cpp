@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -288,9 +289,10 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 	if( !xml_parser.IsGood() )
 		return false;
 
-	const XMLElement&          collada = xml_parser.GetRootElement()[ "COLLADA" ];
-	std::vector< std::string > all_joint_names;
-	std::vector< Matrix4 >     all_joint_transforms;
+	const XMLElement&              collada = xml_parser.GetRootElement()[ "COLLADA" ];
+	std::vector< std::string >     all_joint_names;
+	std::vector< Matrix4 >         all_joint_transforms;
+	std::map< std::string, Mesh* > mesh_id_table;
 
 	for( const XMLElement& geometry : collada[ "library_geometries" ] )
 	{
@@ -697,11 +699,37 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 		mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
 
 		meshes_.emplace_back( std::move( mesh ) );
+		mesh_id_table[ "#" + geometry_id ] = &meshes_.back();
 	}
 
-	const XMLElement& visual_scene = collada[ "library_visual_scenes" ][ "visual_scene" ];
+	const XMLElement& visual_scene   = collada[ "library_visual_scenes" ][ "visual_scene" ];
+	bool              has_joint_data = false;
 
-	if( !visual_scene.children.empty() )
+	for( const XMLElement& node : visual_scene )
+	{
+		if( const XMLElement& instance_geometry = node[ "instance_geometry" ]; instance_geometry.IsValid() )
+		{
+			if( auto it = mesh_id_table.find( std::string( instance_geometry.Attribute( "url" ) ) ); it != mesh_id_table.end() )
+			{
+				std::istringstream ss( node[ "matrix" ].content );
+
+				for( size_t e = 0; e < 16; ++e )
+					ss >> it->second->transform[ e ];
+			}
+			else
+			{
+				// Failed to find mesh in ID table
+				assert( false );
+			}
+		}
+		else if( node.children.size() == 1 )
+		{
+			// Treat the lack of an "instance_xxx" element as being a joint node
+			has_joint_data = true;
+		}
+	}
+
+	if( has_joint_data )
 		root_joint_ = std::make_unique< Joint >( ColladaParseNodeRecursive( visual_scene, Matrix4(), all_joint_names, all_joint_transforms ) );
 
 	return true;
