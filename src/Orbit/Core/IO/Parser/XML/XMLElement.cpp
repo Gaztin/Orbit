@@ -50,6 +50,24 @@ const XMLElement& XMLElement::ChildWithAttribute( std::string_view element, std:
 	return dummy;
 }
 
+size_t XMLElement::CountChildren( std::string_view element ) const
+{
+	size_t count = 0;
+
+	for( const XMLElement& child : children )
+	{
+		if( child.name == element )
+			++count;
+	}
+
+	return count;
+}
+
+bool XMLElement::IsValid( void ) const
+{
+	return !( name.empty() && content.empty() && children.empty() && attributes.empty() );
+}
+
 const XMLElement& XMLElement::operator[]( std::string_view key ) const
 {
 	for( const XMLElement& child : children )
