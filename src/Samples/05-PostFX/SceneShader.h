@@ -48,5 +48,6 @@ private:
 	Varying::Normal   v_normal;
 
 	Uniform< Mat4 > u_view_projection;
+	Uniform< Mat4 > u_model;
 
 };

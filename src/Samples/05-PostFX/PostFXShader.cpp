@@ -31,8 +31,8 @@ PostFXShader::Vec4 PostFXShader::VSMain( void )
 PostFXShader::Vec4 PostFXShader::PSMain( void )
 {
 	Vec4 tex_render = Sample( render_texture, v_texcoord );
-	Vec4 left       = Sample( render_texture, v_texcoord + Vec2( Cos( u_time ), Sin( u_time ) ) * 0.025 );
-	Vec4 right      = Sample( render_texture, v_texcoord - Vec2( Cos( u_time ), Sin( u_time ) ) * 0.025 );
+	Vec4 left       = Sample( render_texture, v_texcoord + Vec2( Cos( u_time ), Sin( u_time ) ) * 0.1 );
+	Vec4 right      = Sample( render_texture, v_texcoord - Vec2( Cos( u_time ), Sin( u_time ) ) * 0.1 );
 
 	return tex_render->rgba * 0.5 + left * 0.25 + right * 0.25;
 }

@@ -23,7 +23,7 @@
 
 SceneShader::Vec4 SceneShader::VSMain( void )
 {
-	v_position = u_view_projection * a_position;
+	v_position = u_view_projection * u_model * a_position;
 	v_color    = a_color;
 	v_texcoord = a_texcoord;
 	v_normal   = a_normal;
@@ -36,7 +36,8 @@ SceneShader::Vec4 SceneShader::PSMain( void )
 	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
 	Vec4 out_color = tex_color + v_color;
 
-	Float directional_influence = ( -Dot( v_normal, Normalize( Vec3( 0.4, -1.0, 1.0 ) ) ) * 0.75 );
+	Vec3  light_dir             = Normalize( Vec3( -1.0, 1.0, 1.0 ) );
+	Float directional_influence = ( Dot( v_normal, light_dir ) * 0.75 );
 	Float ambient_influence     = 0.5;
 
 	out_color->rgb *= ( directional_influence + ambient_influence );

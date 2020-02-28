@@ -41,6 +41,7 @@ static PostFXShader post_fx_shader;
 struct SceneVertexConstantData
 {
 	Orbit::Matrix4 view_projection;
+	Orbit::Matrix4 model;
 
 } scene_vertex_constant_data;
 
@@ -56,20 +57,18 @@ public:
 
 	SampleApp( void )
 		: window_                       ( 800, 600 )
-		, render_context_               ( Orbit::GraphicsAPI::OpenGL )
 		, scene_shader_                 ( scene_shader )
 		, post_fx_shader_               ( post_fx_shader )
-		, model_                        ( Orbit::Asset( "models/teapot.obj" ), scene_shader.GetVertexLayout() )
+		, model_                        ( Orbit::Asset( "models/bunny.obj" ), scene_shader.GetVertexLayout() )
 		, scene_vertex_constant_buffer_ ( sizeof( SceneVertexConstantData ) )
 		, post_fx_pixel_constant_buffer_( sizeof( PostFXPixelConstantData ) )
 	{
 		window_.SetTitle( "Orbit Sample (05-PostFX)" );
 		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
-		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
 		model_matrix_.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
-		camera_.position = Orbit::Vector3( 0.0f, 3.0f, -5.0f );
-		camera_.rotation = Orbit::Vector3( 0.1f * Orbit::Pi, 0.0f, 0.0f );
+		camera_.position = Orbit::Vector3( 0.03f, 0.17f, -0.2f );
+		camera_.rotation = Orbit::Vector3( 0.11f * Orbit::Pi, 0.0f, 0.0f );
 	}
 
 public:
@@ -83,6 +82,7 @@ public:
 		camera_.Update( delta_time );
 
 		scene_vertex_constant_data.view_projection = camera_.GetViewProjection();
+		scene_vertex_constant_data.model           = model_matrix_;
 		scene_vertex_constant_buffer_.Update( &scene_vertex_constant_data, sizeof( SceneVertexConstantData ) );
 
 		post_fx_pixel_constant_data.time += delta_time;
