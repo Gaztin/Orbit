@@ -31,7 +31,8 @@ public:
 
 public:
 
-	Texture2D* Texture2DPtr( void );
+
+	Texture2D& GetTexture2D( void ) { return texture2d_.value(); }
 
 private:
 

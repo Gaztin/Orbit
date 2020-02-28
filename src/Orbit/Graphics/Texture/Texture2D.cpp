@@ -17,12 +17,13 @@
 
 #include "Texture2D.h"
 
+#include "Orbit/Core/Platform/Windows/Win32Error.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
 
-#if defined( ORB_HAS_OPENGL )
+#if( ORB_HAS_OPENGL )
 
 static GLuint PixelFormatToGLFormat( PixelFormat pixel_format )
 {
@@ -35,7 +36,7 @@ static GLuint PixelFormatToGLFormat( PixelFormat pixel_format )
 }
 
 #endif // ORB_HAS_OPENGL
-#if defined( ORB_HAS_D3D11 )
+#if( ORB_HAS_D3D11 )
 
 static DXGI_FORMAT PixelFormatToDXGIFormat( PixelFormat pixel_format )
 {
@@ -108,19 +109,11 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data, PixelFo
 				initial_data.pSysMem     = data;
 				initial_data.SysMemPitch = width * 4;
 
-				ID3D11Texture2D* texture_2d;
-				if( d3d11.device->CreateTexture2D( &texture2d_desc, &initial_data, &texture_2d ) == S_OK )
-				{
-					details.texture_2d.reset( texture_2d );
-				}
+				ORB_CHECK_HRESULT( d3d11.device->CreateTexture2D( &texture2d_desc, &initial_data, &details.texture_2d.ptr_ ) );
 			}
 			else
 			{
-				ID3D11Texture2D* texture_2d;
-				if( d3d11.device->CreateTexture2D( &texture2d_desc, nullptr, &texture_2d ) == S_OK )
-				{
-					details.texture_2d.reset( texture_2d );
-				}
+				ORB_CHECK_HRESULT( d3d11.device->CreateTexture2D( &texture2d_desc, nullptr, &details.texture_2d.ptr_ ) );
 			}
 
 			if( details.texture_2d )
@@ -130,13 +123,7 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data, PixelFo
 				srv_desc.ViewDimension       = D3D11_SRV_DIMENSION_TEXTURE2D;
 				srv_desc.Texture2D.MipLevels = 1;
 
-				ID3D11ShaderResourceView* srv;
-				if( d3d11.device->CreateShaderResourceView( details.texture_2d.get(), &srv_desc, &srv ) == S_OK )
-				{
-					details.shader_resource_view.reset( srv );
-				}
-
-				break;
+				ORB_CHECK_HRESULT( d3d11.device->CreateShaderResourceView( details.texture_2d.ptr_, &srv_desc, &details.shader_resource_view.ptr_ ) );
 			}
 		}
 	#endif // ORB_HAS_D3D11
@@ -190,11 +177,46 @@ void Texture2D::Bind( uint32_t slot )
 
 		case( unique_index_v< Private::_Texture2DDetailsD3D11, Private::Texture2DDetails > ):
 		{
-			auto&                     details = std::get< Private::_Texture2DDetailsD3D11 >( details_ );
-			auto&                     d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
-			ID3D11ShaderResourceView* srv     = details.shader_resource_view.get();
+			auto& details = std::get< Private::_Texture2DDetailsD3D11 >( details_ );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 
-			d3d11.device_context->PSSetShaderResources( slot, 1, &srv );
+			d3d11.device_context->PSSetShaderResources( slot, 1, &details.shader_resource_view.ptr_ );
+
+			break;
+		}
+
+	#endif // ORB_HAS_D3D11
+
+	}
+}
+
+void Texture2D::Unbind( uint32_t slot )
+{
+	switch( details_.index() )
+	{
+		default: break;
+
+		#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_Texture2DDetailsOpenGL, Private::Texture2DDetails > ):
+		{
+			const uint32_t unit_base = static_cast< GLenum >( OpenGLTextureUnit::Texture0 );
+
+			glActiveTexture( static_cast< OpenGLTextureUnit >( unit_base + slot ) );
+			glBindTexture( GL_TEXTURE_2D, 0 );
+
+			break;
+		}
+
+	#endif // ORB_HAS_OPENGL
+	#if( ORB_HAS_D3D11 )
+
+		case( unique_index_v< Private::_Texture2DDetailsD3D11, Private::Texture2DDetails > ):
+		{
+			auto& d3d11 = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+
+			ID3D11ShaderResourceView* null_view = nullptr;
+			d3d11.device_context->PSSetShaderResources( slot, 1, &null_view );
 
 			break;
 		}

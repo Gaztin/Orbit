@@ -98,12 +98,12 @@ public:
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
-			command.vertex_buffer = mesh.vertex_buffer.get();
-			command.index_buffer  = mesh.index_buffer.get();
-			command.shader        = &shader_;
-			command.constant_buffers[ Orbit::ShaderType::Vertex   ].push_back( &vertex_constant_buffer_ );
-			command.constant_buffers[ Orbit::ShaderType::Fragment ].push_back( &fragment_constant_buffer_ );
-			command.textures.push_back( texture_.Texture2DPtr() );
+			command.vertex_buffer = *mesh.vertex_buffer;
+			command.index_buffer  = *mesh.index_buffer;
+			command.shader        = shader_;
+			command.constant_buffers[ Orbit::ShaderType::Vertex   ].emplace_back( vertex_constant_buffer_ );
+			command.constant_buffers[ Orbit::ShaderType::Fragment ].emplace_back( fragment_constant_buffer_ );
+			command.textures.emplace_back( texture_.GetTexture2D() );
 
 			renderer_.QueueCommand( command );
 		}

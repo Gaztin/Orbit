@@ -29,7 +29,8 @@ public:
 
 public:
 
-	void Bind( uint32_t slot );
+	void Bind  ( uint32_t slot );
+	void Unbind( uint32_t slot );
 
 public:
 

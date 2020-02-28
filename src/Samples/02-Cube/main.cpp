@@ -145,11 +145,11 @@ public:
 		camera_.Update( delta_time );
 
 		Orbit::RenderCommand command;
-		command.vertex_buffer = &vertex_buffer_;
-		command.index_buffer  = &index_buffer_;
-		command.shader        = &shader_;
-		command.constant_buffers[ Orbit::ShaderType::Vertex ].push_back( &constant_buffer_ );
-		command.textures.push_back( texture_.Texture2DPtr() );
+		command.vertex_buffer = vertex_buffer_;
+		command.index_buffer  = index_buffer_;
+		command.shader        = shader_;
+		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
+		command.textures.emplace_back( texture_.GetTexture2D() );
 
 		renderer_.QueueCommand( command );
 		renderer_.Render();

@@ -25,8 +25,8 @@
 
 ORB_NAMESPACE_BEGIN
 
-extern bool CheckHResult    ( HRESULT hresult, std::string_view statement, std::string_view file, uint32_t line );
-extern bool CheckSystemError( DWORD   error,   std::string_view statement, std::string_view file, uint32_t line );
+extern ORB_API_CORE bool CheckHResult    ( HRESULT hresult, std::string_view statement, std::string_view file, uint32_t line );
+extern ORB_API_CORE bool CheckSystemError( DWORD   error,   std::string_view statement, std::string_view file, uint32_t line );
 
 ORB_NAMESPACE_END
 

@@ -30,3 +30,7 @@ Loads a teapot model from an OBJ file and renders it with a simple directional l
 **Animation**</br>
 ![](res/readme/animation.gif)</br>
 Loads a rigged mannequin model and a jump animation from separate COLLADA files and animates the model on a loop.
+
+**Post Effects**</br>
+![](res/readme/postfx.gif)</br>
+Uses two render passes. The first one uses a regular scene shader to render a bunny to a separate framebuffer. The second pass uses another shader to sample on different points on the framebuffer and renders it to a fullscreen quad. The result is a distortion effect.

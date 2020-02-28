@@ -17,8 +17,10 @@
 
 #include "IGenerator.h"
 
+#include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Uniform.h"
+#include "Orbit/Graphics/Shader/Generator/Variables/Vec2.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
 #include "Orbit/Graphics/Shader/Generator/MainFunction.h"
 
@@ -77,6 +79,39 @@ namespace ShaderGen
 		}
 	};
 
+#if defined( _DEBUG )
+
+	static void LogSourceCodeLine( const char* begin, int32_t length, int32_t line )
+	{
+		if( length > 0 ) LogInfo( "%3d| %.*s", line, length, begin );
+		else             LogInfo( "%3d|", line );
+	}
+
+	static void LogSourceCode( std::string_view code )
+	{
+		int32_t line       = 0;
+		int32_t line_begin = 0;
+
+		LogInfoString( "----------------------------------------" );
+
+		for( int32_t it = 0; it < static_cast< int32_t >( code.size() ); ++it )
+		{
+			if( code[ it ] == '\n' )
+			{
+				LogSourceCodeLine( &code[ line_begin ], ( it - line_begin ), ( ++line ) );
+
+				line_begin = ( it + 1 );
+			}
+		}
+
+		if( line_begin < static_cast< int32_t >( code.size() ) )
+			LogSourceCodeLine( &code[ line_begin ], static_cast< int32_t >( line_begin - code.size() ), ( ++line ) );
+
+		LogInfoString( "----------------------------------------" );
+	}
+
+#endif // _DEBUG
+
 	IGenerator::IGenerator( void )
 	{
 		current_generator = this;
@@ -122,6 +157,18 @@ namespace ShaderGen
 		return attribute_layout_;
 	}
 
+	Variables::IVariable IGenerator::CanonicalScreenPos( const Variables::IVariable& pos )
+	{
+		assert( pos.data_type_ == DataType::FVec2 );
+
+		switch( GetCurrentMainFunction()->shader_language )
+		{
+			case ShaderLanguage::HLSL: return Variables::Vec2( pos->x, -pos->y );
+			case ShaderLanguage::GLSL: return Variables::Vec2( pos->x,  pos->y );
+			default:                   return pos;
+		}
+	}
+
 	Variables::IVariable IGenerator::Transpose( const Variables::IVariable& matrix )
 	{
 		assert( matrix.GetDataType() == DataType::Mat4 );
@@ -146,12 +193,16 @@ namespace ShaderGen
 
 			case ShaderLanguage::HLSL:
 			{
-				return Variables::IVariable( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
+				Variables::IVariable var( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
+				var.StoreValue();
+				return var;
 			}
 
 			case ShaderLanguage::GLSL:
 			{
-				return Variables::IVariable( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
+				Variables::IVariable var( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
+				var.StoreValue();
+				return var;
 			}
 		}
 	}
@@ -169,6 +220,24 @@ namespace ShaderGen
 		vec.SetUsed();
 
 		return Variables::IVariable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
+	}
+
+	Variables::IVariable IGenerator::Cos( const Variables::IVariable& radians )
+	{
+		assert( radians.data_type_ == DataType::Float );
+
+		radians.SetUsed();
+
+		return Variables::IVariable( "cos( " + radians.GetValue() + " )", DataType::Float );
+	}
+
+	Variables::IVariable IGenerator::Sin( const Variables::IVariable& radians )
+	{
+		assert( radians.data_type_ == DataType::Float );
+
+		radians.SetUsed();
+
+		return Variables::IVariable( "sin( " + radians.GetValue() + " )", DataType::Float );
 	}
 
 	std::string IGenerator::GenerateHLSL( void )
@@ -327,6 +396,10 @@ namespace ShaderGen
 			}
 		}
 
+	#if defined( _DEBUG )
+		LogSourceCode( full_source_code );
+	#endif // _DEBUG
+
 		return full_source_code;
 	}
 
@@ -474,6 +547,10 @@ namespace ShaderGen
 		}
 
 		full_source_code.append( "\n#endif\n" );
+
+	#if defined( _DEBUG )
+		LogSourceCode( full_source_code );
+	#endif // _DEBUG
 
 		return full_source_code;
 	}

@@ -20,6 +20,7 @@
 #include "Orbit/Core/IO/Parser/XML/XMLParser.h"
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Utility/Color.h"
+#include "Orbit/Core/Utility/StringConverting.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Math/Vector2.h"
@@ -29,6 +30,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -287,9 +289,10 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 	if( !xml_parser.IsGood() )
 		return false;
 
-	const XMLElement&          collada = xml_parser.GetRootElement()[ "COLLADA" ];
-	std::vector< std::string > all_joint_names;
-	std::vector< Matrix4 >     all_joint_transforms;
+	const XMLElement&              collada = xml_parser.GetRootElement()[ "COLLADA" ];
+	std::vector< std::string >     all_joint_names;
+	std::vector< Matrix4 >         all_joint_transforms;
+	std::map< std::string, Mesh* > mesh_id_table;
 
 	for( const XMLElement& geometry : collada[ "library_geometries" ] )
 	{
@@ -315,12 +318,7 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 			vertex_count /= 3;
 		}
 
-		size_t face_count = 0;
-		/* Peek the number of faces */
-		{
-			std::istringstream ss( std::string( polylist.Attribute( "count" ) ) );
-			ss >> face_count;
-		}
+		const size_t face_count = FromString< size_t >( polylist.Attribute( "count" ) );
 
 		/* Opt out if not COLLADA */
 		if( vertex_count == 0 || face_count == 0 )
@@ -333,28 +331,32 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 		ClearVertexData( vertex_data.get(), vertex_count, layout );
 
+		std::vector< Vector4 > positions;
+		std::vector< Vector3 > normals;
+		std::vector< Vector2 > tex_coords;
+
 		if( layout.Contains( VertexComponent::Position ) )
 		{
-			const size_t offset = layout.OffsetOf( VertexComponent::Position );
-			std::string  source_id( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
-			source_id.erase( source_id.begin() );
+			std::string source_id( geometry[ "mesh" ][ "vertices" ].ChildWithAttribute( "input", "semantic", "POSITION" ).Attribute( "source" ) );
 
-			const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
-
-			size_t stride = 0;
+			if( !source_id.empty() )
 			{
-				std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
-				ss >> stride;
-			}
+				source_id.erase( source_id.begin() );
 
-			std::istringstream ss( source[ "float_array" ].content );
+				const XMLElement&  source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
+				const size_t       stride = FromString< size_t >( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) );
+				std::istringstream ss( source[ "float_array" ].content );
+				Vector4            vec( 0.0f, 0.0f, 0.0f, 1.0f );
+				size_t             i = 0;
 
-			for( size_t i = 0; i < vertex_count; ++i )
-			{
-				Vector4* w = reinterpret_cast< Vector4* >( &vertex_data[ i * vertex_stride + offset ] );
-
-				for( size_t c = 0; c < stride; ++c )
-					ss >> ( *w )[ c ];
+				while( ss >> vec[ i++ ] )
+				{
+					if( i == stride )
+					{
+						positions.push_back( vec );
+						i = 0;
+					}
+				}
 			}
 		}
 
@@ -362,51 +364,144 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 		{
 			const size_t offset = layout.OffsetOf( VertexComponent::Normal );
 			std::string  source_id( polylist.ChildWithAttribute( "input", "semantic", "NORMAL" ).Attribute( "source" ) );
-			source_id.erase( source_id.begin() );
 
-			const XMLElement& source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
-
-			size_t stride = 0;
+			if( !source_id.empty() )
 			{
-				std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) ) );
-				ss >> stride;
+				source_id.erase( source_id.begin() );
+
+				const XMLElement&  source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
+				const size_t       stride = FromString< size_t >( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) );
+				std::istringstream ss( source[ "float_array" ].content );
+				Vector3            vec( 0.0f, 0.0f, 0.0f );
+				size_t             i = 0;
+
+				while( ss >> vec[ i++ ] )
+				{
+					if( i == stride )
+					{
+						normals.push_back( vec );
+						i = 0;
+					}
+				}
 			}
+		}
 
-			std::istringstream ss( source[ "float_array" ].content );
+		if( layout.Contains( VertexComponent::TexCoord ) )
+		{
+			const size_t offset = layout.OffsetOf( VertexComponent::TexCoord );
+			std::string  source_id( polylist.ChildWithAttribute( "input", "semantic", "TEXCOORD" ).Attribute( "source" ) );
 
-			for( size_t i = 0; i < vertex_count; ++i )
+			if( !source_id.empty() )
 			{
-				Vector3* w = reinterpret_cast< Vector3* >( &vertex_data[ i * vertex_stride + offset ] );
+				source_id.erase( source_id.begin() );
 
-				for( size_t c = 0; c < stride; ++c )
-					ss >> ( *w )[ c ];
+				const XMLElement&  source = geometry[ "mesh" ].ChildWithAttribute( "source", "id", source_id );
+				const size_t       stride = FromString< size_t >( source[ "technique_common" ][ "accessor" ].Attribute( "stride" ) );
+				std::istringstream ss( source[ "float_array" ].content );
+				Vector2            vec( 0.0f, 0.0f );
+				size_t             i = 0;
+
+				while( ss >> vec[ i++ ] )
+				{
+					if( i == stride )
+					{
+						tex_coords.push_back( vec );
+						i = 0;
+					}
+				}
 			}
 		}
 
 		/* Write to index data */
 		{
-			size_t input_count = 0;
-			for( const XMLElement& input : geometry[ "mesh" ][ "polylist" ] )
+			const size_t input_count = polylist.CountChildren( "input" );
+
+			std::vector< size_t > all_indices;
 			{
-				if( input.name == "input" )
-					++input_count;
+				std::istringstream ss( polylist[ "p" ].content );
+				size_t             index;
+
+				while( ss >> index )
+					all_indices.push_back( index );
 			}
 
-			std::istringstream ss( geometry[ "mesh" ][ "polylist" ][ "p" ].content );
-
-			for( size_t i = 0; i < face_count * 3; ++i )
+			std::vector< size_t > vcounts;
 			{
-				size_t index = ~0ul;
-				ss >> index;
+				std::istringstream ss( polylist[ "vcount" ].content );
+				size_t             index;
 
-				WriteIndexHelper( index_data.get(), index_size, i, index );
+				while( ss >> index )
+					vcounts.push_back( index );
+			}
 
-				for( size_t input = 1; input < input_count; ++input )
+			{
+				const XMLElement& input = polylist.ChildWithAttribute( "input", "semantic", "VERTEX" );
+				size_t            index = FromString< size_t >( input.Attribute( "offset" ) );
+
+				for( size_t f = 0; f < face_count; ++f )
 				{
-					size_t dummy;
-					ss >> dummy;
+					for( size_t v = 0; v < vcounts[ f ]; ++v )
+					{
+						WriteIndexHelper( index_data.get(), index_size, ( f * 3 + v ), all_indices[ index ] );
+						index += input_count;
+					}
+				}
+			}
 
-					assert( dummy == index );
+			if( layout.Contains( VertexComponent::Position ) )
+			{
+				const size_t offset = layout.OffsetOf( VertexComponent::Position );
+
+				for( size_t i = 0; i < vertex_count; ++i )
+				{
+					Vector4* w = reinterpret_cast< Vector4* >( &vertex_data[ i * vertex_stride + offset ] );
+					*w         = positions[ i ];
+				}
+			}
+
+			if( layout.Contains( VertexComponent::Normal ) )
+			{
+				const XMLElement& input = polylist.ChildWithAttribute( "input", "semantic", "NORMAL" );
+
+				if( input.IsValid() )
+				{
+					const size_t offset = layout.OffsetOf( VertexComponent::Normal );
+					size_t       index  = FromString< size_t >( input.Attribute( "offset" ) );
+
+					for( size_t f = 0; f < face_count; ++f )
+					{
+						for( size_t v = 0; v < vcounts[ f ]; ++v )
+						{
+							const size_t vertex_index = ReadIndexHelper( index_data.get(), index_size, ( f * 3 + v ) );
+
+							Vector3* w = reinterpret_cast< Vector3* >( &vertex_data[ vertex_index * vertex_stride + offset ] );
+							*w         = normals[ all_indices[ index ] ];
+							index     += input_count;
+						}
+					}
+				}
+			}
+
+			if( layout.Contains( VertexComponent::TexCoord ) )
+			{
+				const XMLElement& input  = polylist.ChildWithAttribute( "input", "semantic", "TEXCOORD" );
+
+				if( input.IsValid() )
+				{
+					const size_t offset = layout.OffsetOf( VertexComponent::TexCoord );
+					size_t       index  = FromString< size_t >( input.Attribute( "offset" ) );
+
+					for( size_t f = 0; f < face_count; ++f )
+					{
+						for( size_t v = 0; v < vcounts[ f ]; ++v )
+						{
+							const size_t vertex_index = ReadIndexHelper( index_data.get(), index_size, ( f * 3 + v ) );
+
+							Vector2* w = reinterpret_cast< Vector2* >( &vertex_data[ vertex_index * vertex_stride + offset ] );
+							*w         = tex_coords[ all_indices[ index ] ];
+							index     += input_count;
+						}
+					}
 				}
 			}
 		}
@@ -604,11 +699,37 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 		mesh.index_buffer  = std::make_unique< IndexBuffer >( index_format, index_data.get(), face_count * 3 );
 
 		meshes_.emplace_back( std::move( mesh ) );
+		mesh_id_table[ "#" + geometry_id ] = &meshes_.back();
 	}
 
-	const XMLElement& visual_scene = collada[ "library_visual_scenes" ][ "visual_scene" ];
+	const XMLElement& visual_scene   = collada[ "library_visual_scenes" ][ "visual_scene" ];
+	bool              has_joint_data = false;
 
-	if( !visual_scene.children.empty() )
+	for( const XMLElement& node : visual_scene )
+	{
+		if( const XMLElement& instance_geometry = node[ "instance_geometry" ]; instance_geometry.IsValid() )
+		{
+			if( auto it = mesh_id_table.find( std::string( instance_geometry.Attribute( "url" ) ) ); it != mesh_id_table.end() )
+			{
+				std::istringstream ss( node[ "matrix" ].content );
+
+				for( size_t e = 0; e < 16; ++e )
+					ss >> it->second->transform[ e ];
+			}
+			else
+			{
+				// Failed to find mesh in ID table
+				assert( false );
+			}
+		}
+		else if( node.children.size() == 1 )
+		{
+			// Treat the lack of an "instance_xxx" element as being a joint node
+			has_joint_data = true;
+		}
+	}
+
+	if( has_joint_data )
 		root_joint_ = std::make_unique< Joint >( ColladaParseNodeRecursive( visual_scene, Matrix4(), all_joint_names, all_joint_transforms ) );
 
 	return true;

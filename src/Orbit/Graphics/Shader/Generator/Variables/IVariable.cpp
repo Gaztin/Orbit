@@ -79,15 +79,15 @@ namespace ShaderGen { namespace Variables
 	{
 		if( !stored_ )
 		{
-			static uint32_t unique_index = 0;
+			MainFunction* main = IGenerator::GetCurrentMainFunction();
 
 			std::ostringstream ss;
-			ss << "local_" << ( unique_index++ );
+			ss << "local_" << ( main->locals_count++ );
 
 			auto old_value = value_;
 			value_ = ss.str();
 
-			IGenerator::GetCurrentMainFunction()->code << "\t" << DataTypeToString( data_type_ ) << " " << value_ << " = " << old_value << ";\n";
+			main->code << "\t" << DataTypeToString( data_type_ ) << " " << value_ << " = " << old_value << ";\n";
 
 			stored_ = true;
 		}
@@ -120,6 +120,8 @@ namespace ShaderGen { namespace Variables
 			{
 				result_type = data_type_;
 			} break;
+
+			default: break;
 		}
 
 		if( IGenerator::GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
@@ -170,18 +172,20 @@ namespace ShaderGen { namespace Variables
 		return ( *this )[ IVariable( static_cast< int >( index ) ) ];
 	}
 
-	SwizzlePermutations* IVariable::operator->( void )
+	SwizzlePermutations* IVariable::operator->( void ) const
 	{
 		static SwizzlePermutations swizzle;
 
 		SetUsed();
 
-		variable_to_be_swizzled = this;
+		variable_to_be_swizzled = const_cast< IVariable* >( this );
 		return &swizzle;
 	}
 
 	void IVariable::operator=( const IVariable& rhs )
 	{
+		assert( data_type_ == rhs.data_type_ );
+
 		rhs.SetUsed();
 
 		StoreValue();

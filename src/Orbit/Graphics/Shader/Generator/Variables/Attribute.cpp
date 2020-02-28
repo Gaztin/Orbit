@@ -27,18 +27,16 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { namespace Variables
 {
-	static std::string NewName( void )
+	static std::string NewName( size_t unique_index )
 	{
-		static uint32_t unique_index = 0;
-
 		std::ostringstream ss;
-		ss << "attribute_" << ( unique_index++ );
+		ss << "attribute_" << unique_index;
 
 		return ss.str();
 	}
 
 	Attribute::Attribute( VertexComponent component )
-		: IVariable( NewName(), DataTypeFromVertexComponent( component ) )
+		: IVariable( NewName( IGenerator::GetCurrentGenerator()->attribute_layout_.GetCount() ), DataTypeFromVertexComponent( component ) )
 	{
 		stored_ = true;
 

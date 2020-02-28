@@ -32,6 +32,8 @@ public:
 public:
 
 	const XMLElement& ChildWithAttribute( std::string_view element, std::string_view attribute, std::string_view value ) const;
+	size_t            CountChildren     ( std::string_view element ) const;
+	bool              IsValid           ( void ) const;
 
 public:
 

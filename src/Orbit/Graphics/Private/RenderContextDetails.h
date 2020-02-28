@@ -79,7 +79,7 @@ namespace Private
 
 	struct _RenderContextDetailsD3D11
 	{
-		ComPtr< IDXGISwapChain >          swap_chain;
+		ComPtr< IDXGISwapChain1 >         swap_chain;
 		ComPtr< ID3D11Device >            device;
 		ComPtr< ID3D11DeviceContext >     device_context;
 		ComPtr< ID3D11RenderTargetView >  render_target_view;

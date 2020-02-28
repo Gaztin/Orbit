@@ -18,6 +18,7 @@
 #pragma once
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
+#include "Orbit/Math/Matrix4.h"
 
 #include <memory>
 #include <string>
@@ -30,6 +31,8 @@ struct Mesh
 
 	std::unique_ptr< VertexBuffer > vertex_buffer;
 	std::unique_ptr< IndexBuffer >  index_buffer;
+
+	Matrix4 transform;
 };
 
 ORB_NAMESPACE_END

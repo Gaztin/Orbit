@@ -19,6 +19,7 @@
 
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Buffer/ConstantBuffer.h"
+#include "Orbit/Graphics/Buffer/FrameBuffer.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
@@ -27,7 +28,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-static void BindConstantBuffers( const RenderCommand& command )
+static void BindConstantBuffers( RenderCommand& command )
 {
 	uint32_t global_slot = 0;
 
@@ -52,6 +53,22 @@ static void BindConstantBuffers( const RenderCommand& command )
 
 		#endif // ORB_HAS_OPENGL
 
+		}
+	}
+}
+
+static void UnbindConstantBuffers( RenderCommand& command )
+{
+	uint32_t global_slot = 0;
+
+	for( auto& constant_buffers : command.constant_buffers )
+	{
+		for( size_t i = 0; i < constant_buffers.second.size(); ( ++i, ++global_slot ) )
+		{
+			const uint32_t local_slot     = static_cast< uint32_t >( i );
+			const auto&    shader_details = command.shader->GetPrivateDetails();
+
+			constant_buffers.second[ i ]->Unbind( constant_buffers.first, local_slot, global_slot );
 		}
 	}
 }
@@ -106,6 +123,9 @@ void BasicRenderer::Render( void )
 {
 	for( RenderCommand& command : commands_ )
 	{
+		if( command.frame_buffer )
+			command.frame_buffer->Bind();
+
 		for( size_t i = 0; i < command.textures.size(); ++i )
 			command.textures[ i ]->Bind( static_cast< uint32_t >( i ) );
 
@@ -115,10 +135,17 @@ void BasicRenderer::Render( void )
 
 		BindConstantBuffers( command );
 		APIDraw( command );
+		UnbindConstantBuffers( command );
 
 //		command.index_buffer->Unbind();
 		command.shader->Unbind();
 //		command.vertex_buffer->Unbind();
+
+		for( size_t i = 0; i < command.textures.size(); ++i )
+			command.textures[ i ]->Unbind( static_cast< uint32_t >( i ) );
+
+		if( command.frame_buffer )
+			command.frame_buffer->Unbind();
 	}
 
 	commands_.clear();

@@ -109,7 +109,7 @@ void LogString( std::string_view msg )
 
 #elif defined( ORB_OS_ANDROID ) // ORB_OS_LINUX || ORB_OS_MACOS
 
-	__android_log_write( AttributesByLogType( Type ), "Orbit", msg.data() );
+	__android_log_write( PriorityByLogType( Type ), "Orbit", msg.data() );
 
 #elif defined( ORB_OS_IOS ) // ORB_OS_ANDROID
 

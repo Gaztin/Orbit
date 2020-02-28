@@ -73,19 +73,16 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 			desc.Usage     = D3D11_USAGE_DEFAULT;
 			desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
-			ID3D11Buffer* buffer;
 			if( data )
 			{
 				D3D11_SUBRESOURCE_DATA initial_data { };
 				initial_data.pSysMem = data;
-				d3d11.device->CreateBuffer( &desc, &initial_data, &buffer );
+				d3d11.device->CreateBuffer( &desc, &initial_data, &details.buffer.ptr_ );
 			}
 			else
 			{
-				d3d11.device->CreateBuffer( &desc, nullptr, &buffer );
+				d3d11.device->CreateBuffer( &desc, nullptr, &details.buffer.ptr_ );
 			}
-
-			details.buffer.reset( buffer );
 
 			break;
 		}
@@ -160,7 +157,7 @@ void IndexBuffer::Bind( void )
 				case IndexFormat::DoubleWord: { format = DXGI_FORMAT_R32_UINT; } break;
 			}
 
-			d3d11.device_context->IASetIndexBuffer( details.buffer.get(), format, 0 );
+			d3d11.device_context->IASetIndexBuffer( details.buffer.ptr_, format, 0 );
 
 			break;
 		}
