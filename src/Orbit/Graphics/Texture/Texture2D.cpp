@@ -196,7 +196,7 @@ void Texture2D::Unbind( uint32_t slot )
 	{
 		default: break;
 
-		#if( ORB_HAS_OPENGL )
+	#if( ORB_HAS_OPENGL )
 
 		case( unique_index_v< Private::_Texture2DDetailsOpenGL, Private::Texture2DDetails > ):
 		{
