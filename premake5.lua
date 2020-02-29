@@ -169,6 +169,38 @@ local function decl_sample( name )
 	table.insert( samples, fullname )
 end
 
+local demos = { }
+local function decl_demo( name )
+	group( 'Demos' )
+	project( name )
+	kind( 'WindowedApp' )
+	links( modules )
+	xcodebuildresources( 'assets' )
+	appid( 'com.gaztin.orbit.demos.' .. name:lower() )
+	base_config()
+	files {
+		'src/Demos/' .. name .. '/*.cpp',
+		'src/Demos/' .. name .. '/*.h',
+	}
+
+	filter { 'system:linux' }
+		linkoptions { '-Wl,-rpath=\\$$ORIGIN' }
+	filter { 'system:macosx or ios', 'files:**.cpp' }
+		language( 'ObjCpp' )
+	filter { 'system:ios' }
+		files { 'res/Info.plist', 'assets' }
+	filter { 'system:android' }
+		files { 'src/Demos/' .. name .. '/Android/**' }
+	filter { 'system:android' }
+		assetdirs { 'assets/' }
+	filter { }
+
+	project()
+	group()
+
+	table.insert( demos, name )
+end
+
 local workspace_name = 'Orbit'
 
 workspace( workspace_name )
