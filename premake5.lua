@@ -241,5 +241,7 @@ decl_sample( 'Model' )
 decl_sample( 'Animation' )
 decl_sample( 'PostFX' )
 
+decl_demo( 'TetraCubes' )
+
 workspace( workspace_name )
 	startproject( samples[ 1 ] )
