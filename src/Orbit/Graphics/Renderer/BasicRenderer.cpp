@@ -65,8 +65,7 @@ static void UnbindConstantBuffers( RenderCommand& command )
 	{
 		for( size_t i = 0; i < constant_buffers.second.size(); ( ++i, ++global_slot ) )
 		{
-			const uint32_t local_slot     = static_cast< uint32_t >( i );
-			const auto&    shader_details = command.shader->GetPrivateDetails();
+			const uint32_t local_slot = static_cast< uint32_t >( i );
 
 			constant_buffers.second[ i ]->Unbind( constant_buffers.first, local_slot, global_slot );
 		}
