@@ -28,6 +28,10 @@ public:
 
 public:
 
+	float Radius( void ) const { return radius_; }
+
+public:
+
 	ShapeType GetType( void ) const override { return ShapeType::Sphere; }
 
 private:
