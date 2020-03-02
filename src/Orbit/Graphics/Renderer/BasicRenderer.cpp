@@ -80,13 +80,21 @@ static void APIDraw( const RenderCommand& command )
 	{
 		default: break;
 
-		#if( ORB_HAS_D3D11 )
+	#if( ORB_HAS_D3D11 )
 
 		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
 		{
 			auto& d3d11 = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
-			d3d11.device_context->DrawIndexed( static_cast< UINT >( command.index_buffer->GetCount() ), 0, 0 );
+			switch( command.topology )
+			{
+				case Topology::Points:    { d3d11.device_context->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_POINTLIST    ); } break;
+				case Topology::Lines:     { d3d11.device_context->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_LINELIST     ); } break;
+				case Topology::Triangles: { d3d11.device_context->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST ); } break;
+			}
+
+			if( command.index_buffer ) d3d11.device_context->DrawIndexed( static_cast< UINT >( command.index_buffer->GetCount() ), 0, 0 );
+			else                       d3d11.device_context->Draw( command.vertex_buffer->GetCount(), 0 );
 
 		} break;
 
@@ -95,8 +103,7 @@ static void APIDraw( const RenderCommand& command )
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			OpenGLIndexType index_type{ };
-
+			OpenGLIndexType index_type { };
 			switch( command.index_buffer->GetFormat() )
 			{
 				case IndexFormat::Byte:       { index_type = OpenGLIndexType::Byte;  } break;
@@ -104,7 +111,16 @@ static void APIDraw( const RenderCommand& command )
 				case IndexFormat::DoubleWord: { index_type = OpenGLIndexType::Int;   } break;
 			}
 
-			glDrawElements( OpenGLDrawMode::Triangles, static_cast< GLsizei >( command.index_buffer->GetCount() ), index_type, nullptr );
+			OpenGLDrawMode draw_mode { };
+			switch( command.topology )
+			{
+				case Topology::Points:    { draw_mode = OpenGLDrawMode::Points;    } break;
+				case Topology::Lines:     { draw_mode = OpenGLDrawMode::Lines;     } break;
+				case Topology::Triangles: { draw_mode = OpenGLDrawMode::Triangles; } break;
+			}
+
+			if( command.index_buffer ) glDrawElements( draw_mode, static_cast< GLsizei >( command.index_buffer->GetCount() ), index_type, nullptr );
+			else                       glDrawArrays( draw_mode, 0, command.vertex_buffer->GetCount() );
 
 		} break;
 
@@ -130,13 +146,17 @@ void BasicRenderer::Render( void )
 
 		command.vertex_buffer->Bind();
 		command.shader->Bind();
-		command.index_buffer->Bind();
+
+		if( command.index_buffer )
+			command.index_buffer->Bind();
 
 		BindConstantBuffers( command );
 		APIDraw( command );
 		UnbindConstantBuffers( command );
 
-//		command.index_buffer->Unbind();
+//		if( command.index_buffer )
+//			command.index_buffer->Unbind();
+
 		command.shader->Unbind();
 //		command.vertex_buffer->Unbind();
 
