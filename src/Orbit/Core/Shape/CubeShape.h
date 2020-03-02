@@ -28,6 +28,10 @@ public:
 
 public:
 
+	float HalfExtent( void ) const { return half_extent_; }
+
+public:
+
 	ShapeType GetType( void ) const override { return ShapeType::Cube; }
 
 public:

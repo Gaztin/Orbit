@@ -23,6 +23,7 @@
 
 ORB_NAMESPACE_BEGIN
 
+class  CubeShape;
 class  IShape;
 class  VertexLayout;
 struct Mesh;

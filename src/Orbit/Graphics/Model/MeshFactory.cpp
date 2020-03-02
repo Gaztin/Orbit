@@ -17,6 +17,7 @@
 
 #include "MeshFactory.h"
 
+#include "Orbit/Core/Shape/CubeShape.h"
 #include "Orbit/Core/Shape/IShape.h"
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Core/Utility/Selector.h"
@@ -54,6 +55,17 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	Mesh mesh;
 	mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), ( selector_vertex_count[ shape.GetType() ] ), vertex_layout.GetStride() );
 	mesh.index_buffer  = std::make_unique< IndexBuffer  >( IndexFormat::Word, index_data.get(), ( selector_face_count[ shape.GetType() ] * 3 ) );
+
+	switch( shape.GetType() )
+	{
+		case ShapeType::Cube:
+		{
+			const CubeShape& cube_shape = static_cast< const CubeShape& >( shape );
+
+			mesh.transform.Scale( Vector3( cube_shape.HalfExtent() * 2.0f ) );
+
+		} break;
+	}
 
 	return mesh;
 }
