@@ -16,45 +16,27 @@
  */
 
 #pragma once
-#include <Orbit/Core/Application/Application.h>
-#include <Orbit/Core/Widget/Window.h>
-#include <Orbit/Graphics/Buffer/ConstantBuffer.h>
-#include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Model/Mesh.h>
-#include <Orbit/Graphics/Renderer/BasicRenderer.h>
-#include <Orbit/Graphics/Shader/Shader.h>
-#include <Orbit/Math/Matrix4.h>
+#include <Orbit/Graphics/Shader/Generator/IGenerator.h>
 
-class TetraCubes : public Orbit::Application< TetraCubes >
+class CubeShader final : public Orbit::ShaderGen::IGenerator
 {
-public:
+private:
 
-	TetraCubes( void );
-
-public:
-
-	void OnFrame  ( float delta_time ) override;
-	bool IsRunning( void )             override;
+	Vec4 VSMain( void ) override;
+	Vec4 PSMain( void ) override;
 
 private:
 
-	struct CubeConstants
-	{
-		Orbit::Matrix4 view_projection;
-		Orbit::Matrix4 model;
-	};
+	Attribute::Position a_position;
+	Attribute::Normal   a_normal;
+	Attribute::Color    a_color;
 
-private:
+	Varying::Position v_position;
+	Varying::Normal    v_normal;
+	Varying::Color     v_color;
 
-	Orbit::Window         window_;
-	Orbit::RenderContext  context_;
-	Orbit::Shader         cube_shader_;
-	Orbit::ConstantBuffer cube_constant_buffer_;
-	Orbit::BasicRenderer  renderer_;
-	Orbit::Mesh           cube_mesh_;
-
-	Orbit::Matrix4 projection_matrix_;
-	Orbit::Matrix4 view_matrix_;
-	Orbit::Matrix4 model_matrix_;
+	Uniform< Mat4 > u_view_projection;
+	Uniform< Mat4 > u_model;
 
 };
+

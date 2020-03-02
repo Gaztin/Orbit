@@ -17,21 +17,52 @@
 
 #include "TetraCubes.h"
 
+#include "CubeShader.h"
+
 #include <Orbit/Core/Application/EntryPoint.h>
+#include <Orbit/Core/Shape/CubeShape.h>
+#include <Orbit/Graphics/Model/MeshFactory.h>
+
+static CubeShader cube_shader;
 
 TetraCubes::TetraCubes( void )
-	: window_ ( 768, 768 )
-	, context_( Orbit::default_graphics_api )
+	: window_              ( 768, 768 )
+	, context_             ( Orbit::default_graphics_api )
+	, cube_shader_         ( cube_shader )
+	, cube_constant_buffer_( sizeof( CubeConstants ) )
+	, cube_mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 0.5f ), cube_shader.GetVertexLayout() ) )
 {
 	window_.Show();
 	context_.SetClearColor( 0.1f, 0.1f, 0.1f );
+
+	view_matrix_.pos.z -= 5.0f;
+	projection_matrix_.SetPerspective( 1.0f, ( 60.0f / 180.0f ) * Orbit::Pi, 0.1f, 100.0f );
 }
 
-void TetraCubes::OnFrame( float /*delta_time*/ )
+void TetraCubes::OnFrame( float delta_time )
 {
 	window_.PollEvents();
-
 	context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
+
+	model_matrix_.RotateY( delta_time * Orbit::Pi );
+
+	// Render cube
+	{
+		CubeConstants constants;
+		constants.view_projection = ( view_matrix_.Inverted() * projection_matrix_ );
+		constants.model           = cube_mesh_.transform * model_matrix_;
+		cube_constant_buffer_.Update( &constants, sizeof( CubeConstants ) );
+
+		Orbit::RenderCommand command;
+		command.vertex_buffer = *cube_mesh_.vertex_buffer;
+		command.index_buffer  = *cube_mesh_.index_buffer;
+		command.shader        = cube_shader_;
+		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( cube_constant_buffer_ );
+
+		renderer_.QueueCommand( command );
+	}
+
+	renderer_.Render();
 	context_.SwapBuffers();
 }
 
