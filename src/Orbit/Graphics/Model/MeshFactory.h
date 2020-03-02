@@ -31,7 +31,11 @@ class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >
 {
 public:
 
-	std::unique_ptr< Mesh > CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout ) const;
+	Mesh CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout ) const;
+
+private:
+
+	void FillCubeData( uint8_t* vertex_data, uint16_t* index_data, const VertexLayout& vertex_layout ) const;
 
 };
 
