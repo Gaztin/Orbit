@@ -35,6 +35,21 @@ Matrix4::Matrix4( std::initializer_list< float > elements )
 		( *this )[ i ] = *( elements.begin() + i );
 }
 
+void Matrix4::TranslateX( float translation )
+{
+	Translate( Vector3( translation, 0.0f, 0.0f ) );
+}
+
+void Matrix4::TranslateY( float translation )
+{
+	Translate( Vector3( 0.0f, translation, 0.0f ) );
+}
+
+void Matrix4::TranslateZ( float translation )
+{
+	Translate( Vector3( 0.0f, 0.0f, translation ) );
+}
+
 void Matrix4::Translate( const Vector3& translation )
 {
 	Matrix4&      self = *this;

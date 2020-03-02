@@ -34,6 +34,9 @@ public:
 
 public:
 
+	void TranslateX    ( float translation );
+	void TranslateY    ( float translation );
+	void TranslateZ    ( float translation );
 	void Translate     ( const Vector3& translation );
 	void RotateX       ( float rotation );
 	void RotateY       ( float rotation );
