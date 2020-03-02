@@ -37,7 +37,7 @@ TetraCubes::TetraCubes( void )
 	window_.Show();
 	context_.SetClearColor( 0.1f, 0.1f, 0.1f );
 
-	view_matrix_.pos.z -= 5.0f;
+	camera_position_.z = -5.0f;
 }
 
 void TetraCubes::OnFrame( float delta_time )
@@ -45,14 +45,18 @@ void TetraCubes::OnFrame( float delta_time )
 	window_.PollEvents();
 	context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
-	model_matrix_.RotateY( delta_time * Orbit::Pi );
-
-	HandleInput();
+	HandleInput( delta_time );
 
 	// Render cube
 	{
+		Orbit::Matrix4 view_rotate;
+		view_rotate.Rotate( camera_rotation_ );
+
+		Orbit::Matrix4 view_translate;
+		view_translate.Translate( camera_position_ );
+
 		CubeConstants constants;
-		constants.view_projection = ( view_matrix_.Inverted() * projection_matrix_ );
+		constants.view_projection = ( ( view_rotate * view_translate ).Inverted() * projection_matrix_ );
 		constants.model           = cube_mesh_.transform * model_matrix_;
 		cube_constant_buffer_.Update( &constants, sizeof( CubeConstants ) );
 
@@ -81,14 +85,54 @@ void TetraCubes::OnResize( uint32_t width, uint32_t height )
 	const float near_clip = 0.1f;
 	const float far_clip  = 100.0f;
 
+	window_width_  = width;
+	window_height_ = height;
+
 	projection_matrix_.SetPerspective( aspect, fov, near_clip, far_clip );
 }
 
-void TetraCubes::HandleInput( void )
+void TetraCubes::HandleInput( float delta_time )
 {
-	if( Orbit::Input::GetKeyPressed( Orbit::Key::_1 ) )
-		model_matrix_.pos.y -= 0.5f;
+	const float move_distance = ( 4.0f * delta_time );
 
-	if( Orbit::Input::GetKeyPressed( Orbit::Key::_2 ) )
-		model_matrix_.pos.y += 0.5f;
+	// Camera rotation
+	if( Orbit::Input::GetPointerHeld( Orbit::Input::pointer_index_mouse_left ) || Orbit::Input::GetPointerHeld( Orbit::Input::pointer_index_mouse_right ) )
+	{
+		const Orbit::Point mouse_movement = Orbit::Input::GetPointerMove( 0 );
+		camera_rotation_.x += ( ( Orbit::Pi * mouse_movement.y ) / window_height_ );
+		camera_rotation_.y -= ( ( Orbit::Pi * mouse_movement.x ) / window_width_  );
+	}
+
+	// Camera movement
+	{
+		Orbit::Vector3 direction;
+		float          speed_modifier = 1.0f;
+
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::A       ) ) { direction.x -= 1.0f; }
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::D       ) ) { direction.x += 1.0f; }
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::C       ) ) { direction.y -= 1.0f; }
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::Space   ) ) { direction.y += 1.0f; }
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::S       ) ) { direction.z -= 1.0f; }
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::W       ) ) { direction.z += 1.0f; }
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::Shift   ) ) { speed_modifier *= 10.0f; }
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::Control ) ) { speed_modifier /= 10.0f; }
+
+		direction.Normalize();
+
+		if( direction.DotProduct() > 0.0f )
+		{
+			Orbit::Matrix4 rotation_matrix;
+			rotation_matrix.Rotate( camera_rotation_ );
+
+			const float step = ( speed_modifier * delta_time );
+
+			camera_position_ += ( rotation_matrix.right   * direction.x * step );
+			camera_position_ += ( rotation_matrix.up      * direction.y * step );
+			camera_position_ += ( rotation_matrix.forward * direction.z * step );
+		}
+	}
+
+	// Toggle FPS cursor
+	if( Orbit::Input::GetPointerPressed(  Orbit::Input::pointer_index_mouse_right ) ) Orbit::Input::SetFPSCursor( true );
+	if( Orbit::Input::GetPointerReleased( Orbit::Input::pointer_index_mouse_right ) ) Orbit::Input::SetFPSCursor( false );
 }

@@ -47,7 +47,7 @@ private:
 private:
 
 	void OnResize   ( uint32_t width, uint32_t height );
-	void HandleInput( void );
+	void HandleInput( float delta_time );
 
 private:
 
@@ -59,9 +59,14 @@ private:
 	Orbit::Mesh           cube_mesh_;
 
 	Orbit::Matrix4 projection_matrix_;
-	Orbit::Matrix4 view_matrix_;
 	Orbit::Matrix4 model_matrix_;
 
 	Orbit::EventSubscription on_resize_;
+
+	Orbit::Vector3 camera_rotation_;
+	Orbit::Vector3 camera_position_;
+
+	uint32_t window_width_;
+	uint32_t window_height_;
 
 };
