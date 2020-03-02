@@ -32,9 +32,11 @@ CubeShader::Vec4 CubeShader::VSMain( void )
 
 CubeShader::Vec4 CubeShader::PSMain( void )
 {
-	Vec3  light_dir   = Normalize( Vec3( 0.7f, 1.0f, 0.9f ) );
-	Float impact      = Dot( light_dir, v_normal );
-	Vec3  final_color = v_color->rgb * impact;
+	Vec3  light_dir          = Normalize( Vec3( 0.7f, 0.9f, -1.0f ) );
+	Float ambient_imopact    = 0.25;
+	Float directional_impact = 0.75 * ( Dot( light_dir, v_normal ) * 0.5 + 0.5 );
+	Float total_light_impact = ( ambient_imopact + directional_impact );
+	Vec3  final_color        = v_color->rgb * total_light_impact;
 
 	return Vec4( final_color->rgb, 1.0 );
 }
