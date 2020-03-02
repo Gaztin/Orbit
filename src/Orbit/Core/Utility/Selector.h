@@ -17,6 +17,7 @@
 
 #pragma once
 #include "Orbit/Core/Container/BinarySearchTree.h"
+#include "Orbit/Core/Container/Pair.h"
 
 #include <utility>
 
@@ -27,20 +28,24 @@ class Selector
 {
 public:
 
-	using PairType = std::pair< KeyType, ValueType >;
+	using PairType = Pair< KeyType, ValueType >;
 
 public:
 
 	constexpr Selector( std::initializer_list< PairType > pairs )
 	{
-		// #TODO: Construct
+		for( const PairType& pair : pairs )
+			tree_.Insert( pair );
 	}
 
 public:
 
-	constexpr ValueType operator[]( const KeyType& ) const
+	constexpr ValueType operator[]( const KeyType& key ) const
 	{
-		// #TODO: Find
+		if( const PairType* pair = tree_.Search( PairType( key, { } ) ); pair != nullptr )
+			return pair->Value();
+
+		return { };
 	}
 
 private:

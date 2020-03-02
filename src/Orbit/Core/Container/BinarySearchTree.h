@@ -40,7 +40,7 @@ public:
 		other.root_ = nullptr;
 	}
 
-	constexpr BinarySearchTree( std::initializer_list< ValueType > values )
+	BinarySearchTree( std::initializer_list< ValueType > values )
 	{
 		for( const ValueType& value : values )
 			Insert( value );
@@ -48,9 +48,26 @@ public:
 
 public:
 
-	constexpr void Insert( const ValueType& value )
+	void Insert( const ValueType& value )
 	{
-		// #TODO: Insert
+		Node** insert_at = &root_;
+
+		while( *insert_at )
+		{
+			if( value < ( *insert_at )->value ) insert_at = &( ( *insert_at )->left );
+			else                                insert_at = &( ( *insert_at )->right );
+		}
+
+		( *insert_at )        = new Node;
+		( *insert_at )->value = value;
+	}
+
+	constexpr const ValueType* Search( const ValueType& value ) const
+	{
+		if( const Node* node = SearchNode( value ); node != nullptr )
+			return &node->value;
+
+		return nullptr;
 	}
 
 private:
@@ -65,9 +82,9 @@ private:
 
 private:
 
-	constexpr Node* Search( const ValueType& value )
+	constexpr const Node* SearchNode( const ValueType& value ) const
 	{
-		Node* current_node = root_;
+		const Node* current_node = root_;
 
 		while( current_node )
 		{
