@@ -41,6 +41,8 @@ struct ORB_API_GRAPHICS RenderCommand
 	Ref< IndexBuffer >  index_buffer;
 	Ref< Shader >       shader;
 	Ref< FrameBuffer >  frame_buffer;
+
+	Topology topology = Topology::Triangles;
 };
 
 ORB_NAMESPACE_END
