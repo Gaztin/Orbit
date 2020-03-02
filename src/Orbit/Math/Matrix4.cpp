@@ -44,32 +44,57 @@ void Matrix4::Translate( const Vector3& translation )
 		self( i, 3 ) = Vector4( self( i, 0 ), self( i, 1 ), self( i, 2 ), self( i, 3 ) ).DotProduct( t4 );
 }
 
+void Matrix4::RotateX( float rotation )
+{
+	const float c = cosf( rotation );
+	const float s = sinf( rotation );
+	Matrix4     rot;
+
+	rot( 1, 1 ) =  c;
+	rot( 1, 2 ) = -s;
+	rot( 2, 1 ) =  s;
+	rot( 2, 2 ) =  c;
+
+	*this *= rot;
+}
+
+void Matrix4::RotateY( float rotation )
+{
+	const float c = cosf( rotation );
+	const float s = sinf( rotation );
+	Matrix4     rot;
+
+	rot( 0, 0 ) =  c;
+	rot( 0, 2 ) = -s;
+	rot( 2, 0 ) =  s;
+	rot( 2, 2 ) =  c;
+
+	*this *= rot;
+}
+
+void Matrix4::RotateZ( float rotation )
+{
+	const float c = cosf( rotation );
+	const float s = sinf( rotation );
+	Matrix4     rot;
+
+	rot( 0, 0 ) =  c;
+	rot( 0, 1 ) = -s;
+	rot( 1, 0 ) =  s;
+	rot( 1, 1 ) =  c;
+
+	*this *= rot;
+}
+
 void Matrix4::Rotate( const Vector3& rotation )
 {
-	const float xcos = cosf( rotation.x );
-	const float xsin = sinf( rotation.x );
-	const float ycos = cosf( rotation.y );
-	const float ysin = sinf( rotation.y );
-	const float zcos = cosf( rotation.z );
-	const float zsin = sinf( rotation.z );
-	Matrix4     rotx;
-	Matrix4     roty;
-	Matrix4     rotz;
+	Matrix4 rotx;
+	Matrix4 roty;
+	Matrix4 rotz;
 
-	rotx( 1, 1 ) =  xcos;
-	rotx( 1, 2 ) = -xsin;
-	rotx( 2, 1 ) =  xsin;
-	rotx( 2, 2 ) =  xcos;
-
-	roty( 0, 0 ) =  ycos;
-	roty( 0, 2 ) = -ysin;
-	roty( 2, 0 ) =  ysin;
-	roty( 2, 2 ) =  ycos;
-
-	rotz( 0, 0 ) =  zcos;
-	rotz( 0, 1 ) = -zsin;
-	rotz( 1, 0 ) =  zsin;
-	rotz( 1, 1 ) =  zcos;
+	rotx.RotateX( rotation.x );
+	roty.RotateY( rotation.y );
+	rotz.RotateZ( rotation.z );
 
 	*this *= ( rotx * roty * rotz );
 }
