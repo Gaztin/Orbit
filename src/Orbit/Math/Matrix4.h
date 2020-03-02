@@ -36,6 +36,7 @@ public:
 
 	void Translate     ( const Vector3& translation );
 	void Rotate        ( const Vector3& rotation );
+	void Scale         ( const Vector3& scale );
 	void Transpose     ( void );
 	void Invert        ( void );
 	void SetIdentity   ( void );

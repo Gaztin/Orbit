@@ -74,6 +74,16 @@ void Matrix4::Rotate( const Vector3& rotation )
 	*this *= ( rotx * roty * rotz );
 }
 
+void Matrix4::Scale( const Vector3& scale )
+{
+	Matrix4 m;
+	m( 0, 0 ) = scale.x;
+	m( 1, 1 ) = scale.y;
+	m( 2, 2 ) = scale.z;
+
+	*this *= m;
+}
+
 void Matrix4::Transpose( void )
 {
 	Matrix4& self = *this;
