@@ -46,6 +46,11 @@ private:
 
 private:
 
+	void OnResize   ( uint32_t width, uint32_t height );
+	void HandleInput( void );
+
+private:
+
 	Orbit::Window         window_;
 	Orbit::RenderContext  context_;
 	Orbit::Shader         cube_shader_;
@@ -56,5 +61,7 @@ private:
 	Orbit::Matrix4 projection_matrix_;
 	Orbit::Matrix4 view_matrix_;
 	Orbit::Matrix4 model_matrix_;
+
+	Orbit::EventSubscription on_resize_;
 
 };
