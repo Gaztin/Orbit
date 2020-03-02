@@ -62,7 +62,7 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 		{
 			const CubeShape& cube_shape = static_cast< const CubeShape& >( shape );
 
-			mesh.transform.Scale( Vector3( cube_shape.HalfExtent() * 2.0f ) );
+			mesh.transform.Scale( Vector3( cube_shape.HalfExtent() ) );
 
 		} break;
 	}
@@ -101,9 +101,9 @@ void MeshFactory::FillCubeData( uint8_t* vertex_data, uint16_t* index_data, cons
 		for( size_t i = 0; i < position_indices.size(); ++i )
 		{
 			Vector4* w = reinterpret_cast< Vector4* >( &vertex_data[ vertex_stride * i + offset ] );
-			w->x       = -0.5f + ( 1.0f * ( ( position_indices[ i ] & 1 ) != 0 ) );
-			w->y       = -0.5f + ( 1.0f * ( ( position_indices[ i ] & 2 ) != 0 ) );
-			w->z       = -0.5f + ( 1.0f * ( ( position_indices[ i ] & 4 ) != 0 ) );
+			w->x       = -1.0f + ( 2.0f * ( ( position_indices[ i ] & 1 ) != 0 ) );
+			w->y       = -1.0f + ( 2.0f * ( ( position_indices[ i ] & 2 ) != 0 ) );
+			w->z       = -1.0f + ( 2.0f * ( ( position_indices[ i ] & 4 ) != 0 ) );
 			w->w       =  1.0f;
 		}
 	}
