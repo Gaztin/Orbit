@@ -22,7 +22,6 @@
 CubeShader::Vec4 CubeShader::VSMain( void )
 {
 	v_position = u_mvp * a_position;
-	v_color    = a_color;
 	v_texcoord = a_texcoord;
 
 	return v_position;
@@ -31,7 +30,6 @@ CubeShader::Vec4 CubeShader::VSMain( void )
 CubeShader::Vec4 CubeShader::PSMain( void )
 {
 	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
-	Vec4 out_color = tex_color * v_color;
 
-	return out_color;
+	return tex_color;
 }

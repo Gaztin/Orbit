@@ -61,6 +61,8 @@ public:
 		window_.SetTitle( "Orbit Sample (02-Cube)" );
 		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
+		camera_.position.y = 2.000f;
+		camera_.rotation.x = 0.125f * Orbit::Pi;
 	}
 
 public:

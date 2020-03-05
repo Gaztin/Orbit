@@ -38,11 +38,9 @@ private:
 	Sampler diffuse_texture;
 
 	Attribute::Position a_position;
-	Attribute::Color    a_color;
 	Attribute::TexCoord a_texcoord;
 
 	Varying::Position v_position;
-	Varying::Color    v_color;
 	Varying::TexCoord v_texcoord;
 
 	Uniform< Mat4 > u_mvp;
