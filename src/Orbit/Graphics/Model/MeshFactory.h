@@ -36,7 +36,7 @@ public:
 
 private:
 
-	void GenerateCubeData(   uint8_t* vertex_data, uint16_t* index_data, const VertexLayout& vertex_layout ) const;
+	void GenerateCubeData  ( uint8_t* vertex_data, uint16_t* index_data, const VertexLayout& vertex_layout ) const;
 	void GenerateSphereData( uint8_t* vertex_data, uint16_t* index_data, const VertexLayout& vertex_layout ) const;
 	void GenerateNormals   ( uint8_t* vertex_data, const uint16_t* index_data, size_t face_count, const VertexLayout& vertex_layout ) const;
 

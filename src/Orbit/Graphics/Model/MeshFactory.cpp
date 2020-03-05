@@ -38,7 +38,7 @@ static const Selector< ShapeType, size_t > selector_vertex_count
 static const Selector< ShapeType, size_t > selector_face_count
 {
 	{ ShapeType::Cube,   12 },
-	{ ShapeType::Sphere, 36 },
+	{ ShapeType::Sphere, 20 },
 };
 
 Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout ) const
@@ -185,44 +185,95 @@ void MeshFactory::GenerateCubeData( uint8_t* vertex_data, uint16_t* index_data, 
 void MeshFactory::GenerateSphereData( uint8_t* vertex_data, uint16_t* index_data, const VertexLayout& vertex_layout ) const
 {
 	const size_t vertex_stride = vertex_layout.GetStride();
+	size_t       i             = 0;
 
-	for( uint16_t i = 0; i < 3; ++i )
-	{
-		index_data[ i * 12 + 0  ] = i * 4 + 0;
-		index_data[ i * 12 + 1  ] = i * 4 + 1;
-		index_data[ i * 12 + 2  ] = i * 4 + 2;
+	// 5 faces around high point
+	index_data[ i++ ] = 0;
+	index_data[ i++ ] = 11;
+	index_data[ i++ ] = 5;
+	index_data[ i++ ] = 0;
+	index_data[ i++ ] = 5;
+	index_data[ i++ ] = 1;
+	index_data[ i++ ] = 0;
+	index_data[ i++ ] = 1;
+	index_data[ i++ ] = 7;
+	index_data[ i++ ] = 0;
+	index_data[ i++ ] = 7;
+	index_data[ i++ ] = 10;
+	index_data[ i++ ] = 0;
+	index_data[ i++ ] = 10;
+	index_data[ i++ ] = 11;
 
-		index_data[ i * 12 + 3  ] = i * 4 + 0;
-		index_data[ i * 12 + 4  ] = i * 4 + 2;
-		index_data[ i * 12 + 5  ] = i * 4 + 1;
+	// 5 adjacent faces 
+	index_data[ i++ ] = 1;
+	index_data[ i++ ] = 5;
+	index_data[ i++ ] = 9;
+	index_data[ i++ ] = 5;
+	index_data[ i++ ] = 11;
+	index_data[ i++ ] = 4;
+	index_data[ i++ ] = 11;
+	index_data[ i++ ] = 10;
+	index_data[ i++ ] = 2;
+	index_data[ i++ ] = 10;
+	index_data[ i++ ] = 7;
+	index_data[ i++ ] = 6;
+	index_data[ i++ ] = 7;
+	index_data[ i++ ] = 1;
+	index_data[ i++ ] = 8;
 
-		index_data[ i * 12 + 6  ] = i * 4 + 3;
-		index_data[ i * 12 + 7  ] = i * 4 + 2;
-		index_data[ i * 12 + 8  ] = i * 4 + 1;
+	// 5 faces around low point
+	index_data[ i++ ] = 3;
+	index_data[ i++ ] = 9;
+	index_data[ i++ ] = 4;
+	index_data[ i++ ] = 3;
+	index_data[ i++ ] = 4;
+	index_data[ i++ ] = 2;
+	index_data[ i++ ] = 3;
+	index_data[ i++ ] = 2;
+	index_data[ i++ ] = 6;
+	index_data[ i++ ] = 3;
+	index_data[ i++ ] = 6;
+	index_data[ i++ ] = 8;
+	index_data[ i++ ] = 3;
+	index_data[ i++ ] = 8;
+	index_data[ i++ ] = 9;
 
-		index_data[ i * 12 + 9  ] = i * 4 + 3;
-		index_data[ i * 12 + 10 ] = i * 4 + 1;
-		index_data[ i * 12 + 11 ] = i * 4 + 2;
-	}
+	// 5 adjacent faces
+	index_data[ i++ ] = 4;
+	index_data[ i++ ] = 9;
+	index_data[ i++ ] = 5;
+	index_data[ i++ ] = 2;
+	index_data[ i++ ] = 4;
+	index_data[ i++ ] = 11;
+	index_data[ i++ ] = 6;
+	index_data[ i++ ] = 2;
+	index_data[ i++ ] = 10;
+	index_data[ i++ ] = 8;
+	index_data[ i++ ] = 6;
+	index_data[ i++ ] = 7;
+	index_data[ i++ ] = 9;
+	index_data[ i++ ] = 8;
+	index_data[ i++ ] = 1;
 
 	if( vertex_layout.Contains( VertexComponent::Position ) )
 	{
 		const size_t offset = vertex_layout.OffsetOf( VertexComponent::Position );
+		const float  magic  = 1.0f + ( std::sqrtf( 5.0f ) / 2.0f );
 
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 0  ) + offset ] ) = Vector4( -1.0f,  1.0f,  0.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 1  ) + offset ] ) = Vector4(  1.0f,  1.0f,  0.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 2  ) + offset ] ) = Vector4( -1.0f, -1.0f,  0.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 3  ) + offset ] ) = Vector4(  1.0f, -1.0f,  0.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 0  ) + offset ] ) = Vector4( -1.0f,  magic, 0.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 1  ) + offset ] ) = Vector4(  1.0f,  magic, 0.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 2  ) + offset ] ) = Vector4( -1.0f, -magic, 0.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 3  ) + offset ] ) = Vector4(  1.0f, -magic, 0.0f, 1.0f );
 
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 4  ) + offset ] ) = Vector4(  0.0f, -1.0f,  1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 5  ) + offset ] ) = Vector4(  0.0f,  1.0f,  1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 6  ) + offset ] ) = Vector4(  0.0f, -1.0f, -1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 7  ) + offset ] ) = Vector4(  0.0f,  1.0f, -1.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 4  ) + offset ] ) = Vector4(  0.0f, -1.0f,  magic, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 5  ) + offset ] ) = Vector4(  0.0f,  1.0f,  magic, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 6  ) + offset ] ) = Vector4(  0.0f, -1.0f, -magic, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 7  ) + offset ] ) = Vector4(  0.0f,  1.0f, -magic, 1.0f );
 
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 8  ) + offset ] ) = Vector4(  1.0f,  0.0f, -1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 9  ) + offset ] ) = Vector4(  1.0f,  0.0f,  1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 10 ) + offset ] ) = Vector4( -1.0f,  0.0f, -1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 11 ) + offset ] ) = Vector4( -1.0f,  0.0f,  1.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 8  ) + offset ] ) = Vector4(  magic, 0.0f, -1.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 9  ) + offset ] ) = Vector4(  magic, 0.0f,  1.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 10 ) + offset ] ) = Vector4( -magic, 0.0f, -1.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 11 ) + offset ] ) = Vector4( -magic, 0.0f,  1.0f, 1.0f );
 	}
 
 	if( vertex_layout.Contains( VertexComponent::Normal ) )
