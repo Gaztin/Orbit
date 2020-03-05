@@ -55,6 +55,8 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 		case ShapeType::Sphere: { GenerateSphereData( vertex_data.get(), index_data.get(), vertex_layout ); } break;
 	}
 
+	GenerateNormals( vertex_data.get(), index_data.get(), face_count, vertex_layout );
+
 	Mesh mesh;
 	mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), ( selector_vertex_count[ shape.GetType() ] ), vertex_layout.GetStride() );
 	mesh.index_buffer  = std::make_unique< IndexBuffer  >( IndexFormat::Word, index_data.get(), ( selector_face_count[ shape.GetType() ] * 3 ) );
@@ -261,6 +263,43 @@ void MeshFactory::GenerateSphereData( uint8_t* vertex_data, uint16_t* index_data
 		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 9  ) + offset ] ) = Vector2( 1.0f, 1.0f );
 		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 10 ) + offset ] ) = Vector2( 0.0f, 0.0f );
 		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 11 ) + offset ] ) = Vector2( 1.0f, 0.0f );
+	}
+}
+
+void MeshFactory::GenerateNormals( uint8_t* vertex_data, const uint16_t* index_data, size_t face_count, const VertexLayout& vertex_layout ) const
+{
+	if( !vertex_layout.Contains( VertexComponent::Position ) || !vertex_layout.Contains( VertexComponent::Normal ) )
+		return;
+
+	const size_t stride        = vertex_layout.GetStride();
+	const size_t pos_offset    = vertex_layout.OffsetOf( VertexComponent::Position );
+	const size_t normal_offset = vertex_layout.OffsetOf( VertexComponent::Normal );
+
+	for( uint32_t face = 0; face < face_count; ++face )
+	{
+		const uint16_t triangle_indices[ 3 ]
+		{
+			index_data[ face * 3 + 0 ],
+			index_data[ face * 3 + 1 ],
+			index_data[ face * 3 + 2 ],
+		};
+
+		const Orbit::Vector3* triangle_positions[ 3 ]
+		{
+			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 0 ] + pos_offset ] ),
+			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 1 ] + pos_offset ] ),
+			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 2 ] + pos_offset ] ),
+		};
+
+		const Orbit::Vector3 pos0_to_pos1 = ( *triangle_positions[ 1 ] - *triangle_positions[ 0 ] );
+		const Orbit::Vector3 pos0_to_pos2 = ( *triangle_positions[ 2 ] - *triangle_positions[ 0 ] );
+		const Orbit::Vector3 normal       = ( pos0_to_pos1.CrossProduct( pos0_to_pos2 ) ).Normalized();
+
+		for( size_t triangle_index : triangle_indices )
+		{
+			Vector3* w = reinterpret_cast< Vector3* >( &vertex_data[ stride * triangle_index + normal_offset ] );
+			*w = normal;
+		}
 	}
 }
 
