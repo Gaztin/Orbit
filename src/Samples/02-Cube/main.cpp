@@ -44,7 +44,9 @@ static CubeShader cube_shader;
 
 struct ConstantData
 {
-	Orbit::Matrix4 mvp;
+	Orbit::Matrix4 view_projection;
+	Orbit::Matrix4 model;
+	Orbit::Matrix4 model_inverse;
 
 } constant_data;
 
@@ -74,8 +76,9 @@ public:
 		{
 			model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
-			constant_data.mvp = ( mesh_.transform * model_matrix_ * camera_.GetViewProjection() );
-
+			constant_data.view_projection = camera_.GetViewProjection();
+			constant_data.model           = ( mesh_.transform * model_matrix_ );
+			constant_data.model_inverse   = constant_data.model.Inverted();
 			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 		}
 
