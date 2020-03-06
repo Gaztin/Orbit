@@ -29,6 +29,11 @@
 
 ORB_NAMESPACE_BEGIN
 
+struct Face
+{
+	uint16_t indices[ 3 ];
+};
+
 static const Selector< ShapeType, size_t > selector_vertex_count
 {
 	{ ShapeType::Cube,   24 },
@@ -47,7 +52,7 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	const size_t vertex_count  = selector_vertex_count[ shape.GetType() ];
 	const size_t face_count    = selector_face_count[ shape.GetType() ];
 	auto         vertex_data   = vertex_count ? std::unique_ptr< uint8_t[]  >( new uint8_t[ vertex_count * vertex_stride ] ) : nullptr;
-	auto         index_data    = face_count   ? std::unique_ptr< uint16_t[] >( new uint16_t[ face_count * 3 ] )              : nullptr;
+	auto         index_data    = face_count   ? std::unique_ptr< Face[]     >( new Face[ face_count ] )                      : nullptr;
 
 	switch( shape.GetType() )
 	{
@@ -83,19 +88,19 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	return mesh;
 }
 
-void MeshFactory::GenerateCubeData( uint8_t* vertex_data, uint16_t* index_data, const VertexLayout& vertex_layout ) const
+void MeshFactory::GenerateCubeData( uint8_t* vertex_data, Face* face_data, const VertexLayout& vertex_layout ) const
 {
 	const size_t vertex_stride = vertex_layout.GetStride();
 
 	for( uint16_t side = 0; side < 6; ++side )
 	{
 		for( uint16_t point = 0; point < 3; ++point )
-			index_data[ side * 6 + point ] = ( side * 4 + point );
+			face_data[ side * 2 ].indices[ point ] = ( side * 4 + point );
 
-		index_data[ side * 6 + 3 ] = ( side * 4 );
+		face_data[ side * 2 + 1 ].indices[ 0 ] = ( side * 4 );
 
-		for( uint16_t point = 0; point < 2; ++point )
-			index_data[ side * 6 + 4 + point ] = ( side * 4 + 2 + point );
+		for( uint16_t point = 1; point < 3; ++point )
+			face_data[ side * 2 + 1 ].indices[ point ] = ( side * 4 + 1 + point );
 	}
 
 	if( vertex_layout.Contains( VertexComponent::Position ) )
@@ -182,78 +187,38 @@ void MeshFactory::GenerateCubeData( uint8_t* vertex_data, uint16_t* index_data, 
 	}
 }
 
-void MeshFactory::GenerateSphereData( uint8_t* vertex_data, uint16_t* index_data, const VertexLayout& vertex_layout ) const
+void MeshFactory::GenerateSphereData( uint8_t* vertex_data, Face* face_data, const VertexLayout& vertex_layout ) const
 {
 	const size_t vertex_stride = vertex_layout.GetStride();
 	size_t       i             = 0;
 
 	// 5 faces around high point
-	index_data[ i++ ] = 0;
-	index_data[ i++ ] = 11;
-	index_data[ i++ ] = 5;
-	index_data[ i++ ] = 0;
-	index_data[ i++ ] = 5;
-	index_data[ i++ ] = 1;
-	index_data[ i++ ] = 0;
-	index_data[ i++ ] = 1;
-	index_data[ i++ ] = 7;
-	index_data[ i++ ] = 0;
-	index_data[ i++ ] = 7;
-	index_data[ i++ ] = 10;
-	index_data[ i++ ] = 0;
-	index_data[ i++ ] = 10;
-	index_data[ i++ ] = 11;
+	face_data[ i++ ] = Face{ 0, 11, 5  };
+	face_data[ i++ ] = Face{ 0, 5,  1  };
+	face_data[ i++ ] = Face{ 0, 1,  7  };
+	face_data[ i++ ] = Face{ 0, 7,  10 };
+	face_data[ i++ ] = Face{ 0, 10, 11 };
 
 	// 5 adjacent faces 
-	index_data[ i++ ] = 1;
-	index_data[ i++ ] = 5;
-	index_data[ i++ ] = 9;
-	index_data[ i++ ] = 5;
-	index_data[ i++ ] = 11;
-	index_data[ i++ ] = 4;
-	index_data[ i++ ] = 11;
-	index_data[ i++ ] = 10;
-	index_data[ i++ ] = 2;
-	index_data[ i++ ] = 10;
-	index_data[ i++ ] = 7;
-	index_data[ i++ ] = 6;
-	index_data[ i++ ] = 7;
-	index_data[ i++ ] = 1;
-	index_data[ i++ ] = 8;
+	face_data[ i++ ] = Face{ 1,  5,  9 };
+	face_data[ i++ ] = Face{ 5,  11, 4 };
+	face_data[ i++ ] = Face{ 11, 10, 2 };
+	face_data[ i++ ] = Face{ 10, 7,  6 };
+	face_data[ i++ ] = Face{ 7,  1,  8 };
 
 	// 5 faces around low point
-	index_data[ i++ ] = 3;
-	index_data[ i++ ] = 9;
-	index_data[ i++ ] = 4;
-	index_data[ i++ ] = 3;
-	index_data[ i++ ] = 4;
-	index_data[ i++ ] = 2;
-	index_data[ i++ ] = 3;
-	index_data[ i++ ] = 2;
-	index_data[ i++ ] = 6;
-	index_data[ i++ ] = 3;
-	index_data[ i++ ] = 6;
-	index_data[ i++ ] = 8;
-	index_data[ i++ ] = 3;
-	index_data[ i++ ] = 8;
-	index_data[ i++ ] = 9;
+	face_data[ i++ ] = Face{ 3, 9, 4 };
+	face_data[ i++ ] = Face{ 3, 4, 2 };
+	face_data[ i++ ] = Face{ 3, 2, 6 };
+	face_data[ i++ ] = Face{ 3, 6, 8 };
+	face_data[ i++ ] = Face{ 3, 8, 9 };
 
 	// 5 adjacent faces
-	index_data[ i++ ] = 4;
-	index_data[ i++ ] = 9;
-	index_data[ i++ ] = 5;
-	index_data[ i++ ] = 2;
-	index_data[ i++ ] = 4;
-	index_data[ i++ ] = 11;
-	index_data[ i++ ] = 6;
-	index_data[ i++ ] = 2;
-	index_data[ i++ ] = 10;
-	index_data[ i++ ] = 8;
-	index_data[ i++ ] = 6;
-	index_data[ i++ ] = 7;
-	index_data[ i++ ] = 9;
-	index_data[ i++ ] = 8;
-	index_data[ i++ ] = 1;
+	face_data[ i++ ] = Face{ 4, 9, 5  };
+	face_data[ i++ ] = Face{ 2, 4, 11 };
+	face_data[ i++ ] = Face{ 6, 2, 10 };
+	face_data[ i++ ] = Face{ 8, 6, 7  };
+	face_data[ i++ ] = Face{ 9, 8, 1  };
 
 	if( vertex_layout.Contains( VertexComponent::Position ) )
 	{
@@ -317,7 +282,7 @@ void MeshFactory::GenerateSphereData( uint8_t* vertex_data, uint16_t* index_data
 	}
 }
 
-void MeshFactory::GenerateNormals( uint8_t* vertex_data, const uint16_t* index_data, size_t face_count, const VertexLayout& vertex_layout ) const
+void MeshFactory::GenerateNormals( uint8_t* vertex_data, const Face* face_data, size_t face_count, const VertexLayout& vertex_layout ) const
 {
 	if( !vertex_layout.Contains( VertexComponent::Position ) || !vertex_layout.Contains( VertexComponent::Normal ) )
 		return;
@@ -330,9 +295,9 @@ void MeshFactory::GenerateNormals( uint8_t* vertex_data, const uint16_t* index_d
 	{
 		const uint16_t triangle_indices[ 3 ]
 		{
-			index_data[ face * 3 + 0 ],
-			index_data[ face * 3 + 1 ],
-			index_data[ face * 3 + 2 ],
+			face_data[ face ].indices[ 0 ],
+			face_data[ face ].indices[ 1 ],
+			face_data[ face ].indices[ 2 ],
 		};
 
 		const Orbit::Vector3* triangle_positions[ 3 ]
