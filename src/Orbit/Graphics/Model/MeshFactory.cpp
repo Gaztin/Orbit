@@ -52,19 +52,19 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	const size_t vertex_count  = selector_vertex_count[ shape.GetType() ];
 	const size_t face_count    = selector_face_count[ shape.GetType() ];
 	auto         vertex_data   = vertex_count ? std::unique_ptr< uint8_t[]  >( new uint8_t[ vertex_count * vertex_stride ] ) : nullptr;
-	auto         index_data    = face_count   ? std::unique_ptr< Face[]     >( new Face[ face_count ] )                      : nullptr;
+	FaceVector   faces         = face_count   ? FaceVector( face_count )                                                     : FaceVector();
 
 	switch( shape.GetType() )
 	{
-		case ShapeType::Cube:   { GenerateCubeData(   vertex_data.get(), index_data.get(), vertex_layout ); } break;
-		case ShapeType::Sphere: { GenerateSphereData( vertex_data.get(), index_data.get(), vertex_layout ); } break;
+		case ShapeType::Cube:   { GenerateCubeData(   vertex_data.get(), faces, vertex_layout ); } break;
+		case ShapeType::Sphere: { GenerateSphereData( vertex_data.get(), faces, vertex_layout ); } break;
 	}
 
-	GenerateNormals( vertex_data.get(), index_data.get(), face_count, vertex_layout );
+	GenerateNormals( vertex_data.get(), faces, vertex_layout );
 
 	Mesh mesh;
 	mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), ( selector_vertex_count[ shape.GetType() ] ), vertex_layout.GetStride() );
-	mesh.index_buffer  = std::make_unique< IndexBuffer  >( IndexFormat::Word, index_data.get(), ( selector_face_count[ shape.GetType() ] * 3 ) );
+	mesh.index_buffer  = std::make_unique< IndexBuffer  >( IndexFormat::Word, faces.data(), ( selector_face_count[ shape.GetType() ] * 3 ) );
 
 	switch( shape.GetType() )
 	{
@@ -88,19 +88,19 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	return mesh;
 }
 
-void MeshFactory::GenerateCubeData( uint8_t* vertex_data, Face* face_data, const VertexLayout& vertex_layout ) const
+void MeshFactory::GenerateCubeData( uint8_t* vertex_data, FaceVector& faces, const VertexLayout& vertex_layout ) const
 {
 	const size_t vertex_stride = vertex_layout.GetStride();
 
 	for( uint16_t side = 0; side < 6; ++side )
 	{
 		for( uint16_t point = 0; point < 3; ++point )
-			face_data[ side * 2 ].indices[ point ] = ( side * 4 + point );
+			faces[ side * 2 ].indices[ point ] = ( side * 4 + point );
 
-		face_data[ side * 2 + 1 ].indices[ 0 ] = ( side * 4 );
+		faces[ side * 2 + 1 ].indices[ 0 ] = ( side * 4 );
 
 		for( uint16_t point = 1; point < 3; ++point )
-			face_data[ side * 2 + 1 ].indices[ point ] = ( side * 4 + 1 + point );
+			faces[ side * 2 + 1 ].indices[ point ] = ( side * 4 + 1 + point );
 	}
 
 	if( vertex_layout.Contains( VertexComponent::Position ) )
@@ -187,7 +187,7 @@ void MeshFactory::GenerateCubeData( uint8_t* vertex_data, Face* face_data, const
 	}
 }
 
-void MeshFactory::GenerateSphereData( uint8_t* vertex_data, Face* face_data, const VertexLayout& vertex_layout ) const
+void MeshFactory::GenerateSphereData( uint8_t* vertex_data, FaceVector& faces, const VertexLayout& vertex_layout ) const
 {
 	using Brim = std::array< uint16_t, 5 >;
 
@@ -205,8 +205,8 @@ void MeshFactory::GenerateSphereData( uint8_t* vertex_data, Face* face_data, con
 
 	for( size_t h = 0; h < 2; ++h )
 	{
-		for( size_t b = 0; b < 5; ++b ) face_data[ h * 10 + 0 + b ] = Face{ hats[ h ].crown,     hats[ h             ].brim[ b                 ], hats[ h ].brim[ ( b + 1 ) % 5 ] };
-		for( size_t b = 0; b < 5; ++b ) face_data[ h * 10 + 5 + b ] = Face{ hats[ h ].brim[ b ], hats[ ( h + 1 ) % 2 ].brim[ ( 5 + 1 - b ) % 5 ], hats[ h ].brim[ ( b + 1 ) % 5 ] };
+		for( size_t b = 0; b < 5; ++b ) faces[ h * 10 + 0 + b ] = Face{ hats[ h ].crown,     hats[ h             ].brim[ b                 ], hats[ h ].brim[ ( b + 1 ) % 5 ] };
+		for( size_t b = 0; b < 5; ++b ) faces[ h * 10 + 5 + b ] = Face{ hats[ h ].brim[ b ], hats[ ( h + 1 ) % 2 ].brim[ ( 5 + 1 - b ) % 5 ], hats[ h ].brim[ ( b + 1 ) % 5 ] };
 	}
 
 //////////////////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ void MeshFactory::GenerateSphereData( uint8_t* vertex_data, Face* face_data, con
 	}
 }
 
-void MeshFactory::GenerateNormals( uint8_t* vertex_data, const Face* face_data, size_t face_count, const VertexLayout& vertex_layout ) const
+void MeshFactory::GenerateNormals( uint8_t* vertex_data, const FaceVector& faces, const VertexLayout& vertex_layout ) const
 {
 	if( !vertex_layout.Contains( VertexComponent::Position ) || !vertex_layout.Contains( VertexComponent::Normal ) )
 		return;
@@ -283,13 +283,13 @@ void MeshFactory::GenerateNormals( uint8_t* vertex_data, const Face* face_data, 
 	const size_t pos_offset    = vertex_layout.OffsetOf( VertexComponent::Position );
 	const size_t normal_offset = vertex_layout.OffsetOf( VertexComponent::Normal );
 
-	for( uint32_t face = 0; face < face_count; ++face )
+	for( const Face& face : faces )
 	{
 		const uint16_t triangle_indices[ 3 ]
 		{
-			face_data[ face ].indices[ 0 ],
-			face_data[ face ].indices[ 1 ],
-			face_data[ face ].indices[ 2 ],
+			face.indices[ 0 ],
+			face.indices[ 1 ],
+			face.indices[ 2 ],
 		};
 
 		const Orbit::Vector3* triangle_positions[ 3 ]

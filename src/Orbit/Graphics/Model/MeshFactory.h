@@ -20,6 +20,7 @@
 #include "Orbit/Graphics/Graphics.h"
 
 #include <memory>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
@@ -37,9 +38,13 @@ public:
 
 private:
 
-	void GenerateCubeData  ( uint8_t* vertex_data, Face* face_data, const VertexLayout& vertex_layout ) const;
-	void GenerateSphereData( uint8_t* vertex_data, Face* face_data, const VertexLayout& vertex_layout ) const;
-	void GenerateNormals   ( uint8_t* vertex_data, const Face* face_data, size_t face_count, const VertexLayout& vertex_layout ) const;
+	using FaceVector = std::vector< Face >;
+
+private:
+
+	void GenerateCubeData  ( uint8_t* vertex_data, FaceVector& faces, const VertexLayout& vertex_layout ) const;
+	void GenerateSphereData( uint8_t* vertex_data, FaceVector& faces, const VertexLayout& vertex_layout ) const;
+	void GenerateNormals   ( uint8_t* vertex_data, const FaceVector& faces, const VertexLayout& vertex_layout ) const;
 
 };
 
