@@ -223,22 +223,21 @@ void MeshFactory::GenerateSphereData( uint8_t* vertex_data, Face* face_data, con
 	if( vertex_layout.Contains( VertexComponent::Position ) )
 	{
 		const size_t offset = vertex_layout.OffsetOf( VertexComponent::Position );
-		const float  magic  = 1.0f + ( std::sqrtf( 5.0f ) / 2.0f );
 
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 0  ) + offset ] ) = Vector4( -1.0f,  magic, 0.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 1  ) + offset ] ) = Vector4(  1.0f,  magic, 0.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 2  ) + offset ] ) = Vector4( -1.0f, -magic, 0.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 3  ) + offset ] ) = Vector4(  1.0f, -magic, 0.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 0  ) + offset ] ) = Vector4( -1.0f,  GoldenRatio, 0.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 1  ) + offset ] ) = Vector4(  1.0f,  GoldenRatio, 0.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 2  ) + offset ] ) = Vector4( -1.0f, -GoldenRatio, 0.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 3  ) + offset ] ) = Vector4(  1.0f, -GoldenRatio, 0.0f, 1.0f );
 
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 4  ) + offset ] ) = Vector4(  0.0f, -1.0f,  magic, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 5  ) + offset ] ) = Vector4(  0.0f,  1.0f,  magic, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 6  ) + offset ] ) = Vector4(  0.0f, -1.0f, -magic, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 7  ) + offset ] ) = Vector4(  0.0f,  1.0f, -magic, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 4  ) + offset ] ) = Vector4(  0.0f, -1.0f,  GoldenRatio, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 5  ) + offset ] ) = Vector4(  0.0f,  1.0f,  GoldenRatio, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 6  ) + offset ] ) = Vector4(  0.0f, -1.0f, -GoldenRatio, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 7  ) + offset ] ) = Vector4(  0.0f,  1.0f, -GoldenRatio, 1.0f );
 
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 8  ) + offset ] ) = Vector4(  magic, 0.0f, -1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 9  ) + offset ] ) = Vector4(  magic, 0.0f,  1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 10 ) + offset ] ) = Vector4( -magic, 0.0f, -1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 11 ) + offset ] ) = Vector4( -magic, 0.0f,  1.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 8  ) + offset ] ) = Vector4(  GoldenRatio, 0.0f, -1.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 9  ) + offset ] ) = Vector4(  GoldenRatio, 0.0f,  1.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 10 ) + offset ] ) = Vector4( -GoldenRatio, 0.0f, -1.0f, 1.0f );
+		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 11 ) + offset ] ) = Vector4( -GoldenRatio, 0.0f,  1.0f, 1.0f );
 	}
 
 	if( vertex_layout.Contains( VertexComponent::Normal ) )
