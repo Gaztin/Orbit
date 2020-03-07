@@ -189,36 +189,29 @@ void MeshFactory::GenerateCubeData( uint8_t* vertex_data, Face* face_data, const
 
 void MeshFactory::GenerateSphereData( uint8_t* vertex_data, Face* face_data, const VertexLayout& vertex_layout ) const
 {
+	using Brim = std::array< uint16_t, 5 >;
+
+	struct Hat
+	{
+		uint16_t crown;
+		Brim     brim;
+	};
+
+	const std::array< Hat, 2 > hats
+	{
+		Hat{ { 0 }, { 11, 5, 1, 7, 10 } },
+		Hat{ { 3 }, { 9,  4, 2, 6, 8  } },
+	};
+
+	for( size_t h = 0; h < 2; ++h )
+	{
+		for( size_t b = 0; b < 5; ++b ) face_data[ h * 10 + 0 + b ] = Face{ hats[ h ].crown,     hats[ h             ].brim[ b                 ], hats[ h ].brim[ ( b + 1 ) % 5 ] };
+		for( size_t b = 0; b < 5; ++b ) face_data[ h * 10 + 5 + b ] = Face{ hats[ h ].brim[ b ], hats[ ( h + 1 ) % 2 ].brim[ ( 5 + 1 - b ) % 5 ], hats[ h ].brim[ ( b + 1 ) % 5 ] };
+	}
+
+//////////////////////////////////////////////////////////////////////////
+
 	const size_t vertex_stride = vertex_layout.GetStride();
-	size_t       i             = 0;
-
-	// 5 faces around high point
-	face_data[ i++ ] = Face{ 0, 11, 5  };
-	face_data[ i++ ] = Face{ 0, 5,  1  };
-	face_data[ i++ ] = Face{ 0, 1,  7  };
-	face_data[ i++ ] = Face{ 0, 7,  10 };
-	face_data[ i++ ] = Face{ 0, 10, 11 };
-
-	// 5 adjacent faces 
-	face_data[ i++ ] = Face{ 1,  5,  9 };
-	face_data[ i++ ] = Face{ 5,  11, 4 };
-	face_data[ i++ ] = Face{ 11, 10, 2 };
-	face_data[ i++ ] = Face{ 10, 7,  6 };
-	face_data[ i++ ] = Face{ 7,  1,  8 };
-
-	// 5 faces around low point
-	face_data[ i++ ] = Face{ 3, 9, 4 };
-	face_data[ i++ ] = Face{ 3, 4, 2 };
-	face_data[ i++ ] = Face{ 3, 2, 6 };
-	face_data[ i++ ] = Face{ 3, 6, 8 };
-	face_data[ i++ ] = Face{ 3, 8, 9 };
-
-	// 5 adjacent faces
-	face_data[ i++ ] = Face{ 4, 9, 5  };
-	face_data[ i++ ] = Face{ 2, 4, 11 };
-	face_data[ i++ ] = Face{ 6, 2, 10 };
-	face_data[ i++ ] = Face{ 8, 6, 7  };
-	face_data[ i++ ] = Face{ 9, 8, 1  };
 
 	if( vertex_layout.Contains( VertexComponent::Position ) )
 	{
