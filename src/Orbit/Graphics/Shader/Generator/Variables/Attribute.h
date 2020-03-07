@@ -16,8 +16,8 @@
  */
 
 #pragma once
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
 #include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
 
 ORB_NAMESPACE_BEGIN
 

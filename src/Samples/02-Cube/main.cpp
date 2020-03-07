@@ -29,8 +29,8 @@
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Model/MeshFactory.h>
-#include <Orbit/Graphics/Model/Mesh.h>
+#include <Orbit/Graphics/Geometry/MeshFactory.h>
+#include <Orbit/Graphics/Geometry/Mesh.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>

@@ -20,9 +20,9 @@
 #include "Orbit/Graphics/Animation/Joint.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Model/Mesh.h"
+#include "Orbit/Graphics/Geometry/Mesh.h"
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
 
 ORB_NAMESPACE_BEGIN
 

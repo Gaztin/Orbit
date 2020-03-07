@@ -22,7 +22,7 @@
 #include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Model/Model.h>
+#include <Orbit/Graphics/Geometry/Model.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Math/Vector3.h>

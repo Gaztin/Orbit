@@ -21,8 +21,8 @@
 #include "Orbit/Core/Shape/SphereShape.h"
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Core/Utility/Selector.h"
-#include "Orbit/Graphics/Model/Mesh.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
+#include "Orbit/Graphics/Geometry/Mesh.h"
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
 #include "Orbit/Math/Vector2.h"
 
 #include <array>
