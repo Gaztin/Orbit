@@ -21,6 +21,7 @@
 #include "Orbit/Core/Shape/SphereShape.h"
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Core/Utility/Selector.h"
+#include "Orbit/Graphics/Geometry/GeometryData.h"
 #include "Orbit/Graphics/Geometry/Mesh.h"
 #include "Orbit/Graphics/Geometry/VertexLayout.h"
 #include "Orbit/Math/Vector2.h"
@@ -28,11 +29,6 @@
 #include <array>
 
 ORB_NAMESPACE_BEGIN
-
-struct Face
-{
-	uint16_t indices[ 3 ];
-};
 
 static const Selector< ShapeType, size_t > selector_vertex_count
 {
@@ -51,20 +47,19 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	const size_t vertex_stride = vertex_layout.GetStride();
 	const size_t vertex_count  = selector_vertex_count[ shape.GetType() ];
 	const size_t face_count    = selector_face_count[ shape.GetType() ];
-	auto         vertex_data   = vertex_count ? std::unique_ptr< uint8_t[]  >( new uint8_t[ vertex_count * vertex_stride ] ) : nullptr;
-	FaceVector   faces         = face_count   ? FaceVector( face_count )                                                     : FaceVector();
+	GeometryData geometry_data = GeometryData( vertex_count, vertex_layout );
+
+	geometry_data.Reserve( vertex_count, face_count );
 
 	switch( shape.GetType() )
 	{
-		case ShapeType::Cube:   { GenerateCubeData(   vertex_data.get(), faces, vertex_layout ); } break;
-		case ShapeType::Sphere: { GenerateSphereData( vertex_data.get(), faces, vertex_layout ); } break;
+		case ShapeType::Cube:   { GenerateCubeData( geometry_data ); } break;
+		case ShapeType::Sphere: { GenerateSphereData( geometry_data ); } break;
 	}
 
-	GenerateNormals( vertex_data.get(), faces, vertex_layout );
+	GenerateNormals( geometry_data );
 
-	Mesh mesh;
-	mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data.get(), ( selector_vertex_count[ shape.GetType() ] ), vertex_layout.GetStride() );
-	mesh.index_buffer  = std::make_unique< IndexBuffer  >( IndexFormat::Word, faces.data(), ( selector_face_count[ shape.GetType() ] * 3 ) );
+	Mesh mesh = geometry_data.ToMesh();
 
 	switch( shape.GetType() )
 	{
@@ -88,106 +83,62 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	return mesh;
 }
 
-void MeshFactory::GenerateCubeData( uint8_t* vertex_data, FaceVector& faces, const VertexLayout& vertex_layout ) const
+void MeshFactory::GenerateCubeData( GeometryData& geometry_data ) const
 {
-	const size_t vertex_stride = vertex_layout.GetStride();
-
-	for( uint16_t side = 0; side < 6; ++side )
+	for( size_t side = 0; side < 6; ++side )
 	{
-		for( uint16_t point = 0; point < 3; ++point )
-			faces[ side * 2 ].indices[ point ] = ( side * 4 + point );
+		geometry_data.AddFace(
+			{ ( side * 4 + 0 ),
+			  ( side * 4 + 1 ),
+			  ( side * 4 + 2 ) } );
 
-		faces[ side * 2 + 1 ].indices[ 0 ] = ( side * 4 );
-
-		for( uint16_t point = 1; point < 3; ++point )
-			faces[ side * 2 + 1 ].indices[ point ] = ( side * 4 + 1 + point );
+		geometry_data.AddFace(
+			{ ( side * 4 ),
+			  ( side * 4 + 2 ),
+			  ( side * 4 + 3 ) } );
 	}
 
-	if( vertex_layout.Contains( VertexComponent::Position ) )
+	constexpr std::array< uint8_t, 24 > position_indices
 	{
-		const size_t                        offset = vertex_layout.OffsetOf( VertexComponent::Position );
-		constexpr std::array< uint8_t, 24 > position_indices
-		{
-			0, 2, 3, 1,
-			1, 3, 7, 5,
-			5, 7, 6, 4,
-			4, 6, 2, 0,
-			0, 1, 5, 4,
-			7, 3, 2, 6,
-		};
+		0, 2, 3, 1,
+		1, 3, 7, 5,
+		5, 7, 6, 4,
+		4, 6, 2, 0,
+		0, 1, 5, 4,
+		7, 3, 2, 6,
+	};
 
-		for( size_t i = 0; i < position_indices.size(); ++i )
-		{
-			Vector4* w = reinterpret_cast< Vector4* >( &vertex_data[ vertex_stride * i + offset ] );
-			w->x       = -1.0f + ( 2.0f * ( ( position_indices[ i ] & 1 ) != 0 ) );
-			w->y       = -1.0f + ( 2.0f * ( ( position_indices[ i ] & 2 ) != 0 ) );
-			w->z       = -1.0f + ( 2.0f * ( ( position_indices[ i ] & 4 ) != 0 ) );
-			w->w       =  1.0f;
-		}
-	}
-
-	if( vertex_layout.Contains( VertexComponent::Normal ) )
+	const std::array< Vector3, 6 > normals
 	{
-		const size_t                   offset = vertex_layout.OffsetOf( VertexComponent::Normal );
-		const std::array< Vector3, 6 > normals
-		{
-			Vector3(  0.0f,  0.0f, -1.0f ),
-			Vector3(  1.0f,  0.0f,  0.0f ),
-			Vector3(  0.0f,  0.0f,  1.0f ),
-			Vector3( -1.0f,  0.0f,  0.0f ),
-			Vector3(  0.0f, -1.0f,  0.0f ),
-			Vector3(  0.0f,  1.0f,  0.0f ),
-		};
+		Vector3(  0.0f,  0.0f, -1.0f ),
+		Vector3(  1.0f,  0.0f,  0.0f ),
+		Vector3(  0.0f,  0.0f,  1.0f ),
+		Vector3( -1.0f,  0.0f,  0.0f ),
+		Vector3(  0.0f, -1.0f,  0.0f ),
+		Vector3(  0.0f,  1.0f,  0.0f ),
+	};
 
-		for( size_t side = 0; side < 6; ++side )
-		{
-			for( size_t corner = 0; corner < 4; ++corner )
-			{
-				const size_t index = ( side * 4 + corner );
-				Vector3*     w     = reinterpret_cast< Vector3* >( &vertex_data[ vertex_stride * index + offset ] );
-				*w                 = normals[ side ];
-			}
-		}
-	}
-
-	if( vertex_layout.Contains( VertexComponent::Color ) )
+	const std::array< Vector2, 4 > tex_coords
 	{
-		const size_t offset = vertex_layout.OffsetOf( VertexComponent::Color );
+		Vector2( 0.0f, 1.0f ),
+		Vector2( 0.0f, 0.0f ),
+		Vector2( 1.0f, 0.0f ),
+		Vector2( 1.0f, 1.0f ),
+	};
 
-		for( size_t i = 0; i < 24; ++i )
-		{
-			Color* w = reinterpret_cast< Color* >( &vertex_data[ vertex_stride * i + offset ] );
-			w->r     = 0.75f;
-			w->g     = 0.75f;
-			w->b     = 0.75f;
-			w->a     = 1.00f;
-		}
-	}
-
-	if( vertex_layout.Contains( VertexComponent::TexCoord ) )
+	for( size_t i = 0; i < position_indices.size(); ++i )
 	{
-		const size_t                   offset = vertex_layout.OffsetOf( VertexComponent::TexCoord );
-		const std::array< Vector2, 4 > tex_coords
-		{
-			Vector2( 0.0f, 1.0f ),
-			Vector2( 0.0f, 0.0f ),
-			Vector2( 1.0f, 0.0f ),
-			Vector2( 1.0f, 1.0f ),
-		};
+		const Vector4 pos( -1.0f + ( 2.0f * ( ( position_indices[ i ] & 1 ) != 0 ) ),
+		                   -1.0f + ( 2.0f * ( ( position_indices[ i ] & 2 ) != 0 ) ),
+		                   -1.0f + ( 2.0f * ( ( position_indices[ i ] & 4 ) != 0 ) ),
+		                    1.0f );
+		const Color color( 0.75f, 0.75f, 0.75f, 1.0f );
 
-		for( size_t side = 0; side < 6; ++side )
-		{
-			for( size_t corner = 0; corner < 4; ++corner )
-			{
-				const size_t index = ( side * 4 + corner );
-				Vector2*     w     = reinterpret_cast< Vector2* >( &vertex_data[ vertex_stride * index + offset ] );
-				*w                 = tex_coords[ corner ];
-			}
-		}
+		geometry_data.AddVertex( { pos, normals[ i / 4 ], color, tex_coords[ i % 4 ] } );
 	}
 }
 
-void MeshFactory::GenerateSphereData( uint8_t* vertex_data, FaceVector& faces, const VertexLayout& vertex_layout ) const
+void MeshFactory::GenerateSphereData( GeometryData& geometry_data ) const
 {
 	using Brim = std::array< uint16_t, 5 >;
 
@@ -205,108 +156,48 @@ void MeshFactory::GenerateSphereData( uint8_t* vertex_data, FaceVector& faces, c
 
 	for( size_t h = 0; h < 2; ++h )
 	{
-		for( size_t b = 0; b < 5; ++b ) faces[ h * 10 + 0 + b ] = Face{ hats[ h ].crown,     hats[ h             ].brim[ b                 ], hats[ h ].brim[ ( b + 1 ) % 5 ] };
-		for( size_t b = 0; b < 5; ++b ) faces[ h * 10 + 5 + b ] = Face{ hats[ h ].brim[ b ], hats[ ( h + 1 ) % 2 ].brim[ ( 5 + 1 - b ) % 5 ], hats[ h ].brim[ ( b + 1 ) % 5 ] };
+		for( size_t b = 0; b < 5; ++b ) geometry_data.AddFace( { hats[ h ].crown,     hats[ h             ].brim[ b                 ], hats[ h ].brim[ ( b + 1 ) % 5 ] } );
+		for( size_t b = 0; b < 5; ++b ) geometry_data.AddFace( { hats[ h ].brim[ b ], hats[ ( h + 1 ) % 2 ].brim[ ( 5 + 1 - b ) % 5 ], hats[ h ].brim[ ( b + 1 ) % 5 ] } );
 	}
 
 //////////////////////////////////////////////////////////////////////////
 
-	const size_t vertex_stride = vertex_layout.GetStride();
-
-	if( vertex_layout.Contains( VertexComponent::Position ) )
-	{
-		const size_t offset = vertex_layout.OffsetOf( VertexComponent::Position );
-
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 0  ) + offset ] ) = Vector4( -1.0f,  GoldenRatio, 0.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 1  ) + offset ] ) = Vector4(  1.0f,  GoldenRatio, 0.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 2  ) + offset ] ) = Vector4( -1.0f, -GoldenRatio, 0.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 3  ) + offset ] ) = Vector4(  1.0f, -GoldenRatio, 0.0f, 1.0f );
-
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 4  ) + offset ] ) = Vector4(  0.0f, -1.0f,  GoldenRatio, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 5  ) + offset ] ) = Vector4(  0.0f,  1.0f,  GoldenRatio, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 6  ) + offset ] ) = Vector4(  0.0f, -1.0f, -GoldenRatio, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 7  ) + offset ] ) = Vector4(  0.0f,  1.0f, -GoldenRatio, 1.0f );
-
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 8  ) + offset ] ) = Vector4(  GoldenRatio, 0.0f, -1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 9  ) + offset ] ) = Vector4(  GoldenRatio, 0.0f,  1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 10 ) + offset ] ) = Vector4( -GoldenRatio, 0.0f, -1.0f, 1.0f );
-		reinterpret_cast< Vector4& >( vertex_data[ ( vertex_stride * 11 ) + offset ] ) = Vector4( -GoldenRatio, 0.0f,  1.0f, 1.0f );
-	}
-
-	if( vertex_layout.Contains( VertexComponent::Normal ) )
-	{
-		const size_t offset = vertex_layout.OffsetOf( VertexComponent::Normal );
-
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 0  ) + offset ] ) = Vector3( 0.0f, 0.0f, 1.0f );
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 1  ) + offset ] ) = Vector3( 0.0f, 0.0f, 1.0f );
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 2  ) + offset ] ) = Vector3( 0.0f, 0.0f, 1.0f );
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 3  ) + offset ] ) = Vector3( 0.0f, 0.0f, 1.0f );
-
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 4  ) + offset ] ) = Vector3( 1.0f, 0.0f, 0.0f );
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 5  ) + offset ] ) = Vector3( 1.0f, 0.0f, 0.0f );
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 6  ) + offset ] ) = Vector3( 1.0f, 0.0f, 0.0f );
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 7  ) + offset ] ) = Vector3( 1.0f, 0.0f, 0.0f );
-
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 8  ) + offset ] ) = Vector3( 0.0f, 1.0f, 0.0f );
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 9  ) + offset ] ) = Vector3( 0.0f, 1.0f, 0.0f );
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 10 ) + offset ] ) = Vector3( 0.0f, 1.0f, 0.0f );
-		reinterpret_cast< Vector3& >( vertex_data[ ( vertex_stride * 11 ) + offset ] ) = Vector3( 0.0f, 1.0f, 0.0f );
-	}
-
-	if( vertex_layout.Contains( VertexComponent::TexCoord ) )
-	{
-		const size_t offset = vertex_layout.OffsetOf( VertexComponent::TexCoord );
-
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 0  ) + offset ] ) = Vector2( 0.0f, 1.0f );
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 1  ) + offset ] ) = Vector2( 1.0f, 1.0f );
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 2  ) + offset ] ) = Vector2( 0.0f, 0.0f );
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 3  ) + offset ] ) = Vector2( 1.0f, 0.0f );
-
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 4  ) + offset ] ) = Vector2( 0.0f, 1.0f );
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 5  ) + offset ] ) = Vector2( 1.0f, 1.0f );
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 6  ) + offset ] ) = Vector2( 0.0f, 0.0f );
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 7  ) + offset ] ) = Vector2( 1.0f, 0.0f );
-
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 8  ) + offset ] ) = Vector2( 0.0f, 1.0f );
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 9  ) + offset ] ) = Vector2( 1.0f, 1.0f );
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 10 ) + offset ] ) = Vector2( 0.0f, 0.0f );
-		reinterpret_cast< Vector2& >( vertex_data[ ( vertex_stride * 11 ) + offset ] ) = Vector2( 1.0f, 0.0f );
-	}
+	//                         Position                                                 Normal                       Color                               TexCoord
+	geometry_data.AddVertex( { Vector4( -1.0f,        GoldenRatio, 0.0f,        1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4(  1.0f,        GoldenRatio, 0.0f,        1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4( -1.0f,       -GoldenRatio, 0.0f,        1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4(  1.0f,       -GoldenRatio, 0.0f,        1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4(  0.0f,       -1.0f,        GoldenRatio, 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4(  0.0f,        1.0f,        GoldenRatio, 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4(  0.0f,       -1.0f,       -GoldenRatio, 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4(  0.0f,        1.0f,       -GoldenRatio, 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4(  GoldenRatio, 0.0f,       -1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4(  GoldenRatio, 0.0f,        1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4( -GoldenRatio, 0.0f,       -1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4( -GoldenRatio, 0.0f,        1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
 }
 
-void MeshFactory::GenerateNormals( uint8_t* vertex_data, const FaceVector& faces, const VertexLayout& vertex_layout ) const
+void MeshFactory::GenerateNormals( GeometryData& geometry_data ) const
 {
-	if( !vertex_layout.Contains( VertexComponent::Position ) || !vertex_layout.Contains( VertexComponent::Normal ) )
-		return;
-
-	const size_t stride        = vertex_layout.GetStride();
-	const size_t pos_offset    = vertex_layout.OffsetOf( VertexComponent::Position );
-	const size_t normal_offset = vertex_layout.OffsetOf( VertexComponent::Normal );
-
-	for( const Face& face : faces )
+	for( Face face : geometry_data.GetFaces() )
 	{
-		const uint16_t triangle_indices[ 3 ]
+		const Vertex triangle_vertices[ 3 ]
 		{
-			face.indices[ 0 ],
-			face.indices[ 1 ],
-			face.indices[ 2 ],
+			geometry_data.GetVertex( face.indices[ 0 ] ),
+			geometry_data.GetVertex( face.indices[ 1 ] ),
+			geometry_data.GetVertex( face.indices[ 2 ] ),
 		};
 
-		const Orbit::Vector3* triangle_positions[ 3 ]
-		{
-			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 0 ] + pos_offset ] ),
-			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 1 ] + pos_offset ] ),
-			reinterpret_cast< const Orbit::Vector3* >( &vertex_data[ stride * triangle_indices[ 2 ] + pos_offset ] ),
-		};
-
-		const Orbit::Vector3 pos0_to_pos1 = ( *triangle_positions[ 1 ] - *triangle_positions[ 0 ] );
-		const Orbit::Vector3 pos0_to_pos2 = ( *triangle_positions[ 2 ] - *triangle_positions[ 0 ] );
+		const Orbit::Vector3 pos0_to_pos1 = Vector3( triangle_vertices[ 1 ].position - triangle_vertices[ 0 ].position );
+		const Orbit::Vector3 pos0_to_pos2 = Vector3( triangle_vertices[ 2 ].position - triangle_vertices[ 0 ].position );
 		const Orbit::Vector3 normal       = ( pos0_to_pos1.CrossProduct( pos0_to_pos2 ) ).Normalized();
 
-		for( size_t triangle_index : triangle_indices )
+		for( size_t i = 0; i < 3; ++i )
 		{
-			Vector3* w = reinterpret_cast< Vector3* >( &vertex_data[ stride * triangle_index + normal_offset ] );
-			*w = normal;
+			Vertex vertex = triangle_vertices[ i ];
+			vertex.normal = normal;
+
+			geometry_data.SetVertex( face.indices[ i ], vertex );
 		}
 	}
 }

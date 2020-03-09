@@ -25,9 +25,9 @@
 ORB_NAMESPACE_BEGIN
 
 class  CubeShape;
+class  GeometryData;
 class  IShape;
 class  VertexLayout;
-struct Face;
 struct Mesh;
 
 class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >
@@ -38,13 +38,9 @@ public:
 
 private:
 
-	using FaceVector = std::vector< Face >;
-
-private:
-
-	void GenerateCubeData  ( uint8_t* vertex_data, FaceVector& faces, const VertexLayout& vertex_layout ) const;
-	void GenerateSphereData( uint8_t* vertex_data, FaceVector& faces, const VertexLayout& vertex_layout ) const;
-	void GenerateNormals   ( uint8_t* vertex_data, const FaceVector& faces, const VertexLayout& vertex_layout ) const;
+	void GenerateCubeData  ( GeometryData& geometry_data ) const;
+	void GenerateSphereData( GeometryData& geometry_data ) const;
+	void GenerateNormals   ( GeometryData& geometry_data ) const;
 
 };
 
