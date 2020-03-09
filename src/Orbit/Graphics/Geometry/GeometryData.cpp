@@ -108,6 +108,11 @@ Mesh GeometryData::ToMesh( void )
 	return mesh;
 }
 
+FaceRange GeometryData::GetFaces( void ) const
+{
+	return FaceRange( face_data_.data(), ( face_data_.size() / ( 3 * index_size_ ) ), index_size_ );
+}
+
 uint8_t GeometryData::EvalIndexSize( size_t vertex_count )
 {
 

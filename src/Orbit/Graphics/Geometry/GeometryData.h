@@ -17,6 +17,7 @@
 
 #pragma once
 #include "Orbit/Graphics/Geometry/Face.h"
+#include "Orbit/Graphics/Geometry/FaceRange.h"
 #include "Orbit/Graphics/Geometry/Mesh.h"
 #include "Orbit/Graphics/Geometry/Vertex.h"
 #include "Orbit/Graphics/Geometry/VertexLayout.h"
@@ -40,6 +41,10 @@ public:
 	void AddFace  ( const Face& face );
 	void AddVertex( const Vertex& vertex );
 	Mesh ToMesh   ( void );
+
+public:
+
+	FaceRange GetFaces ( void )         const;
 
 private:
 
