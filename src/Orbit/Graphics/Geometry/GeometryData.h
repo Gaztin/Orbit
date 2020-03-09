@@ -40,10 +40,12 @@ public:
 	void Reserve  ( size_t vertex_count, size_t face_count );
 	void AddFace  ( const Face& face );
 	void AddVertex( const Vertex& vertex );
+	void SetVertex( size_t index, const Vertex& vertex );
 	Mesh ToMesh   ( void );
 
 public:
 
+	Vertex    GetVertex( size_t index ) const;
 	FaceRange GetFaces ( void )         const;
 
 private:

@@ -20,6 +20,8 @@
 #include "Orbit/Graphics/Geometry/Face.h"
 #include "Orbit/Graphics/Geometry/Vertex.h"
 
+#include <cassert>
+
 ORB_NAMESPACE_BEGIN
 
 GeometryData::GeometryData( size_t max_vertex_count, const VertexLayout& vertex_layout )
@@ -36,11 +38,13 @@ void GeometryData::Reserve( size_t vertex_count, size_t face_count )
 
 void GeometryData::AddFace( const Face& face )
 {
-	face_data_.resize( face_data_.size() + ( index_size_ * 3 ) );
+	const size_t face_size = ( index_size_ * 3 );
+
+	face_data_.resize( face_data_.size() + face_size );
 
 //////////////////////////////////////////////////////////////////////////
 
-	void* dst = face_data_.data() + ( face_data_.size() - ( index_size_ * 3 ) );
+	void* dst = &face_data_[ face_data_.size() - face_size ];
 
 	switch( index_size_ )
 	{
@@ -77,21 +81,17 @@ void GeometryData::AddVertex( const Vertex& vertex )
 
 	vertex_data_.resize( vertex_data_.size() + stride );
 
-//////////////////////////////////////////////////////////////////////////
+	SetVertex( ( ( vertex_data_.size() / stride ) - 1 ), vertex );
+}
 
-	uint8_t* dst = &vertex_data_[ vertex_data_.size() - stride ];
+void GeometryData::SetVertex( size_t index, const Vertex& vertex )
+{
+	uint8_t* dst = &vertex_data_[ index * vertex_layout_.GetStride() ];
 
-	if( vertex_layout_.Contains( VertexComponent::Position ) )
-		memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Position ), &vertex.position, sizeof( Vector4 ) );
-
-	if( vertex_layout_.Contains( VertexComponent::Normal ) )
-		memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Normal ), &vertex.normal, sizeof( Vector3 ) );
-
-	if( vertex_layout_.Contains( VertexComponent::Color ) )
-		memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Color ), &vertex.color, sizeof( Color ) );
-	
-	if( vertex_layout_.Contains( VertexComponent::TexCoord ) )
-		memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::TexCoord ), &vertex.tex_coord, sizeof( Vector2 ) );
+	if( vertex_layout_.Contains( VertexComponent::Position ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Position ), &vertex.position,  sizeof( Vector4 ) );
+	if( vertex_layout_.Contains( VertexComponent::Normal ) )   memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Normal ),   &vertex.normal,    sizeof( Vector3 ) );
+	if( vertex_layout_.Contains( VertexComponent::Color ) )    memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Color ),    &vertex.color,     sizeof( Color ) );
+	if( vertex_layout_.Contains( VertexComponent::TexCoord ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::TexCoord ), &vertex.tex_coord, sizeof( Vector2 ) );
 }
 
 Mesh GeometryData::ToMesh( void )
@@ -106,6 +106,19 @@ Mesh GeometryData::ToMesh( void )
 		mesh.index_buffer = std::make_unique< IndexBuffer >( EvalIndexFormat(), face_data_.data(), ( face_data_.size() / index_size_ ) );
 
 	return mesh;
+}
+
+Vertex GeometryData::GetVertex( size_t index ) const
+{
+	const uint8_t* src = &vertex_data_[ index * vertex_layout_.GetStride() ];
+	Vertex         vertex{ };
+
+	if( vertex_layout_.Contains( VertexComponent::Position ) ) memcpy( &vertex.position,  src + vertex_layout_.OffsetOf( VertexComponent::Position ), sizeof( Vector4 ) );
+	if( vertex_layout_.Contains( VertexComponent::Normal ) )   memcpy( &vertex.normal,    src + vertex_layout_.OffsetOf( VertexComponent::Normal ),   sizeof( Vector3 ) );
+	if( vertex_layout_.Contains( VertexComponent::Color ) )    memcpy( &vertex.color,     src + vertex_layout_.OffsetOf( VertexComponent::Color ),    sizeof( Color ) );
+	if( vertex_layout_.Contains( VertexComponent::TexCoord ) ) memcpy( &vertex.tex_coord, src + vertex_layout_.OffsetOf( VertexComponent::TexCoord ), sizeof( Vector2 ) );
+
+	return vertex;
 }
 
 FaceRange GeometryData::GetFaces( void ) const
