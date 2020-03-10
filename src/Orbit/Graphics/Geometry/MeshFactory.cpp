@@ -57,7 +57,9 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 		case ShapeType::Sphere: { GenerateSphereData( geometry_data ); } break;
 	}
 
-	GenerateNormals( geometry_data );
+	geometry_data.GenerateNormals();
+
+//////////////////////////////////////////////////////////////////////////
 
 	Mesh mesh = geometry_data.ToMesh();
 
@@ -175,31 +177,6 @@ void MeshFactory::GenerateSphereData( GeometryData& geometry_data ) const
 	geometry_data.AddVertex( { Vector4(  GoldenRatio, 0.0f,        1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
 	geometry_data.AddVertex( { Vector4( -GoldenRatio, 0.0f,       -1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
 	geometry_data.AddVertex( { Vector4( -GoldenRatio, 0.0f,        1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
-}
-
-void MeshFactory::GenerateNormals( GeometryData& geometry_data ) const
-{
-	for( Face face : geometry_data.GetFaces() )
-	{
-		const Vertex triangle_vertices[ 3 ]
-		{
-			geometry_data.GetVertex( face.indices[ 0 ] ),
-			geometry_data.GetVertex( face.indices[ 1 ] ),
-			geometry_data.GetVertex( face.indices[ 2 ] ),
-		};
-
-		const Orbit::Vector3 pos0_to_pos1 = Vector3( triangle_vertices[ 1 ].position - triangle_vertices[ 0 ].position );
-		const Orbit::Vector3 pos0_to_pos2 = Vector3( triangle_vertices[ 2 ].position - triangle_vertices[ 0 ].position );
-		const Orbit::Vector3 normal       = ( pos0_to_pos1.CrossProduct( pos0_to_pos2 ) ).Normalized();
-
-		for( size_t i = 0; i < 3; ++i )
-		{
-			Vertex vertex = triangle_vertices[ i ];
-			vertex.normal = normal;
-
-			geometry_data.SetVertex( face.indices[ i ], vertex );
-		}
-	}
 }
 
 ORB_NAMESPACE_END

@@ -40,7 +40,6 @@ private:
 
 	void GenerateCubeData  ( GeometryData& geometry_data ) const;
 	void GenerateSphereData( GeometryData& geometry_data ) const;
-	void GenerateNormals   ( GeometryData& geometry_data ) const;
 
 };
 

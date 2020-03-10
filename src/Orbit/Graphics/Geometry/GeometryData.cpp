@@ -96,24 +96,35 @@ void GeometryData::SetVertex( size_t index, const Vertex& vertex )
 	if( vertex_layout_.Contains( VertexComponent::Weights ) )  memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Weights ),  &vertex.weights,   sizeof( float   ) * 4 );
 }
 
-Mesh GeometryData::ToMesh( void )
+void GeometryData::GenerateNormals( void )
 {
-	const size_t vertex_stride = vertex_layout_.GetStride();
-	Mesh         mesh;
+	for( Face face : GetFaces() )
+	{
+		const Vertex triangle_vertices[ 3 ]
+		{
+			GetVertex( face.indices[ 0 ] ),
+			GetVertex( face.indices[ 1 ] ),
+			GetVertex( face.indices[ 2 ] ),
+		};
 
-	if( !vertex_data_.empty() )
-		mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data_.data(), ( vertex_data_.size() / vertex_stride ), vertex_stride );
+		const Orbit::Vector3 pos0_to_pos1 = Vector3( triangle_vertices[ 1 ].position - triangle_vertices[ 0 ].position );
+		const Orbit::Vector3 pos0_to_pos2 = Vector3( triangle_vertices[ 2 ].position - triangle_vertices[ 0 ].position );
+		const Orbit::Vector3 normal       = ( pos0_to_pos1.CrossProduct( pos0_to_pos2 ) ).Normalized();
 
-	if( !face_data_.empty() )
-		mesh.index_buffer = std::make_unique< IndexBuffer >( EvalIndexFormat(), face_data_.data(), ( face_data_.size() / index_size_ ) );
+		for( size_t i = 0; i < 3; ++i )
+		{
+			Vertex vertex = triangle_vertices[ i ];
+			vertex.normal = normal;
 
-	return mesh;
+			SetVertex( face.indices[ i ], vertex );
+		}
+	}
 }
 
 Vertex GeometryData::GetVertex( size_t index ) const
 {
 	const uint8_t* src = &vertex_data_[ index * vertex_layout_.GetStride() ];
-	Vertex         vertex{ };
+	Vertex         vertex;
 
 	if( vertex_layout_.Contains( VertexComponent::Position ) ) memcpy( &vertex.position,  src + vertex_layout_.OffsetOf( VertexComponent::Position ), sizeof( Vector4 )     );
 	if( vertex_layout_.Contains( VertexComponent::Normal ) )   memcpy( &vertex.normal,    src + vertex_layout_.OffsetOf( VertexComponent::Normal ),   sizeof( Vector3 )     );
@@ -130,7 +141,21 @@ FaceRange GeometryData::GetFaces( void ) const
 	return FaceRange( face_data_.data(), ( face_data_.size() / ( 3 * index_size_ ) ), index_size_ );
 }
 
-uint8_t GeometryData::EvalIndexSize( size_t vertex_count )
+Mesh GeometryData::ToMesh( void ) const
+{
+	const size_t vertex_stride = vertex_layout_.GetStride();
+	Mesh         mesh;
+
+	if( !vertex_data_.empty() )
+		mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data_.data(), ( vertex_data_.size() / vertex_stride ), vertex_stride );
+
+	if( !face_data_.empty() )
+		mesh.index_buffer = std::make_unique< IndexBuffer >( EvalIndexFormat(), face_data_.data(), ( face_data_.size() / index_size_ ) );
+
+	return mesh;
+}
+
+uint8_t GeometryData::EvalIndexSize( size_t vertex_count ) const
 {
 
 #if( !ORB_HAS_D3D11 )
@@ -149,7 +174,7 @@ uint8_t GeometryData::EvalIndexSize( size_t vertex_count )
 	return 0;
 }
 
-IndexFormat GeometryData::EvalIndexFormat( void )
+IndexFormat GeometryData::EvalIndexFormat( void ) const
 {
 	switch( index_size_ )
 	{
