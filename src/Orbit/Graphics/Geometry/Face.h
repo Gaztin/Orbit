@@ -24,7 +24,7 @@ ORB_NAMESPACE_BEGIN
 
 struct Face
 {
-	std::array< size_t, 3 > indices;
+	std::array< size_t, 3 > indices{ 0, 0, 0 };
 };
 
 ORB_NAMESPACE_END

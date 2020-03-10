@@ -22,14 +22,19 @@
 #include "Orbit/Math/Vector3.h"
 #include "Orbit/Math/Vector4.h"
 
+#include <array>
+
 ORB_NAMESPACE_BEGIN
 
 struct Vertex
 {
-	Vector4 position;
-	Vector3 normal;
-	Color   color;
-	Vector2 tex_coord;
+	Vector4                position { 0.0f, 0.0f, 0.0f, 1.0f };
+	Vector3                normal   { 0.0f, 0.0f, 1.0f };
+	Color                  color    { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector2                tex_coord{ 0.0f, 0.0f };
+	std::array< int,   4 > joint_ids{ 0, 0, 0, 0 };
+	std::array< float, 4 > weights  { 1.0f, 0.0f, 0.0f, 0.0f };
+	
 };
 
 ORB_NAMESPACE_END
