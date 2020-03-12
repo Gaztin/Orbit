@@ -16,32 +16,32 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Geometry/Face.h"
+#include "Orbit/Graphics/Geometry/Vertex.h"
 
 ORB_NAMESPACE_BEGIN
 
 class GeometryData;
 
-class ORB_API_GRAPHICS FaceRange
+class ORB_API_GRAPHICS VertexRange
 {
-	ORB_DISABLE_COPY( FaceRange );
+	ORB_DISABLE_COPY( VertexRange );
 
 public:
 
 	struct Iterator
 	{
 		Iterator& operator++( void );
-		Face      operator* ( void )                  const;
+		Vertex    operator* ( void )                  const;
 		bool      operator!=( const Iterator& other ) const;
 
-		const FaceRange* range;
+		const VertexRange* range;
 
-		size_t           index;
+		size_t             index;
 	};
 
 public:
 
-	explicit FaceRange( const GeometryData* geometry );
+	explicit VertexRange( const GeometryData* geometry );
 
 public:
 

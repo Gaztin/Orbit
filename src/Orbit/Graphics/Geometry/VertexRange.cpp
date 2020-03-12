@@ -15,43 +15,42 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Geometry/Face.h"
+#include "VertexRange.h"
+
+#include "Orbit/Graphics/Geometry/GeometryData.h"
 
 ORB_NAMESPACE_BEGIN
 
-class GeometryData;
-
-class ORB_API_GRAPHICS FaceRange
+VertexRange::Iterator& VertexRange::Iterator::operator++( void )
 {
-	ORB_DISABLE_COPY( FaceRange );
+	++index;
 
-public:
+	return *this;
+}
 
-	struct Iterator
-	{
-		Iterator& operator++( void );
-		Face      operator* ( void )                  const;
-		bool      operator!=( const Iterator& other ) const;
+Vertex VertexRange::Iterator::operator*( void ) const
+{
+	return range->geometry_->GetVertex( index );
+}
 
-		const FaceRange* range;
+bool VertexRange::Iterator::operator!=( const Iterator& other ) const
+{
+	return ( ( range != other.range ) || ( index != other.index ) );
+}
 
-		size_t           index;
-	};
+VertexRange::VertexRange( const GeometryData* geometry )
+	: geometry_( geometry )
+{
+}
 
-public:
+VertexRange::Iterator VertexRange::begin( void ) const
+{
+	return Iterator{ this, 0 };
+}
 
-	explicit FaceRange( const GeometryData* geometry );
-
-public:
-
-	Iterator begin( void ) const;
-	Iterator end  ( void ) const;
-
-private:
-
-	const GeometryData* geometry_;
-
-};
+VertexRange::Iterator VertexRange::end( void ) const
+{
+	return Iterator{ this, geometry_->GetVertexCount() };
+}
 
 ORB_NAMESPACE_END

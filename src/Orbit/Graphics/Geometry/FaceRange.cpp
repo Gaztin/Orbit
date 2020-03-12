@@ -17,23 +17,30 @@
 
 #include "FaceRange.h"
 
+#include "Orbit/Graphics/Geometry/GeometryData.h"
+
 ORB_NAMESPACE_BEGIN
 
-FaceRange::FaceRange( const uint8_t* ptr, size_t count, uint8_t index_size )
-	: ptr_       ( ptr )
-	, count_     ( count )
-	, index_size_( index_size )
+FaceRange::Iterator& FaceRange::Iterator::operator++( void )
 {
+	++index;
+
+	return *this;
 }
 
-Face FaceRange::At( size_t index ) const
+Face FaceRange::Iterator::operator*( void ) const
 {
-	Face face{ };
+	return range->geometry_->GetFace( index );
+}
 
-	for( size_t i = 0; i < 3; ++i )
-		memcpy( &face.indices[ i ], &ptr_[ ( index * 3 + i ) * index_size_ ], index_size_ );
+bool FaceRange::Iterator::operator!=( const Iterator& other ) const
+{
+	return ( ( range != other.range ) || ( index != other.index ) );
+}
 
-	return face;
+FaceRange::FaceRange( const GeometryData* geometry )
+	: geometry_( geometry )
+{
 }
 
 FaceRange::Iterator FaceRange::begin( void ) const
@@ -43,7 +50,7 @@ FaceRange::Iterator FaceRange::begin( void ) const
 
 FaceRange::Iterator FaceRange::end( void ) const
 {
-	return Iterator{ this, count_ };
+	return Iterator{ this, geometry_->GetFaceCount() };
 }
 
 ORB_NAMESPACE_END

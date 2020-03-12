@@ -21,6 +21,7 @@
 #include "Orbit/Graphics/Geometry/Mesh.h"
 #include "Orbit/Graphics/Geometry/Vertex.h"
 #include "Orbit/Graphics/Geometry/VertexLayout.h"
+#include "Orbit/Graphics/Geometry/VertexRange.h"
 
 #include <vector>
 
@@ -31,23 +32,35 @@ struct Vertex;
 
 class ORB_API_GRAPHICS GeometryData
 {
+	ORB_DISABLE_COPY( GeometryData );
+
 public:
 
 	explicit GeometryData( size_t max_vertex_count, const VertexLayout& vertex_layout );
+	GeometryData( GeometryData&& other );
 
 public:
 
-	void Reserve        ( size_t vertex_count, size_t face_count );
-	void AddFace        ( const Face& face );
-	void AddVertex      ( const Vertex& vertex );
-	void SetVertex      ( size_t index, const Vertex& vertex );
-	void GenerateNormals( void );
+	void   Reserve        ( size_t vertex_count, size_t face_count );
+	size_t AddFace        ( const Face& face );
+	size_t AddVertex      ( const Vertex& vertex );
+	void   SetVertex      ( size_t index, const Vertex& vertex );
+	void   GenerateNormals( void );
 
 public:
 
-	Vertex    GetVertex( size_t index ) const;
-	FaceRange GetFaces ( void )         const;
-	Mesh      ToMesh   ( void )         const;
+	VertexLayout GetVertexLayout( void )         const { return vertex_layout_; }
+	size_t       GetVertexCount ( void )         const;
+	size_t       GetFaceCount   ( void )         const;
+	Vertex       GetVertex      ( size_t index ) const;
+	Face         GetFace        ( size_t index ) const;
+	FaceRange    GetFaces       ( void )         const;
+	VertexRange  GetVertices    ( void )         const;
+	Mesh         ToMesh         ( void )         const;
+
+public:
+
+	GeometryData& operator=( GeometryData&& other );
 
 private:
 

@@ -30,21 +30,31 @@ GeometryData::GeometryData( size_t max_vertex_count, const VertexLayout& vertex_
 {
 }
 
+GeometryData::GeometryData( GeometryData&& other )
+	: vertex_layout_( std::move( other.vertex_layout_ ) )
+	, vertex_data_  ( std::move( other.vertex_data_ ) )
+	, face_data_    ( std::move( other.face_data_ ) )
+	, index_size_   ( other.index_size_ )
+{
+	other.index_size_ = 0;
+}
+
 void GeometryData::Reserve( size_t vertex_count, size_t face_count )
 {
 	vertex_data_.reserve( vertex_layout_.GetStride() * vertex_count );
 	face_data_.reserve( index_size_ * face_count );
 }
 
-void GeometryData::AddFace( const Face& face )
+size_t GeometryData::AddFace( const Face& face )
 {
 	const size_t face_size = ( index_size_ * 3 );
+	const size_t index     = GetFaceCount();
 
 	face_data_.resize( face_data_.size() + face_size );
 
 //////////////////////////////////////////////////////////////////////////
 
-	void* dst = &face_data_[ face_data_.size() - face_size ];
+	void* dst = &face_data_[ index * face_size ];
 
 	switch( index_size_ )
 	{
@@ -73,15 +83,20 @@ void GeometryData::AddFace( const Face& face )
 
 		} break;
 	}
+
+	return index;
 }
 
-void GeometryData::AddVertex( const Vertex& vertex )
+size_t GeometryData::AddVertex( const Vertex& vertex )
 {
 	const size_t stride = vertex_layout_.GetStride();
+	const size_t index  = GetVertexCount();
 
 	vertex_data_.resize( vertex_data_.size() + stride );
 
-	SetVertex( ( ( vertex_data_.size() / stride ) - 1 ), vertex );
+	SetVertex( index, vertex );
+
+	return index;
 }
 
 void GeometryData::SetVertex( size_t index, const Vertex& vertex )
@@ -121,6 +136,16 @@ void GeometryData::GenerateNormals( void )
 	}
 }
 
+size_t GeometryData::GetVertexCount( void ) const
+{
+	return ( vertex_data_.size() / vertex_layout_.GetStride() );
+}
+
+size_t GeometryData::GetFaceCount( void ) const
+{
+	return ( ( face_data_.size() / 3 ) / index_size_ );
+}
+
 Vertex GeometryData::GetVertex( size_t index ) const
 {
 	const uint8_t* src = &vertex_data_[ index * vertex_layout_.GetStride() ];
@@ -136,9 +161,24 @@ Vertex GeometryData::GetVertex( size_t index ) const
 	return vertex;
 }
 
+Face GeometryData::GetFace( size_t index ) const
+{
+	Face face;
+
+	for( size_t i = 0; i < 3; ++i )
+		memcpy( &face.indices[ i ], &face_data_[ ( index * 3 + i ) * index_size_ ], index_size_ );
+
+	return face;
+}
+
 FaceRange GeometryData::GetFaces( void ) const
 {
-	return FaceRange( face_data_.data(), ( face_data_.size() / ( 3 * index_size_ ) ), index_size_ );
+	return FaceRange( this );
+}
+
+VertexRange GeometryData::GetVertices( void ) const
+{
+	return VertexRange( this );
 }
 
 Mesh GeometryData::ToMesh( void ) const
@@ -153,6 +193,18 @@ Mesh GeometryData::ToMesh( void ) const
 		mesh.index_buffer = std::make_unique< IndexBuffer >( EvalIndexFormat(), face_data_.data(), ( face_data_.size() / index_size_ ) );
 
 	return mesh;
+}
+
+GeometryData& GeometryData::operator=( GeometryData&& other )
+{
+	vertex_layout_ = std::move( other.vertex_layout_ );
+	vertex_data_   = std::move( other.vertex_data_ );
+	face_data_     = std::move( other.face_data_ );
+	index_size_    = other.index_size_;
+
+	other.index_size_ = 0;
+
+	return *this;
 }
 
 uint8_t GeometryData::EvalIndexSize( size_t vertex_count ) const
