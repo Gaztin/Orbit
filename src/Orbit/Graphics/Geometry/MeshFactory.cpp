@@ -165,18 +165,62 @@ void MeshFactory::GenerateSphereData( GeometryData& geometry_data ) const
 //////////////////////////////////////////////////////////////////////////
 
 	//                         Position                                                 Normal                       Color                               TexCoord
-	geometry_data.AddVertex( { Vector4( -1.0f,        GoldenRatio, 0.0f,        1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
-	geometry_data.AddVertex( { Vector4(  1.0f,        GoldenRatio, 0.0f,        1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
-	geometry_data.AddVertex( { Vector4( -1.0f,       -GoldenRatio, 0.0f,        1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
-	geometry_data.AddVertex( { Vector4(  1.0f,       -GoldenRatio, 0.0f,        1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
-	geometry_data.AddVertex( { Vector4(  0.0f,       -1.0f,        GoldenRatio, 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
-	geometry_data.AddVertex( { Vector4(  0.0f,        1.0f,        GoldenRatio, 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
-	geometry_data.AddVertex( { Vector4(  0.0f,       -1.0f,       -GoldenRatio, 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
-	geometry_data.AddVertex( { Vector4(  0.0f,        1.0f,       -GoldenRatio, 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
-	geometry_data.AddVertex( { Vector4(  GoldenRatio, 0.0f,       -1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
-	geometry_data.AddVertex( { Vector4(  GoldenRatio, 0.0f,        1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
-	geometry_data.AddVertex( { Vector4( -GoldenRatio, 0.0f,       -1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
-	geometry_data.AddVertex( { Vector4( -GoldenRatio, 0.0f,        1.0f,        1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3( -1.0f,        GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3(  1.0f,        GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3( -1.0f,       -GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3(  1.0f,       -GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3(  0.0f,       -1.0f,        GoldenRatio ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3(  0.0f,        1.0f,        GoldenRatio ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3(  0.0f,       -1.0f,       -GoldenRatio ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3(  0.0f,        1.0f,       -GoldenRatio ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3(  GoldenRatio, 0.0f,       -1.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3(  GoldenRatio, 0.0f,        1.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3( -GoldenRatio, 0.0f,       -1.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
+	geometry_data.AddVertex( { Vector4( Vector3( -GoldenRatio, 0.0f,        1.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
+
+//////////////////////////////////////////////////////////////////////////
+
+	constexpr size_t recursion_level = 2;
+
+	auto get_middle_point = [ & ]( GeometryData& new_geometry_data, size_t p1, size_t p2 )
+	{
+		const bool   first_is_smaller = ( p1 < p2 );
+		const size_t smaller_index    = first_is_smaller ? p1 : p2;
+		const size_t greater_index    = first_is_smaller ? p2 : p1;
+		const Vertex vertex1          = geometry_data.GetVertex( p1 );
+		const Vertex vertex2          = geometry_data.GetVertex( p2 );
+		Vertex       middle;
+
+		middle.position  = Vector4( ( ( Vector3( vertex1.position ) + Vector3( vertex2.position ) ) * 0.5f ).Normalized(), 1.0f );
+		middle.color     = vertex1.color;
+		middle.tex_coord = ( ( vertex1.tex_coord + vertex2.tex_coord ) * 0.5f );
+
+		return new_geometry_data.AddVertex( middle );
+	};
+
+	// Refine faces
+	for( size_t i = 0; i < recursion_level; ++i )
+	{
+		const size_t new_vertex_count = ( geometry_data.GetVertexCount() + geometry_data.GetFaceCount() * 3 );
+		GeometryData new_geometry_data( new_vertex_count, geometry_data.GetVertexLayout() );
+
+		for( Vertex vertex : geometry_data.GetVertices() )
+			new_geometry_data.AddVertex( vertex );
+
+		for( Face face : geometry_data.GetFaces() )
+		{
+			const size_t a = get_middle_point( new_geometry_data, face.indices[ 0 ], face.indices[ 1 ] );
+			const size_t b = get_middle_point( new_geometry_data, face.indices[ 1 ], face.indices[ 2 ] );
+			const size_t c = get_middle_point( new_geometry_data, face.indices[ 2 ], face.indices[ 0 ] );
+
+			new_geometry_data.AddFace( Face{ face.indices[ 0 ], a, c } );
+			new_geometry_data.AddFace( Face{ face.indices[ 1 ], b, a } );
+			new_geometry_data.AddFace( Face{ face.indices[ 2 ], c, b } );
+			new_geometry_data.AddFace( Face{ a, b, c } );
+		}
+
+		geometry_data = std::move( new_geometry_data );
+	}
 }
 
 ORB_NAMESPACE_END
