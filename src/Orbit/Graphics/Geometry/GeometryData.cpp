@@ -17,6 +17,7 @@
 
 #include "GeometryData.h"
 
+#include "Orbit/Core/Debug/Trace.h"
 #include "Orbit/Graphics/Geometry/Face.h"
 #include "Orbit/Graphics/Geometry/Vertex.h"
 
@@ -224,6 +225,8 @@ void GeometryData::UpgradeFaceData( uint8_t new_index_size )
 	const size_t           old_index_size = index_size_;
 	const size_t           index_count    = face_data_.size() / old_index_size;
 	std::vector< uint8_t > new_face_data;
+
+	ORB_TRACE( "Upgrading face data from index size %d to %d.", old_index_size, new_index_size );
 
 	new_face_data.resize( index_count * new_index_size );
 
