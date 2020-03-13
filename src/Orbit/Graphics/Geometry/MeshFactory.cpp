@@ -20,7 +20,6 @@
 #include "Orbit/Core/Shape/CubeShape.h"
 #include "Orbit/Core/Shape/SphereShape.h"
 #include "Orbit/Core/Utility/Color.h"
-#include "Orbit/Core/Utility/Selector.h"
 #include "Orbit/Graphics/Geometry/GeometryData.h"
 #include "Orbit/Graphics/Geometry/Mesh.h"
 #include "Orbit/Graphics/Geometry/VertexLayout.h"
@@ -30,26 +29,10 @@
 
 ORB_NAMESPACE_BEGIN
 
-static const Selector< ShapeType, size_t > selector_vertex_count
-{
-	{ ShapeType::Cube,   24 },
-	{ ShapeType::Sphere, 12 },
-};
-
-static const Selector< ShapeType, size_t > selector_face_count
-{
-	{ ShapeType::Cube,   12 },
-	{ ShapeType::Sphere, 20 },
-};
-
 Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout ) const
 {
 	const size_t vertex_stride = vertex_layout.GetStride();
-	const size_t vertex_count  = selector_vertex_count[ shape.GetType() ];
-	const size_t face_count    = selector_face_count[ shape.GetType() ];
 	GeometryData geometry_data = GeometryData( vertex_layout );
-
-	geometry_data.Reserve( vertex_count, face_count );
 
 	switch( shape.GetType() )
 	{
