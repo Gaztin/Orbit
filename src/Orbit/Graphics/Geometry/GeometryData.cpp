@@ -239,8 +239,6 @@ void GeometryData::UpgradeFaceData( uint8_t new_index_size )
 
 uint8_t GeometryData::EvalIndexSize( size_t index_or_vertex_count ) const
 {
-	if( index_or_vertex_count <= 1 )
-		return 1;
 
 #if( !ORB_HAS_D3D11 )
 
