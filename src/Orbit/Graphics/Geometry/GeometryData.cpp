@@ -27,7 +27,7 @@ ORB_NAMESPACE_BEGIN
 
 GeometryData::GeometryData( const VertexLayout& vertex_layout )
 	: vertex_layout_( vertex_layout )
-	, index_size_   ( 0 )
+	, index_size_   ( EvalIndexSize( 0 ) )
 {
 }
 
