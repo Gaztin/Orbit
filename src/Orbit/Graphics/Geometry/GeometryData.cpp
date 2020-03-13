@@ -70,25 +70,25 @@ size_t GeometryData::AddFace( const Face& face )
 		default:
 		case 1:
 		{
-			reinterpret_cast< uint8_t* >( dst )[ 0 ] = static_cast< uint8_t >( face.indices[ 0 ] );
-			reinterpret_cast< uint8_t* >( dst )[ 1 ] = static_cast< uint8_t >( face.indices[ 1 ] );
-			reinterpret_cast< uint8_t* >( dst )[ 2 ] = static_cast< uint8_t >( face.indices[ 2 ] );
+			static_cast< uint8_t* >( dst )[ 0 ] = static_cast< uint8_t >( face.indices[ 0 ] );
+			static_cast< uint8_t* >( dst )[ 1 ] = static_cast< uint8_t >( face.indices[ 1 ] );
+			static_cast< uint8_t* >( dst )[ 2 ] = static_cast< uint8_t >( face.indices[ 2 ] );
 
 		} break;
 
 		case 2:
 		{
-			reinterpret_cast< uint16_t* >( dst )[ 0 ] = static_cast< uint16_t >( face.indices[ 0 ] );
-			reinterpret_cast< uint16_t* >( dst )[ 1 ] = static_cast< uint16_t >( face.indices[ 1 ] );
-			reinterpret_cast< uint16_t* >( dst )[ 2 ] = static_cast< uint16_t >( face.indices[ 2 ] );
+			static_cast< uint16_t* >( dst )[ 0 ] = static_cast< uint16_t >( face.indices[ 0 ] );
+			static_cast< uint16_t* >( dst )[ 1 ] = static_cast< uint16_t >( face.indices[ 1 ] );
+			static_cast< uint16_t* >( dst )[ 2 ] = static_cast< uint16_t >( face.indices[ 2 ] );
 
 		} break;
 
 		case 4:
 		{
-			reinterpret_cast< uint32_t* >( dst )[ 0 ] = static_cast< uint32_t >( face.indices[ 0 ] );
-			reinterpret_cast< uint32_t* >( dst )[ 1 ] = static_cast< uint32_t >( face.indices[ 1 ] );
-			reinterpret_cast< uint32_t* >( dst )[ 2 ] = static_cast< uint32_t >( face.indices[ 2 ] );
+			static_cast< uint32_t* >( dst )[ 0 ] = static_cast< uint32_t >( face.indices[ 0 ] );
+			static_cast< uint32_t* >( dst )[ 1 ] = static_cast< uint32_t >( face.indices[ 1 ] );
+			static_cast< uint32_t* >( dst )[ 2 ] = static_cast< uint32_t >( face.indices[ 2 ] );
 
 		} break;
 	}
