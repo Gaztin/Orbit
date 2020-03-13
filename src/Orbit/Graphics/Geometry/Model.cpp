@@ -127,10 +127,12 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 		if( vertex_count == 0 || face_count == 0 )
 			return false;
 
-		GeometryData           geometry_data( vertex_count, layout );
+		GeometryData           geometry_data( layout );
 		std::vector< Vector4 > positions;
 		std::vector< Vector3 > normals;
 		std::vector< Vector2 > tex_coords;
+
+		geometry_data.Reserve( vertex_count, face_count );
 
 		if( layout.Contains( VertexComponent::Position ) )
 		{
@@ -539,7 +541,7 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 //////////////////////////////////////////////////////////////////////////
 
-	GeometryData geometry_data( vertex_count, layout );
+	GeometryData geometry_data( layout );
 
 	geometry_data.Reserve( vertex_count, face_count );
 

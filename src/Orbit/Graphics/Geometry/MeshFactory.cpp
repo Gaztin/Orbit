@@ -47,7 +47,7 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	const size_t vertex_stride = vertex_layout.GetStride();
 	const size_t vertex_count  = selector_vertex_count[ shape.GetType() ];
 	const size_t face_count    = selector_face_count[ shape.GetType() ];
-	GeometryData geometry_data = GeometryData( vertex_count, vertex_layout );
+	GeometryData geometry_data = GeometryData( vertex_layout );
 
 	geometry_data.Reserve( vertex_count, face_count );
 
@@ -202,7 +202,10 @@ void MeshFactory::GenerateSphereData( GeometryData& geometry_data ) const
 	for( size_t i = 0; i < recursion_level; ++i )
 	{
 		const size_t new_vertex_count = ( geometry_data.GetVertexCount() + geometry_data.GetFaceCount() * 3 );
-		GeometryData new_geometry_data( new_vertex_count, geometry_data.GetVertexLayout() );
+		const size_t new_face_count   = ( geometry_data.GetFaceCount() * 4 );
+		GeometryData new_geometry_data( geometry_data.GetVertexLayout() );
+
+		new_geometry_data.Reserve( new_vertex_count, new_face_count );
 
 		for( Vertex vertex : geometry_data.GetVertices() )
 			new_geometry_data.AddVertex( vertex );

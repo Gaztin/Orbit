@@ -36,7 +36,7 @@ class ORB_API_GRAPHICS GeometryData
 
 public:
 
-	explicit GeometryData( size_t max_vertex_count, const VertexLayout& vertex_layout );
+	explicit GeometryData( const VertexLayout& vertex_layout );
 	GeometryData( GeometryData&& other );
 
 public:
@@ -64,8 +64,12 @@ public:
 
 private:
 
-	uint8_t     EvalIndexSize  ( size_t vertex_count ) const;
-	IndexFormat EvalIndexFormat( void ) const;
+	void UpgradeFaceData( uint8_t new_index_size );
+
+private:
+
+	uint8_t     EvalIndexSize ( size_t index_or_vertex_count ) const;
+	IndexFormat GetIndexFormat( void )                         const;
 
 private:
 

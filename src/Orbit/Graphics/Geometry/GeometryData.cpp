@@ -24,9 +24,9 @@
 
 ORB_NAMESPACE_BEGIN
 
-GeometryData::GeometryData( size_t max_vertex_count, const VertexLayout& vertex_layout )
+GeometryData::GeometryData( const VertexLayout& vertex_layout )
 	: vertex_layout_( vertex_layout )
-	, index_size_   ( EvalIndexSize( max_vertex_count ) )
+	, index_size_   ( 0 )
 {
 }
 
@@ -41,12 +41,20 @@ GeometryData::GeometryData( GeometryData&& other )
 
 void GeometryData::Reserve( size_t vertex_count, size_t face_count )
 {
+	index_size_ = EvalIndexSize( vertex_count );
 	vertex_data_.reserve( vertex_layout_.GetStride() * vertex_count );
 	face_data_.reserve( index_size_ * face_count );
 }
 
 size_t GeometryData::AddFace( const Face& face )
 {
+	const size_t highest_face_index = *std::max_element( face.indices.begin(), face.indices.end() );
+
+	if( const uint8_t new_index_size = EvalIndexSize( highest_face_index ); new_index_size > index_size_ )
+		UpgradeFaceData( new_index_size );
+
+//////////////////////////////////////////////////////////////////////////
+
 	const size_t face_size = ( index_size_ * 3 );
 	const size_t index     = GetFaceCount();
 
@@ -89,14 +97,18 @@ size_t GeometryData::AddFace( const Face& face )
 
 size_t GeometryData::AddVertex( const Vertex& vertex )
 {
-	const size_t stride = vertex_layout_.GetStride();
-	const size_t index  = GetVertexCount();
+	const size_t stride           = vertex_layout_.GetStride();
+	const size_t old_vertex_count = GetVertexCount();
+
+	// Do we need to upgrade our index buffer?
+	if( const uint8_t new_index_size = EvalIndexSize( old_vertex_count + 1 ); new_index_size > index_size_ )
+		UpgradeFaceData( new_index_size );
 
 	vertex_data_.resize( vertex_data_.size() + stride );
 
-	SetVertex( index, vertex );
+	SetVertex( old_vertex_count, vertex );
 
-	return index;
+	return old_vertex_count;
 }
 
 void GeometryData::SetVertex( size_t index, const Vertex& vertex )
@@ -184,13 +196,16 @@ VertexRange GeometryData::GetVertices( void ) const
 Mesh GeometryData::ToMesh( void ) const
 {
 	const size_t vertex_stride = vertex_layout_.GetStride();
+	const size_t vertex_count  = GetVertexCount();
+	const size_t index_size    = EvalIndexSize( vertex_count );
+	const size_t index_count   = ( face_data_.size() / index_size );
 	Mesh         mesh;
 
 	if( !vertex_data_.empty() )
-		mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data_.data(), ( vertex_data_.size() / vertex_stride ), vertex_stride );
+		mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data_.data(), vertex_count, vertex_stride );
 
 	if( !face_data_.empty() )
-		mesh.index_buffer = std::make_unique< IndexBuffer >( EvalIndexFormat(), face_data_.data(), ( face_data_.size() / index_size_ ) );
+		mesh.index_buffer = std::make_unique< IndexBuffer >( GetIndexFormat(), face_data_.data(), index_count );
 
 	return mesh;
 }
@@ -200,33 +215,47 @@ GeometryData& GeometryData::operator=( GeometryData&& other )
 	vertex_layout_ = std::move( other.vertex_layout_ );
 	vertex_data_   = std::move( other.vertex_data_ );
 	face_data_     = std::move( other.face_data_ );
-	index_size_    = other.index_size_;
-
-	other.index_size_ = 0;
 
 	return *this;
 }
 
-uint8_t GeometryData::EvalIndexSize( size_t vertex_count ) const
+void GeometryData::UpgradeFaceData( uint8_t new_index_size )
 {
+	const size_t           old_index_size = index_size_;
+	const size_t           index_count    = face_data_.size() / old_index_size;
+	std::vector< uint8_t > new_face_data;
+
+	new_face_data.resize( index_count * new_index_size );
+
+	for( size_t i = 0; i < index_count; ++i )
+		std::memcpy( &new_face_data[ i * new_index_size ], &face_data_[ i * old_index_size ], old_index_size );
+
+	face_data_  = std::move( new_face_data );
+	index_size_ = new_index_size;
+}
+
+uint8_t GeometryData::EvalIndexSize( size_t index_or_vertex_count ) const
+{
+	if( index_or_vertex_count <= 1 )
+		return 1;
 
 #if( !ORB_HAS_D3D11 )
 
-	if( vertex_count <= std::numeric_limits< uint8_t >::max() )
+	if( index_or_vertex_count <= std::numeric_limits< uint8_t >::max() )
 		return 1;
 
 #endif // !ORB_HAS_D3D11
 
-	if( vertex_count <= std::numeric_limits< uint16_t >::max() )
+	if( index_or_vertex_count <= std::numeric_limits< uint16_t >::max() )
 		return 2;
 
-	if( vertex_count <= std::numeric_limits< uint32_t >::max() )
+	if( index_or_vertex_count <= std::numeric_limits< uint32_t >::max() )
 		return 4;
 
 	return 0;
 }
 
-IndexFormat GeometryData::EvalIndexFormat( void ) const
+IndexFormat GeometryData::GetIndexFormat( void ) const
 {
 	switch( index_size_ )
 	{
