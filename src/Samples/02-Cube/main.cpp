@@ -25,7 +25,6 @@
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Shape/CubeShape.h>
-#include <Orbit/Core/Shape/SphereShape.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
@@ -57,7 +56,7 @@ public:
 	SampleApp( void )
 		: window_         ( 800, 600 )
 		, shader_         ( cube_shader )
-		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::SphereShape( 1.0f ), cube_shader.GetVertexLayout() ) )
+		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), cube_shader.GetVertexLayout() ) )
 		, constant_buffer_( sizeof( ConstantData ) )
 		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
