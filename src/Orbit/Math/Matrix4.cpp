@@ -116,12 +116,13 @@ void Matrix4::Rotate( const Vector3& rotation )
 
 void Matrix4::Scale( const Vector3& scale )
 {
-	Matrix4 m;
-	m( 0, 0 ) = scale.x;
-	m( 1, 1 ) = scale.y;
-	m( 2, 2 ) = scale.z;
+	Matrix4& self = *this;
 
-	*this *= m;
+	for( size_t column = 0; column < 4; ++column )
+	{
+		for( size_t row = 0; row < 3; ++row )
+			self( column, row ) *= scale[ row ];
+	}
 }
 
 void Matrix4::Transpose( void )
