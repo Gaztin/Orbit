@@ -260,10 +260,11 @@ IndexFormat GeometryData::GetIndexFormat( void ) const
 {
 	switch( index_size_ )
 	{
-		default:
-		case 1: { return IndexFormat::Byte; }
-		case 2: { return IndexFormat::Word; }
-		case 4: { return IndexFormat::DoubleWord; }
+		default: { assert( false ); }
+
+		case 1: return IndexFormat::Byte;
+		case 2: return IndexFormat::Word;
+		case 4: return IndexFormat::DoubleWord;
 	}
 }
 
