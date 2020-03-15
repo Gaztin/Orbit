@@ -61,7 +61,6 @@ constexpr int AnsiCodeByLogType( LogType type )
 		case LogType::Info:    return 0;
 		case LogType::Warning: return 33;
 		case LogType::Error:   return 31;
-		case LogType::Error:   return 31;
 		case LogType::Debug:   return 30;
 		default:               return 0;
 	}
