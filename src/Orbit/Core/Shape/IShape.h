@@ -26,16 +26,11 @@ enum class ShapeType
 	Sphere,
 };
 
-class ORB_API_CORE IShape
+struct IShape
 {
-public:
-
 	virtual ~IShape( void ) = default;
 
-public:
-
 	virtual ShapeType GetType( void ) const = 0;
-
 };
 
 ORB_NAMESPACE_END

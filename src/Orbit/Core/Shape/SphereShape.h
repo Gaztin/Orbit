@@ -20,24 +20,13 @@
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE SphereShape final : public IShape
+struct SphereShape : IShape
 {
-public:
-
-	explicit SphereShape( float radius );
-
-public:
-
-	float Radius( void ) const { return radius_; }
-
-public:
+	explicit SphereShape( float radius ) : radius( radius ) { }
 
 	ShapeType GetType( void ) const override { return ShapeType::Sphere; }
 
-private:
-
-	float radius_;
-
+	float radius;
 };
 
 ORB_NAMESPACE_END

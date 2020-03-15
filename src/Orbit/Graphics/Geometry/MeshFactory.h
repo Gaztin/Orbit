@@ -24,10 +24,9 @@
 
 ORB_NAMESPACE_BEGIN
 
-class  CubeShape;
 class  GeometryData;
-class  IShape;
 class  VertexLayout;
+struct IShape;
 struct Mesh;
 
 class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >

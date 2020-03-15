@@ -52,7 +52,7 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 		{
 			const CubeShape& cube_shape = static_cast< const CubeShape& >( shape );
 
-			mesh.transform.Scale( Vector3( cube_shape.HalfExtent() ) );
+			mesh.transform.Scale( Vector3( cube_shape.half_extent ) );
 
 		} break;
 
@@ -60,7 +60,7 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 		{
 			const SphereShape& cube_shape = static_cast< const SphereShape& >( shape );
 
-			mesh.transform.Scale( Vector3( cube_shape.Radius() ) );
+			mesh.transform.Scale( Vector3( cube_shape.radius ) );
 
 		} break;
 	}
