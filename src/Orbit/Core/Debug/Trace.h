@@ -23,7 +23,7 @@ ORB_NAMESPACE_BEGIN
 #if defined( NDEBUG )
   #define ORB_TRACE( STR, ... )
 #else // NDEBUG
-  #define ORB_TRACE( STR, ... ) ORB_NAMESPACE LogInfo( STR, __VA_ARGS__ )
+  #define ORB_TRACE( STR, ... ) ORB_NAMESPACE LogDebug( STR, __VA_ARGS__ )
 #endif // !NDEBUG
 
 ORB_NAMESPACE_END

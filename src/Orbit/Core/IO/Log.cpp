@@ -35,6 +35,7 @@ enum class LogType
 	Info,
 	Warning,
 	Error,
+	Debug,
 };
 
 #if defined( ORB_OS_WINDOWS )
@@ -43,9 +44,10 @@ constexpr WORD AttributesByLogType( LogType type )
 {
 	switch( type )
 	{
-		case LogType::Info:    return ( FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE );
+		case LogType::Info:    return ( FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE );
 		case LogType::Warning: return ( FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN );
 		case LogType::Error:   return ( FOREGROUND_INTENSITY | FOREGROUND_RED );
+		case LogType::Debug:   return ( FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE );
 		default:               return 0;
 	}
 }
@@ -59,6 +61,8 @@ constexpr int AnsiCodeByLogType( LogType type )
 		case LogType::Info:    return 0;
 		case LogType::Warning: return 33;
 		case LogType::Error:   return 31;
+		case LogType::Error:   return 31;
+		case LogType::Debug:   return 30;
 		default:               return 0;
 	}
 }
@@ -72,6 +76,7 @@ constexpr int PriorityByLogType( LogType type )
 		case LogType::Info:    return ANDROID_LOG_INFO;
 		case LogType::Warning: return ANDROID_LOG_WARN;
 		case LogType::Error:   return ANDROID_LOG_ERROR;
+		case LogType::Debug:   return ANDROID_LOG_DEBUG;
 		default:               return ANDROID_LOG_UNKNOWN;
 	}
 }
@@ -132,6 +137,11 @@ void LogWarningString( std::string_view msg )
 void LogErrorString( std::string_view msg )
 {
 	LogString< LogType::Error >( msg );
+}
+
+void LogDebugString( std::string_view msg )
+{
+	LogString< LogType::Debug >( msg );
 }
 
 ORB_NAMESPACE_END
