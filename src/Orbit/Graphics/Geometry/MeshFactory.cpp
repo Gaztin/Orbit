@@ -118,8 +118,14 @@ void MeshFactory::GenerateCubeData( GeometryData& geometry_data ) const
 		                   -1.0f + ( 2.0f * ( ( position_indices[ i ] & 4 ) != 0 ) ),
 		                    1.0f );
 		const Color color( 0.75f, 0.75f, 0.75f, 1.0f );
+		Vertex      vertex;
 
-		geometry_data.AddVertex( { pos, normals[ i / 4 ], color, tex_coords[ i % 4 ] } );
+		vertex.position  = pos;
+		vertex.normal    = normals[ i / 4 ];
+		vertex.color     = color;
+		vertex.tex_coord = tex_coords[ i % 4 ];
+
+		geometry_data.AddVertex( vertex );
 	}
 }
 
