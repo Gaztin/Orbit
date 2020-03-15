@@ -125,6 +125,44 @@ void MeshFactory::GenerateCubeData( GeometryData& geometry_data ) const
 
 void MeshFactory::GenerateSphereData( GeometryData& geometry_data ) const
 {
+	/*
+	        .-.
+	      .´ | `.
+	    .´   |   `.
+	  .´_    |    _`.
+	   \ `-. ; .-´ / 
+	    \   / \   / 
+	     \ /   \ / 
+	      `-----´ 
+	
+	This is a hat.
+	The middle vertex is the crown, and the five outer vertices are its brim.
+	If you stitch together two opposite hats, you form an icosahedron.
+
+	        _-^-_
+	     _-´.´ `.`-_
+	 _.-´ ,´     `. `-._
+	|`-._´_________`_.-´|
+	|   /\         /\   |
+	|  /  \       /  \  |
+	| /    \     /    \ |
+	|/      \   /      \|
+	`--._____\ /____.--´
+	 `-_      :     _-´
+	    `-._  :  _-´
+	        `-:-´
+
+	The triangles that make up the icosphere are then "refined" by breaking them up into four smaller triangles, like so:
+	
+	    /\          /\
+	   /  \        /__\
+	  /    \  =>  /\  /\
+	 /______\    /__\/__\
+
+	 This step is performed recursively until satisfactory roundness is achieved.
+
+	*/
+
 	using Brim = std::array< uint16_t, 5 >;
 
 	struct Hat
