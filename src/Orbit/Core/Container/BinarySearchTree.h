@@ -48,6 +48,7 @@ public:
 
 public:
 
+	// #TODO: Implement constexpr version
 	void Insert( const ValueType& value )
 	{
 		Node** insert_at = &root_;
