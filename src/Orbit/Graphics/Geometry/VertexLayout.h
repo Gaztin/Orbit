@@ -60,7 +60,9 @@ class ORB_API_GRAPHICS VertexLayout
 
 public:
 
-	VertexLayout( void ) = default;
+	VertexLayout( void )                      = default;
+	VertexLayout( const VertexLayout& other ) = default;
+	VertexLayout( VertexLayout&& other );
 	VertexLayout( std::initializer_list< VertexComponent > components );
 
 public:
@@ -78,6 +80,11 @@ public:
 
 	VertexComponentIterator begin( void ) const;
 	VertexComponentIterator end  ( void ) const;
+
+public:
+
+	VertexLayout& operator=( const VertexLayout& other ) = default;
+	VertexLayout& operator=( VertexLayout&& other );
 
 private:
 

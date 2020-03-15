@@ -17,7 +17,7 @@
 
 #include "Asset.h"
 
-#include "Orbit/Core/IO/Log.h"
+#include "Orbit/Core/Debug/Trace.h"
 #include "Orbit/Core/Platform/Android/AndroidApp.h"
 
 #include <algorithm>
@@ -37,10 +37,7 @@ ORB_NAMESPACE_BEGIN
 
 Asset::Asset( std::string_view path )
 {
-
-#if defined( _DEBUG )
-	LogInfo( "Loading asset: %s", path.data() );
-#endif // _DEBUG
+	ORB_TRACE( "Loading asset: %s", path.data() );
 
 #if defined( ORB_OS_WINDOWS )
 

@@ -79,12 +79,12 @@ namespace ShaderGen
 		}
 	};
 
-#if defined( _DEBUG )
+#if !defined( NDEBUG )
 
 	static void LogSourceCodeLine( const char* begin, int32_t length, int32_t line )
 	{
-		if( length > 0 ) LogInfo( "%3d| %.*s", line, length, begin );
-		else             LogInfo( "%3d|", line );
+		if( length > 0 ) LogDebug( "%3d| %.*s", line, length, begin );
+		else             LogDebug( "%3d|", line );
 	}
 
 	static void LogSourceCode( std::string_view code )
@@ -92,7 +92,7 @@ namespace ShaderGen
 		int32_t line       = 0;
 		int32_t line_begin = 0;
 
-		LogInfoString( "----------------------------------------" );
+		LogDebugString( "----------------------------------------" );
 
 		for( int32_t it = 0; it < static_cast< int32_t >( code.size() ); ++it )
 		{
@@ -107,10 +107,10 @@ namespace ShaderGen
 		if( line_begin < static_cast< int32_t >( code.size() ) )
 			LogSourceCodeLine( &code[ line_begin ], static_cast< int32_t >( line_begin - code.size() ), ( ++line ) );
 
-		LogInfoString( "----------------------------------------" );
+		LogDebugString( "----------------------------------------" );
 	}
 
-#endif // _DEBUG
+#endif // !NDEBUG
 
 	IGenerator::IGenerator( void )
 	{

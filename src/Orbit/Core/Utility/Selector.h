@@ -16,33 +16,42 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Graphics.h"
+#include "Orbit/Core/Container/BinarySearchTree.h"
+#include "Orbit/Core/Container/Pair.h"
 
-#include <map>
-#include <vector>
+#include <utility>
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
-
-struct ORB_API_GRAPHICS RenderCommand
+template< typename KeyType, typename ValueType >
+class Selector
 {
-	std::map< ShaderType, std::vector< Ref< ConstantBuffer > > > constant_buffers;
+public:
 
-	std::vector< Ref< Texture2D > > textures;
+	using PairType = Pair< KeyType, ValueType >;
 
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
+public:
 
-	Topology topology = Topology::Triangles;
+	constexpr Selector( std::initializer_list< PairType > pairs )
+	{
+		for( const PairType& pair : pairs )
+			tree_.Insert( pair );
+	}
+
+public:
+
+	constexpr ValueType operator[]( const KeyType& key ) const
+	{
+		if( const PairType* pair = tree_.Search( PairType( key, { } ) ); pair != nullptr )
+			return pair->Value();
+
+		return { };
+	}
+
+private:
+
+	BinarySearchTree< PairType > tree_;
+
 };
 
 ORB_NAMESPACE_END

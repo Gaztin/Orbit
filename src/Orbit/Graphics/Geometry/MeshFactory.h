@@ -16,33 +16,30 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
+#include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Graphics/Graphics.h"
 
-#include <map>
+#include <memory>
 #include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
+class  GeometryData;
+class  VertexLayout;
+struct IShape;
+struct Mesh;
 
-struct ORB_API_GRAPHICS RenderCommand
+class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >
 {
-	std::map< ShaderType, std::vector< Ref< ConstantBuffer > > > constant_buffers;
+public:
 
-	std::vector< Ref< Texture2D > > textures;
+	Mesh CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout ) const;
 
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
+private:
 
-	Topology topology = Topology::Triangles;
+	void GenerateCubeData  ( GeometryData& geometry_data ) const;
+	void GenerateSphereData( GeometryData& geometry_data ) const;
+
 };
 
 ORB_NAMESPACE_END

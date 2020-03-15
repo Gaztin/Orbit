@@ -16,33 +16,14 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Graphics.h"
-
-#include <map>
-#include <vector>
+#include "Orbit/Core/IO/Log.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
-
-struct ORB_API_GRAPHICS RenderCommand
-{
-	std::map< ShaderType, std::vector< Ref< ConstantBuffer > > > constant_buffers;
-
-	std::vector< Ref< Texture2D > > textures;
-
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
-
-	Topology topology = Topology::Triangles;
-};
+#if defined( NDEBUG )
+  #define ORB_TRACE( STR, ... )
+#else // NDEBUG
+  #define ORB_TRACE( STR, ... ) ORB_NAMESPACE LogDebug( STR, __VA_ARGS__ )
+#endif // !NDEBUG
 
 ORB_NAMESPACE_END

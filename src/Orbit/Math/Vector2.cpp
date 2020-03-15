@@ -17,6 +17,8 @@
 
 #include "Vector2.h"
 
+#include "Orbit/Math/Vector3.h"
+
 ORB_NAMESPACE_BEGIN
 
 Vector2::Vector2( void )
@@ -34,6 +36,12 @@ Vector2::Vector2( float scalar )
 Vector2::Vector2( float x, float y )
 	: x{ x }
 	, y{ y }
+{
+}
+
+Vector2::Vector2( const Vector3& vec )
+	: x{ vec.x }
+	, y{ vec.y }
 {
 }
 

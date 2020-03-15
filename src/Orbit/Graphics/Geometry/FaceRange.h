@@ -16,33 +16,42 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Graphics.h"
-
-#include <map>
-#include <vector>
+#include "Orbit/Graphics/Geometry/Face.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
+class GeometryData;
 
-struct ORB_API_GRAPHICS RenderCommand
+class ORB_API_GRAPHICS FaceRange
 {
-	std::map< ShaderType, std::vector< Ref< ConstantBuffer > > > constant_buffers;
+	ORB_DISABLE_COPY( FaceRange );
 
-	std::vector< Ref< Texture2D > > textures;
+public:
 
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
+	struct Iterator
+	{
+		Iterator& operator++( void );
+		Face      operator* ( void )                  const;
+		bool      operator!=( const Iterator& other ) const;
 
-	Topology topology = Topology::Triangles;
+		const FaceRange* range;
+
+		size_t           index;
+	};
+
+public:
+
+	explicit FaceRange( const GeometryData* geometry );
+
+public:
+
+	Iterator begin( void ) const;
+	Iterator end  ( void ) const;
+
+private:
+
+	const GeometryData* geometry_;
+
 };
 
 ORB_NAMESPACE_END

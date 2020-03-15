@@ -17,12 +17,14 @@
 
 #include "CubeShader.h"
 
+#include <Orbit/Graphics/Shader/Generator/Variables/Float.h>
+#include <Orbit/Graphics/Shader/Generator/Variables/Vec3.h>
 #include <Orbit/Graphics/Shader/Generator/Variables/Vec4.h>
 
 CubeShader::Vec4 CubeShader::VSMain( void )
 {
-	v_position = u_mvp * a_position;
-	v_color    = a_color;
+	v_position = u_view_projection * u_model * a_position;
+	v_normal   = ( Transpose( u_model_inverse ) * Vec4( a_normal, 0.0 ) )->xyz;
 	v_texcoord = a_texcoord;
 
 	return v_position;
@@ -30,8 +32,9 @@ CubeShader::Vec4 CubeShader::VSMain( void )
 
 CubeShader::Vec4 CubeShader::PSMain( void )
 {
-	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
-	Vec4 out_color = tex_color * v_color;
+	Vec4  tex_color = Sample( diffuse_texture, v_texcoord );
+	Vec3  light_dir = Vec3( -0.3, 1.0, -0.8 );
+	Float influence = ( Dot( v_normal, light_dir ) * 0.5 + 0.5 );
 
-	return out_color;
+	return tex_color * influence;
 }

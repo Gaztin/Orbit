@@ -18,7 +18,7 @@
 #pragma once
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"
-#include "Orbit/Graphics/Shader/VertexLayout.h"
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
 
 #include <variant>
 #include <vector>

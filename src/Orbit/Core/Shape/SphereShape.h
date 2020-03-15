@@ -16,33 +16,17 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Graphics.h"
-
-#include <map>
-#include <vector>
+#include "Orbit/Core/Shape/IShape.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
-
-struct ORB_API_GRAPHICS RenderCommand
+struct SphereShape : IShape
 {
-	std::map< ShaderType, std::vector< Ref< ConstantBuffer > > > constant_buffers;
+	explicit SphereShape( float radius ) : radius( radius ) { }
 
-	std::vector< Ref< Texture2D > > textures;
+	ShapeType GetType( void ) const override { return ShapeType::Sphere; }
 
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
-
-	Topology topology = Topology::Triangles;
+	float radius;
 };
 
 ORB_NAMESPACE_END

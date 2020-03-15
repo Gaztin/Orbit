@@ -25,6 +25,7 @@ ORB_NAMESPACE_BEGIN
 extern ORB_API_CORE void LogInfoString    ( std::string_view msg );
 extern ORB_API_CORE void LogWarningString ( std::string_view msg );
 extern ORB_API_CORE void LogErrorString   ( std::string_view msg );
+extern ORB_API_CORE void LogDebugString   ( std::string_view msg );
 
 template< typename... Args >
 inline void LogInfo( const char* format, Args&&... args )
@@ -60,6 +61,18 @@ template<>
 inline void LogError<>( const char* format )
 {
 	return LogErrorString( format );
+}
+
+template< typename... Args >
+inline void LogDebug( const char* format, Args&&... args )
+{
+	return LogDebugString( Format( format, args... ) );
+}
+
+template<>
+inline void LogDebug<>( const char* format )
+{
+	return LogDebugString( format );
 }
 
 ORB_NAMESPACE_END

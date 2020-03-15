@@ -24,11 +24,12 @@
 #include <Orbit/Core/Input/Key.h>
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/IO/Log.h>
+#include <Orbit/Core/Shape/CubeShape.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
-#include <Orbit/Graphics/Buffer/IndexBuffer.h>
-#include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
+#include <Orbit/Graphics/Geometry/MeshFactory.h>
+#include <Orbit/Graphics/Geometry/Mesh.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
@@ -38,74 +39,13 @@
 #include <Orbit/Math/Vector3.h>
 #include <Orbit/Math/Vector4.h>
 
-struct Vertex
-{
-	Orbit::Vector4 pos;
-	Orbit::Color   color;
-	Orbit::Vector2 texcoord;
-};
-
 static CubeShader cube_shader;
-
-const std::initializer_list< Vertex > vertex_data
-{
-	/* Front face */
-	{ Orbit::Vector4( -1.f, -1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 1.f ) },
-	{ Orbit::Vector4( -1.f,  1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 0.f ) },
-	{ Orbit::Vector4(  1.f,  1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 0.f ) },
-	{ Orbit::Vector4(  1.f, -1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 1.f ) },
-	/* Right face */
-	{ Orbit::Vector4( 1.f, -1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 1.f ) },
-	{ Orbit::Vector4( 1.f,  1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 0.f ) },
-	{ Orbit::Vector4( 1.f,  1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 0.f ) },
-	{ Orbit::Vector4( 1.f, -1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 1.f ) },
-	/* Back face */
-	{ Orbit::Vector4(  1.f, -1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 1.f ) },
-	{ Orbit::Vector4(  1.f,  1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 0.f ) },
-	{ Orbit::Vector4( -1.f,  1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 0.f ) },
-	{ Orbit::Vector4( -1.f, -1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 1.f ) },
-	/* Left face */
-	{ Orbit::Vector4( -1.f, -1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 1.f ) },
-	{ Orbit::Vector4( -1.f,  1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 0.f ) },
-	{ Orbit::Vector4( -1.f,  1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 0.f ) },
-	{ Orbit::Vector4( -1.f, -1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 1.f ) },
-	/* Bottom face */
-	{ Orbit::Vector4( -1.f, -1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 1.f ) },
-	{ Orbit::Vector4(  1.f, -1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 0.f ) },
-	{ Orbit::Vector4(  1.f, -1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 0.f ) },
-	{ Orbit::Vector4( -1.f, -1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 1.f ) },
-	/* Top face */
-	{ Orbit::Vector4(  1.f,  1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 1.f ) },
-	{ Orbit::Vector4(  1.f,  1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 0.f, 0.f ) },
-	{ Orbit::Vector4( -1.f,  1.f, -1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 0.f ) },
-	{ Orbit::Vector4( -1.f,  1.f,  1.f, 1.f ), Orbit::Color( 1.f, 1.f, 1.f ), Orbit::Vector2( 1.f, 1.f ) },
-};
-
-const std::initializer_list< uint16_t > index_data
-{
-	/* Front face */
-	0, 1, 2,
-	0, 2, 3,
-	/* Right face */
-	4, 5, 6,
-	4, 6, 7,
-	/* Back face */
-	8, 9, 10,
-	8, 10, 11,
-	/* Left face */
-	12, 13, 14,
-	12, 14, 15,
-	/* Top face */
-	16, 17, 18,
-	16, 18, 19,
-	/* Bottom face */
-	20, 21, 22,
-	20, 22, 23,
-};
 
 struct ConstantData
 {
-	Orbit::Matrix4 mvp;
+	Orbit::Matrix4 view_projection;
+	Orbit::Matrix4 model;
+	Orbit::Matrix4 model_inverse;
 
 } constant_data;
 
@@ -116,14 +56,15 @@ public:
 	SampleApp( void )
 		: window_         ( 800, 600 )
 		, shader_         ( cube_shader )
-		, vertex_buffer_  ( vertex_data )
-		, index_buffer_   ( index_data )
+		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), cube_shader.GetVertexLayout() ) )
 		, constant_buffer_( sizeof( ConstantData ) )
 		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
 		window_.SetTitle( "Orbit Sample (02-Cube)" );
 		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
+		camera_.position.y = 2.000f;
+		camera_.rotation.x = 0.125f * Orbit::Pi;
 	}
 
 public:
@@ -132,10 +73,11 @@ public:
 	{
 		/* Update constant buffer */
 		{
-			model_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
+			model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
-			constant_data.mvp = model_ * camera_.GetViewProjection();
-
+			constant_data.view_projection = camera_.GetViewProjection();
+			constant_data.model           = ( mesh_.transform * model_matrix_ );
+			constant_data.model_inverse   = constant_data.model.Inverted();
 			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 		}
 
@@ -145,8 +87,8 @@ public:
 		camera_.Update( delta_time );
 
 		Orbit::RenderCommand command;
-		command.vertex_buffer = vertex_buffer_;
-		command.index_buffer  = index_buffer_;
+		command.vertex_buffer = *mesh_.vertex_buffer;
+		command.index_buffer  = *mesh_.index_buffer;
 		command.shader        = shader_;
 		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 		command.textures.emplace_back( texture_.GetTexture2D() );
@@ -164,12 +106,11 @@ private:
 	Orbit::Window            window_;
 	Orbit::RenderContext     render_context_;
 	Orbit::Shader            shader_;
-	Orbit::VertexBuffer      vertex_buffer_;
-	Orbit::IndexBuffer       index_buffer_;
+	Orbit::Mesh              mesh_;
 	Orbit::ConstantBuffer    constant_buffer_;
 	Orbit::Texture           texture_;
 	Orbit::BasicRenderer     renderer_;
-	Orbit::Matrix4           model_;
+	Orbit::Matrix4           model_matrix_;
 
 	Camera camera_;
 

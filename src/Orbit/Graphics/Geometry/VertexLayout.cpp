@@ -100,6 +100,11 @@ VertexComponentIterator& VertexComponentIterator::operator++( void )
 	return *this;
 }
 
+VertexLayout::VertexLayout( VertexLayout&& other )
+	: components_( std::move( other.components_ ) )
+{
+}
+
 VertexLayout::VertexLayout( std::initializer_list< VertexComponent > components )
 	: components_{ components }
 {
@@ -168,6 +173,13 @@ VertexComponentIterator VertexLayout::end( void ) const
 	IndexedVertexComponent indexed_component{ std::numeric_limits< VertexComponent >::max(), components_.size() };
 
 	return { this, indexed_component };
+}
+
+VertexLayout& VertexLayout::operator=( VertexLayout&& other )
+{
+	components_ = std::move( other.components_ );
+
+	return *this;
 }
 
 ORB_NAMESPACE_END

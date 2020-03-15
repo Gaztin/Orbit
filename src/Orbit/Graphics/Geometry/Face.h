@@ -16,33 +16,15 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
 #include "Orbit/Graphics/Graphics.h"
 
-#include <map>
-#include <vector>
+#include <array>
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
-
-struct ORB_API_GRAPHICS RenderCommand
+struct Face
 {
-	std::map< ShaderType, std::vector< Ref< ConstantBuffer > > > constant_buffers;
-
-	std::vector< Ref< Texture2D > > textures;
-
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
-
-	Topology topology = Topology::Triangles;
+	std::array< size_t, 3 > indices{ 0, 0, 0 };
 };
 
 ORB_NAMESPACE_END

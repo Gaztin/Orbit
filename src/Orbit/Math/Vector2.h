@@ -20,6 +20,8 @@
 
 ORB_NAMESPACE_BEGIN
 
+class Vector3;
+
 class ORB_API_MATH Vector2 final : public VectorBase< Vector2, 2 >
 {
 public:
@@ -27,6 +29,7 @@ public:
 	Vector2         ( void );
 	explicit Vector2( float scalar );
 	Vector2         ( float x, float y );
+	explicit Vector2( const Vector3& vec );
 
 public:
 

@@ -35,6 +35,21 @@ Matrix4::Matrix4( std::initializer_list< float > elements )
 		( *this )[ i ] = *( elements.begin() + i );
 }
 
+void Matrix4::TranslateX( float translation )
+{
+	Translate( Vector3( translation, 0.0f, 0.0f ) );
+}
+
+void Matrix4::TranslateY( float translation )
+{
+	Translate( Vector3( 0.0f, translation, 0.0f ) );
+}
+
+void Matrix4::TranslateZ( float translation )
+{
+	Translate( Vector3( 0.0f, 0.0f, translation ) );
+}
+
 void Matrix4::Translate( const Vector3& translation )
 {
 	Matrix4&      self = *this;
@@ -44,34 +59,70 @@ void Matrix4::Translate( const Vector3& translation )
 		self( i, 3 ) = Vector4( self( i, 0 ), self( i, 1 ), self( i, 2 ), self( i, 3 ) ).DotProduct( t4 );
 }
 
+void Matrix4::RotateX( float rotation )
+{
+	const float c = cosf( rotation );
+	const float s = sinf( rotation );
+	Matrix4     rot;
+
+	rot( 1, 1 ) =  c;
+	rot( 1, 2 ) = -s;
+	rot( 2, 1 ) =  s;
+	rot( 2, 2 ) =  c;
+
+	*this *= rot;
+}
+
+void Matrix4::RotateY( float rotation )
+{
+	const float c = cosf( rotation );
+	const float s = sinf( rotation );
+	Matrix4     rot;
+
+	rot( 0, 0 ) =  c;
+	rot( 0, 2 ) = -s;
+	rot( 2, 0 ) =  s;
+	rot( 2, 2 ) =  c;
+
+	*this *= rot;
+}
+
+void Matrix4::RotateZ( float rotation )
+{
+	const float c = cosf( rotation );
+	const float s = sinf( rotation );
+	Matrix4     rot;
+
+	rot( 0, 0 ) =  c;
+	rot( 0, 1 ) = -s;
+	rot( 1, 0 ) =  s;
+	rot( 1, 1 ) =  c;
+
+	*this *= rot;
+}
+
 void Matrix4::Rotate( const Vector3& rotation )
 {
-	const float xcos = cosf( rotation.x );
-	const float xsin = sinf( rotation.x );
-	const float ycos = cosf( rotation.y );
-	const float ysin = sinf( rotation.y );
-	const float zcos = cosf( rotation.z );
-	const float zsin = sinf( rotation.z );
-	Matrix4     rotx;
-	Matrix4     roty;
-	Matrix4     rotz;
+	Matrix4 rotx;
+	Matrix4 roty;
+	Matrix4 rotz;
 
-	rotx( 1, 1 ) =  xcos;
-	rotx( 1, 2 ) = -xsin;
-	rotx( 2, 1 ) =  xsin;
-	rotx( 2, 2 ) =  xcos;
-
-	roty( 0, 0 ) =  ycos;
-	roty( 0, 2 ) = -ysin;
-	roty( 2, 0 ) =  ysin;
-	roty( 2, 2 ) =  ycos;
-
-	rotz( 0, 0 ) =  zcos;
-	rotz( 0, 1 ) = -zsin;
-	rotz( 1, 0 ) =  zsin;
-	rotz( 1, 1 ) =  zcos;
+	rotx.RotateX( rotation.x );
+	roty.RotateY( rotation.y );
+	rotz.RotateZ( rotation.z );
 
 	*this *= ( rotx * roty * rotz );
+}
+
+void Matrix4::Scale( const Vector3& scale )
+{
+	Matrix4& self = *this;
+
+	for( size_t column = 0; column < 4; ++column )
+	{
+		for( size_t row = 0; row < 3; ++row )
+			self( column, row ) *= scale[ row ];
+	}
 }
 
 void Matrix4::Transpose( void )

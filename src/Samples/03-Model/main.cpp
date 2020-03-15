@@ -26,7 +26,7 @@
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Model/Model.h>
+#include <Orbit/Graphics/Geometry/Model.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>

@@ -154,8 +154,6 @@ void ConstantBuffer::Unbind( [[ maybe_unused ]] ShaderType type, [[ maybe_unused
 
 		case( unique_index_v< Private::_ConstantBufferDetailsOpenGL31, Private::ConstantBufferDetails > ):
 		{
-			auto& details = std::get< Private::_ConstantBufferDetailsOpenGL31 >( details_ );
-
 			glBindBufferBase( OpenGLBufferTarget::Uniform, global_slot, 0 );
 			glBindBuffer( OpenGLBufferTarget::Uniform, 0 );
 

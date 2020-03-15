@@ -15,83 +15,42 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Vector4.h"
+#include "VertexRange.h"
 
-#include "Orbit/Math/Vector2.h"
-#include "Orbit/Math/Vector3.h"
+#include "Orbit/Graphics/Geometry/GeometryData.h"
 
 ORB_NAMESPACE_BEGIN
 
-Vector4::Vector4( void )
-	: x{ 0.0f }
-	, y{ 0.0f }
-	, z{ 0.0f }
-	, w{ 0.0f }
+VertexRange::Iterator& VertexRange::Iterator::operator++( void )
+{
+	++index;
+
+	return *this;
+}
+
+Vertex VertexRange::Iterator::operator*( void ) const
+{
+	return range->geometry_->GetVertex( index );
+}
+
+bool VertexRange::Iterator::operator!=( const Iterator& other ) const
+{
+	return ( ( range != other.range ) || ( index != other.index ) );
+}
+
+VertexRange::VertexRange( const GeometryData* geometry )
+	: geometry_( geometry )
 {
 }
 
-Vector4::Vector4( float scalar )
-	: x{ scalar }
-	, y{ scalar }
-	, z{ scalar }
-	, w{ scalar }
+VertexRange::Iterator VertexRange::begin( void ) const
 {
+	return Iterator{ this, 0 };
 }
 
-Vector4::Vector4( const Vector3& xyz, float w )
-	: x{ xyz.x }
-	, y{ xyz.y }
-	, z{ xyz.z }
-	, w{ w }
+VertexRange::Iterator VertexRange::end( void ) const
 {
-}
-
-Vector4::Vector4( const Vector2& xy, const Vector2& zw )
-	: x{ xy.x }
-	, y{ xy.y }
-	, z{ zw.x }
-	, w{ zw.y }
-{
-}
-
-Vector4::Vector4( const Vector2& xy, float z, float w )
-	: x{ xy.x }
-	, y{ xy.y }
-	, z{ z }
-	, w{ w }
-{
-}
-
-Vector4::Vector4( float x, const Vector3& yzw )
-	: x{ x }
-	, y{ yzw.x }
-	, z{ yzw.y }
-	, w{ yzw.z }
-{
-}
-
-Vector4::Vector4( float x, const Vector2& yz, float w )
-	: x{ x }
-	, y{ yz.x }
-	, z{ yz.y }
-	, w{ w }
-{
-}
-
-Vector4::Vector4( float x, float y, const Vector2& zw )
-	: x{ x }
-	, y{ y }
-	, z{ zw.x }
-	, w{ zw.y }
-{
-}
-
-Vector4::Vector4( float x, float y, float z, float w )
-	: x{ x }
-	, y{ y }
-	, z{ z }
-	, w{ w }
-{
+	return Iterator{ this, geometry_->GetVertexCount() };
 }
 
 ORB_NAMESPACE_END

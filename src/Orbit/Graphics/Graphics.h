@@ -118,6 +118,13 @@ enum class PixelFormat
 	RGBA,
 };
 
+enum class Topology
+{
+	Points,
+	Lines,
+	Triangles,
+};
+
 #if( ORB_HAS_D3D11 )
 constexpr GraphicsAPI default_graphics_api = GraphicsAPI::D3D11;
 #elif( ORB_HAS_OPENGL )

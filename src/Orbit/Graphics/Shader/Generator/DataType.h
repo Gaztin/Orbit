@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Shader/VertexLayout.h"
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
 
 #include <string_view>
 
@@ -73,6 +73,7 @@ namespace ShaderGen
 					case 3: return DataType::FVec3;
 					case 4: return DataType::FVec4;
 				}
+
 			} break;
 
 			case PrimitiveDataType::Int:
@@ -84,6 +85,7 @@ namespace ShaderGen
 					case 4: return DataType::IVec3;
 					case 3: return DataType::IVec4;
 				}
+
 			} break;
 		}
 
