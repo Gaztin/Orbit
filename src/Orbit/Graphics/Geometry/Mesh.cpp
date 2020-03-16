@@ -15,44 +15,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Math/Matrix4.h"
-
-#include <memory>
-#include <string_view>
-#include <string>
+#include "Mesh.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Plane;
-
-class ORB_API_GRAPHICS Mesh
+Mesh::Mesh( std::string_view name )
+	: name_( name )
 {
-	friend class GeometryData;
-
-public:
-
-	explicit Mesh( std::string_view name );
-
-public:
-
-	std::string_view    GetName        ( void ) const { return name_; }
-	Ref< VertexBuffer > GetVertexBuffer( void ) const { return vertex_buffer_ ? Ref( *vertex_buffer_ ) : nullptr; }
-	Ref< IndexBuffer >  GetIndexBuffer ( void ) const { return index_buffer_  ? Ref( *index_buffer_  ) : nullptr; }
-
-public:
-
-	Matrix4 transform;
-
-private:
-
-	std::string                     name_;
-
-	std::unique_ptr< VertexBuffer > vertex_buffer_;
-	std::unique_ptr< IndexBuffer >  index_buffer_;
-};
+}
 
 ORB_NAMESPACE_END

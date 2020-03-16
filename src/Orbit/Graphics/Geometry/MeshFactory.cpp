@@ -44,7 +44,7 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 
 //////////////////////////////////////////////////////////////////////////
 
-	Mesh mesh = geometry_data.ToMesh();
+	Mesh mesh = geometry_data.ToMesh( EvalShapeName( shape.GetType() ) );
 
 	switch( shape.GetType() )
 	{
@@ -66,6 +66,16 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	}
 
 	return mesh;
+}
+
+std::string_view MeshFactory::EvalShapeName( ShapeType type ) const
+{
+	switch( type )
+	{
+		case ShapeType::Cube:   return "Cube";
+		case ShapeType::Sphere: return "Sphere";
+		default:                return "UnknownShape";
+	}
 }
 
 void MeshFactory::GenerateCubeData( GeometryData& geometry_data ) const

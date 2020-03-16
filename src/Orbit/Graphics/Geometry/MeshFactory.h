@@ -16,18 +16,20 @@
  */
 
 #pragma once
+#include "Orbit/Core/Shape/IShape.h"
 #include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Graphics/Graphics.h"
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 ORB_NAMESPACE_BEGIN
 
 class  GeometryData;
+class  Mesh;
 class  VertexLayout;
 struct IShape;
-struct Mesh;
 
 class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >
 {
@@ -37,8 +39,9 @@ public:
 
 private:
 
-	void GenerateCubeData  ( GeometryData& geometry_data ) const;
-	void GenerateSphereData( GeometryData& geometry_data ) const;
+	std::string_view EvalShapeName     ( ShapeType type )              const;
+	void             GenerateCubeData  ( GeometryData& geometry_data ) const;
+	void             GenerateSphereData( GeometryData& geometry_data ) const;
 
 };
 

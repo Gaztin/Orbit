@@ -87,8 +87,8 @@ public:
 		camera_.Update( delta_time );
 
 		Orbit::RenderCommand command;
-		command.vertex_buffer = *mesh_.vertex_buffer;
-		command.index_buffer  = *mesh_.index_buffer;
+		command.vertex_buffer = mesh_.GetVertexBuffer();
+		command.index_buffer  = mesh_.GetIndexBuffer();
 		command.shader        = shader_;
 		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 		command.textures.emplace_back( texture_.GetTexture2D() );

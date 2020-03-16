@@ -475,8 +475,7 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 
 //////////////////////////////////////////////////////////////////////////
 
-		Mesh mesh = geometry_data.ToMesh();
-		mesh.name = geometry.Attribute( "name" );
+		Mesh mesh = geometry_data.ToMesh( geometry.Attribute( "name" ) );
 		meshes_.emplace_back( std::move( mesh ) );
 
 		mesh_id_table[ "#" + geometry_id ] = meshes_.size();
@@ -565,8 +564,7 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 //////////////////////////////////////////////////////////////////////////
 
-	Mesh mesh = geometry_data.ToMesh();
-	mesh.name = "OBJRoot";
+	Mesh mesh = geometry_data.ToMesh( "OBJRoot" );
 	meshes_.emplace_back( std::move( mesh ) );
 
 	return true;
