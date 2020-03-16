@@ -32,6 +32,11 @@ public:
 	{
 	}
 
+	Ref( std::nullptr_t )
+		: ptr_( nullptr )
+	{
+	}
+
 	Ref( const Ref& other )
 		: ptr_( other.ptr_ )
 	{
