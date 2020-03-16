@@ -21,13 +21,15 @@
 #include "Orbit/Graphics/Graphics.h"
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 ORB_NAMESPACE_BEGIN
 
 class  GeometryData;
+class  Mesh;
 class  VertexLayout;
-struct Mesh;
+struct IShape;
 
 class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >
 {

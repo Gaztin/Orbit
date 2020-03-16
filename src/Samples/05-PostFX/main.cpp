@@ -91,8 +91,8 @@ public:
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
-			command.vertex_buffer = *mesh.vertex_buffer;
-			command.index_buffer  = *mesh.index_buffer;
+			command.vertex_buffer = mesh.GetVertexBuffer();
+			command.index_buffer  = mesh.GetIndexBuffer();
 			command.shader        = scene_shader_;
 			command.frame_buffer  = frame_buffer_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( scene_vertex_constant_buffer_ );

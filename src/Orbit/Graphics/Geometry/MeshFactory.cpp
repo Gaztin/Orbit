@@ -71,6 +71,16 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 	return mesh;
 }
 
+std::string_view MeshFactory::EvalShapeName( ShapeType type ) const
+{
+	switch( type )
+	{
+		case ShapeType::Cube:   return "Cube";
+		case ShapeType::Sphere: return "Sphere";
+		default:                return "UnknownShape";
+	}
+}
+
 void MeshFactory::GenerateCubeData( GeometryData& geometry_data ) const
 {
 	for( size_t side = 0; side < 6; ++side )
