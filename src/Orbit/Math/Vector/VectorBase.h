@@ -67,6 +67,22 @@ public:
 		return *this;
 	}
 
+	Derived operator+( void ) const
+	{
+		Derived v;
+		for( size_t i = 0; i < Size; ++i )
+			v[ i ] = ( *this )[ i ];
+		return v;
+	}
+
+	Derived operator-( void ) const
+	{
+		Derived v;
+		for( size_t i = 0; i < Size; ++i )
+			v[ i ] = -( ( *this )[ i ] );
+		return v;
+	}
+
 	Derived operator+( const VectorBase& rhs ) const
 	{
 		Derived v;
