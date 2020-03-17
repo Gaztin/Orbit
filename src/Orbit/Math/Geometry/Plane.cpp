@@ -38,7 +38,7 @@ Plane::PlaneIntersectionResult Plane::Intersect( const Plane& other ) const
 	// Are planes parallel?
 	if( orthogonal.x == 0.0f && orthogonal.y == 0.0f && orthogonal.z == 0.0f )
 	{
-		// Planes are the same, entire plane intersects
+		// Check if planes are the same
 		if( displacement == other.displacement )
 			return *this;
 
@@ -47,6 +47,22 @@ Plane::PlaneIntersectionResult Plane::Intersect( const Plane& other ) const
 	}
 
 	return Line( orthogonal, Vector2( displacement, other.displacement ) );
+}
+
+Plane::LineIntersectionResult Plane::Intersect( const Line& line ) const
+{
+	// Check if plane contains line
+	if( normal.DotProduct( line.direction ) == 0.0f )
+		return line;
+
+//////////////////////////////////////////////////////////////////////////
+
+	const Vector3 point_on_plane  = ( normal * displacement );
+	const Vector3 line_start      = ( line.direction * -100.0f ); // #TODO: Fix magic number
+	const Vector3 plane_to_line   = ( line_start - point_on_plane );
+	const float   travel_distance = ( ( -normal ).DotProduct( plane_to_line ) / normal.DotProduct( line.direction ) );
+
+	return ( line_start + ( line.direction * travel_distance ) );
 }
 
 ORB_NAMESPACE_END

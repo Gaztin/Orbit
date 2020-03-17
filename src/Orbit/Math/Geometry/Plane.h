@@ -27,6 +27,7 @@ class ORB_API_MATH Plane
 public:
 
 	using PlaneIntersectionResult = std::variant< Plane, Line >;
+	using LineIntersectionResult  = std::variant< Line, Vector3 >;
 
 public:
 
@@ -36,6 +37,7 @@ public:
 public:
 
 	PlaneIntersectionResult Intersect( const Plane& other ) const;
+	LineIntersectionResult  Intersect( const Line& line )   const;
 
 public:
 
