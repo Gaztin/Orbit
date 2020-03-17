@@ -23,7 +23,7 @@
 #include "Orbit/Graphics/Geometry/GeometryData.h"
 #include "Orbit/Graphics/Geometry/Mesh.h"
 #include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/Math/Vector2.h"
+#include "Orbit/Math/Vector/Vector2.h"
 
 #include <array>
 

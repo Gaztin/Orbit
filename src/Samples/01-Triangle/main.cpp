@@ -27,8 +27,8 @@
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
-#include <Orbit/Math/Vector2.h>
-#include <Orbit/Math/Vector4.h>
+#include <Orbit/Math/Vector/Vector2.h>
+#include <Orbit/Math/Vector/Vector4.h>
 
 struct Vertex
 {

@@ -15,27 +15,46 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Math/VectorBase.h"
+#include "Vector3.h"
+
+#include "Orbit/Math/Vector/Vector4.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Vector3;
-
-class ORB_API_MATH Vector2 final : public VectorBase< Vector2, 2 >
+Vector3::Vector3( void )
+	: x{ 0.0f }
+	, y{ 0.0f }
+	, z{ 0.0f }
 {
-public:
+}
 
-	Vector2         ( void );
-	explicit Vector2( float scalar );
-	Vector2         ( float x, float y );
-	explicit Vector2( const Vector3& vec );
+Vector3::Vector3( float scalar )
+	: x{ scalar }
+	, y{ scalar }
+	, z{ scalar }
+{
+}
 
-public:
+Vector3::Vector3( float x, float y, float z )
+	: x{ x }
+	, y{ y }
+	, z{ z }
+{
+}
 
-	float x;
-	float y;
+Vector3::Vector3( const Vector4& vec )
+	: x{ vec.x }
+	, y{ vec.y }
+	, z{ vec.z }
+{
+}
 
-};
+Vector3 Vector3::CrossProduct( const Vector3& v ) const
+{
+	return Vector3( ( y * v.z ) - ( z * v.y ),
+	                ( z * v.x ) - ( x * v.z ),
+	                ( x * v.y ) - ( y * v.x )
+	);
+}
 
 ORB_NAMESPACE_END

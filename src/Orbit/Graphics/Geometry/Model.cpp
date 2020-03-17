@@ -24,9 +24,9 @@
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Geometry/GeometryData.h"
-#include "Orbit/Math/Vector2.h"
-#include "Orbit/Math/Vector3.h"
-#include "Orbit/Math/Vector4.h"
+#include "Orbit/Math/Vector/Vector2.h"
+#include "Orbit/Math/Vector/Vector3.h"
+#include "Orbit/Math/Vector/Vector4.h"
 
 #include <algorithm>
 #include <cassert>

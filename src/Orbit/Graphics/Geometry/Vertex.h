@@ -18,9 +18,9 @@
 #pragma once
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Graphics/Graphics.h"
-#include "Orbit/Math/Vector2.h"
-#include "Orbit/Math/Vector3.h"
-#include "Orbit/Math/Vector4.h"
+#include "Orbit/Math/Vector/Vector2.h"
+#include "Orbit/Math/Vector/Vector3.h"
+#include "Orbit/Math/Vector/Vector4.h"
 
 #include <array>
 

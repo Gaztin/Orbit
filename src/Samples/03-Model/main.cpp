@@ -31,10 +31,10 @@
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Literals.h>
-#include <Orbit/Math/Matrix4.h>
-#include <Orbit/Math/Vector2.h>
-#include <Orbit/Math/Vector3.h>
-#include <Orbit/Math/Vector4.h>
+#include <Orbit/Math/Matrix/Matrix4.h>
+#include <Orbit/Math/Vector/Vector2.h>
+#include <Orbit/Math/Vector/Vector3.h>
+#include <Orbit/Math/Vector/Vector4.h>
 
 static ModelShader model_shader;
 

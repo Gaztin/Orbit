@@ -17,8 +17,8 @@
 
 #pragma once
 #include <Orbit/Core/Event/EventSubscription.h>
-#include <Orbit/Math/Matrix4.h>
-#include <Orbit/Math/Vector3.h>
+#include <Orbit/Math/Matrix/Matrix4.h>
+#include <Orbit/Math/Vector/Vector3.h>
 
 #include <cstdint>
 
