@@ -42,7 +42,7 @@ Plane::PlaneIntersectionResult Plane::Intersect( const Plane& other ) const
 		if( displacement == other.displacement )
 			return *this;
 
-		// Planes are parallel and no not intersect
+		// Planes are parallel, which means no intersection
 		return { };
 	}
 
