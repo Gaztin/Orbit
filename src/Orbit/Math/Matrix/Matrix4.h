@@ -16,8 +16,8 @@
  */
 
 #pragma once
-#include "Orbit/Math/Vector3.h"
-#include "Orbit/Math/Vector4.h"
+#include "Orbit/Math/Vector/Vector3.h"
+#include "Orbit/Math/Vector/Vector4.h"
 
 #include <array>
 

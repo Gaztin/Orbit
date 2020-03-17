@@ -19,7 +19,7 @@
 #include "Orbit/Core/Utility/Ref.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Math/Matrix4.h"
+#include "Orbit/Math/Matrix/Matrix4.h"
 
 #include <memory>
 #include <string_view>

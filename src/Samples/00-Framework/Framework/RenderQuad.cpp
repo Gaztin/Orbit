@@ -17,7 +17,7 @@
 
 #include "RenderQuad.h"
 
-#include <Orbit/Math/Vector4.h>
+#include <Orbit/Math/Vector/Vector4.h>
 
 #include <initializer_list>
 

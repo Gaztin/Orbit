@@ -19,7 +19,7 @@
 
 #include <Orbit/Core/Input/Input.h>
 #include <Orbit/Core/Widget/Window.h>
-#include <Orbit/Math/Vector3.h>
+#include <Orbit/Math/Vector/Vector3.h>
 
 Camera::Camera( void )
 	: on_resize_{ Orbit::Window::GetInstance().Subscribe( [ this ]( const Orbit::WindowResized& e ){ OnResized( e ); } ) }

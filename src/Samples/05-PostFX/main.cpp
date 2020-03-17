@@ -26,7 +26,7 @@
 #include <Orbit/Graphics/Geometry/Model.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
-#include <Orbit/Math/Vector3.h>
+#include <Orbit/Math/Vector/Vector3.h>
 
 #include "Framework/Camera.h"
 #include "Framework/RenderQuad.h"
