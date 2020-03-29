@@ -202,6 +202,8 @@ Mesh GeometryData::ToMesh( std::string_view name ) const
 	const size_t index_count   = ( face_data_.size() / index_size );
 	Mesh         mesh( name );
 
+	mesh.vertex_layout_ = vertex_layout_;
+
 	if( !vertex_data_.empty() )
 		mesh.vertex_buffer_ = std::make_unique< VertexBuffer >( vertex_data_.data(), vertex_count, vertex_stride );
 

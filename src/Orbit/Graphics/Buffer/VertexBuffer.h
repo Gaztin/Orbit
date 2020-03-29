@@ -37,7 +37,9 @@ public:
 
 public:
 
-	void Bind( void );
+	void        Bind   ( void );
+	const void* MapRead( void );
+	void        Unmap  ( void );
 
 public:
 
@@ -47,6 +49,7 @@ private:
 
 	Private::VertexBufferDetails details_;
 	size_t                       count_;
+	size_t                       stride_;
 
 };
 

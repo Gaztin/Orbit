@@ -40,7 +40,9 @@ public:
 
 public:
 
-	void Bind( void );
+	void        Bind   ( void );
+	const void* MapRead( void );
+	void        Unmap  ( void );
 
 public:
 

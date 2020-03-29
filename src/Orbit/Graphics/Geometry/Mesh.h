@@ -19,11 +19,13 @@
 #include "Orbit/Core/Utility/Ref.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
 #include "Orbit/Math/Matrix/Matrix4.h"
 
 #include <memory>
 #include <string_view>
 #include <string>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
@@ -39,6 +41,10 @@ public:
 
 public:
 
+	std::vector< Mesh > Slice( const Plane& plane ) const;
+
+public:
+
 	std::string_view    GetName        ( void ) const { return name_; }
 	Ref< VertexBuffer > GetVertexBuffer( void ) const { return vertex_buffer_ ? Ref( *vertex_buffer_ ) : nullptr; }
 	Ref< IndexBuffer >  GetIndexBuffer ( void ) const { return index_buffer_  ? Ref( *index_buffer_  ) : nullptr; }
@@ -48,6 +54,8 @@ public:
 	Matrix4 transform;
 
 private:
+
+	VertexLayout                    vertex_layout_;
 
 	std::string                     name_;
 

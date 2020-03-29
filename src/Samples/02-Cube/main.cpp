@@ -33,6 +33,7 @@
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
+#include <Orbit/Math/Geometry/Plane.h>
 #include <Orbit/Math/Literals.h>
 #include <Orbit/Math/Matrix/Matrix4.h>
 #include <Orbit/Math/Vector/Vector2.h>
@@ -55,10 +56,12 @@ public:
 
 	SampleApp( void )
 		: window_         ( 800, 600 )
+		, render_context_ ( Orbit::GraphicsAPI::OpenGL )
 		, shader_         ( cube_shader )
 		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), cube_shader.GetVertexLayout() ) )
 		, constant_buffer_( sizeof( ConstantData ) )
 		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
+		, lifetime_       ( 0.0f )
 	{
 		window_.SetTitle( "Orbit Sample (02-Cube)" );
 		window_.Show();
@@ -71,10 +74,46 @@ public:
 
 	void OnFrame( float delta_time ) override
 	{
+		static bool do_slice = false;
+
+		// Hold '1' to slice mesh in half
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::_1 ) )
+		{
+			lifetime_ += delta_time;
+			do_slice = true;
+		}
+
+		if( do_slice )
+		{
+			Orbit::Matrix4 plane_matrix;
+			plane_matrix.RotateZ( ( 0.5f * Orbit::Pi ) + ( lifetime_ * Orbit::Pi * 0.25f ) );
+
+			const Orbit::Plane plane( plane_matrix.up, 0.0f );
+
+			sliced_meshes_ = mesh_.Slice( plane );
+
+//			auto old_sliced_meshes = std::move( sliced_meshes_ );
+//
+//			if( old_sliced_meshes.empty() )
+//			{
+//				sliced_meshes_ = mesh_.Slice( plane );
+//			}
+//			else
+//			{
+//				for( size_t i = 0; i < old_sliced_meshes.size(); ++i )
+//				{
+//					auto new_sliced_meshes = old_sliced_meshes[ i ].Slice( plane );
+//
+//					for( size_t m = 0; m < new_sliced_meshes.size(); ++m )
+//					{
+//						sliced_meshes_.emplace_back( std::move( new_sliced_meshes[ m ] ) );
+//					}
+//				}
+//			}
+		}
+
 		/* Update constant buffer */
 		{
-			model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
-
 			constant_data.view_projection = camera_.GetViewProjection();
 			constant_data.model           = ( mesh_.transform * model_matrix_ );
 			constant_data.model_inverse   = constant_data.model.Inverted();
@@ -86,14 +125,31 @@ public:
 
 		camera_.Update( delta_time );
 
-		Orbit::RenderCommand command;
-		command.vertex_buffer = mesh_.GetVertexBuffer();
-		command.index_buffer  = mesh_.GetIndexBuffer();
-		command.shader        = shader_;
-		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
-		command.textures.emplace_back( texture_.GetTexture2D() );
+		if( sliced_meshes_.empty() )
+		{
+			Orbit::RenderCommand command;
+			command.vertex_buffer = mesh_.GetVertexBuffer();
+			command.index_buffer  = mesh_.GetIndexBuffer();
+			command.shader        = shader_;
+			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
+			command.textures.emplace_back( texture_.GetTexture2D() );
+			renderer_.QueueCommand( command );
+		}
+		else
+		{
+			Orbit::RenderCommand command;
+			command.shader = shader_;
+			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
+			command.textures.emplace_back( texture_.GetTexture2D() );
 
-		renderer_.QueueCommand( command );
+			for( const Orbit::Mesh& mesh : sliced_meshes_ )
+			{
+				command.vertex_buffer = mesh.GetVertexBuffer();
+				command.index_buffer  = mesh.GetIndexBuffer();
+				renderer_.QueueCommand( command );
+			}
+		}
+
 		renderer_.Render();
 
 		render_context_.SwapBuffers();
@@ -111,6 +167,9 @@ private:
 	Orbit::Texture           texture_;
 	Orbit::BasicRenderer     renderer_;
 	Orbit::Matrix4           model_matrix_;
+
+	std::vector< Orbit::Mesh > sliced_meshes_;
+	float                      lifetime_;
 
 	Camera camera_;
 

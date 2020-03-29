@@ -26,6 +26,7 @@ CubeShader::Vec4 CubeShader::VSMain( void )
 	v_position = u_view_projection * u_model * a_position;
 	v_normal   = ( Transpose( u_model_inverse ) * Vec4( a_normal, 0.0 ) )->xyz;
 	v_texcoord = a_texcoord;
+	v_color    = a_color;
 
 	return v_position;
 }
@@ -36,5 +37,5 @@ CubeShader::Vec4 CubeShader::PSMain( void )
 	Vec3  light_dir = Vec3( -0.3, 1.0, -0.8 );
 	Float influence = ( Dot( v_normal, light_dir ) * 0.5 + 0.5 );
 
-	return tex_color * influence;
+	return v_color * influence;
 }
