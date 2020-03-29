@@ -74,42 +74,34 @@ public:
 
 	void OnFrame( float delta_time ) override
 	{
-		static bool do_slice = false;
+		lifetime_ += delta_time;
 
-		// Hold '1' to slice mesh in half
-		if( Orbit::Input::GetKeyHeld( Orbit::Key::_1 ) )
-		{
-			lifetime_ += delta_time;
-			do_slice = true;
-		}
-
-		if( do_slice )
+		// Press '1' to slice mesh in half
+		if( Orbit::Input::GetKeyPressed( Orbit::Key::_1 ) )
 		{
 			Orbit::Matrix4 plane_matrix;
 			plane_matrix.RotateZ( ( 0.5f * Orbit::Pi ) + ( lifetime_ * Orbit::Pi * 0.25f ) );
 
 			const Orbit::Plane plane( plane_matrix.up, 0.0f );
 
-			sliced_meshes_ = mesh_.Slice( plane );
+			auto old_sliced_meshes = std::move( sliced_meshes_ );
 
-//			auto old_sliced_meshes = std::move( sliced_meshes_ );
-//
-//			if( old_sliced_meshes.empty() )
-//			{
-//				sliced_meshes_ = mesh_.Slice( plane );
-//			}
-//			else
-//			{
-//				for( size_t i = 0; i < old_sliced_meshes.size(); ++i )
-//				{
-//					auto new_sliced_meshes = old_sliced_meshes[ i ].Slice( plane );
-//
-//					for( size_t m = 0; m < new_sliced_meshes.size(); ++m )
-//					{
-//						sliced_meshes_.emplace_back( std::move( new_sliced_meshes[ m ] ) );
-//					}
-//				}
-//			}
+			if( old_sliced_meshes.empty() )
+			{
+				sliced_meshes_ = mesh_.Slice( plane );
+			}
+			else
+			{
+				for( size_t i = 0; i < old_sliced_meshes.size(); ++i )
+				{
+					auto new_sliced_meshes = old_sliced_meshes[ i ].Slice( plane );
+
+					for( size_t m = 0; m < new_sliced_meshes.size(); ++m )
+					{
+						sliced_meshes_.emplace_back( std::move( new_sliced_meshes[ m ] ) );
+					}
+				}
+			}
 		}
 
 		/* Update constant buffer */
