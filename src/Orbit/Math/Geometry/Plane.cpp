@@ -65,4 +65,23 @@ Plane::LineIntersectionResult Plane::Intersect( const Line& line ) const
 	return ( line_start + ( line.direction * travel_distance ) );
 }
 
+Plane::LineSegmentIntersectionResult Plane::Intersect( const LineSegment& line_segment ) const
+{
+	// Check if plane contains line
+	if( normal.DotProduct( line_segment.Direction() ) == 0.0f )
+		return line_segment;
+
+//////////////////////////////////////////////////////////////////////////
+
+	const Vector3 point_on_plane  = ( normal * displacement );
+	const Vector3 plane_to_line   = ( line_segment.start - point_on_plane );
+	const Vector3 line_direction  = line_segment.Direction();
+	const float   travel_distance = ( ( -normal ).DotProduct( plane_to_line ) / normal.DotProduct( line_direction ) );
+
+	if( travel_distance >= 0.0f && ( ( travel_distance * travel_distance ) <= line_segment.LengthSquared() ) )
+		return ( line_segment.start + ( line_direction * travel_distance ) );
+
+	return { };
+}
+
 ORB_NAMESPACE_END

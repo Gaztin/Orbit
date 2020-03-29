@@ -17,6 +17,7 @@
 
 #pragma once
 #include "Orbit/Math/Geometry/Line.h"
+#include "Orbit/Math/Geometry/LineSegment.h"
 
 #include <variant>
 
@@ -26,8 +27,9 @@ class ORB_API_MATH Plane
 {
 public:
 
-	using PlaneIntersectionResult = std::variant< Plane, Line >;
-	using LineIntersectionResult  = std::variant< Line, Vector3 >;
+	using PlaneIntersectionResult       = std::variant< Plane, Line >;
+	using LineIntersectionResult        = std::variant< Line, Vector3 >;
+	using LineSegmentIntersectionResult = std::variant< LineSegment, Vector3 >;
 
 public:
 
@@ -36,8 +38,9 @@ public:
 
 public:
 
-	PlaneIntersectionResult Intersect( const Plane& other ) const;
-	LineIntersectionResult  Intersect( const Line& line )   const;
+	PlaneIntersectionResult       Intersect( const Plane& other )              const;
+	LineIntersectionResult        Intersect( const Line& line )                const;
+	LineSegmentIntersectionResult Intersect( const LineSegment& line_segment ) const;
 
 public:
 
