@@ -207,11 +207,17 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 			}
 		}
 
-		Mesh mesh_positive = geometry_positive.ToMesh( name_ + " (splice, positive)" );
-		Mesh mesh_negative = geometry_negative.ToMesh( name_ + " (splice, negative)" );
+		if( geometry_positive.GetFaceCount() )
+		{
+			Mesh mesh_positive = geometry_positive.ToMesh( name_ + " (splice, positive)" );
+			meshes.emplace_back( std::move( mesh_positive ) );
+		}
 
-		meshes.emplace_back( std::move( mesh_positive ) );
-		meshes.emplace_back( std::move( mesh_negative ) );
+		if( geometry_negative.GetFaceCount() )
+		{
+			Mesh mesh_negative = geometry_negative.ToMesh( name_ + " (splice, negative)" );
+			meshes.emplace_back( std::move( mesh_negative ) );
+		}
 	}
 
 	return meshes;
