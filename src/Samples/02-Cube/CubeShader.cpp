@@ -26,6 +26,7 @@ CubeShader::Vec4 CubeShader::VSMain( void )
 	v_position = u_view_projection * u_model * a_position;
 	v_normal   = ( Transpose( u_model_inverse ) * Vec4( a_normal, 0.0 ) )->xyz;
 	v_texcoord = a_texcoord;
+	v_color    = a_color;
 
 	return v_position;
 }

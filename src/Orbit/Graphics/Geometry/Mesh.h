@@ -19,6 +19,7 @@
 #include "Orbit/Core/Utility/Ref.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
 #include "Orbit/Math/Matrix/Matrix4.h"
 
 #include <memory>
@@ -48,6 +49,8 @@ public:
 	Matrix4 transform;
 
 private:
+
+	VertexLayout                    vertex_layout_;
 
 	std::string                     name_;
 

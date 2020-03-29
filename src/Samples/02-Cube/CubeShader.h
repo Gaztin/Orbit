@@ -40,10 +40,12 @@ private:
 	Attribute::Position a_position;
 	Attribute::Normal   a_normal;
 	Attribute::TexCoord a_texcoord;
+	Attribute::Color    a_color;
 
 	Varying::Position v_position;
 	Varying::Normal   v_normal;
 	Varying::TexCoord v_texcoord;
+	Varying::Color    v_color;
 
 	Uniform< Mat4 > u_view_projection;
 	Uniform< Mat4 > u_model;
