@@ -29,9 +29,10 @@ public:
 
 public:
 
-	Vector3 Direction    ( void ) const;
-	float   Length       ( void ) const;
-	float   LengthSquared( void ) const;
+	Vector3 PointAt      ( float fraction ) const;
+	Vector3 Direction    ( void )           const;
+	float   Length       ( void )           const;
+	float   LengthSquared( void )           const;
 
 public:
 
