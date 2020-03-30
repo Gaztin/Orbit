@@ -25,6 +25,9 @@
 
 ORB_NAMESPACE_BEGIN
 
+template< typename... Types > struct Overload : Types... { using Types::operator()...; };
+template< typename... Types > Overload( Types... ) -> Overload< Types... >;
+
 template< typename T, size_t C >
 constexpr size_t CountOf( T( & )[ C ] )
 {
