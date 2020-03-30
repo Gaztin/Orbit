@@ -75,7 +75,7 @@ Plane::LineSegmentIntersectionResult Plane::Intersect( const LineSegment& line_s
 		return { line_segment.start };
 
 	// Start must be in front of plane, and end behind it
-	if( ( start_dist >= displacement ) && ( end_dist <= displacement ) )
+	if( ( start_dist > displacement ) && ( end_dist < displacement ) )
 	{
 		const float fraction = ( start_dist - displacement ) / ( start_dist - end_dist );
 
