@@ -176,7 +176,7 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 			else
 			{
 				// Is secluded triangle above plane? (positive)
-				if( ( Vector3( src_vertices[ 0 ].position ) - ( plane.normal * plane.displacement ) ).DotProduct( plane.normal ) >= 0.0f )
+				if( ( Vector3( src_vertices[ secluded_vertex_index ].position ) - ( plane.normal * plane.displacement ) ).DotProduct( plane.normal ) > 0.0f )
 				{
 					Face secluded_face;
 					secluded_face.indices[ 0 ] = geometry_positive.AddVertex( src_vertices[ 0 ] );
