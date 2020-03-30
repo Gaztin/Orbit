@@ -25,11 +25,12 @@
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Shape/CubeShape.h>
+#include <Orbit/Core/Shape/SphereShape.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
+#include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Renderer/BasicRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
@@ -58,10 +59,10 @@ public:
 		: window_         ( 800, 600 )
 		, render_context_ ( Orbit::GraphicsAPI::OpenGL )
 		, shader_         ( cube_shader )
-		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), cube_shader.GetVertexLayout() ) )
+		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::SphereShape( 1.0f ), cube_shader.GetVertexLayout() ) )
 		, constant_buffer_( sizeof( ConstantData ) )
 		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
-		, lifetime_       ( 0.0f )
+		, plane_rotation_ ( 0.0f, 0.0f, 0.5f * Orbit::Pi )
 	{
 		window_.SetTitle( "Orbit Sample (02-Cube)" );
 		window_.Show();
@@ -74,13 +75,21 @@ public:
 
 	void OnFrame( float delta_time ) override
 	{
-		lifetime_ += delta_time;
+		// Rotate plane with arrow keys
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::ArrowLeft ) )
+			plane_rotation_.z += delta_time;
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::ArrowRight ) )
+			plane_rotation_.z -= delta_time;
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::ArrowUp ) )
+			plane_rotation_.x += delta_time;
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::ArrowDown ) )
+			plane_rotation_.x -= delta_time;
 
 		// Press '1' to slice mesh in half
 		if( Orbit::Input::GetKeyPressed( Orbit::Key::_1 ) )
 		{
 			Orbit::Matrix4 plane_matrix;
-			plane_matrix.RotateZ( ( 0.5f * Orbit::Pi ) + ( lifetime_ * Orbit::Pi * 0.25f ) );
+			plane_matrix.Rotate( plane_rotation_ );
 
 			const Orbit::Plane plane( plane_matrix.up, 0.0f );
 
@@ -102,6 +111,12 @@ public:
 					}
 				}
 			}
+		}
+
+		// Press 'R' to reset
+		if( Orbit::Input::GetKeyPressed( Orbit::Key::R ) )
+		{
+			sliced_meshes_.clear();
 		}
 
 		/* Update constant buffer */
@@ -161,7 +176,7 @@ private:
 	Orbit::Matrix4           model_matrix_;
 
 	std::vector< Orbit::Mesh > sliced_meshes_;
-	float                      lifetime_;
+	Orbit::Vector3             plane_rotation_;
 
 	Camera camera_;
 
