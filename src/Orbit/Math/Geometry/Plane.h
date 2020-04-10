@@ -38,6 +38,7 @@ public:
 
 public:
 
+	Vector3                       Center   ( void )                            const;
 	PlaneIntersectionResult       Intersect( const Plane& other )              const;
 	LineIntersectionResult        Intersect( const Line& line )                const;
 	LineSegmentIntersectionResult Intersect( const LineSegment& line_segment ) const;
