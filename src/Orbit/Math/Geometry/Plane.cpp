@@ -31,6 +31,11 @@ Plane::Plane( const Vector3& normal, float displacement )
 {
 }
 
+Vector3 Plane::Center( void ) const
+{
+	return ( normal * displacement );
+}
+
 Plane::PlaneIntersectionResult Plane::Intersect( const Plane& other ) const
 {
 	const Vector3 orthogonal = normal.CrossProduct( other.normal );
