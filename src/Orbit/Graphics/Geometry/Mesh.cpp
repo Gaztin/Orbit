@@ -82,19 +82,19 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 			const Plane              inverted_plane = Plane( -plane.normal, -plane.displacement );
 			std::array< Vector3, 3 > intersections;
 			size_t                   secluded_vertex_index = 0;
-			size_t                   debug_intersections   = 0;
+			size_t                   intersection_count    = 0;
 
 			for( size_t i = 0; i < 3; ++i )
 			{
 				if( auto intersection = plane.Intersect( edges[ i ] ); intersection.index() == 1 )
 				{
 					intersections[ i ] = std::move( std::get< 1 >( intersection ) );
-					++debug_intersections;
+					++intersection_count;
 				}
 				else if( auto intersection = inverted_plane.Intersect( edges[ i ] ); intersection.index() == 1 )
 				{
 					intersections[ i ] = std::move( std::get< 1 >( intersection ) );
-					++debug_intersections;
+					++intersection_count;
 				}
 				else
 				{
@@ -102,12 +102,7 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 				}
 			}
 
-			if( !( ( debug_intersections == 0 ) || ( debug_intersections == 2 ) ) )
-			{
-				debug_intersections = debug_intersections;
-			}
-
-			if( debug_intersections == 2 )
+			if( intersection_count == 2 )
 			{
 				const std::array< Vertex, 3 > intersection_vertices
 				{
@@ -175,17 +170,13 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 			}
 			else
 			{
-				// Is secluded triangle above plane? (positive)
-				if( ( Vector3( src_vertices[ secluded_vertex_index ].position ) - ( plane.normal * plane.displacement ) ).DotProduct( plane.normal ) > 0.0f )
-				{
-					Face secluded_face;
-					secluded_face.indices[ 0 ] = geometry_positive.AddVertex( src_vertices[ 0 ] );
-					secluded_face.indices[ 1 ] = geometry_positive.AddVertex( src_vertices[ 1 ] );
-					secluded_face.indices[ 2 ] = geometry_positive.AddVertex( src_vertices[ 2 ] );
+				const Vector3 plane_center = plane.Center();
+				const float   dot_sum      = plane.normal.DotProduct( Vector3( src_vertices[ 0 ].position ) - plane_center ) +
+				                             plane.normal.DotProduct( Vector3( src_vertices[ 1 ].position ) - plane_center ) +
+				                             plane.normal.DotProduct( Vector3( src_vertices[ 2 ].position ) - plane_center );
 
-					geometry_positive.AddFace( secluded_face );
-				}
-				else
+				// Which side of the plane is the triangle on?
+				if( std::signbit( dot_sum ) )
 				{
 					Face secluded_face;
 					secluded_face.indices[ 0 ] = geometry_negative.AddVertex( src_vertices[ 0 ] );
@@ -193,6 +184,15 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 					secluded_face.indices[ 2 ] = geometry_negative.AddVertex( src_vertices[ 2 ] );
 
 					geometry_negative.AddFace( secluded_face );
+				}
+				else
+				{
+					Face secluded_face;
+					secluded_face.indices[ 0 ] = geometry_positive.AddVertex( src_vertices[ 0 ] );
+					secluded_face.indices[ 1 ] = geometry_positive.AddVertex( src_vertices[ 1 ] );
+					secluded_face.indices[ 2 ] = geometry_positive.AddVertex( src_vertices[ 2 ] );
+
+					geometry_positive.AddFace( secluded_face );
 				}
 			}
 		}
