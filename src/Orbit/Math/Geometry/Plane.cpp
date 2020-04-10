@@ -72,20 +72,19 @@ Plane::LineIntersectionResult Plane::Intersect( const Line& line ) const
 
 Plane::LineSegmentIntersectionResult Plane::Intersect( const LineSegment& line_segment ) const
 {
-	const float start_dist = normal.DotProduct( line_segment.start );
-	const float end_dist   = normal.DotProduct( line_segment.end );
+	// Check if plane contains line
+	if( normal.DotProduct( line_segment.Direction() ) == 0.0f )
+		return line_segment;
 
-	// Is the line segment a point on the plane?
-	if( ( start_dist == end_dist ) && ( start_dist == displacement ) )
-		return { line_segment.start };
+//////////////////////////////////////////////////////////////////////////
 
-	// Start must be in front of plane, and end behind it
-	if( ( start_dist > displacement ) && ( end_dist < displacement ) )
-	{
-		const float fraction = ( start_dist - displacement ) / ( start_dist - end_dist );
+	const Vector3 point_on_plane  = ( normal * displacement );
+	const Vector3 plane_to_line   = ( line_segment.start - point_on_plane );
+	const Vector3 line_direction  = line_segment.Direction();
+	const float   travel_distance = ( ( -normal ).DotProduct( plane_to_line ) / normal.DotProduct( line_direction ) );
 
-		return line_segment.PointAt( fraction );
-	}
+	if( travel_distance > 0.0f && ( ( travel_distance * travel_distance ) < line_segment.LengthSquared() ) )
+		return ( line_segment.start + ( line_direction * travel_distance ) );
 
 	return { };
 }
