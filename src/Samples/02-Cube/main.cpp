@@ -62,6 +62,7 @@ public:
 		, constant_buffer_( sizeof( ConstantData ) )
 		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
 		, plane_rotation_ ( 0.0f, 0.0f, 0.5f * Orbit::Pi )
+		, play_time_      ( 0.0f )
 	{
 		window_.SetTitle( "Orbit Sample (02-Cube)" );
 		window_.Show();
@@ -110,6 +111,8 @@ public:
 					}
 				}
 			}
+
+			play_time_ = 0.0f;
 		}
 
 		// Press 'R' to reset
@@ -145,6 +148,13 @@ public:
 		}
 		else
 		{
+			play_time_ = std::min( play_time_ + delta_time, 1.0f );
+
+			for( int i = 0; i < sliced_meshes_.size(); ++i )
+			{
+				sliced_meshes_[ i ].transform.pos.x = std::sinf( play_time_ * Orbit::Pi * 0.5f ) * ( i == 0 ? -1 : 1 );
+			}
+
 			Orbit::RenderCommand command;
 			command.shader = shader_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
@@ -183,5 +193,7 @@ private:
 	Orbit::Vector3             plane_rotation_;
 
 	Camera camera_;
+
+	float play_time_;
 
 };
