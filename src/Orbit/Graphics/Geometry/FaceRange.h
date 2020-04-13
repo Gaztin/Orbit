@@ -20,7 +20,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-class GeometryData;
+class Geometry;
 
 class ORB_API_GRAPHICS FaceRange
 {
@@ -41,7 +41,7 @@ public:
 
 public:
 
-	explicit FaceRange( const GeometryData* geometry );
+	explicit FaceRange( const Geometry* geometry );
 
 public:
 
@@ -50,7 +50,7 @@ public:
 
 private:
 
-	const GeometryData* geometry_;
+	const Geometry* geometry_;
 
 };
 

@@ -23,7 +23,7 @@
 #include "Orbit/Core/Utility/StringConverting.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Geometry/GeometryData.h"
+#include "Orbit/Graphics/Geometry/Geometry.h"
 #include "Orbit/Math/Vector/Vector2.h"
 #include "Orbit/Math/Vector/Vector3.h"
 #include "Orbit/Math/Vector/Vector4.h"
@@ -127,7 +127,7 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 		if( vertex_count == 0 || face_count == 0 )
 			return false;
 
-		GeometryData           geometry_data( layout );
+		Geometry               geometry_data( layout );
 		std::vector< Vector4 > positions;
 		std::vector< Vector3 > normals;
 		std::vector< Vector2 > tex_coords;
@@ -540,9 +540,9 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 
 //////////////////////////////////////////////////////////////////////////
 
-	GeometryData geometry_data( layout );
+	Geometry geometry( layout );
 
-	geometry_data.Reserve( vertex_count, face_count );
+	geometry.Reserve( vertex_count, face_count );
 
 	/* Parse the vertex and index data */
 	while( it < end )
@@ -551,20 +551,20 @@ bool Model::ParseOBJ( ByteSpan data, const VertexLayout& layout )
 		Face   face;
 
 		if( std::sscanf( it, "v %f %f %f\n", &vertex.position[ 0 ], &vertex.position[ 1 ], &vertex.position[ 2 ] ) == 3 )
-			geometry_data.AddVertex( vertex );
+			geometry.AddVertex( vertex );
 
 		else if( std::sscanf( it, "f %zd %zd %zd\n", &face.indices[ 0 ], &face.indices[ 1 ], &face.indices[ 2 ] ) == 3 )
-			geometry_data.AddFace( Face{ ( face.indices[ 0 ] - 1 ), ( face.indices[ 1 ] - 1 ), ( face.indices[ 2 ] - 1 ) } );
+			geometry.AddFace( Face{ ( face.indices[ 0 ] - 1 ), ( face.indices[ 1 ] - 1 ), ( face.indices[ 2 ] - 1 ) } );
 
 		/* Seek to next line */
 		while( it < end && *( it++ ) != '\n' );
 	}
 
-	geometry_data.GenerateNormals();
+	geometry.GenerateNormals();
 
 //////////////////////////////////////////////////////////////////////////
 
-	Mesh mesh = geometry_data.ToMesh( "OBJRoot" );
+	Mesh mesh = geometry.ToMesh( "OBJRoot" );
 	meshes_.emplace_back( std::move( mesh ) );
 
 	return true;

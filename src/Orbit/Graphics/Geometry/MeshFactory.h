@@ -26,7 +26,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-class  GeometryData;
+class  Geometry;
 class  Mesh;
 class  VertexLayout;
 struct IShape;
