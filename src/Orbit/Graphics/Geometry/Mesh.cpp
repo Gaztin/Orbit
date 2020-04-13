@@ -311,17 +311,15 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 		if( geometry_positive.GetFaceCount() )
 		{
-			Mesh mesh_positive           = geometry_positive.ToMesh( name_ + " (splice, positive)" );
-			mesh_positive.transform      = transform;
-			mesh_positive.transform.pos += plane.normal * 0.05f;
+			Mesh mesh_positive      = geometry_positive.ToMesh( name_ + " (splice, positive)" );
+			mesh_positive.transform = transform;
 			meshes.emplace_back( std::move( mesh_positive ) );
 		}
 
 		if( geometry_negative.GetFaceCount() )
 		{
-			Mesh mesh_negative           = geometry_negative.ToMesh( name_ + " (splice, negative)" );
-			mesh_negative.transform      = transform;
-			mesh_negative.transform.pos -= plane.normal * 0.05f;
+			Mesh mesh_negative      = geometry_negative.ToMesh( name_ + " (splice, negative)" );
+			mesh_negative.transform = transform;
 			meshes.emplace_back( std::move( mesh_negative ) );
 		}
 	}
