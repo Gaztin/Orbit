@@ -122,9 +122,6 @@ public:
 		/* Update constant buffer */
 		{
 			constant_data.view_projection = camera_.GetViewProjection();
-			constant_data.model           = ( mesh_.transform * model_matrix_ );
-			constant_data.model_inverse   = constant_data.model.Inverted();
-			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 		}
 
 		window_.PollEvents();
@@ -134,6 +131,10 @@ public:
 
 		if( sliced_meshes_.empty() )
 		{
+			constant_data.model           = ( mesh_.transform * model_matrix_ );
+			constant_data.model_inverse   = constant_data.model.Inverted();
+			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
+
 			Orbit::RenderCommand command;
 			command.vertex_buffer = mesh_.GetVertexBuffer();
 			command.index_buffer  = mesh_.GetIndexBuffer();
@@ -141,6 +142,7 @@ public:
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 			command.textures.emplace_back( texture_.GetTexture2D() );
 			renderer_.QueueCommand( command );
+			renderer_.Render();
 		}
 		else
 		{
@@ -151,13 +153,16 @@ public:
 
 			for( const Orbit::Mesh& mesh : sliced_meshes_ )
 			{
+				constant_data.model           = ( mesh.transform * model_matrix_ );
+				constant_data.model_inverse   = constant_data.model.Inverted();
+				constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
+
 				command.vertex_buffer = mesh.GetVertexBuffer();
 				command.index_buffer  = mesh.GetIndexBuffer();
 				renderer_.QueueCommand( command );
+				renderer_.Render();
 			}
 		}
-
-		renderer_.Render();
 
 		render_context_.SwapBuffers();
 	}

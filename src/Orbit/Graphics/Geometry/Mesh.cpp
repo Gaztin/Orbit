@@ -102,6 +102,7 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 				}
 			}
 
+			// Two intersections means the plane cuts the triangle in half.
 			if( intersection_count == 2 )
 			{
 				const std::array< Vertex, 3 > intersection_vertices
@@ -202,31 +203,19 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 //////////////////////////////////////////////////////////////////////////
 
-		// Debug purposes
-		{
-			for( size_t i = 0; i < geometry_positive.GetVertexCount(); ++i )
-			{
-				Vertex v = geometry_positive.GetVertex( i );
-				v.position += Vector4( plane.normal, 0.0f ) * 0.05f;
-				geometry_positive.SetVertex( i, v );
-			}
-			for( size_t i = 0; i < geometry_negative.GetVertexCount(); ++i )
-			{
-				Vertex v = geometry_negative.GetVertex( i );
-				v.position -= Vector4( plane.normal, 0.0f ) * 0.05f;
-				geometry_negative.SetVertex( i, v );
-			}
-		}
-
 		if( geometry_positive.GetFaceCount() )
 		{
 			Mesh mesh_positive = geometry_positive.ToMesh( name_ + " (splice, positive)" );
+			mesh_positive.transform      = transform;
+			mesh_positive.transform.pos += plane.normal * 0.05f;
 			meshes.emplace_back( std::move( mesh_positive ) );
 		}
 
 		if( geometry_negative.GetFaceCount() )
 		{
 			Mesh mesh_negative = geometry_negative.ToMesh( name_ + " (splice, negative)" );
+			mesh_negative.transform      = transform;
+			mesh_negative.transform.pos -= plane.normal * 0.05f;
 			meshes.emplace_back( std::move( mesh_negative ) );
 		}
 	}
