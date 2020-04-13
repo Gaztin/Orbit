@@ -40,8 +40,6 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 		case ShapeType::Sphere: { GenerateSphereData( geometry_data ); } break;
 	}
 
-	geometry_data.GenerateNormals();
-
 //////////////////////////////////////////////////////////////////////////
 
 	Mesh mesh = geometry_data.ToMesh( EvalShapeName( shape.GetType() ) );
@@ -260,6 +258,14 @@ void MeshFactory::GenerateSphereData( Geometry& geometry ) const
 		}
 
 		geometry = std::move( new_geometry_data );
+	}
+
+	// Calculate normals
+	for( size_t i = 0; i < geometry.GetVertexCount(); ++i )
+	{
+		Vertex vertex = geometry.GetVertex( i );
+		vertex.normal = Vector3( vertex.position ).Normalized();
+		geometry.SetVertex( i, vertex );
 	}
 }
 
