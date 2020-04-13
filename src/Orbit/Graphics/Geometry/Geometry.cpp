@@ -84,9 +84,31 @@ size_t Geometry::AddFace( const Face& face )
 
 	face_data_.resize( face_data_.size() + face_size );
 
-//////////////////////////////////////////////////////////////////////////
+	SetFace( index, face );
 
-	void* dst = &face_data_[ index * face_size ];
+	return index;
+}
+
+size_t Geometry::AddVertex( const Vertex& vertex )
+{
+	const size_t stride           = vertex_layout_.GetStride();
+	const size_t old_vertex_count = GetVertexCount();
+
+	// Do we need to upgrade our index buffer?
+	if( const uint8_t new_index_size = EvalIndexSize( old_vertex_count + 1 ); new_index_size > index_size_ )
+		UpgradeFaceData( new_index_size );
+
+	vertex_data_.resize( vertex_data_.size() + stride );
+
+	SetVertex( old_vertex_count, vertex );
+
+	return old_vertex_count;
+}
+
+void Geometry::SetFace( size_t index, const Face& face )
+{
+	const size_t face_size = ( index_size_ * 3 );
+	void*        dst       = &face_data_[ index * face_size ];
 
 	switch( index_size_ )
 	{
@@ -115,24 +137,6 @@ size_t Geometry::AddFace( const Face& face )
 
 		} break;
 	}
-
-	return index;
-}
-
-size_t Geometry::AddVertex( const Vertex& vertex )
-{
-	const size_t stride           = vertex_layout_.GetStride();
-	const size_t old_vertex_count = GetVertexCount();
-
-	// Do we need to upgrade our index buffer?
-	if( const uint8_t new_index_size = EvalIndexSize( old_vertex_count + 1 ); new_index_size > index_size_ )
-		UpgradeFaceData( new_index_size );
-
-	vertex_data_.resize( vertex_data_.size() + stride );
-
-	SetVertex( old_vertex_count, vertex );
-
-	return old_vertex_count;
 }
 
 void Geometry::SetVertex( size_t index, const Vertex& vertex )
@@ -170,6 +174,35 @@ void Geometry::GenerateNormals( void )
 			SetVertex( face.indices[ i ], vertex );
 		}
 	}
+}
+
+void Geometry::FlipFaceTowards( size_t index, const Vector3& direction )
+{
+	if( !vertex_layout_.Contains( VertexComponent::Position ) )
+		return;
+
+//////////////////////////////////////////////////////////////////////////
+
+	const size_t stride     = vertex_layout_.GetStride();
+	const size_t pos_offset = vertex_layout_.OffsetOf( VertexComponent::Position );
+	Face         face       = GetFace( index );
+	Vector3      positions[ 3 ];
+
+	for( size_t i = 0; i < 3; ++i )
+		memcpy( &positions[ i ], &vertex_data_[ stride * face.indices[ i ] ] + pos_offset, sizeof( Vector3 ) );
+
+//////////////////////////////////////////////////////////////////////////
+
+	const Vector3 first_to_second = positions[ 1 ] - positions[ 0 ];
+	const Vector3 first_to_third  = positions[ 2 ] - positions[ 0 ];
+	const Vector3 facing          = first_to_second.CrossProduct( first_to_third );
+	const float   dot             = facing.DotProduct( direction );
+
+	// If face is facing the opposite direction, flip it.
+	if( std::signbit( dot ) )
+		std::swap( face.indices[ 1 ], face.indices[ 2 ] );
+
+	SetFace( index, face );
 }
 
 size_t Geometry::GetVertexCount( void ) const
