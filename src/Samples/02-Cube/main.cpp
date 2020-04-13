@@ -57,7 +57,6 @@ public:
 
 	SampleApp( void )
 		: window_         ( 800, 600 )
-		, render_context_ ( Orbit::GraphicsAPI::OpenGL )
 		, shader_         ( cube_shader )
 		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::SphereShape( 1.0f ), cube_shader.GetVertexLayout() ) )
 		, constant_buffer_( sizeof( ConstantData ) )

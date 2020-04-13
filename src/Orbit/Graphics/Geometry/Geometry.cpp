@@ -40,6 +40,29 @@ Geometry::Geometry( Geometry&& other )
 	other.index_size_ = 0;
 }
 
+void Geometry::SetFromData( ByteSpan vertex_data )
+{
+	vertex_data_.assign( static_cast< const uint8_t* >( vertex_data.begin() ), static_cast< const uint8_t* >( vertex_data.end() ) );
+	face_data_.clear();
+
+	index_size_ = 0;
+}
+
+void Geometry::SetFromData( ByteSpan vertex_data, ByteSpan face_data, IndexFormat index_format )
+{
+	vertex_data_.assign( static_cast< const uint8_t* >( vertex_data.begin() ), static_cast< const uint8_t* >( vertex_data.end() ) );
+	face_data_.assign(   static_cast< const uint8_t* >( face_data.begin() ),   static_cast< const uint8_t* >( face_data.end() ) );
+
+	switch( index_format )
+	{
+		default: { assert( false ); } break;
+
+		case IndexFormat::Byte:       { index_size_ = 1; } break;
+		case IndexFormat::Word:       { index_size_ = 2; } break;
+		case IndexFormat::DoubleWord: { index_size_ = 4; } break;
+	}
+}
+
 void Geometry::Reserve( size_t vertex_count, size_t face_count )
 {
 	index_size_ = EvalIndexSize( vertex_count );

@@ -41,7 +41,8 @@ public:
 
 public:
 
-	std::vector< Mesh > Slice( const Plane& plane ) const;
+	Geometry            ToGeometry( void )               const;
+	std::vector< Mesh > Slice     ( const Plane& plane ) const;
 
 public:
 

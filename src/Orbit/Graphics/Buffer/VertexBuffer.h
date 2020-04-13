@@ -37,13 +37,13 @@ public:
 
 public:
 
-	void        Bind   ( void );
-	const void* MapRead( void );
-	void        Unmap  ( void );
+	void Bind( void );
 
 public:
 
-	size_t GetCount( void ) const { return count_; }
+	Private::VertexBufferDetails&       GetDetails( void )       { return details_; }
+	const Private::VertexBufferDetails& GetDetails( void ) const { return details_; }
+	size_t                              GetCount  ( void ) const { return count_; }
 
 private:
 
