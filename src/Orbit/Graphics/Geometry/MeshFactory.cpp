@@ -271,6 +271,14 @@ void MeshFactory::GenerateSphereData( GeometryData& geometry_data, DetailLevel d
 
 		geometry = std::move( new_geometry_data );
 	}
+
+	// Calculate normals
+	for( size_t i = 0; i < geometry.GetVertexCount(); ++i )
+	{
+		Vertex vertex = geometry.GetVertex( i );
+		vertex.normal = Vector3( vertex.position ).Normalized();
+		geometry.SetVertex( i, vertex );
+	}
 }
 
 ORB_NAMESPACE_END
