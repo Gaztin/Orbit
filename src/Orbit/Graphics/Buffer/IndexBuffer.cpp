@@ -168,72 +168,9 @@ void IndexBuffer::Bind( void )
 	}
 }
 
-const void* IndexBuffer::MapRead( void )
+size_t IndexBuffer::GetSize( void ) const
 {
-	switch( details_.index() )
-	{
-
-	#if( ORB_HAS_OPENGL )
-
-		case( unique_index_v< Private::_IndexBufferDetailsOpenGL, Private::IndexBufferDetails > ):
-		{
-			auto& details = std::get< Private::_IndexBufferDetailsOpenGL >( details_ );
-
-			glBindBuffer( OpenGLBufferTarget::ElementArray, details.id );
-			return glMapBufferRange( OpenGLBufferTarget::ElementArray, 0, ( GetFormatSize( format_ ) * count_ ), OpenGLMapAccess::ReadBit );
-
-		} break;
-
-	#endif // ORB_HAS_OPENGL
-	#if( ORB_HAS_D3D11 )
-
-		case( unique_index_v< Private::_IndexBufferDetailsD3D11, Private::IndexBufferDetails > ):
-		{
-			auto& details = std::get< Private::_IndexBufferDetailsD3D11 >( details_ );
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
-
-			D3D11_MAPPED_SUBRESOURCE mapped_subresource;
-			if( d3d11.device_context->Map( details.buffer.ptr_, 0, D3D11_MAP_READ, 0, &mapped_subresource ) == S_OK )
-				return mapped_subresource.pData;
-
-		} break;
-
-	#endif // ORB_HAS_D3D11
-
-	}
-
-	return nullptr;
-}
-
-void IndexBuffer::Unmap( void )
-{
-	switch( details_.index() )
-	{
-
-	#if( ORB_HAS_OPENGL )
-
-		case( unique_index_v< Private::_IndexBufferDetailsOpenGL, Private::IndexBufferDetails > ):
-		{
-			glUnmapBuffer( OpenGLBufferTarget::ElementArray );
-			glBindBuffer( OpenGLBufferTarget::ElementArray, 0 );
-
-		} break;
-
-	#endif // ORB_HAS_OPENGL
-	#if( ORB_HAS_D3D11 )
-
-		case( unique_index_v< Private::_IndexBufferDetailsD3D11, Private::IndexBufferDetails > ):
-		{
-			auto& details = std::get< Private::_IndexBufferDetailsD3D11 >( details_ );
-			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
-
-			d3d11.device_context->Unmap( details.buffer.ptr_, 0 );
-
-		} break;
-
-	#endif // ORB_HAS_D3D11
-
-	}
+	return ( GetFormatSize( format_ ) * count_ );
 }
 
 ORB_NAMESPACE_END

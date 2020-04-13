@@ -40,6 +40,10 @@ public:
 
 public:
 
+	Geometry ToGeometry( void ) const;
+
+public:
+
 	std::string_view    GetName        ( void ) const { return name_; }
 	Ref< VertexBuffer > GetVertexBuffer( void ) const { return vertex_buffer_ ? Ref( *vertex_buffer_ ) : nullptr; }
 	Ref< IndexBuffer >  GetIndexBuffer ( void ) const { return index_buffer_  ? Ref( *index_buffer_  ) : nullptr; }

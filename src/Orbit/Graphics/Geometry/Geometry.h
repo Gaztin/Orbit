@@ -16,6 +16,7 @@
  */
 
 #pragma once
+#include "Orbit/Core/Utility/Span.h"
 #include "Orbit/Graphics/Geometry/Face.h"
 #include "Orbit/Graphics/Geometry/FaceRange.h"
 #include "Orbit/Graphics/Geometry/Mesh.h"
@@ -41,6 +42,8 @@ public:
 
 public:
 
+	void   SetFromData    ( ByteSpan vertex_data );
+	void   SetFromData    ( ByteSpan vertex_data, ByteSpan face_data, IndexFormat index_format );
 	void   Reserve        ( size_t vertex_count, size_t face_count );
 	size_t AddFace        ( const Face& face );
 	size_t AddVertex      ( const Vertex& vertex );
