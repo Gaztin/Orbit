@@ -44,6 +44,7 @@ public:
 	Private::VertexBufferDetails&       GetDetails( void )       { return details_; }
 	const Private::VertexBufferDetails& GetDetails( void ) const { return details_; }
 	size_t                              GetCount  ( void ) const { return count_; }
+	size_t                              GetSize   ( void ) const { return count_ * stride_; }
 
 private:
 

@@ -80,14 +80,14 @@ Geometry Mesh::ToGeometry( void ) const
 				context.device_context->Map( temp_ib.ptr_, 0, D3D11_MAP_READ, 0, &temp_ib_mapped );
 
 				// Supply geometry with vertex and index data
-				geometry.SetFromData( { static_cast< const uint8_t* >( temp_vb_mapped.pData ), temp_vb_mapped.RowPitch }, { static_cast< const uint8_t* >( temp_ib_mapped.pData ), temp_ib_mapped.RowPitch }, index_buffer_->GetFormat() );
+				geometry.SetFromData( { static_cast< const uint8_t* >( temp_vb_mapped.pData ), vertex_buffer_->GetSize() }, { static_cast< const uint8_t* >( temp_ib_mapped.pData ), index_buffer_->GetSize() }, index_buffer_->GetFormat() );
 
 				context.device_context->Unmap( temp_ib.ptr_, 0 );
 			}
 			else
 			{
 				// Supply geometry with just vertex data
-				geometry.SetFromData( { static_cast< const uint8_t* >( temp_vb_mapped.pData ), temp_vb_mapped.RowPitch } );
+				geometry.SetFromData( { static_cast< const uint8_t* >( temp_vb_mapped.pData ), temp_vb_desc.ByteWidth } );
 			}
 
 			context.device_context->Unmap( temp_vb.ptr_, 0 );
