@@ -59,9 +59,9 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 
 			D3D11_BUFFER_DESC desc { };
 			desc.ByteWidth      = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
-			desc.Usage          = D3D11_USAGE_DYNAMIC;
+			desc.Usage          = D3D11_USAGE_DEFAULT;
 			desc.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
-			desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+			desc.CPUAccessFlags = 0;
 
 			if( data )
 			{
