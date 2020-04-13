@@ -18,7 +18,7 @@
 #include "Mesh.h"
 
 #include "Orbit/Graphics/Geometry/Face.h"
-#include "Orbit/Graphics/Geometry/GeometryData.h"
+#include "Orbit/Graphics/Geometry/Geometry.h"
 #include "Orbit/Math/Geometry/LineSegment.h"
 #include "Orbit/Math/Geometry/Plane.h"
 
@@ -51,8 +51,8 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 		const uint8_t*  vsrc              = static_cast< const uint8_t* >( vertex_buffer_->MapRead() );
 		const uint16_t* isrc              = static_cast< const uint16_t* >( index_buffer_->MapRead() ); // #TODO: Support different index sizes
 		const size_t    triangle_count    = ( index_buffer_->GetCount() / 3 );
-		GeometryData    geometry_positive = GeometryData( vertex_layout_ );
-		GeometryData    geometry_negative = GeometryData( vertex_layout_ );
+		Geometry        geometry_positive( vertex_layout_ );
+		Geometry        geometry_negative( vertex_layout_ );
 
 		for( size_t triangle_index = 0; triangle_index < triangle_count; ++triangle_index )
 		{

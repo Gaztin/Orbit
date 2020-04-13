@@ -30,14 +30,14 @@ ORB_NAMESPACE_BEGIN
 struct Face;
 struct Vertex;
 
-class ORB_API_GRAPHICS GeometryData
+class ORB_API_GRAPHICS Geometry
 {
-	ORB_DISABLE_COPY( GeometryData );
+	ORB_DISABLE_COPY( Geometry );
 
 public:
 
-	explicit GeometryData( const VertexLayout& vertex_layout );
-	GeometryData( GeometryData&& other );
+	explicit Geometry( const VertexLayout& vertex_layout );
+	         Geometry( Geometry&& other );
 
 public:
 
@@ -60,7 +60,7 @@ public:
 
 public:
 
-	GeometryData& operator=( GeometryData&& other );
+	Geometry& operator=( Geometry&& other );
 
 private:
 

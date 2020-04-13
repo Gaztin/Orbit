@@ -26,7 +26,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-class  GeometryData;
+class  Geometry;
 class  Mesh;
 class  VertexLayout;
 struct IShape;
@@ -39,9 +39,9 @@ public:
 
 private:
 
-	std::string_view EvalShapeName     ( ShapeType type )              const;
-	void             GenerateCubeData  ( GeometryData& geometry_data ) const;
-	void             GenerateSphereData( GeometryData& geometry_data ) const;
+	std::string_view EvalShapeName     ( ShapeType type )     const;
+	void             GenerateCubeData  ( Geometry& geometry ) const;
+	void             GenerateSphereData( Geometry& geometry ) const;
 
 };
 

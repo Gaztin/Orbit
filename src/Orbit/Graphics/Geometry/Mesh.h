@@ -33,7 +33,7 @@ class Plane;
 
 class ORB_API_GRAPHICS Mesh
 {
-	friend class GeometryData;
+	friend class Geometry;
 
 public:
 
