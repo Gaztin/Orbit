@@ -182,7 +182,6 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 //////////////////////////////////////////////////////////////////////////
 
-			const Plane              inverted_plane = Plane( -plane.normal, -plane.displacement );
 			std::array< Vector3, 3 > intersections;
 			size_t                   secluded_vertex_index = 0;
 			size_t                   intersection_count    = 0;
@@ -190,11 +189,6 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 			for( size_t i = 0; i < 3; ++i )
 			{
 				if( auto intersection = plane.Intersect( edges[ i ] ); intersection.index() == 1 )
-				{
-					intersections[ i ] = std::move( std::get< 1 >( intersection ) );
-					++intersection_count;
-				}
-				else if( auto intersection = inverted_plane.Intersect( edges[ i ] ); intersection.index() == 1 )
 				{
 					intersections[ i ] = std::move( std::get< 1 >( intersection ) );
 					++intersection_count;
