@@ -15,20 +15,49 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Attribute.h"
+
+#include "Orbit/ShaderGen/Generator/IGenerator.h"
+#include "Orbit/ShaderGen/Generator/MainFunction.h"
+
+#include <cassert>
+#include <sstream>
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { namespace Variables
 {
-	class ORB_API_GRAPHICS Sampler : public IVariable
+	static std::string NewName( size_t unique_index )
 	{
-	public:
-	
-		Sampler( void );
-	
-	};
+		std::ostringstream ss;
+		ss << "attribute_" << unique_index;
+
+		return ss.str();
+	}
+
+	Attribute::Attribute( VertexComponent component )
+		: IVariable( NewName( IGenerator::GetCurrentGenerator()->attribute_layout_.GetCount() ), DataTypeFromVertexComponent( component ) )
+	{
+		stored_ = true;
+
+		IGenerator::GetCurrentGenerator()->attribute_layout_.Add( component );
+	}
+
+	std::string Attribute::GetValue( void ) const
+	{
+		MainFunction* main = IGenerator::GetCurrentMainFunction();
+
+		if( main->shader_language == ShaderLanguage::HLSL )
+		{
+			switch( main->shader_type )
+			{
+				case ShaderType::Vertex: { return "input." + value_; }
+				default:                 { assert( false );           } break;
+			}
+		}
+
+		return value_;
+	}
 } }
 
 ORB_NAMESPACE_END

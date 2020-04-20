@@ -22,13 +22,11 @@ ORB_NAMESPACE_BEGIN
 
 class IndexBuffer;
 class VertexBuffer;
-namespace ShaderGen { class IGenerator; }
 
 class ORB_API_GRAPHICS Shader
 {
 public:
 
-	explicit Shader( ShaderGen::IGenerator& generator );
 	Shader( std::string_view source, const VertexLayout& vertex_layout );
 	~Shader( void );
 

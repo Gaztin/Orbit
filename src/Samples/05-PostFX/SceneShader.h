@@ -16,11 +16,11 @@
  */
 
 #pragma once
-#include <Orbit/Graphics/Shader/Generator/IGenerator.h>
-#include <Orbit/Graphics/Shader/Generator/Variables/Attribute.h>
-#include <Orbit/Graphics/Shader/Generator/Variables/Sampler.h>
-#include <Orbit/Graphics/Shader/Generator/Variables/Uniform.h>
-#include <Orbit/Graphics/Shader/Generator/Variables/Varying.h>
+#include <Orbit/ShaderGen/Generator/IGenerator.h>
+#include <Orbit/ShaderGen/Variables/Attribute.h>
+#include <Orbit/ShaderGen/Variables/Sampler.h>
+#include <Orbit/ShaderGen/Variables/Uniform.h>
+#include <Orbit/ShaderGen/Variables/Varying.h>
 
 class SceneShader final : public Orbit::ShaderGen::IGenerator
 {

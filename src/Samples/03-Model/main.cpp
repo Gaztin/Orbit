@@ -58,7 +58,7 @@ public:
 
 	SampleApp( void )
 		: window_                  ( 800, 600 )
-		, shader_                  ( model_shader )
+		, shader_                  ( model_shader.Generate(), model_shader.GetVertexLayout() )
 		, model_                   ( Orbit::Asset( "models/teapot.obj" ), model_shader.GetVertexLayout() )
 		, vertex_constant_buffer_  ( sizeof( VertexConstantData ) )
 		, fragment_constant_buffer_( sizeof( FragmentConstantData ) )

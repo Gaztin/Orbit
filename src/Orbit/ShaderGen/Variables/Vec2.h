@@ -15,48 +15,21 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Uniform.h"
-
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-
-#include <cassert>
-#include <sstream>
+#pragma once
+#include "Orbit/ShaderGen/Variables/IVariable.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { namespace Variables
 {
-	static std::string NewName( size_t unique_index )
+	class ORB_API_SHADERGEN Vec2 : public IVariable
 	{
-		std::ostringstream ss;
-		ss << "uniform_" << unique_index;
-
-		return ss.str();
-	}
-
-	UniformBase::UniformBase( DataType type )
-		: IVariable( NewName( IGenerator::GetCurrentGenerator()->uniforms_.size() ), type )
-	{
-		stored_ = true;
-
-		IGenerator::GetCurrentGenerator()->uniforms_.push_back( this );
-	}
-
-	UniformArrayBase::UniformArrayBase( DataType element_type )
-		: UniformBase   ( DataType::Array )
-		, element_type_( element_type )
-	{
-	}
-
-	IVariable UniformArrayBase::operator[]( const IVariable& index ) const
-	{
-		assert( index.GetDataType() == DataType::Int );
-
-		SetUsed();
-		index.SetUsed();
-
-		return IVariable( GetValue() + "[ " + index.GetValue() + " ]", element_type_ );
-	}
+	public:
+	
+		Vec2( const IVariable& a );
+		Vec2( const IVariable& a, const IVariable& b );
+	
+	};
 } }
 
 ORB_NAMESPACE_END

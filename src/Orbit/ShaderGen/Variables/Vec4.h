@@ -15,31 +15,23 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Sampler.h"
-
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-
-#include <sstream>
+#pragma once
+#include "Orbit/ShaderGen/Variables/IVariable.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { namespace Variables
 {
-	static std::string NewName( size_t unique_index )
+	class ORB_API_SHADERGEN Vec4 : public IVariable
 	{
-		std::ostringstream ss;
-		ss << "sampler_" << unique_index;
+	public:
 
-		return ss.str();
-	}
+		Vec4( const IVariable& a );
+		Vec4( const IVariable& a, const IVariable& b );
+		Vec4( const IVariable& a, const IVariable& b, const IVariable& c );
+		Vec4( const IVariable& a, const IVariable& b, const IVariable& c, const IVariable& d );
 
-	Sampler::Sampler( void )
-		: IVariable( NewName( IGenerator::GetCurrentGenerator()->sampler_count_ ), DataType::Unknown )
-	{
-		stored_ = true;
-
-		++IGenerator::GetCurrentGenerator()->sampler_count_;
-	}
+	};
 } }
 
 ORB_NAMESPACE_END

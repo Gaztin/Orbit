@@ -17,8 +17,8 @@
 
 #include "Varying.h"
 
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/IGenerator.h"
+#include "Orbit/ShaderGen/Generator/MainFunction.h"
 
 #include <cassert>
 #include <sstream>

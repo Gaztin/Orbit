@@ -19,10 +19,10 @@
 
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Uniform.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec2.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
-#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Variables/Uniform.h"
+#include "Orbit/ShaderGen/Variables/Vec2.h"
+#include "Orbit/ShaderGen/Variables/Vec4.h"
 
 #include <cassert>
 #include <map>

@@ -15,12 +15,10 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Attribute.h"
+#include "Sampler.h"
 
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/IGenerator.h"
 
-#include <cassert>
 #include <sstream>
 
 ORB_NAMESPACE_BEGIN
@@ -30,33 +28,17 @@ namespace ShaderGen { namespace Variables
 	static std::string NewName( size_t unique_index )
 	{
 		std::ostringstream ss;
-		ss << "attribute_" << unique_index;
+		ss << "sampler_" << unique_index;
 
 		return ss.str();
 	}
 
-	Attribute::Attribute( VertexComponent component )
-		: IVariable( NewName( IGenerator::GetCurrentGenerator()->attribute_layout_.GetCount() ), DataTypeFromVertexComponent( component ) )
+	Sampler::Sampler( void )
+		: IVariable( NewName( IGenerator::GetCurrentGenerator()->sampler_count_ ), DataType::Unknown )
 	{
 		stored_ = true;
 
-		IGenerator::GetCurrentGenerator()->attribute_layout_.Add( component );
-	}
-
-	std::string Attribute::GetValue( void ) const
-	{
-		MainFunction* main = IGenerator::GetCurrentMainFunction();
-
-		if( main->shader_language == ShaderLanguage::HLSL )
-		{
-			switch( main->shader_type )
-			{
-				case ShaderType::Vertex: { return "input." + value_; }
-				default:                 { assert( false );           } break;
-			}
-		}
-
-		return value_;
+		++IGenerator::GetCurrentGenerator()->sampler_count_;
 	}
 } }
 

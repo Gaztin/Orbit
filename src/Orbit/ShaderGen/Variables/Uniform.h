@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Orbit/ShaderGen/Variables/IVariable.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -45,7 +45,7 @@ namespace ShaderGen { namespace Variables
 	template<> struct UniformTraits< Vec4  > : DataTypeTraits< DataType::FVec4 > { };
 	template<> struct UniformTraits< Mat4  > : DataTypeTraits< DataType::Mat4  > { };
 
-	class ORB_API_GRAPHICS UniformBase : public IVariable
+	class ORB_API_SHADERGEN UniformBase : public IVariable
 	{
 	public:
 
@@ -69,7 +69,7 @@ namespace ShaderGen { namespace Variables
 
 	};
 
-	class ORB_API_GRAPHICS UniformArrayBase : public UniformBase
+	class ORB_API_SHADERGEN UniformArrayBase : public UniformBase
 	{
 	public:
 

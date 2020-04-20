@@ -16,13 +16,13 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Orbit/ShaderGen/Variables/IVariable.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { namespace Variables
 {
-	class ORB_API_GRAPHICS Vec3 : public IVariable
+	class ORB_API_SHADERGEN Vec3 : public IVariable
 	{
 	public:
 	

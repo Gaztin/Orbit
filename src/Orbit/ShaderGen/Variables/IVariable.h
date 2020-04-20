@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Shader/Generator/DataType.h"
+#include "Orbit/ShaderGen/Variables/DataType.h"
 
 #include <string_view>
 #include <string>
@@ -25,7 +25,7 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { class IGenerator; struct SwizzlePermutations; namespace Variables
 {
-	class ORB_API_GRAPHICS IVariable
+	class ORB_API_SHADERGEN IVariable
 	{
 		friend class ShaderGen::IGenerator;
 

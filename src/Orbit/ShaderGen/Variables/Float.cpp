@@ -15,20 +15,28 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Float.h"
+
+#include "Orbit/ShaderGen/Generator/IGenerator.h"
+
+#include <cassert>
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { namespace Variables
 {
-	class ORB_API_GRAPHICS Mat4 : public IVariable
+	Float::Float( const IVariable& f )
+		: IVariable( "float( " + f.GetValue() + " )", DataType::Float )
 	{
-	public:
-	
-		Mat4( const IVariable& value );
-	
-	};
+		assert( ( f.GetDataType() == DataType::Float ) || ( f.GetDataType() == DataType::Int ) );
+
+		f.SetUsed();
+	}
+
+	Float::Float( double f )
+		: IVariable( f )
+	{
+	}
 } }
 
 ORB_NAMESPACE_END

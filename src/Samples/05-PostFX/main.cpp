@@ -57,8 +57,8 @@ public:
 
 	SampleApp( void )
 		: window_                       ( 800, 600 )
-		, scene_shader_                 ( scene_shader )
-		, post_fx_shader_               ( post_fx_shader )
+		, scene_shader_                 ( scene_shader.Generate(), scene_shader.GetVertexLayout() )
+		, post_fx_shader_               ( post_fx_shader.Generate(), post_fx_shader.GetVertexLayout() )
 		, model_                        ( Orbit::Asset( "models/bunny.obj" ), scene_shader.GetVertexLayout() )
 		, scene_vertex_constant_buffer_ ( sizeof( SceneVertexConstantData ) )
 		, post_fx_pixel_constant_buffer_( sizeof( PostFXPixelConstantData ) )

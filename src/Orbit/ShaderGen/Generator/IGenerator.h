@@ -18,11 +18,11 @@
 #pragma once
 #include "Orbit/Core/Utility/StringLiteral.h"
 #include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Attribute.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Sampler.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Uniform.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Varying.h"
-#include "Orbit/Graphics/Shader/Generator/Swizzle.h"
+#include "Orbit/ShaderGen/Variables/Attribute.h"
+#include "Orbit/ShaderGen/Variables/Sampler.h"
+#include "Orbit/ShaderGen/Variables/Swizzle.h"
+#include "Orbit/ShaderGen/Variables/Uniform.h"
+#include "Orbit/ShaderGen/Variables/Varying.h"
 
 #include <string_view>
 #include <string>
@@ -33,7 +33,7 @@ namespace ShaderGen
 {
 	struct MainFunction;
 
-	class ORB_API_GRAPHICS IGenerator
+	class ORB_API_SHADERGEN IGenerator
 	{
 		friend class Variables::IVariable;
 		friend class Variables::Attribute;

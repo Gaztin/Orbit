@@ -17,14 +17,14 @@
 
 #include "IVariable.h"
 
-#include "Orbit/Graphics/Shader/Generator/Variables/Float.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Mat4.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec2.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec3.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
-#include "Orbit/Graphics/Shader/Generator/Swizzle.h"
+#include "Orbit/ShaderGen/Generator/IGenerator.h"
+#include "Orbit/ShaderGen/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Variables/Float.h"
+#include "Orbit/ShaderGen/Variables/Mat4.h"
+#include "Orbit/ShaderGen/Variables/Swizzle.h"
+#include "Orbit/ShaderGen/Variables/Vec2.h"
+#include "Orbit/ShaderGen/Variables/Vec3.h"
+#include "Orbit/ShaderGen/Variables/Vec4.h"
 
 #include <cassert>
 #include <map>

@@ -17,13 +17,13 @@
 
 #pragma once
 #include "Orbit/Core/Utility/StringLiteral.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Orbit/ShaderGen/Variables/IVariable.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	extern ORB_API_GRAPHICS Variables::IVariable* variable_to_be_swizzled;
+	extern ORB_API_SHADERGEN Variables::IVariable* variable_to_be_swizzled;
 
 	template< char... Name >
 	class Swizzle

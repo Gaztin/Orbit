@@ -16,50 +16,19 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Orbit/ShaderGen/Variables/IVariable.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { namespace Variables
 {
-	template< VertexComponent VC >
-	class VaryingHelper;
-	
-	class ORB_API_GRAPHICS Varying : public IVariable
+	class ORB_API_SHADERGEN Float : public IVariable
 	{
 	public:
-	
-		using Position = VaryingHelper< VertexComponent::Position >;
-		using Normal   = VaryingHelper< VertexComponent::Normal >;
-		using Color    = VaryingHelper< VertexComponent::Color >;
-		using TexCoord = VaryingHelper< VertexComponent::TexCoord >;
-		using IVariable::operator=;
-	
-	public:
-	
-		Varying( VertexComponent component );
 
-	public:
-	
-		std::string GetValue( void ) const override;
-	
-	};
-	
-	template< VertexComponent VC >
-	class VaryingHelper : public Varying
-	{
-	public:
-	
-		using Varying::operator=;
-	
-	public:
-	
-		VaryingHelper( void )
-			: Varying( VC )
-		{
-		}
-	
+		Float( const IVariable& f );
+		Float( double f );
+
 	};
 } }
 

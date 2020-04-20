@@ -48,7 +48,7 @@ public:
 
 	SampleApp( void )
 		: window_         ( 800, 600 )
-		, shader_         ( animation_shader )
+		, shader_         ( animation_shader.Generate(), animation_shader.GetVertexLayout() )
 		, model_          ( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
 		, animation_      ( Orbit::Asset( "animations/jump.dae" ) )
 		, constant_buffer_( sizeof( ConstantData ) )

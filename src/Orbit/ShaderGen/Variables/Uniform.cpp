@@ -15,27 +15,47 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Float.h"
+#include "Uniform.h"
 
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
+#include "Orbit/ShaderGen/Generator/IGenerator.h"
 
 #include <cassert>
+#include <sstream>
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen { namespace Variables
 {
-	Float::Float( const IVariable& f )
-		: IVariable( "float( " + f.GetValue() + " )", DataType::Float )
+	static std::string NewName( size_t unique_index )
 	{
-		assert( ( f.GetDataType() == DataType::Float ) || ( f.GetDataType() == DataType::Int ) );
+		std::ostringstream ss;
+		ss << "uniform_" << unique_index;
 
-		f.SetUsed();
+		return ss.str();
 	}
 
-	Float::Float( double f )
-		: IVariable( f )
+	UniformBase::UniformBase( DataType type )
+		: IVariable( NewName( IGenerator::GetCurrentGenerator()->uniforms_.size() ), type )
 	{
+		stored_ = true;
+
+		IGenerator::GetCurrentGenerator()->uniforms_.push_back( this );
+	}
+
+	UniformArrayBase::UniformArrayBase( DataType element_type )
+		: UniformBase   ( DataType::Array )
+		, element_type_( element_type )
+	{
+	}
+
+	IVariable UniformArrayBase::operator[]( const IVariable& index ) const
+	{
+		assert( index.GetDataType() == DataType::Int );
+
+		SetUsed();
+		index.SetUsed();
+
+		return IVariable( GetValue() + "[ " + index.GetValue() + " ]", element_type_ );
 	}
 } }
 
