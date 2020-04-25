@@ -15,32 +15,32 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Sampler.h"
-
-#include "Orbit/ShaderGen/Generator/IShader.h"
-#include "Orbit/ShaderGen/Generator/ShaderManager.h"
-
-#include <sstream>
+#pragma once
+#include "Orbit/ShaderGen/ShaderGen.h"
+#include "Orbit/Core/Utility/Singleton.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static std::string NewName( size_t unique_index )
+	class  IShader;
+	struct MainFunction;
+
+	class ORB_API_SHADERGEN ShaderManager : public Singleton< ShaderManager >
 	{
-		std::ostringstream ss;
-		ss << "sampler_" << unique_index;
+	public:
 
-		return ss.str();
-	}
+		IShader*      GetCurrentShader      ( void ) const                  { return current_shader_; }
+		MainFunction* GetCurrentMainFunction( void ) const                  { return current_main_function_; }
+		void          SetCurrentShader      ( IShader* shader )             { current_shader_ = shader; }
+		void          SetCurrentMainFunction( MainFunction* main_function ) { current_main_function_ = main_function; }
 
-	Sampler::Sampler( void )
-		: IVariable( NewName( ShaderManager::GetInstance().GetCurrentShader()->sampler_count_ ), DataType::Unknown )
-	{
-		stored_ = true;
+	private:
 
-		++ShaderManager::GetInstance().GetCurrentShader()->sampler_count_;
-	}
+		IShader*      current_shader_;
+		MainFunction* current_main_function_;
+
+	};
 }
 
 ORB_NAMESPACE_END

@@ -18,6 +18,7 @@
 #include "Uniform.h"
 
 #include "Orbit/ShaderGen/Generator/IShader.h"
+#include "Orbit/ShaderGen/Generator/ShaderManager.h"
 
 #include <cassert>
 #include <sstream>
@@ -35,11 +36,11 @@ namespace ShaderGen
 	}
 
 	UniformBase::UniformBase( DataType type )
-		: IVariable( NewName( IShader::GetCurrentGenerator()->uniforms_.size() ), type )
+		: IVariable( NewName( ShaderManager::GetInstance().GetCurrentShader()->uniforms_.size() ), type )
 	{
 		stored_ = true;
 
-		IShader::GetCurrentGenerator()->uniforms_.push_back( this );
+		ShaderManager::GetInstance().GetCurrentShader()->uniforms_.push_back( this );
 	}
 
 	UniformArrayBase::UniformArrayBase( DataType element_type )

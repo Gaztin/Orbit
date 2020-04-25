@@ -20,6 +20,7 @@
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
 #include "Orbit/ShaderGen/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/ShaderManager.h"
 #include "Orbit/ShaderGen/Variables/Uniform.h"
 #include "Orbit/ShaderGen/Variables/Vec2.h"
 #include "Orbit/ShaderGen/Variables/Vec4.h"
@@ -32,9 +33,6 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static IShader*      current_generator     = nullptr;
-	static MainFunction* current_main_function = nullptr;
-
 	static std::string_view VertexComponentTypeString( IndexedVertexComponent component )
 	{
 		switch( component.GetDataType() )
@@ -114,13 +112,13 @@ namespace ShaderGen
 
 	IShader::IShader( void )
 	{
-		current_generator = this;
+		ShaderManager::GetInstance().SetCurrentShader( this );
 	}
 
 	IShader::~IShader( void )
 	{
-		if( current_generator == this )
-			current_generator = nullptr;
+		if( ShaderManager::GetInstance().GetCurrentShader() == this )
+			ShaderManager::GetInstance().SetCurrentShader( nullptr );
 	}
 
 	std::string IShader::Generate( void )
@@ -161,7 +159,7 @@ namespace ShaderGen
 	{
 		assert( pos.data_type_ == DataType::FVec2 );
 
-		switch( GetCurrentMainFunction()->shader_language )
+		switch( ShaderManager::GetInstance().GetCurrentMainFunction()->shader_language )
 		{
 			case ShaderLanguage::HLSL: return Vec2( pos->x, -pos->y );
 			case ShaderLanguage::GLSL: return Vec2( pos->x,  pos->y );
@@ -183,7 +181,7 @@ namespace ShaderGen
 		sampler.SetUsed();
 		texcoord.SetUsed();
 
-		switch( GetCurrentMainFunction()->shader_language )
+		switch( ShaderManager::GetInstance().GetCurrentMainFunction()->shader_language )
 		{
 			default:
 			{
@@ -304,7 +302,7 @@ namespace ShaderGen
 			vs_main.shader_language = ShaderLanguage::HLSL;
 			vs_main.shader_type     = ShaderType::Vertex;
 
-			current_main_function = &vs_main;
+			ShaderManager::GetInstance().SetCurrentMainFunction( &vs_main );
 
 			full_source_code.append( "\nPixelData VSMain( VertexData input )\n{\n\tPixelData output;\n" );
 
@@ -313,7 +311,7 @@ namespace ShaderGen
 			full_source_code.append( vs_main.code.str() );
 			full_source_code.append( "\treturn output;\n}\n" );
 
-			current_main_function = nullptr;
+			ShaderManager::GetInstance().SetCurrentMainFunction( nullptr );
 		}
 
 		{
@@ -358,7 +356,7 @@ namespace ShaderGen
 			ps_main.shader_language = ShaderLanguage::HLSL;
 			ps_main.shader_type     = ShaderType::Fragment;
 
-			current_main_function = &ps_main;
+			ShaderManager::GetInstance().SetCurrentMainFunction( &ps_main );
 
 			full_source_code.append( "\nfloat4 PSMain( PixelData input ) : SV_TARGET\n{\n" );
 
@@ -367,7 +365,7 @@ namespace ShaderGen
 			full_source_code.append( ps_main.code.str() );
 			full_source_code.append( "\treturn " + ps_result.GetValue() + ";\n}\n" );
 
-			current_main_function = nullptr;
+			ShaderManager::GetInstance().SetCurrentMainFunction( nullptr );
 		}
 
 		{
@@ -435,7 +433,7 @@ namespace ShaderGen
 			vs_main.shader_language = ShaderLanguage::GLSL;
 			vs_main.shader_type     = ShaderType::Vertex;
 
-			current_main_function = &vs_main;
+			ShaderManager::GetInstance().SetCurrentMainFunction( &vs_main );
 
 			full_source_code.append( "\nvoid main()\n{\n" );
 
@@ -444,7 +442,7 @@ namespace ShaderGen
 			full_source_code.append( vs_main.code.str() );
 			full_source_code.append( "\tgl_Position = " + vs_result.GetValue() + ";\n}\n" );
 
-			current_main_function = nullptr;
+			ShaderManager::GetInstance().SetCurrentMainFunction( nullptr );
 		}
 
 		{
@@ -510,7 +508,7 @@ namespace ShaderGen
 			ps_main.shader_language = ShaderLanguage::GLSL;
 			ps_main.shader_type     = ShaderType::Fragment;
 
-			current_main_function = &ps_main;
+			ShaderManager::GetInstance().SetCurrentMainFunction( &ps_main );
 
 			full_source_code.append( "\nvoid main()\n{\n" );
 
@@ -519,7 +517,7 @@ namespace ShaderGen
 			full_source_code.append( ps_main.code.str() );
 			full_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.GetValue() + " );\n}\n" );
 
-			current_main_function = nullptr;
+			ShaderManager::GetInstance().SetCurrentMainFunction( nullptr );
 		}
 
 		{
@@ -553,16 +551,6 @@ namespace ShaderGen
 	#endif // _DEBUG
 
 		return full_source_code;
-	}
-
-	IShader* IShader::GetCurrentGenerator( void )
-	{
-		return current_generator;
-	}
-
-	MainFunction* IShader::GetCurrentMainFunction( void )
-	{
-		return current_main_function;
 	}
 }
 

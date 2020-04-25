@@ -19,6 +19,7 @@
 
 #include "Orbit/ShaderGen/Generator/IShader.h"
 #include "Orbit/ShaderGen/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/ShaderManager.h"
 #include "Orbit/ShaderGen/Variables/Float.h"
 #include "Orbit/ShaderGen/Variables/Mat4.h"
 #include "Orbit/ShaderGen/Variables/Swizzle.h"
@@ -79,7 +80,7 @@ namespace ShaderGen
 	{
 		if( !stored_ )
 		{
-			MainFunction* main = IShader::GetCurrentMainFunction();
+			MainFunction* main = ShaderManager::GetInstance().GetCurrentMainFunction();
 
 			std::ostringstream ss;
 			ss << "local_" << ( main->locals_count++ );
@@ -124,7 +125,7 @@ namespace ShaderGen
 			default: break;
 		}
 
-		if( IShader::GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
+		if( ShaderManager::GetInstance().GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
 		    ( data_type_ == DataType::Mat4 || rhs.data_type_ == DataType::Mat4 ) )
 		{
 			return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", result_type );
@@ -189,7 +190,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IShader::GetCurrentMainFunction()->code << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
+		ShaderManager::GetInstance().GetCurrentMainFunction()->code << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
 	}
 
 	void IVariable::operator+=( const IVariable& rhs )
@@ -197,7 +198,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IShader::GetCurrentMainFunction()->code << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
+		ShaderManager::GetInstance().GetCurrentMainFunction()->code << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
 	}
 
 	void IVariable::operator*=( const IVariable& rhs )
@@ -207,7 +208,7 @@ namespace ShaderGen
 		/* TODO: if m_type == DataType::Mat4, do mul for HLSL */
 
 		StoreValue();
-		IShader::GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
+		ShaderManager::GetInstance().GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
 	}
 
 	IVariable IVariable::operator[]( const IVariable& index ) const

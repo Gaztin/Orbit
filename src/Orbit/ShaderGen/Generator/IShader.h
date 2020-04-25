@@ -91,11 +91,6 @@ namespace ShaderGen
 
 	private:
 
-		static IShader*      GetCurrentGenerator   ( void );
-		static MainFunction* GetCurrentMainFunction( void );
-
-	private:
-
 		std::vector< UniformBase* > uniforms_;
 		VertexLayout                attribute_layout_;
 		VertexLayout                varying_layout_;
