@@ -91,7 +91,7 @@ namespace ShaderGen
 
 	private:
 
-		static IShader*   GetCurrentGenerator   ( void );
+		static IShader*      GetCurrentGenerator   ( void );
 		static MainFunction* GetCurrentMainFunction( void );
 
 	private:
