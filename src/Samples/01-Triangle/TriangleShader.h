@@ -16,12 +16,12 @@
  */
 
 #pragma once
-#include <Orbit/ShaderGen/Generator/IGenerator.h>
+#include <Orbit/ShaderGen/Generator/IShader.h>
 #include <Orbit/ShaderGen/Variables/Attribute.h>
 #include <Orbit/ShaderGen/Variables/Sampler.h>
 #include <Orbit/ShaderGen/Variables/Varying.h>
 
-class TriangleShader final : public Orbit::ShaderGen::IGenerator
+class TriangleShader final : public Orbit::ShaderGen::IShader
 {
 public:
 

@@ -17,7 +17,7 @@
 
 #include "IVariable.h"
 
-#include "Orbit/ShaderGen/Generator/IGenerator.h"
+#include "Orbit/ShaderGen/Generator/IShader.h"
 #include "Orbit/ShaderGen/Generator/MainFunction.h"
 #include "Orbit/ShaderGen/Variables/Float.h"
 #include "Orbit/ShaderGen/Variables/Mat4.h"
@@ -79,7 +79,7 @@ namespace ShaderGen
 	{
 		if( !stored_ )
 		{
-			MainFunction* main = IGenerator::GetCurrentMainFunction();
+			MainFunction* main = IShader::GetCurrentMainFunction();
 
 			std::ostringstream ss;
 			ss << "local_" << ( main->locals_count++ );
@@ -124,7 +124,7 @@ namespace ShaderGen
 			default: break;
 		}
 
-		if( IGenerator::GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
+		if( IShader::GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
 		    ( data_type_ == DataType::Mat4 || rhs.data_type_ == DataType::Mat4 ) )
 		{
 			return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", result_type );
@@ -189,7 +189,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
+		IShader::GetCurrentMainFunction()->code << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
 	}
 
 	void IVariable::operator+=( const IVariable& rhs )
@@ -197,7 +197,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
+		IShader::GetCurrentMainFunction()->code << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
 	}
 
 	void IVariable::operator*=( const IVariable& rhs )
@@ -207,7 +207,7 @@ namespace ShaderGen
 		/* TODO: if m_type == DataType::Mat4, do mul for HLSL */
 
 		StoreValue();
-		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
+		IShader::GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
 	}
 
 	IVariable IVariable::operator[]( const IVariable& index ) const

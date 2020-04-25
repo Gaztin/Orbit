@@ -24,7 +24,7 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	class IGenerator;
+	class IShader;
 
 	struct MainFunction
 	{

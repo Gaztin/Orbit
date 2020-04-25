@@ -17,7 +17,7 @@
 
 #include "Float.h"
 
-#include "Orbit/ShaderGen/Generator/IGenerator.h"
+#include "Orbit/ShaderGen/Generator/IShader.h"
 
 #include <cassert>
 

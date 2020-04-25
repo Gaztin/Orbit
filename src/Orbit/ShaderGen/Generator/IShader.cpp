@@ -15,7 +15,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "IGenerator.h"
+#include "IShader.h"
 
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
@@ -32,7 +32,7 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static IGenerator*   current_generator     = nullptr;
+	static IShader*      current_generator     = nullptr;
 	static MainFunction* current_main_function = nullptr;
 
 	static std::string_view VertexComponentTypeString( IndexedVertexComponent component )
@@ -112,18 +112,18 @@ namespace ShaderGen
 
 #endif // !NDEBUG
 
-	IGenerator::IGenerator( void )
+	IShader::IShader( void )
 	{
 		current_generator = this;
 	}
 
-	IGenerator::~IGenerator( void )
+	IShader::~IShader( void )
 	{
 		if( current_generator == this )
 			current_generator = nullptr;
 	}
 
-	std::string IGenerator::Generate( void )
+	std::string IShader::Generate( void )
 	{
 		switch( RenderContext::GetInstance().GetPrivateDetails().index() )
 		{
@@ -152,12 +152,12 @@ namespace ShaderGen
 		}
 	}
 
-	VertexLayout IGenerator::GetVertexLayout( void ) const
+	VertexLayout IShader::GetVertexLayout( void ) const
 	{
 		return attribute_layout_;
 	}
 
-	IVariable IGenerator::CanonicalScreenPos( const IVariable& pos )
+	IVariable IShader::CanonicalScreenPos( const IVariable& pos )
 	{
 		assert( pos.data_type_ == DataType::FVec2 );
 
@@ -169,7 +169,7 @@ namespace ShaderGen
 		}
 	}
 
-	IVariable IGenerator::Transpose( const IVariable& matrix )
+	IVariable IShader::Transpose( const IVariable& matrix )
 	{
 		assert( matrix.GetDataType() == DataType::Mat4 );
 
@@ -178,7 +178,7 @@ namespace ShaderGen
 		return IVariable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
 	}
 
-	IVariable IGenerator::Sample( const IVariable& sampler, const IVariable& texcoord )
+	IVariable IShader::Sample( const IVariable& sampler, const IVariable& texcoord )
 	{
 		sampler.SetUsed();
 		texcoord.SetUsed();
@@ -207,7 +207,7 @@ namespace ShaderGen
 		}
 	}
 
-	IVariable IGenerator::Dot( const IVariable& lhs, const IVariable& rhs )
+	IVariable IShader::Dot( const IVariable& lhs, const IVariable& rhs )
 	{
 		lhs.SetUsed();
 		rhs.SetUsed();
@@ -215,14 +215,14 @@ namespace ShaderGen
 		return IVariable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
 	}
 
-	IVariable IGenerator::Normalize( const IVariable& vec )
+	IVariable IShader::Normalize( const IVariable& vec )
 	{
 		vec.SetUsed();
 
 		return IVariable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
 	}
 
-	IVariable IGenerator::Cos( const IVariable& radians )
+	IVariable IShader::Cos( const IVariable& radians )
 	{
 		assert( radians.data_type_ == DataType::Float );
 
@@ -231,7 +231,7 @@ namespace ShaderGen
 		return IVariable( "cos( " + radians.GetValue() + " )", DataType::Float );
 	}
 
-	IVariable IGenerator::Sin( const IVariable& radians )
+	IVariable IShader::Sin( const IVariable& radians )
 	{
 		assert( radians.data_type_ == DataType::Float );
 
@@ -240,7 +240,7 @@ namespace ShaderGen
 		return IVariable( "sin( " + radians.GetValue() + " )", DataType::Float );
 	}
 
-	std::string IGenerator::GenerateHLSL( void )
+	std::string IShader::GenerateHLSL( void )
 	{
 		std::string full_source_code;
 
@@ -403,7 +403,7 @@ namespace ShaderGen
 		return full_source_code;
 	}
 
-	std::string IGenerator::GenerateGLSL( void )
+	std::string IShader::GenerateGLSL( void )
 	{
 		std::string full_source_code;
 
@@ -555,12 +555,12 @@ namespace ShaderGen
 		return full_source_code;
 	}
 
-	IGenerator* IGenerator::GetCurrentGenerator( void )
+	IShader* IShader::GetCurrentGenerator( void )
 	{
 		return current_generator;
 	}
 
-	MainFunction* IGenerator::GetCurrentMainFunction( void )
+	MainFunction* IShader::GetCurrentMainFunction( void )
 	{
 		return current_main_function;
 	}

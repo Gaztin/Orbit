@@ -17,7 +17,7 @@
 
 #include "Sampler.h"
 
-#include "Orbit/ShaderGen/Generator/IGenerator.h"
+#include "Orbit/ShaderGen/Generator/IShader.h"
 
 #include <sstream>
 
@@ -34,11 +34,11 @@ namespace ShaderGen
 	}
 
 	Sampler::Sampler( void )
-		: IVariable( NewName( IGenerator::GetCurrentGenerator()->sampler_count_ ), DataType::Unknown )
+		: IVariable( NewName( IShader::GetCurrentGenerator()->sampler_count_ ), DataType::Unknown )
 	{
 		stored_ = true;
 
-		++IGenerator::GetCurrentGenerator()->sampler_count_;
+		++IShader::GetCurrentGenerator()->sampler_count_;
 	}
 }
 

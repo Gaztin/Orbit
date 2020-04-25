@@ -17,7 +17,7 @@
 
 #include "Varying.h"
 
-#include "Orbit/ShaderGen/Generator/IGenerator.h"
+#include "Orbit/ShaderGen/Generator/IShader.h"
 #include "Orbit/ShaderGen/Generator/MainFunction.h"
 
 #include <cassert>
@@ -36,16 +36,16 @@ namespace ShaderGen
 	}
 
 	Varying::Varying( VertexComponent component )
-		: IVariable( NewName( IGenerator::GetCurrentGenerator()->varying_layout_.GetCount() ), DataTypeFromVertexComponent( component ) )
+		: IVariable( NewName( IShader::GetCurrentGenerator()->varying_layout_.GetCount() ), DataTypeFromVertexComponent( component ) )
 	{
 		stored_ = true;
 
-		IGenerator::GetCurrentGenerator()->varying_layout_.Add( component );
+		IShader::GetCurrentGenerator()->varying_layout_.Add( component );
 	}
 
 	std::string Varying::GetValue( void ) const
 	{
-		MainFunction* main = IGenerator::GetCurrentMainFunction();
+		MainFunction* main = IShader::GetCurrentMainFunction();
 
 		if( main->shader_language == ShaderLanguage::HLSL )
 		{

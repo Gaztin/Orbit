@@ -33,7 +33,7 @@ namespace ShaderGen
 {
 	struct MainFunction;
 
-	class ORB_API_SHADERGEN IGenerator
+	class ORB_API_SHADERGEN IShader
 	{
 		friend class IVariable;
 		friend class Attribute;
@@ -43,8 +43,8 @@ namespace ShaderGen
 
 	public:
 
-		IGenerator( void );
-		virtual ~IGenerator( void );
+		IShader( void );
+		virtual ~IShader( void );
 
 	public:
 
@@ -91,7 +91,7 @@ namespace ShaderGen
 
 	private:
 
-		static IGenerator*   GetCurrentGenerator   ( void );
+		static IShader*   GetCurrentGenerator   ( void );
 		static MainFunction* GetCurrentMainFunction( void );
 
 	private:
