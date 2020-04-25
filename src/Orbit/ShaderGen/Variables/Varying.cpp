@@ -28,29 +28,17 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static std::string NewName( size_t unique_index )
-	{
-		std::ostringstream ss;
-		ss << "varying_" << unique_index;
-
-		return ss.str();
-	}
-
 	Varying::Varying( VertexComponent component )
-		: IVariable( NewName( ShaderManager::GetInstance().GetCurrentShader()->varying_layout_.GetCount() ), DataTypeFromVertexComponent( component ) )
+		: IVariable( ShaderManager::GetInstance().NewVarying( component ), DataTypeFromVertexComponent( component ) )
 	{
 		stored_ = true;
-
-		ShaderManager::GetInstance().GetCurrentShader()->varying_layout_.Add( component );
 	}
 
 	std::string Varying::GetValue( void ) const
 	{
-		MainFunction* main = ShaderManager::GetInstance().GetCurrentMainFunction();
-
-		if( main->shader_language == ShaderLanguage::HLSL )
+		if( ShaderManager::GetInstance().GetLanguage() == ShaderLanguage::HLSL )
 		{
-			switch( main->shader_type )
+			switch( ShaderManager::GetInstance().GetType() )
 			{
 				case ShaderType::Vertex:   { return "output." + value_; }
 				case ShaderType::Fragment: { return "input."  + value_; }

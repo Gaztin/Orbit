@@ -28,29 +28,17 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static std::string NewName( size_t unique_index )
-	{
-		std::ostringstream ss;
-		ss << "attribute_" << unique_index;
-
-		return ss.str();
-	}
-
 	Attribute::Attribute( VertexComponent component )
-		: IVariable( NewName( ShaderManager::GetInstance().GetCurrentShader()->attribute_layout_.GetCount() ), DataTypeFromVertexComponent( component ) )
+		: IVariable( ShaderManager::GetInstance().NewAttribute( component ), DataTypeFromVertexComponent( component ) )
 	{
 		stored_ = true;
-
-		ShaderManager::GetInstance().GetCurrentShader()->attribute_layout_.Add( component );
 	}
 
 	std::string Attribute::GetValue( void ) const
 	{
-		MainFunction* main = ShaderManager::GetInstance().GetCurrentMainFunction();
-
-		if( main->shader_language == ShaderLanguage::HLSL )
+		if( ShaderManager::GetInstance().GetLanguage() == ShaderLanguage::HLSL )
 		{
-			switch( main->shader_type )
+			switch( ShaderManager::GetInstance().GetType() )
 			{
 				case ShaderType::Vertex: { return "input." + value_; }
 				default:                 { assert( false );           } break;

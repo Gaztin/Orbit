@@ -80,16 +80,7 @@ namespace ShaderGen
 	{
 		if( !stored_ )
 		{
-			MainFunction* main = ShaderManager::GetInstance().GetCurrentMainFunction();
-
-			std::ostringstream ss;
-			ss << "local_" << ( main->locals_count++ );
-
-			auto old_value = value_;
-			value_ = ss.str();
-
-			main->code << "\t" << DataTypeToString( data_type_ ) << " " << value_ << " = " << old_value << ";\n";
-
+			value_  = ShaderManager::GetInstance().NewLocal( data_type_, value_ );
 			stored_ = true;
 		}
 	}
@@ -125,7 +116,7 @@ namespace ShaderGen
 			default: break;
 		}
 
-		if( ShaderManager::GetInstance().GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
+		if( ShaderManager::GetInstance().GetLanguage() == ShaderLanguage::HLSL &&
 		    ( data_type_ == DataType::Mat4 || rhs.data_type_ == DataType::Mat4 ) )
 		{
 			return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", result_type );
@@ -190,7 +181,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		ShaderManager::GetInstance().GetCurrentMainFunction()->code << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
+		ShaderManager::GetInstance().Append() << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
 	}
 
 	void IVariable::operator+=( const IVariable& rhs )
@@ -198,7 +189,7 @@ namespace ShaderGen
 		rhs.SetUsed();
 
 		StoreValue();
-		ShaderManager::GetInstance().GetCurrentMainFunction()->code << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
+		ShaderManager::GetInstance().Append() << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
 	}
 
 	void IVariable::operator*=( const IVariable& rhs )
@@ -208,7 +199,7 @@ namespace ShaderGen
 		/* TODO: if m_type == DataType::Mat4, do mul for HLSL */
 
 		StoreValue();
-		ShaderManager::GetInstance().GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
+		ShaderManager::GetInstance().Append() << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
 	}
 
 	IVariable IVariable::operator[]( const IVariable& index ) const

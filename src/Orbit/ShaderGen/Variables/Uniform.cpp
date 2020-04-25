@@ -27,20 +27,10 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static std::string NewName( size_t unique_index )
-	{
-		std::ostringstream ss;
-		ss << "uniform_" << unique_index;
-
-		return ss.str();
-	}
-
 	UniformBase::UniformBase( DataType type )
-		: IVariable( NewName( ShaderManager::GetInstance().GetCurrentShader()->uniforms_.size() ), type )
+		: IVariable( ShaderManager::GetInstance().NewUniform( this ), type )
 	{
 		stored_ = true;
-
-		ShaderManager::GetInstance().GetCurrentShader()->uniforms_.push_back( this );
 	}
 
 	UniformArrayBase::UniformArrayBase( DataType element_type )

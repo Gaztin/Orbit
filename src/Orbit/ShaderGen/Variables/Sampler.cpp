@@ -26,20 +26,10 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static std::string NewName( size_t unique_index )
-	{
-		std::ostringstream ss;
-		ss << "sampler_" << unique_index;
-
-		return ss.str();
-	}
-
 	Sampler::Sampler( void )
-		: IVariable( NewName( ShaderManager::GetInstance().GetCurrentShader()->sampler_count_ ), DataType::Unknown )
+		: IVariable( ShaderManager::GetInstance().NewSampler(), DataType::Unknown )
 	{
 		stored_ = true;
-
-		++ShaderManager::GetInstance().GetCurrentShader()->sampler_count_;
 	}
 }
 

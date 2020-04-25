@@ -16,24 +16,35 @@
  */
 
 #pragma once
-#include "Orbit/ShaderGen/ShaderGen.h"
 #include "Orbit/Core/Utility/Singleton.h"
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
+#include "Orbit/ShaderGen/Variables/DataType.h"
+#include "Orbit/ShaderGen/ShaderGen.h"
+
+#include <sstream>
+#include <string>
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	class  IShader;
+	class  UniformBase;
 	struct MainFunction;
 
 	class ORB_API_SHADERGEN ShaderManager : public Singleton< ShaderManager >
 	{
+		friend class IShader;
+
 	public:
 
-		IShader*      GetCurrentShader      ( void ) const                  { return current_shader_; }
-		MainFunction* GetCurrentMainFunction( void ) const                  { return current_main_function_; }
-		void          SetCurrentShader      ( IShader* shader )             { current_shader_ = shader; }
-		void          SetCurrentMainFunction( MainFunction* main_function ) { current_main_function_ = main_function; }
+		std::ostringstream& Append      ( void ) const;
+		std::string         NewLocal    ( DataType type, std::string_view code ) const;
+		std::string         NewAttribute( VertexComponent component ) const;
+		std::string         NewVarying  ( VertexComponent component ) const;
+		std::string         NewSampler  ( void ) const;
+		std::string         NewUniform  ( UniformBase* uniform ) const;
+		ShaderLanguage      GetLanguage ( void ) const;
+		ShaderType          GetType     ( void ) const;
 
 	private:
 

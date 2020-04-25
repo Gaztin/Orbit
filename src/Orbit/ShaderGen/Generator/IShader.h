@@ -35,11 +35,7 @@ namespace ShaderGen
 
 	class ORB_API_SHADERGEN IShader
 	{
-		friend class IVariable;
-		friend class Attribute;
-		friend class Sampler;
-		friend class UniformBase;
-		friend class Varying;
+		friend class ShaderManager;
 
 	public:
 
