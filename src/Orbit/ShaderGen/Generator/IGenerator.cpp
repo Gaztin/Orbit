@@ -157,28 +157,28 @@ namespace ShaderGen
 		return attribute_layout_;
 	}
 
-	Variables::IVariable IGenerator::CanonicalScreenPos( const Variables::IVariable& pos )
+	IVariable IGenerator::CanonicalScreenPos( const IVariable& pos )
 	{
 		assert( pos.data_type_ == DataType::FVec2 );
 
 		switch( GetCurrentMainFunction()->shader_language )
 		{
-			case ShaderLanguage::HLSL: return Variables::Vec2( pos->x, -pos->y );
-			case ShaderLanguage::GLSL: return Variables::Vec2( pos->x,  pos->y );
+			case ShaderLanguage::HLSL: return Vec2( pos->x, -pos->y );
+			case ShaderLanguage::GLSL: return Vec2( pos->x,  pos->y );
 			default:                   return pos;
 		}
 	}
 
-	Variables::IVariable IGenerator::Transpose( const Variables::IVariable& matrix )
+	IVariable IGenerator::Transpose( const IVariable& matrix )
 	{
 		assert( matrix.GetDataType() == DataType::Mat4 );
 
 		matrix.SetUsed();
 
-		return Variables::IVariable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
+		return IVariable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
 	}
 
-	Variables::IVariable IGenerator::Sample( const Variables::IVariable& sampler, const Variables::IVariable& texcoord )
+	IVariable IGenerator::Sample( const IVariable& sampler, const IVariable& texcoord )
 	{
 		sampler.SetUsed();
 		texcoord.SetUsed();
@@ -193,51 +193,51 @@ namespace ShaderGen
 
 			case ShaderLanguage::HLSL:
 			{
-				Variables::IVariable var( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
+				IVariable var( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
 				var.StoreValue();
 				return var;
 			}
 
 			case ShaderLanguage::GLSL:
 			{
-				Variables::IVariable var( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
+				IVariable var( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
 				var.StoreValue();
 				return var;
 			}
 		}
 	}
 
-	Variables::IVariable IGenerator::Dot( const Variables::IVariable& lhs, const Variables::IVariable& rhs )
+	IVariable IGenerator::Dot( const IVariable& lhs, const IVariable& rhs )
 	{
 		lhs.SetUsed();
 		rhs.SetUsed();
 
-		return Variables::IVariable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
+		return IVariable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
 	}
 
-	Variables::IVariable IGenerator::Normalize( const Variables::IVariable& vec )
+	IVariable IGenerator::Normalize( const IVariable& vec )
 	{
 		vec.SetUsed();
 
-		return Variables::IVariable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
+		return IVariable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
 	}
 
-	Variables::IVariable IGenerator::Cos( const Variables::IVariable& radians )
+	IVariable IGenerator::Cos( const IVariable& radians )
 	{
 		assert( radians.data_type_ == DataType::Float );
 
 		radians.SetUsed();
 
-		return Variables::IVariable( "cos( " + radians.GetValue() + " )", DataType::Float );
+		return IVariable( "cos( " + radians.GetValue() + " )", DataType::Float );
 	}
 
-	Variables::IVariable IGenerator::Sin( const Variables::IVariable& radians )
+	IVariable IGenerator::Sin( const IVariable& radians )
 	{
 		assert( radians.data_type_ == DataType::Float );
 
 		radians.SetUsed();
 
-		return Variables::IVariable( "sin( " + radians.GetValue() + " )", DataType::Float );
+		return IVariable( "sin( " + radians.GetValue() + " )", DataType::Float );
 	}
 
 	std::string IGenerator::GenerateHLSL( void )
@@ -325,7 +325,7 @@ namespace ShaderGen
 				{
 					if( uniforms_[ i ]->IsArray() )
 					{
-						const Variables::UniformArrayBase* uniform_array = static_cast< const Variables::UniformArrayBase* >( uniforms_[ i ] );
+						const UniformArrayBase* uniform_array = static_cast< const UniformArrayBase* >( uniforms_[ i ] );
 
 						ss << "\t" << DataTypeToString( uniform_array->GetElementType() ) << " uniform_" << i << "[ " << uniform_array->GetArraySize() << " ];\n";
 					}
@@ -456,7 +456,7 @@ namespace ShaderGen
 				{
 					if( uniforms_[ i ]->IsArray() )
 					{
-						const Variables::UniformArrayBase* uniform_array = static_cast< const Variables::UniformArrayBase* >( uniforms_[ i ] );
+						const UniformArrayBase* uniform_array = static_cast< const UniformArrayBase* >( uniforms_[ i ] );
 
 						ss << "\tORB_CONSTANT( " << DataTypeToString( uniform_array->GetElementType() ) << ", uniform_" << i << "[ " << uniform_array->GetArraySize() << " ] );\n";
 					}

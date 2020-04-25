@@ -20,7 +20,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
 	class ORB_API_SHADERGEN Sampler : public IVariable
 	{
@@ -29,6 +29,6 @@ namespace ShaderGen { namespace Variables
 		Sampler( void );
 	
 	};
-} }
+}
 
 ORB_NAMESPACE_END

@@ -21,7 +21,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
 	Mat4::Mat4( const IVariable& value )
 		: IVariable( "mat4( " + value.GetValue() + " )", DataType::Mat4 )
@@ -30,6 +30,6 @@ namespace ShaderGen { namespace Variables
 
 		value.SetUsed();
 	}
-} }
+}
 
 ORB_NAMESPACE_END

@@ -33,7 +33,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
 	IVariable::IVariable( const IVariable& other )
 		: value_    ( other.value_ )
@@ -244,6 +244,6 @@ namespace ShaderGen { namespace Variables
 
 		return IVariable( ss.str(), data_type );
 	}
-} }
+}
 
 ORB_NAMESPACE_END

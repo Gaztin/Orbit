@@ -35,11 +35,11 @@ namespace ShaderGen
 
 	class ORB_API_SHADERGEN IGenerator
 	{
-		friend class Variables::IVariable;
-		friend class Variables::Attribute;
-		friend class Variables::Sampler;
-		friend class Variables::UniformBase;
-		friend class Variables::Varying;
+		friend class IVariable;
+		friend class Attribute;
+		friend class Sampler;
+		friend class UniformBase;
+		friend class Varying;
 
 	public:
 
@@ -53,21 +53,21 @@ namespace ShaderGen
 
 	protected:
 
-		using Sampler   = Variables::Sampler;
-		using Attribute = Variables::Attribute;
-		using Varying   = Variables::Varying;
+		using Sampler   = Sampler;
+		using Attribute = Attribute;
+		using Varying   = Varying;
 
 		template< typename T >
-		using Uniform = Variables::Uniform< T >;
+		using Uniform = Uniform< T >;
 
 		template< typename T, size_t N >
-		using UniformArray = Variables::UniformArray< T, N >;
+		using UniformArray = UniformArray< T, N >;
 
-		using Float = Variables::Float;
-		using Vec2  = Variables::Vec2;
-		using Vec3  = Variables::Vec3;
-		using Vec4  = Variables::Vec4;
-		using Mat4  = Variables::Mat4;
+		using Float = Float;
+		using Vec2  = Vec2;
+		using Vec3  = Vec3;
+		using Vec4  = Vec4;
+		using Mat4  = Mat4;
 
 	protected:
 
@@ -76,13 +76,13 @@ namespace ShaderGen
 
 	protected:
 
-		Variables::IVariable CanonicalScreenPos( const Variables::IVariable& pos );
-		Variables::IVariable Transpose         ( const Variables::IVariable& matrix );
-		Variables::IVariable Sample            ( const Variables::IVariable& sampler, const Variables::IVariable& texcoord );
-		Variables::IVariable Dot               ( const Variables::IVariable& lhs, const Variables::IVariable& rhs );
-		Variables::IVariable Normalize         ( const Variables::IVariable& vec );
-		Variables::IVariable Cos               ( const Variables::IVariable& radians );
-		Variables::IVariable Sin               ( const Variables::IVariable& radians );
+		IVariable CanonicalScreenPos( const IVariable& pos );
+		IVariable Transpose         ( const IVariable& matrix );
+		IVariable Sample            ( const IVariable& sampler, const IVariable& texcoord );
+		IVariable Dot               ( const IVariable& lhs, const IVariable& rhs );
+		IVariable Normalize         ( const IVariable& vec );
+		IVariable Cos               ( const IVariable& radians );
+		IVariable Sin               ( const IVariable& radians );
 
 	private:
 
@@ -96,10 +96,10 @@ namespace ShaderGen
 
 	private:
 
-		std::vector< Variables::UniformBase* > uniforms_;
-		VertexLayout                           attribute_layout_;
-		VertexLayout                           varying_layout_;
-		uint32_t                               sampler_count_;
+		std::vector< UniformBase* > uniforms_;
+		VertexLayout                attribute_layout_;
+		VertexLayout                varying_layout_;
+		uint32_t                    sampler_count_;
 
 	};
 }

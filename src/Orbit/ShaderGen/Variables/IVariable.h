@@ -23,8 +23,11 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { class IGenerator; struct SwizzlePermutations; namespace Variables
+namespace ShaderGen
 {
+	class  IGenerator;
+	struct SwizzlePermutations;
+
 	class ORB_API_SHADERGEN IVariable
 	{
 		friend class ShaderGen::IGenerator;
@@ -89,6 +92,6 @@ namespace ShaderGen { class IGenerator; struct SwizzlePermutations; namespace Va
 	inline IVariable operator*( double lhs, const IVariable& rhs ) { return ( IVariable( lhs ) * rhs ); }
 	inline IVariable operator/( double lhs, const IVariable& rhs ) { return ( IVariable( lhs ) / rhs ); }
 
-} }
+}
 
 ORB_NAMESPACE_END

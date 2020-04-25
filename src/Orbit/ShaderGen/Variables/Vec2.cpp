@@ -21,7 +21,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
 	Vec2::Vec2( const IVariable& a )
 		: IVariable( "vec2( " + a.GetValue() + " )", DataType::FVec2 )
@@ -39,6 +39,6 @@ namespace ShaderGen { namespace Variables
 		a.SetUsed();
 		b.SetUsed();
 	}
-} }
+}
 
 ORB_NAMESPACE_END

@@ -20,7 +20,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
 	class Float;
 	class Vec2;
@@ -110,6 +110,6 @@ namespace ShaderGen { namespace Variables
 		size_t   GetArraySize  ( void ) const override { return N; }
 
 	};
-} }
+}
 
 ORB_NAMESPACE_END

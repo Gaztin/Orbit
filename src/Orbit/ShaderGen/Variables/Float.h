@@ -20,7 +20,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
 	class ORB_API_SHADERGEN Float : public IVariable
 	{
@@ -30,6 +30,6 @@ namespace ShaderGen { namespace Variables
 		Float( double f );
 
 	};
-} }
+}
 
 ORB_NAMESPACE_END

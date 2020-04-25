@@ -20,7 +20,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
 	class ORB_API_SHADERGEN Mat4 : public IVariable
 	{
@@ -29,6 +29,6 @@ namespace ShaderGen { namespace Variables
 		Mat4( const IVariable& value );
 	
 	};
-} }
+}
 
 ORB_NAMESPACE_END
