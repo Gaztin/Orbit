@@ -202,6 +202,8 @@ decl_module( 'Graphics' )
 		defines { 'GLES_SILENCE_DEPRECATION' }
 	filter { }
 
+decl_module( 'ShaderGen' )
+
 decl_framework()
 decl_sample( 'Triangle' )
 decl_sample( 'Cube' )

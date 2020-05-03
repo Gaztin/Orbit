@@ -15,30 +15,36 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Vec2.h"
+#include "Uniform.h"
+
+#include "Orbit/ShaderGen/Generator/IShader.h"
+#include "Orbit/ShaderGen/Generator/ShaderManager.h"
 
 #include <cassert>
+#include <sstream>
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	Vec2::Vec2( const IVariable& a )
-		: IVariable( "vec2( " + a.GetValue() + " )", DataType::FVec2 )
+	UniformBase::UniformBase( DataType type )
+		: Variable( ShaderManager::GetInstance().NewUniform( this ), type )
 	{
-		assert( a.GetDataType() == DataType::FVec2 );
-
-		a.SetUsed();
+		stored_ = true;
 	}
-	
-	Vec2::Vec2( const IVariable& a, const IVariable& b )
-		: IVariable( "vec2( " + a.GetValue() + ", " + b.GetValue() + " )", DataType::FVec2 )
+
+	UniformArrayBase::UniformArrayBase( DataType element_type )
+		: UniformBase   ( DataType::Array )
+		, element_type_( element_type )
 	{
-		assert( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Float ) );
-
-		a.SetUsed();
-		b.SetUsed();
 	}
-} }
+
+	Variable UniformArrayBase::operator[]( const Variable& index ) const
+	{
+		assert( index.GetDataType() == DataType::Int );
+
+		return Variable( GetValue() + "[ " + index.GetValue() + " ]", element_type_ );
+	}
+}
 
 ORB_NAMESPACE_END

@@ -15,23 +15,25 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Vec2.h"
+
+#include <cassert>
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	class ORB_API_GRAPHICS Vec4 : public IVariable
+	Vec2::Vec2( const Variable& a )
+		: Variable( "vec2( " + a.GetValue() + " )", DataType::FVec2 )
 	{
-	public:
-
-		Vec4( const IVariable& a );
-		Vec4( const IVariable& a, const IVariable& b );
-		Vec4( const IVariable& a, const IVariable& b, const IVariable& c );
-		Vec4( const IVariable& a, const IVariable& b, const IVariable& c, const IVariable& d );
-
-	};
-} }
+		assert( a.GetDataType() == DataType::FVec2 );
+	}
+	
+	Vec2::Vec2( const Variable& a, const Variable& b )
+		: Variable( "vec2( " + a.GetValue() + ", " + b.GetValue() + " )", DataType::FVec2 )
+	{
+		assert( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Float ) );
+	}
+}
 
 ORB_NAMESPACE_END

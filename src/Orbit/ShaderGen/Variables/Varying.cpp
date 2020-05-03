@@ -15,20 +15,39 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Varying.h"
+
+#include "Orbit/ShaderGen/Generator/IShader.h"
+#include "Orbit/ShaderGen/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/ShaderManager.h"
+
+#include <cassert>
+#include <sstream>
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	class ORB_API_GRAPHICS Sampler : public IVariable
+	Varying::Varying( VertexComponent component )
+		: Variable( ShaderManager::GetInstance().NewVarying( component ), DataTypeFromVertexComponent( component ) )
 	{
-	public:
-	
-		Sampler( void );
-	
-	};
-} }
+		stored_ = true;
+	}
+
+	std::string Varying::GetValueDerived( void ) const
+	{
+		if( ShaderManager::GetInstance().GetLanguage() == ShaderLanguage::HLSL )
+		{
+			switch( ShaderManager::GetInstance().GetType() )
+			{
+				case ShaderType::Vertex:   { return "output." + value_; }
+				case ShaderType::Fragment: { return "input."  + value_; }
+				default:                   { assert( false ); } break;
+			}
+		}
+
+		return value_;
+	}
+}
 
 ORB_NAMESPACE_END

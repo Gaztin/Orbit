@@ -17,8 +17,8 @@
 
 #include "PostFXShader.h"
 
-#include <Orbit/Graphics/Shader/Generator/Variables/Float.h>
-#include <Orbit/Graphics/Shader/Generator/Variables/Vec2.h>
+#include <Orbit/ShaderGen/Variables/Float.h>
+#include <Orbit/ShaderGen/Variables/Vec2.h>
 
 PostFXShader::Vec4 PostFXShader::VSMain( void )
 {

@@ -15,21 +15,20 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Mat4.h"
-
-#include <cassert>
+#pragma once
+#include "Orbit/ShaderGen/Variables/Variable.h"
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	Mat4::Mat4( const IVariable& value )
-		: IVariable( "mat4( " + value.GetValue() + " )", DataType::Mat4 )
+	class ORB_API_SHADERGEN Mat4 : public Variable
 	{
-		assert( value.GetDataType() == DataType::Mat4 );
-
-		value.SetUsed();
-	}
-} }
+	public:
+	
+		Mat4( const Variable& value );
+	
+	};
+}
 
 ORB_NAMESPACE_END

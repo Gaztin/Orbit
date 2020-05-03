@@ -17,6 +17,7 @@
 
 #pragma once
 #include "Orbit/Graphics/Geometry/VertexLayout.h"
+#include "Orbit/ShaderGen/ShaderGen.h"
 
 #include <string_view>
 

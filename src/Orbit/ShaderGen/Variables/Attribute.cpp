@@ -15,50 +15,38 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Varying.h"
+#include "Attribute.h"
 
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/IShader.h"
+#include "Orbit/ShaderGen/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/ShaderManager.h"
 
 #include <cassert>
 #include <sstream>
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	static std::string NewName( size_t unique_index )
-	{
-		std::ostringstream ss;
-		ss << "varying_" << unique_index;
-
-		return ss.str();
-	}
-
-	Varying::Varying( VertexComponent component )
-		: IVariable( NewName( IGenerator::GetCurrentGenerator()->varying_layout_.GetCount() ), DataTypeFromVertexComponent( component ) )
+	Attribute::Attribute( VertexComponent component )
+		: Variable( ShaderManager::GetInstance().NewAttribute( component ), DataTypeFromVertexComponent( component ) )
 	{
 		stored_ = true;
-
-		IGenerator::GetCurrentGenerator()->varying_layout_.Add( component );
 	}
 
-	std::string Varying::GetValue( void ) const
+	std::string Attribute::GetValueDerived( void ) const
 	{
-		MainFunction* main = IGenerator::GetCurrentMainFunction();
-
-		if( main->shader_language == ShaderLanguage::HLSL )
+		if( ShaderManager::GetInstance().GetLanguage() == ShaderLanguage::HLSL )
 		{
-			switch( main->shader_type )
+			switch( ShaderManager::GetInstance().GetType() )
 			{
-				case ShaderType::Vertex:   { return "output." + value_; }
-				case ShaderType::Fragment: { return "input."  + value_; }
-				default:                   { assert( false ); } break;
+				case ShaderType::Vertex: { return "input." + value_; }
+				default:                 { assert( false );           } break;
 			}
 		}
 
 		return value_;
 	}
-} }
+}
 
 ORB_NAMESPACE_END

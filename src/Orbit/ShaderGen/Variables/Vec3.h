@@ -16,24 +16,20 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Graphics.h"
-
-#include <sstream>
+#include "Orbit/ShaderGen/Variables/Variable.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	class IGenerator;
-
-	struct MainFunction
+	class ORB_API_SHADERGEN Vec3 : public Variable
 	{
-		std::ostringstream code;
-
-		ShaderType     shader_type;
-		ShaderLanguage shader_language;
-
-		uint32_t locals_count = 0;
+	public:
+	
+		Vec3( const Variable& a );
+		Vec3( const Variable& a, const Variable& b );
+		Vec3( const Variable& a, const Variable& b, const Variable& c );
+	
 	};
 }
 

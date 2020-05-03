@@ -16,21 +16,42 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Orbit/Core/Utility/Singleton.h"
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
+#include "Orbit/ShaderGen/Variables/DataType.h"
+#include "Orbit/ShaderGen/ShaderGen.h"
+
+#include <sstream>
+#include <string>
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	class ORB_API_GRAPHICS Vec3 : public IVariable
+	class  UniformBase;
+	struct MainFunction;
+
+	class ORB_API_SHADERGEN ShaderManager : public Singleton< ShaderManager >
 	{
+		friend class IShader;
+
 	public:
-	
-		Vec3( const IVariable& a );
-		Vec3( const IVariable& a, const IVariable& b );
-		Vec3( const IVariable& a, const IVariable& b, const IVariable& c );
-	
+
+		std::ostringstream& Append      ( void ) const;
+		std::string         NewLocal    ( DataType type, std::string_view code ) const;
+		std::string         NewAttribute( VertexComponent component ) const;
+		std::string         NewVarying  ( VertexComponent component ) const;
+		std::string         NewSampler  ( void ) const;
+		std::string         NewUniform  ( UniformBase* uniform ) const;
+		ShaderLanguage      GetLanguage ( void ) const;
+		ShaderType          GetType     ( void ) const;
+
+	private:
+
+		IShader*      current_shader_;
+		MainFunction* current_main_function_;
+
 	};
-} }
+}
 
 ORB_NAMESPACE_END

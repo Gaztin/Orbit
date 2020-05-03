@@ -15,14 +15,15 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "IGenerator.h"
+#include "IShader.h"
 
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Uniform.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec2.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
-#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/ShaderManager.h"
+#include "Orbit/ShaderGen/Variables/Uniform.h"
+#include "Orbit/ShaderGen/Variables/Vec2.h"
+#include "Orbit/ShaderGen/Variables/Vec4.h"
 
 #include <cassert>
 #include <map>
@@ -32,9 +33,6 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	static IGenerator*   current_generator     = nullptr;
-	static MainFunction* current_main_function = nullptr;
-
 	static std::string_view VertexComponentTypeString( IndexedVertexComponent component )
 	{
 		switch( component.GetDataType() )
@@ -112,18 +110,18 @@ namespace ShaderGen
 
 #endif // !NDEBUG
 
-	IGenerator::IGenerator( void )
+	IShader::IShader( void )
 	{
-		current_generator = this;
+		ShaderManager::GetInstance().current_shader_ = this;
 	}
 
-	IGenerator::~IGenerator( void )
+	IShader::~IShader( void )
 	{
-		if( current_generator == this )
-			current_generator = nullptr;
+		if( ShaderManager::GetInstance().current_shader_ == this )
+			ShaderManager::GetInstance().current_shader_ = nullptr;
 	}
 
-	std::string IGenerator::Generate( void )
+	std::string IShader::Generate( void )
 	{
 		switch( RenderContext::GetInstance().GetPrivateDetails().index() )
 		{
@@ -152,38 +150,33 @@ namespace ShaderGen
 		}
 	}
 
-	VertexLayout IGenerator::GetVertexLayout( void ) const
+	VertexLayout IShader::GetVertexLayout( void ) const
 	{
 		return attribute_layout_;
 	}
 
-	Variables::IVariable IGenerator::CanonicalScreenPos( const Variables::IVariable& pos )
+	Variable IShader::CanonicalScreenPos( const Variable& pos )
 	{
-		assert( pos.data_type_ == DataType::FVec2 );
+		assert( pos.GetDataType() == DataType::FVec2 );
 
-		switch( GetCurrentMainFunction()->shader_language )
+		switch( ShaderManager::GetInstance().GetLanguage() )
 		{
-			case ShaderLanguage::HLSL: return Variables::Vec2( pos->x, -pos->y );
-			case ShaderLanguage::GLSL: return Variables::Vec2( pos->x,  pos->y );
+			case ShaderLanguage::HLSL: return Vec2( pos->x, -pos->y );
+			case ShaderLanguage::GLSL: return Vec2( pos->x,  pos->y );
 			default:                   return pos;
 		}
 	}
 
-	Variables::IVariable IGenerator::Transpose( const Variables::IVariable& matrix )
+	Variable IShader::Transpose( const Variable& matrix )
 	{
 		assert( matrix.GetDataType() == DataType::Mat4 );
 
-		matrix.SetUsed();
-
-		return Variables::IVariable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
+		return Variable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
 	}
 
-	Variables::IVariable IGenerator::Sample( const Variables::IVariable& sampler, const Variables::IVariable& texcoord )
+	Variable IShader::Sample( const Variable& sampler, const Variable& texcoord )
 	{
-		sampler.SetUsed();
-		texcoord.SetUsed();
-
-		switch( GetCurrentMainFunction()->shader_language )
+		switch( ShaderManager::GetInstance().GetLanguage() )
 		{
 			default:
 			{
@@ -193,54 +186,45 @@ namespace ShaderGen
 
 			case ShaderLanguage::HLSL:
 			{
-				Variables::IVariable var( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
+				Variable var( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
 				var.StoreValue();
 				return var;
 			}
 
 			case ShaderLanguage::GLSL:
 			{
-				Variables::IVariable var( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
+				Variable var( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
 				var.StoreValue();
 				return var;
 			}
 		}
 	}
 
-	Variables::IVariable IGenerator::Dot( const Variables::IVariable& lhs, const Variables::IVariable& rhs )
+	Variable IShader::Dot( const Variable& lhs, const Variable& rhs )
 	{
-		lhs.SetUsed();
-		rhs.SetUsed();
-
-		return Variables::IVariable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
+		return Variable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
 	}
 
-	Variables::IVariable IGenerator::Normalize( const Variables::IVariable& vec )
+	Variable IShader::Normalize( const Variable& vec )
 	{
-		vec.SetUsed();
-
-		return Variables::IVariable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
+		return Variable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
 	}
 
-	Variables::IVariable IGenerator::Cos( const Variables::IVariable& radians )
+	Variable IShader::Cos( const Variable& radians )
 	{
-		assert( radians.data_type_ == DataType::Float );
+		assert( radians.GetDataType() == DataType::Float );
 
-		radians.SetUsed();
-
-		return Variables::IVariable( "cos( " + radians.GetValue() + " )", DataType::Float );
+		return Variable( "cos( " + radians.GetValue() + " )", DataType::Float );
 	}
 
-	Variables::IVariable IGenerator::Sin( const Variables::IVariable& radians )
+	Variable IShader::Sin( const Variable& radians )
 	{
-		assert( radians.data_type_ == DataType::Float );
+		assert( radians.GetDataType() == DataType::Float );
 
-		radians.SetUsed();
-
-		return Variables::IVariable( "sin( " + radians.GetValue() + " )", DataType::Float );
+		return Variable( "sin( " + radians.GetValue() + " )", DataType::Float );
 	}
 
-	std::string IGenerator::GenerateHLSL( void )
+	std::string IShader::GenerateHLSL( void )
 	{
 		std::string full_source_code;
 
@@ -304,7 +288,7 @@ namespace ShaderGen
 			vs_main.shader_language = ShaderLanguage::HLSL;
 			vs_main.shader_type     = ShaderType::Vertex;
 
-			current_main_function = &vs_main;
+			ShaderManager::GetInstance().current_main_function_ = &vs_main;
 
 			full_source_code.append( "\nPixelData VSMain( VertexData input )\n{\n\tPixelData output;\n" );
 
@@ -313,7 +297,7 @@ namespace ShaderGen
 			full_source_code.append( vs_main.code.str() );
 			full_source_code.append( "\treturn output;\n}\n" );
 
-			current_main_function = nullptr;
+			ShaderManager::GetInstance().current_main_function_ = nullptr;
 		}
 
 		{
@@ -321,22 +305,22 @@ namespace ShaderGen
 
 			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( uniforms_[ i ]->used_ )
+				if( uniforms_[ i ]->IsUsed() )
 				{
 					if( uniforms_[ i ]->IsArray() )
 					{
-						const Variables::UniformArrayBase* uniform_array = static_cast< const Variables::UniformArrayBase* >( uniforms_[ i ] );
+						const UniformArrayBase* uniform_array = static_cast< const UniformArrayBase* >( uniforms_[ i ] );
 
 						ss << "\t" << DataTypeToString( uniform_array->GetElementType() ) << " uniform_" << i << "[ " << uniform_array->GetArraySize() << " ];\n";
 					}
 					else
 					{
-						ss << "\t" << DataTypeToString( uniforms_[ i ]->data_type_ ) << " uniform_" << i << ";\n";
+						ss << "\t" << DataTypeToString( uniforms_[ i ]->GetDataType() ) << " uniform_" << i << ";\n";
 					}
 
 
 					/* Reset state for next shader pass */
-					uniforms_[ i ]->used_ = false;
+					uniforms_[ i ]->SetUsed( false );
 				}
 			}
 
@@ -358,7 +342,7 @@ namespace ShaderGen
 			ps_main.shader_language = ShaderLanguage::HLSL;
 			ps_main.shader_type     = ShaderType::Fragment;
 
-			current_main_function = &ps_main;
+			ShaderManager::GetInstance().current_main_function_ = &ps_main;
 
 			full_source_code.append( "\nfloat4 PSMain( PixelData input ) : SV_TARGET\n{\n" );
 
@@ -367,7 +351,7 @@ namespace ShaderGen
 			full_source_code.append( ps_main.code.str() );
 			full_source_code.append( "\treturn " + ps_result.GetValue() + ";\n}\n" );
 
-			current_main_function = nullptr;
+			ShaderManager::GetInstance().current_main_function_ = nullptr;
 		}
 
 		{
@@ -375,12 +359,12 @@ namespace ShaderGen
 
 			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( uniforms_[ i ]->used_ )
+				if( uniforms_[ i ]->IsUsed() )
 				{
-					ss << "\t" << DataTypeToString( uniforms_[ i ]->data_type_ ) << " uniform_" << i << ";\n";
+					ss << "\t" << DataTypeToString( uniforms_[ i ]->GetDataType() ) << " uniform_" << i << ";\n";
 
 					/* Reset state for next shader pass */
-					uniforms_[ i ]->used_ = false;
+					uniforms_[ i ]->SetUsed( false );
 				}
 			}
 
@@ -403,7 +387,7 @@ namespace ShaderGen
 		return full_source_code;
 	}
 
-	std::string IGenerator::GenerateGLSL( void )
+	std::string IShader::GenerateGLSL( void )
 	{
 		std::string full_source_code;
 
@@ -435,7 +419,7 @@ namespace ShaderGen
 			vs_main.shader_language = ShaderLanguage::GLSL;
 			vs_main.shader_type     = ShaderType::Vertex;
 
-			current_main_function = &vs_main;
+			ShaderManager::GetInstance().current_main_function_ = &vs_main;
 
 			full_source_code.append( "\nvoid main()\n{\n" );
 
@@ -444,7 +428,7 @@ namespace ShaderGen
 			full_source_code.append( vs_main.code.str() );
 			full_source_code.append( "\tgl_Position = " + vs_result.GetValue() + ";\n}\n" );
 
-			current_main_function = nullptr;
+			ShaderManager::GetInstance().current_main_function_ = nullptr;
 		}
 
 		{
@@ -452,21 +436,21 @@ namespace ShaderGen
 
 			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( uniforms_[ i ]->used_ )
+				if( uniforms_[ i ]->IsUsed() )
 				{
 					if( uniforms_[ i ]->IsArray() )
 					{
-						const Variables::UniformArrayBase* uniform_array = static_cast< const Variables::UniformArrayBase* >( uniforms_[ i ] );
+						const UniformArrayBase* uniform_array = static_cast< const UniformArrayBase* >( uniforms_[ i ] );
 
 						ss << "\tORB_CONSTANT( " << DataTypeToString( uniform_array->GetElementType() ) << ", uniform_" << i << "[ " << uniform_array->GetArraySize() << " ] );\n";
 					}
 					else
 					{
-						ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->data_type_ ) << ", uniform_" << i << " );\n";
+						ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->GetDataType() ) << ", uniform_" << i << " );\n";
 					}
 
 					/* Reset state for next shader pass */
-					uniforms_[ i ]->used_ = false;
+					uniforms_[ i ]->SetUsed( false );
 				}
 			}
 
@@ -510,7 +494,7 @@ namespace ShaderGen
 			ps_main.shader_language = ShaderLanguage::GLSL;
 			ps_main.shader_type     = ShaderType::Fragment;
 
-			current_main_function = &ps_main;
+			ShaderManager::GetInstance().current_main_function_ = &ps_main;
 
 			full_source_code.append( "\nvoid main()\n{\n" );
 
@@ -519,7 +503,7 @@ namespace ShaderGen
 			full_source_code.append( ps_main.code.str() );
 			full_source_code.append( "\tORB_SET_OUT_COLOR( " + ps_result.GetValue() + " );\n}\n" );
 
-			current_main_function = nullptr;
+			ShaderManager::GetInstance().current_main_function_ = nullptr;
 		}
 
 		{
@@ -527,12 +511,12 @@ namespace ShaderGen
 
 			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( uniforms_[ i ]->used_ )
+				if( uniforms_[ i ]->IsUsed() )
 				{
-					ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->data_type_ ) << ", uniform_" << i << " );\n";
+					ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->GetDataType() ) << ", uniform_" << i << " );\n";
 
 					/* Reset state for next shader pass */
-					uniforms_[ i ]->used_ = false;
+					uniforms_[ i ]->SetUsed( false );
 				}
 			}
 
@@ -553,16 +537,6 @@ namespace ShaderGen
 	#endif // _DEBUG
 
 		return full_source_code;
-	}
-
-	IGenerator* IGenerator::GetCurrentGenerator( void )
-	{
-		return current_generator;
-	}
-
-	MainFunction* IGenerator::GetCurrentMainFunction( void )
-	{
-		return current_main_function;
 	}
 }
 

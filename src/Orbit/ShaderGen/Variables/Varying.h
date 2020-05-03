@@ -15,48 +15,52 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Uniform.h"
-
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-
-#include <cassert>
-#include <sstream>
+#pragma once
+#include "Orbit/Graphics/Geometry/VertexLayout.h"
+#include "Orbit/ShaderGen/Variables/Variable.h"
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	static std::string NewName( size_t unique_index )
+	template< VertexComponent VC >
+	class VaryingHelper;
+	
+	class ORB_API_SHADERGEN Varying : public Variable
 	{
-		std::ostringstream ss;
-		ss << "uniform_" << unique_index;
+	public:
+	
+		using Position = VaryingHelper< VertexComponent::Position >;
+		using Normal   = VaryingHelper< VertexComponent::Normal >;
+		using Color    = VaryingHelper< VertexComponent::Color >;
+		using TexCoord = VaryingHelper< VertexComponent::TexCoord >;
+		using Variable::operator=;
+	
+	public:
+	
+		Varying( VertexComponent component );
 
-		return ss.str();
-	}
-
-	UniformBase::UniformBase( DataType type )
-		: IVariable( NewName( IGenerator::GetCurrentGenerator()->uniforms_.size() ), type )
+	private:
+	
+		std::string GetValueDerived( void ) const override;
+	
+	};
+	
+	template< VertexComponent VC >
+	class VaryingHelper : public Varying
 	{
-		stored_ = true;
-
-		IGenerator::GetCurrentGenerator()->uniforms_.push_back( this );
-	}
-
-	UniformArrayBase::UniformArrayBase( DataType element_type )
-		: UniformBase   ( DataType::Array )
-		, element_type_( element_type )
-	{
-	}
-
-	IVariable UniformArrayBase::operator[]( const IVariable& index ) const
-	{
-		assert( index.GetDataType() == DataType::Int );
-
-		SetUsed();
-		index.SetUsed();
-
-		return IVariable( GetValue() + "[ " + index.GetValue() + " ]", element_type_ );
-	}
-} }
+	public:
+	
+		using Varying::operator=;
+	
+	public:
+	
+		VaryingHelper( void )
+			: Varying( VC )
+		{
+		}
+	
+	};
+}
 
 ORB_NAMESPACE_END

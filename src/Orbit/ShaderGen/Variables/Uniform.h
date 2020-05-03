@@ -16,11 +16,11 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Orbit/ShaderGen/Variables/Variable.h"
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
 	class Float;
 	class Vec2;
@@ -45,7 +45,7 @@ namespace ShaderGen { namespace Variables
 	template<> struct UniformTraits< Vec4  > : DataTypeTraits< DataType::FVec4 > { };
 	template<> struct UniformTraits< Mat4  > : DataTypeTraits< DataType::Mat4  > { };
 
-	class ORB_API_GRAPHICS UniformBase : public IVariable
+	class ORB_API_SHADERGEN UniformBase : public Variable
 	{
 	public:
 
@@ -69,7 +69,7 @@ namespace ShaderGen { namespace Variables
 
 	};
 
-	class ORB_API_GRAPHICS UniformArrayBase : public UniformBase
+	class ORB_API_SHADERGEN UniformArrayBase : public UniformBase
 	{
 	public:
 
@@ -86,7 +86,7 @@ namespace ShaderGen { namespace Variables
 
 	public:
 
-		IVariable operator[]( const IVariable& index ) const override;
+		Variable operator[]( const Variable& index ) const override;
 
 	private:
 
@@ -110,6 +110,6 @@ namespace ShaderGen { namespace Variables
 		size_t   GetArraySize  ( void ) const override { return N; }
 
 	};
-} }
+}
 
 ORB_NAMESPACE_END

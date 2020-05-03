@@ -15,28 +15,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Float.h"
-
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
+#include "Mat4.h"
 
 #include <cassert>
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	Float::Float( const IVariable& f )
-		: IVariable( "float( " + f.GetValue() + " )", DataType::Float )
+	Mat4::Mat4( const Variable& value )
+		: Variable( "mat4( " + value.GetValue() + " )", DataType::Mat4 )
 	{
-		assert( ( f.GetDataType() == DataType::Float ) || ( f.GetDataType() == DataType::Int ) );
-
-		f.SetUsed();
+		assert( value.GetDataType() == DataType::Mat4 );
 	}
-
-	Float::Float( double f )
-		: IVariable( f )
-	{
-	}
-} }
+}
 
 ORB_NAMESPACE_END

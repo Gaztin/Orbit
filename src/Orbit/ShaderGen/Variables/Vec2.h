@@ -15,13 +15,21 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Swizzle.h"
+#pragma once
+#include "Orbit/ShaderGen/Variables/Variable.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	Variables::IVariable* variable_to_be_swizzled = nullptr;
+	class ORB_API_SHADERGEN Vec2 : public Variable
+	{
+	public:
+	
+		Vec2( const Variable& a );
+		Vec2( const Variable& a, const Variable& b );
+	
+	};
 }
 
 ORB_NAMESPACE_END

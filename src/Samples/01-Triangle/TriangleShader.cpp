@@ -17,7 +17,7 @@
 
 #include "TriangleShader.h"
 
-#include <Orbit/Graphics/Shader/Generator/Variables/Vec4.h>
+#include <Orbit/ShaderGen/Variables/Vec4.h>
 
 TriangleShader::Vec4 TriangleShader::VSMain( void )
 {

@@ -57,7 +57,7 @@ public:
 
 	SampleApp( void )
 		: window_       ( 800, 600 )
-		, shader_       ( triangle_shader )
+		, shader_       ( triangle_shader.Generate(), triangle_shader.GetVertexLayout() )
 		, vertex_buffer_( vertex_data )
 		, index_buffer_ ( index_data )
 		, texture_      ( Orbit::Asset( "textures/checkerboard.tga" ) )

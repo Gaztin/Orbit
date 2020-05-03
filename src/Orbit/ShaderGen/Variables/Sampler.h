@@ -16,37 +16,19 @@
  */
 
 #pragma once
-#include <Orbit/ShaderGen/Generator/IShader.h>
-#include <Orbit/ShaderGen/Variables/Attribute.h>
-#include <Orbit/ShaderGen/Variables/Sampler.h>
-#include <Orbit/ShaderGen/Variables/Uniform.h>
-#include <Orbit/ShaderGen/Variables/Varying.h>
+#include "Orbit/ShaderGen/Variables/Variable.h"
 
-class CubeShader final : public Orbit::ShaderGen::IShader
+ORB_NAMESPACE_BEGIN
+
+namespace ShaderGen
 {
-public:
+	class ORB_API_SHADERGEN Sampler : public Variable
+	{
+	public:
+	
+		Sampler( void );
+	
+	};
+}
 
-	CubeShader( void ) = default;
-
-private:
-
-	Vec4 VSMain( void ) override;
-	Vec4 PSMain( void ) override;
-
-private:
-
-	Sampler diffuse_texture;
-
-	Attribute::Position a_position;
-	Attribute::Normal   a_normal;
-	Attribute::TexCoord a_texcoord;
-
-	Varying::Position v_position;
-	Varying::Normal   v_normal;
-	Varying::TexCoord v_texcoord;
-
-	Uniform< Mat4 > u_view_projection;
-	Uniform< Mat4 > u_model;
-	Uniform< Mat4 > u_model_inverse;
-
-};
+ORB_NAMESPACE_END

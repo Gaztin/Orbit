@@ -55,7 +55,7 @@ public:
 
 	SampleApp( void )
 		: window_         ( 800, 600 )
-		, shader_         ( cube_shader )
+		, shader_         ( cube_shader.Generate(), cube_shader.GetVertexLayout() )
 		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), cube_shader.GetVertexLayout() ) )
 		, constant_buffer_( sizeof( ConstantData ) )
 		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )

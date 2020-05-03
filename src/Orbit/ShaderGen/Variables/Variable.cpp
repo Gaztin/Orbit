@@ -15,16 +15,17 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "IVariable.h"
+#include "Variable.h"
 
-#include "Orbit/Graphics/Shader/Generator/Variables/Float.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Mat4.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec2.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec3.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/Vec4.h"
-#include "Orbit/Graphics/Shader/Generator/IGenerator.h"
-#include "Orbit/Graphics/Shader/Generator/MainFunction.h"
-#include "Orbit/Graphics/Shader/Generator/Swizzle.h"
+#include "Orbit/ShaderGen/Generator/IShader.h"
+#include "Orbit/ShaderGen/Generator/MainFunction.h"
+#include "Orbit/ShaderGen/Generator/ShaderManager.h"
+#include "Orbit/ShaderGen/Variables/Float.h"
+#include "Orbit/ShaderGen/Variables/Mat4.h"
+#include "Orbit/ShaderGen/Variables/Swizzle.h"
+#include "Orbit/ShaderGen/Variables/Vec2.h"
+#include "Orbit/ShaderGen/Variables/Vec3.h"
+#include "Orbit/ShaderGen/Variables/Vec4.h"
 
 #include <cassert>
 #include <map>
@@ -33,16 +34,15 @@
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	IVariable::IVariable( const IVariable& other )
+	Variable::Variable( const Variable& other )
 		: value_    ( other.value_ )
 		, data_type_( other.data_type_ )
 	{
-		other.SetUsed();
 	}
 
-	IVariable::IVariable( IVariable&& other )
+	Variable::Variable( Variable&& other )
 		: value_    ( std::move( other.value_ ) )
 		, data_type_( other.data_type_ )
 		, stored_   ( other.stored_ )
@@ -53,7 +53,7 @@ namespace ShaderGen { namespace Variables
 		other.used_   = false;
 	}
 
-	IVariable::IVariable( double f )
+	Variable::Variable( double f )
 		: value_    ( std::to_string( f ) )
 		, data_type_( DataType::Float )
 		, stored_   ( false )
@@ -61,7 +61,7 @@ namespace ShaderGen { namespace Variables
 	{
 	}
 
-	IVariable::IVariable( int i )
+	Variable::Variable( int i )
 		: value_    ( std::to_string( i ) )
 		, data_type_( DataType::Int )
 		, stored_   ( false )
@@ -69,31 +69,22 @@ namespace ShaderGen { namespace Variables
 	{
 	}
 
-	IVariable::IVariable( std::string_view value, DataType data_type )
+	Variable::Variable( std::string_view value, DataType data_type )
 		: value_    ( value )
 		, data_type_( data_type )
 	{
 	}
 
-	void IVariable::StoreValue( void )
+	void Variable::StoreValue( void )
 	{
 		if( !stored_ )
 		{
-			MainFunction* main = IGenerator::GetCurrentMainFunction();
-
-			std::ostringstream ss;
-			ss << "local_" << ( main->locals_count++ );
-
-			auto old_value = value_;
-			value_ = ss.str();
-
-			main->code << "\t" << DataTypeToString( data_type_ ) << " " << value_ << " = " << old_value << ";\n";
-
+			value_  = ShaderManager::GetInstance().NewLocal( data_type_, value_ );
 			stored_ = true;
 		}
 	}
 
-	IVariable IVariable::operator*( const IVariable& rhs ) const
+	Variable Variable::operator*( const Variable& rhs ) const
 	{
 		assert( ( data_type_ == rhs.data_type_ ) ||
 		        ( data_type_ == DataType::Mat4  && ( rhs.data_type_ == DataType::FVec4                                                                             ) ) ||
@@ -101,9 +92,6 @@ namespace ShaderGen { namespace Variables
 		        ( data_type_ == DataType::FVec3 && ( rhs.data_type_ == DataType::Float                                                                             ) ) ||
 		        ( data_type_ == DataType::FVec2 && ( rhs.data_type_ == DataType::Float                                                                             ) ) ||
 		        ( data_type_ == DataType::Float && ( rhs.data_type_ == DataType::FVec4 || rhs.data_type_ == DataType::FVec3 || rhs.data_type_ == DataType::FVec2 ) ) );
-
-		SetUsed();
-		rhs.SetUsed();
 
 		DataType result_type = DataType::Unknown;
 		switch( data_type_ )
@@ -124,93 +112,76 @@ namespace ShaderGen { namespace Variables
 			default: break;
 		}
 
-		if( IGenerator::GetCurrentMainFunction()->shader_language == ShaderLanguage::HLSL &&
+		if( ShaderManager::GetInstance().GetLanguage() == ShaderLanguage::HLSL &&
 		    ( data_type_ == DataType::Mat4 || rhs.data_type_ == DataType::Mat4 ) )
 		{
-			return IVariable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", result_type );
+			return Variable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", result_type );
 		}
 
-		return IVariable( "( " + GetValue() + " * " + rhs.GetValue() + " )", result_type );
+		return Variable( "( " + GetValue() + " * " + rhs.GetValue() + " )", result_type );
 	}
 
-	IVariable IVariable::operator/( const IVariable& rhs ) const
+	Variable Variable::operator/( const Variable& rhs ) const
 	{
 		assert( ( ( data_type_ == DataType::Float ) || ( data_type_ == DataType::FVec2 ) || ( data_type_ == DataType::FVec3 ) || ( data_type_ == DataType::FVec4 ) ) &&
 		        ( rhs.data_type_ == DataType::Float ) );
 
-		SetUsed();
-		rhs.SetUsed();
-
-		return IVariable( "( " + GetValue() + " / " + rhs.GetValue() + " )", data_type_ );
+		return Variable( "( " + GetValue() + " / " + rhs.GetValue() + " )", data_type_ );
 	}
 
-	IVariable IVariable::operator+( const IVariable& rhs ) const
+	Variable Variable::operator+( const Variable& rhs ) const
 	{
-		SetUsed();
-		rhs.SetUsed();
-
-		return IVariable( "( " + GetValue() + " + " + rhs.GetValue() + " )", data_type_ );
+		return Variable( "( " + GetValue() + " + " + rhs.GetValue() + " )", data_type_ );
 	}
 
-	IVariable IVariable::operator-( const IVariable& rhs ) const
+	Variable Variable::operator-( const Variable& rhs ) const
 	{
-		SetUsed();
-		rhs.SetUsed();
-
-		return IVariable( "( " + GetValue() + " - " + rhs.GetValue() + " )", data_type_ );
+		return Variable( "( " + GetValue() + " - " + rhs.GetValue() + " )", data_type_ );
 	}
 
-	IVariable IVariable::operator-( void ) const
+	Variable Variable::operator-( void ) const
 	{
-		SetUsed();
-
-		return IVariable( "( -" + GetValue() + " )", data_type_ );
+		return Variable( "( -" + GetValue() + " )", data_type_ );
 	}
 
-	IVariable IVariable::operator[]( size_t index ) const
+	Variable Variable::operator[]( size_t index ) const
 	{
-		return ( *this )[ IVariable( static_cast< int >( index ) ) ];
+		return ( *this )[ Variable( static_cast< int >( index ) ) ];
 	}
 
-	SwizzlePermutations* IVariable::operator->( void ) const
+	SwizzlePermutations* Variable::operator->( void ) const
 	{
 		static SwizzlePermutations swizzle;
 
-		SetUsed();
+		used_                   = true;
+		variable_to_be_swizzled = const_cast< Variable* >( this );
 
-		variable_to_be_swizzled = const_cast< IVariable* >( this );
 		return &swizzle;
 	}
 
-	void IVariable::operator=( const IVariable& rhs )
+	void Variable::operator=( const Variable& rhs )
 	{
 		assert( data_type_ == rhs.data_type_ );
 
-		rhs.SetUsed();
-
 		StoreValue();
-		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
+		ShaderManager::GetInstance().Append() << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
 	}
 
-	void IVariable::operator+=( const IVariable& rhs )
+	void Variable::operator+=( const Variable& rhs )
 	{
-		rhs.SetUsed();
-
 		StoreValue();
-		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
+		ShaderManager::GetInstance().Append() << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
 	}
 
-	void IVariable::operator*=( const IVariable& rhs )
+	void Variable::operator*=( const Variable& rhs )
 	{
-		rhs.SetUsed();
-
 		/* TODO: if m_type == DataType::Mat4, do mul for HLSL */
 
 		StoreValue();
-		IGenerator::GetCurrentMainFunction()->code << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
+		ShaderManager::GetInstance().Append() << "\t" << GetValue() << " *= " << rhs.GetValue() << ";\n";
 	}
 
-	IVariable IVariable::operator[]( const IVariable& index ) const
+	Variable Variable::operator[]( const Variable& index ) const
 	{
 		DataType data_type = DataType::Unknown;
 		switch( data_type_ )
@@ -237,13 +208,11 @@ namespace ShaderGen { namespace Variables
 			} break;
 		}
 
-		SetUsed();
-
 		std::ostringstream ss;
 		ss << GetValue() << "[ " << index.GetValue() << " ]";
 
-		return IVariable( ss.str(), data_type );
+		return Variable( ss.str(), data_type );
 	}
-} }
+}
 
 ORB_NAMESPACE_END

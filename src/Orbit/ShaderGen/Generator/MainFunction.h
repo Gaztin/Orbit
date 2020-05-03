@@ -16,19 +16,25 @@
  */
 
 #pragma once
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Orbit/Graphics/Graphics.h"
+
+#include <sstream>
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	class ORB_API_GRAPHICS Mat4 : public IVariable
+	class IShader;
+
+	struct MainFunction
 	{
-	public:
-	
-		Mat4( const IVariable& value );
-	
+		std::ostringstream code;
+
+		ShaderType     shader_type;
+		ShaderLanguage shader_language;
+
+		uint32_t locals_count = 0;
 	};
-} }
+}
 
 ORB_NAMESPACE_END

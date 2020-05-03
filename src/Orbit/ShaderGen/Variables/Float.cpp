@@ -15,50 +15,26 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/Graphics/Shader/Generator/Variables/IVariable.h"
+#include "Float.h"
+
+#include "Orbit/ShaderGen/Generator/IShader.h"
+
+#include <cassert>
 
 ORB_NAMESPACE_BEGIN
 
-namespace ShaderGen { namespace Variables
+namespace ShaderGen
 {
-	template< VertexComponent VC >
-	class AttributeHelper;
-
-	class ORB_API_GRAPHICS Attribute : public IVariable
+	Float::Float( const Variable& f )
+		: Variable( "float( " + f.GetValue() + " )", DataType::Float )
 	{
-	public:
+		assert( ( f.GetDataType() == DataType::Float ) || ( f.GetDataType() == DataType::Int ) );
+	}
 
-		using Position = AttributeHelper< VertexComponent::Position >;
-		using Normal   = AttributeHelper< VertexComponent::Normal >;
-		using Color    = AttributeHelper< VertexComponent::Color >;
-		using TexCoord = AttributeHelper< VertexComponent::TexCoord >;
-		using JointIDs = AttributeHelper< VertexComponent::JointIDs >;
-		using Weights  = AttributeHelper< VertexComponent::Weights >;
-		using IVariable::operator=;
-
-	public:
-
-		Attribute( VertexComponent component );
-
-	public:
-
-		std::string GetValue( void ) const override;
-
-	};
-
-	template< VertexComponent VC >
-	class AttributeHelper : public Attribute
+	Float::Float( double f )
+		: Variable( f )
 	{
-	public:
-
-		AttributeHelper( void )
-			: Attribute( VC )
-		{
-		}
-
-	};
-} }
+	}
+}
 
 ORB_NAMESPACE_END
