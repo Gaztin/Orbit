@@ -40,9 +40,9 @@ namespace ShaderGen
 	
 		Varying( VertexComponent component );
 
-	public:
+	private:
 	
-		std::string GetValue( void ) const override;
+		std::string GetValueDerived( void ) const override;
 	
 	};
 	

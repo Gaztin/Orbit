@@ -27,8 +27,6 @@ namespace ShaderGen
 		: Variable( "mat4( " + value.GetValue() + " )", DataType::Mat4 )
 	{
 		assert( value.GetDataType() == DataType::Mat4 );
-
-		value.SetUsed( true );
 	}
 }
 

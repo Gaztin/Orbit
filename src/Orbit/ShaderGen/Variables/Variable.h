@@ -47,15 +47,12 @@ namespace ShaderGen
 
 	public:
 
-		DataType GetDataType( void )      const { return data_type_; };
-		bool     IsUsed     ( void )      const { return used_; }
-		void     SetUsed    ( bool used ) const { used_ = used; }
-		bool     IsStored   ( void )      const { return stored_; };
-		void     SetStored  ( bool stored )     { stored_ = stored; }
-
-	public:
-
-		virtual std::string GetValue( void ) const { return value_; }
+		DataType    GetDataType( void )      const { return data_type_; };
+		bool        IsUsed     ( void )      const { return used_; }
+		void        SetUsed    ( bool used ) const { used_ = used; }
+		bool        IsStored   ( void )      const { return stored_; };
+		void        SetStored  ( bool stored )     { stored_ = stored; }
+		std::string GetValue   ( void )      const { used_ = true; return GetValueDerived(); }
 
 	public:
 
@@ -75,6 +72,10 @@ namespace ShaderGen
 	public:
 
 		virtual Variable operator[]( const Variable& index ) const;
+
+	protected:
+
+		virtual std::string GetValueDerived( void ) const { return value_; }
 
 	protected:
 

@@ -29,8 +29,6 @@ namespace ShaderGen
 		: Variable( "float( " + f.GetValue() + " )", DataType::Float )
 	{
 		assert( ( f.GetDataType() == DataType::Float ) || ( f.GetDataType() == DataType::Int ) );
-
-		f.SetUsed( true );
 	}
 
 	Float::Float( double f )

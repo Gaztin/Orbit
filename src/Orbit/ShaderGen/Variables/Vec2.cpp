@@ -27,17 +27,12 @@ namespace ShaderGen
 		: Variable( "vec2( " + a.GetValue() + " )", DataType::FVec2 )
 	{
 		assert( a.GetDataType() == DataType::FVec2 );
-
-		a.SetUsed( true );
 	}
 	
 	Vec2::Vec2( const Variable& a, const Variable& b )
 		: Variable( "vec2( " + a.GetValue() + ", " + b.GetValue() + " )", DataType::FVec2 )
 	{
 		assert( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Float ) );
-
-		a.SetUsed( true );
-		b.SetUsed( true );
 	}
 }
 

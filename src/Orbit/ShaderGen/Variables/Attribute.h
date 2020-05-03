@@ -42,9 +42,9 @@ namespace ShaderGen
 
 		Attribute( VertexComponent component );
 
-	public:
+	private:
 
-		std::string GetValue( void ) const override;
+		std::string GetValueDerived( void ) const override;
 
 	};
 

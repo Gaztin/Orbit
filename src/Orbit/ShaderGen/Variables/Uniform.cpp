@@ -43,9 +43,6 @@ namespace ShaderGen
 	{
 		assert( index.GetDataType() == DataType::Int );
 
-		SetUsed( true );
-		index.SetUsed( true );
-
 		return Variable( GetValue() + "[ " + index.GetValue() + " ]", element_type_ );
 	}
 }

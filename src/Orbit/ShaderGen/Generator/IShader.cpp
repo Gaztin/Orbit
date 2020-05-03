@@ -171,16 +171,11 @@ namespace ShaderGen
 	{
 		assert( matrix.GetDataType() == DataType::Mat4 );
 
-		matrix.SetUsed( true );
-
 		return Variable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
 	}
 
 	Variable IShader::Sample( const Variable& sampler, const Variable& texcoord )
 	{
-		sampler.SetUsed( true );
-		texcoord.SetUsed( true );
-
 		switch( ShaderManager::GetInstance().GetLanguage() )
 		{
 			default:
@@ -207,16 +202,11 @@ namespace ShaderGen
 
 	Variable IShader::Dot( const Variable& lhs, const Variable& rhs )
 	{
-		lhs.SetUsed( true );
-		rhs.SetUsed( true );
-
 		return Variable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
 	}
 
 	Variable IShader::Normalize( const Variable& vec )
 	{
-		vec.SetUsed( true );
-
 		return Variable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
 	}
 
@@ -224,16 +214,12 @@ namespace ShaderGen
 	{
 		assert( radians.GetDataType() == DataType::Float );
 
-		radians.SetUsed( true );
-
 		return Variable( "cos( " + radians.GetValue() + " )", DataType::Float );
 	}
 
 	Variable IShader::Sin( const Variable& radians )
 	{
 		assert( radians.GetDataType() == DataType::Float );
-
-		radians.SetUsed( true );
 
 		return Variable( "sin( " + radians.GetValue() + " )", DataType::Float );
 	}

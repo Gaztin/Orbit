@@ -40,7 +40,6 @@ namespace ShaderGen
 		: value_    ( other.value_ )
 		, data_type_( other.data_type_ )
 	{
-		other.SetUsed( true );
 	}
 
 	Variable::Variable( Variable&& other )
@@ -94,9 +93,6 @@ namespace ShaderGen
 		        ( data_type_ == DataType::FVec2 && ( rhs.data_type_ == DataType::Float                                                                             ) ) ||
 		        ( data_type_ == DataType::Float && ( rhs.data_type_ == DataType::FVec4 || rhs.data_type_ == DataType::FVec3 || rhs.data_type_ == DataType::FVec2 ) ) );
 
-		SetUsed( true );
-		rhs.SetUsed( true );
-
 		DataType result_type = DataType::Unknown;
 		switch( data_type_ )
 		{
@@ -130,32 +126,21 @@ namespace ShaderGen
 		assert( ( ( data_type_ == DataType::Float ) || ( data_type_ == DataType::FVec2 ) || ( data_type_ == DataType::FVec3 ) || ( data_type_ == DataType::FVec4 ) ) &&
 		        ( rhs.data_type_ == DataType::Float ) );
 
-		SetUsed( true );
-		rhs.SetUsed( true );
-
 		return Variable( "( " + GetValue() + " / " + rhs.GetValue() + " )", data_type_ );
 	}
 
 	Variable Variable::operator+( const Variable& rhs ) const
 	{
-		SetUsed( true );
-		rhs.SetUsed( true );
-
 		return Variable( "( " + GetValue() + " + " + rhs.GetValue() + " )", data_type_ );
 	}
 
 	Variable Variable::operator-( const Variable& rhs ) const
 	{
-		SetUsed( true );
-		rhs.SetUsed( true );
-
 		return Variable( "( " + GetValue() + " - " + rhs.GetValue() + " )", data_type_ );
 	}
 
 	Variable Variable::operator-( void ) const
 	{
-		SetUsed( true );
-
 		return Variable( "( -" + GetValue() + " )", data_type_ );
 	}
 
@@ -168,9 +153,9 @@ namespace ShaderGen
 	{
 		static SwizzlePermutations swizzle;
 
-		SetUsed( true );
-
+		used_                   = true;
 		variable_to_be_swizzled = const_cast< Variable* >( this );
+
 		return &swizzle;
 	}
 
@@ -178,24 +163,18 @@ namespace ShaderGen
 	{
 		assert( data_type_ == rhs.data_type_ );
 
-		rhs.SetUsed( true );
-
 		StoreValue();
 		ShaderManager::GetInstance().Append() << "\t" << GetValue() << " = " << rhs.GetValue() << ";\n";
 	}
 
 	void Variable::operator+=( const Variable& rhs )
 	{
-		rhs.SetUsed( true );
-
 		StoreValue();
 		ShaderManager::GetInstance().Append() << "\t" << GetValue() << " += " << rhs.GetValue() << ";\n";
 	}
 
 	void Variable::operator*=( const Variable& rhs )
 	{
-		rhs.SetUsed( true );
-
 		/* TODO: if m_type == DataType::Mat4, do mul for HLSL */
 
 		StoreValue();
@@ -228,8 +207,6 @@ namespace ShaderGen
 				data_type = DataType::FVec4;
 			} break;
 		}
-
-		SetUsed( true );
 
 		std::ostringstream ss;
 		ss << GetValue() << "[ " << index.GetValue() << " ]";

@@ -34,7 +34,7 @@ namespace ShaderGen
 		stored_ = true;
 	}
 
-	std::string Attribute::GetValue( void ) const
+	std::string Attribute::GetValueDerived( void ) const
 	{
 		if( ShaderManager::GetInstance().GetLanguage() == ShaderLanguage::HLSL )
 		{

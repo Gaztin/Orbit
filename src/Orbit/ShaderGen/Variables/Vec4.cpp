@@ -27,8 +27,6 @@ namespace ShaderGen
 		: Variable( "vec4( " + a.GetValue() + " )", DataType::FVec4 )
 	{
 		assert( a.GetDataType() == DataType::FVec4 );
-
-		a.SetUsed( true );
 	}
 
 	Vec4::Vec4( const Variable& a, const Variable& b )
@@ -37,9 +35,6 @@ namespace ShaderGen
 		assert( ( ( a.GetDataType() == DataType::FVec3 ) && ( b.GetDataType() == DataType::Float ) ) ||
 		        ( ( a.GetDataType() == DataType::FVec2 ) && ( b.GetDataType() == DataType::FVec2 ) ) ||
 		        ( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::FVec3 ) ) );
-
-		a.SetUsed( true );
-		b.SetUsed( true );
 	}
 
 	Vec4::Vec4( const Variable& a, const Variable& b, const Variable& c )
@@ -48,21 +43,12 @@ namespace ShaderGen
 		assert( ( ( a.GetDataType() == DataType::FVec2 ) && ( b.GetDataType() == DataType::Float ) && ( c.GetDataType() == DataType::Float ) ) ||
 		        ( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::FVec2 ) && ( c.GetDataType() == DataType::Float ) ) ||
 		        ( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Float ) && ( c.GetDataType() == DataType::FVec2 ) ) );
-
-		a.SetUsed( true );
-		b.SetUsed( true );
-		c.SetUsed( true );
 	}
 
 	Vec4::Vec4( const Variable& a, const Variable& b, const Variable& c, const Variable& d )
 		: Variable( "vec4( " + a.GetValue() + ", " + b.GetValue() + ", " + c.GetValue() + ", " + d.GetValue() + " )", DataType::FVec4 )
 	{
 		assert( ( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Float ) && ( c.GetDataType() == DataType::Float ) && ( d.GetDataType() == DataType::Float ) ) );
-
-		a.SetUsed( true );
-		b.SetUsed( true );
-		c.SetUsed( true );
-		d.SetUsed( true );
 	}
 }
 
