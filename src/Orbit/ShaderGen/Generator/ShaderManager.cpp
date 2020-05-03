@@ -31,7 +31,7 @@ namespace ShaderGen
 
 	std::string ShaderManager::NewLocal( DataType type, std::string_view code ) const
 	{
-		std::string name = "local_" + current_main_function_->locals_count;
+		const std::string name = "local_" + std::to_string( current_main_function_->locals_count );
 
 		++current_main_function_->locals_count;
 		current_main_function_->code << "\t" << DataTypeToString( type ) << " " << name << " = " << code << ";\n";
