@@ -29,8 +29,6 @@ namespace ShaderGen
 
 	class ORB_API_SHADERGEN Variable
 	{
-		friend class IShader;
-
 	public:
 
 		Variable( void ) = default;
@@ -49,10 +47,11 @@ namespace ShaderGen
 
 	public:
 
-		DataType GetDataType( void ) const { return data_type_; };
-		void     SetUsed    ( void ) const { used_ = true; }
-		void     SetStored  ( void )       { stored_ = true; }
-		bool     IsStored   ( void ) const { return stored_; };
+		DataType GetDataType( void )      const { return data_type_; };
+		bool     IsUsed     ( void )      const { return used_; }
+		void     SetUsed    ( bool used ) const { used_ = used; }
+		bool     IsStored   ( void )      const { return stored_; };
+		void     SetStored  ( bool stored )     { stored_ = stored; }
 
 	public:
 

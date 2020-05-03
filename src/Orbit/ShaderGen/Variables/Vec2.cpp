@@ -28,7 +28,7 @@ namespace ShaderGen
 	{
 		assert( a.GetDataType() == DataType::FVec2 );
 
-		a.SetUsed();
+		a.SetUsed( true );
 	}
 	
 	Vec2::Vec2( const Variable& a, const Variable& b )
@@ -36,8 +36,8 @@ namespace ShaderGen
 	{
 		assert( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Float ) );
 
-		a.SetUsed();
-		b.SetUsed();
+		a.SetUsed( true );
+		b.SetUsed( true );
 	}
 }
 

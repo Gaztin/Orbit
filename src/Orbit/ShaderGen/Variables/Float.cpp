@@ -30,7 +30,7 @@ namespace ShaderGen
 	{
 		assert( ( f.GetDataType() == DataType::Float ) || ( f.GetDataType() == DataType::Int ) );
 
-		f.SetUsed();
+		f.SetUsed( true );
 	}
 
 	Float::Float( double f )

@@ -157,7 +157,7 @@ namespace ShaderGen
 
 	Variable IShader::CanonicalScreenPos( const Variable& pos )
 	{
-		assert( pos.data_type_ == DataType::FVec2 );
+		assert( pos.GetDataType() == DataType::FVec2 );
 
 		switch( ShaderManager::GetInstance().GetLanguage() )
 		{
@@ -171,15 +171,15 @@ namespace ShaderGen
 	{
 		assert( matrix.GetDataType() == DataType::Mat4 );
 
-		matrix.SetUsed();
+		matrix.SetUsed( true );
 
 		return Variable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
 	}
 
 	Variable IShader::Sample( const Variable& sampler, const Variable& texcoord )
 	{
-		sampler.SetUsed();
-		texcoord.SetUsed();
+		sampler.SetUsed( true );
+		texcoord.SetUsed( true );
 
 		switch( ShaderManager::GetInstance().GetLanguage() )
 		{
@@ -207,33 +207,33 @@ namespace ShaderGen
 
 	Variable IShader::Dot( const Variable& lhs, const Variable& rhs )
 	{
-		lhs.SetUsed();
-		rhs.SetUsed();
+		lhs.SetUsed( true );
+		rhs.SetUsed( true );
 
 		return Variable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
 	}
 
 	Variable IShader::Normalize( const Variable& vec )
 	{
-		vec.SetUsed();
+		vec.SetUsed( true );
 
 		return Variable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
 	}
 
 	Variable IShader::Cos( const Variable& radians )
 	{
-		assert( radians.data_type_ == DataType::Float );
+		assert( radians.GetDataType() == DataType::Float );
 
-		radians.SetUsed();
+		radians.SetUsed( true );
 
 		return Variable( "cos( " + radians.GetValue() + " )", DataType::Float );
 	}
 
 	Variable IShader::Sin( const Variable& radians )
 	{
-		assert( radians.data_type_ == DataType::Float );
+		assert( radians.GetDataType() == DataType::Float );
 
-		radians.SetUsed();
+		radians.SetUsed( true );
 
 		return Variable( "sin( " + radians.GetValue() + " )", DataType::Float );
 	}
@@ -319,7 +319,7 @@ namespace ShaderGen
 
 			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( uniforms_[ i ]->used_ )
+				if( uniforms_[ i ]->IsUsed() )
 				{
 					if( uniforms_[ i ]->IsArray() )
 					{
@@ -329,12 +329,12 @@ namespace ShaderGen
 					}
 					else
 					{
-						ss << "\t" << DataTypeToString( uniforms_[ i ]->data_type_ ) << " uniform_" << i << ";\n";
+						ss << "\t" << DataTypeToString( uniforms_[ i ]->GetDataType() ) << " uniform_" << i << ";\n";
 					}
 
 
 					/* Reset state for next shader pass */
-					uniforms_[ i ]->used_ = false;
+					uniforms_[ i ]->SetUsed( false );
 				}
 			}
 
@@ -373,12 +373,12 @@ namespace ShaderGen
 
 			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( uniforms_[ i ]->used_ )
+				if( uniforms_[ i ]->IsUsed() )
 				{
-					ss << "\t" << DataTypeToString( uniforms_[ i ]->data_type_ ) << " uniform_" << i << ";\n";
+					ss << "\t" << DataTypeToString( uniforms_[ i ]->GetDataType() ) << " uniform_" << i << ";\n";
 
 					/* Reset state for next shader pass */
-					uniforms_[ i ]->used_ = false;
+					uniforms_[ i ]->SetUsed( false );
 				}
 			}
 
@@ -450,7 +450,7 @@ namespace ShaderGen
 
 			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( uniforms_[ i ]->used_ )
+				if( uniforms_[ i ]->IsUsed() )
 				{
 					if( uniforms_[ i ]->IsArray() )
 					{
@@ -460,11 +460,11 @@ namespace ShaderGen
 					}
 					else
 					{
-						ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->data_type_ ) << ", uniform_" << i << " );\n";
+						ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->GetDataType() ) << ", uniform_" << i << " );\n";
 					}
 
 					/* Reset state for next shader pass */
-					uniforms_[ i ]->used_ = false;
+					uniforms_[ i ]->SetUsed( false );
 				}
 			}
 
@@ -525,12 +525,12 @@ namespace ShaderGen
 
 			for( size_t i = 0; i < uniforms_.size(); ++i )
 			{
-				if( uniforms_[ i ]->used_ )
+				if( uniforms_[ i ]->IsUsed() )
 				{
-					ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->data_type_ ) << ", uniform_" << i << " );\n";
+					ss << "\tORB_CONSTANT( " << DataTypeToString( uniforms_[ i ]->GetDataType() ) << ", uniform_" << i << " );\n";
 
 					/* Reset state for next shader pass */
-					uniforms_[ i ]->used_ = false;
+					uniforms_[ i ]->SetUsed( false );
 				}
 			}
 

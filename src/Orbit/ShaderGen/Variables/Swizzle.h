@@ -110,7 +110,7 @@ namespace ShaderGen
 			 * `foo.rgb *= 0.5;` would become `vec3 local = foo.rgb; local *= 0.5;` and `foo` would
 			 * be left unchanged. */
 			if( variable_to_be_swizzled->IsStored() )
-				component_variable.SetStored();
+				component_variable.SetStored( true );
 
 			return component_variable;
 		}

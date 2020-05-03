@@ -28,7 +28,7 @@ namespace ShaderGen
 	{
 		assert( value.GetDataType() == DataType::Mat4 );
 
-		value.SetUsed();
+		value.SetUsed( true );
 	}
 }
 
