@@ -28,7 +28,7 @@ ORB_NAMESPACE_BEGIN
 namespace ShaderGen
 {
 	UniformBase::UniformBase( DataType type )
-		: IVariable( ShaderManager::GetInstance().NewUniform( this ), type )
+		: Variable( ShaderManager::GetInstance().NewUniform( this ), type )
 	{
 		stored_ = true;
 	}
@@ -39,14 +39,14 @@ namespace ShaderGen
 	{
 	}
 
-	IVariable UniformArrayBase::operator[]( const IVariable& index ) const
+	Variable UniformArrayBase::operator[]( const Variable& index ) const
 	{
 		assert( index.GetDataType() == DataType::Int );
 
 		SetUsed();
 		index.SetUsed();
 
-		return IVariable( GetValue() + "[ " + index.GetValue() + " ]", element_type_ );
+		return Variable( GetValue() + "[ " + index.GetValue() + " ]", element_type_ );
 	}
 }
 

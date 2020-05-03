@@ -23,8 +23,8 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	Mat4::Mat4( const IVariable& value )
-		: IVariable( "mat4( " + value.GetValue() + " )", DataType::Mat4 )
+	Mat4::Mat4( const Variable& value )
+		: Variable( "mat4( " + value.GetValue() + " )", DataType::Mat4 )
 	{
 		assert( value.GetDataType() == DataType::Mat4 );
 

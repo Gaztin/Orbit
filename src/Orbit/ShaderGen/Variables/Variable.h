@@ -27,19 +27,19 @@ namespace ShaderGen
 {
 	struct SwizzlePermutations;
 
-	class ORB_API_SHADERGEN IVariable
+	class ORB_API_SHADERGEN Variable
 	{
 		friend class IShader;
 
 	public:
 
-		IVariable( void ) = default;
-		IVariable( const IVariable& other );
-		IVariable( IVariable&& other );
-		IVariable( double f );
-		IVariable( int i );
-		IVariable( std::string_view value, DataType data_type );
-		virtual ~IVariable( void ) = default;
+		Variable( void ) = default;
+		Variable( const Variable& other );
+		Variable( Variable&& other );
+		Variable( double f );
+		Variable( int i );
+		Variable( std::string_view value, DataType data_type );
+		virtual ~Variable( void ) = default;
 
 	public:
 
@@ -60,22 +60,22 @@ namespace ShaderGen
 
 	public:
 
-		IVariable operator* ( const IVariable& rhs )   const;
-		IVariable operator/ ( const IVariable& rhs )   const;
-		IVariable operator+ ( const IVariable& rhs )   const;
-		IVariable operator- ( const IVariable& rhs )   const;
-		IVariable operator- ( void )                   const;
-		IVariable operator[]( size_t index )           const;
+		Variable operator* ( const Variable& rhs )   const;
+		Variable operator/ ( const Variable& rhs )   const;
+		Variable operator+ ( const Variable& rhs )   const;
+		Variable operator- ( const Variable& rhs )   const;
+		Variable operator- ( void )                   const;
+		Variable operator[]( size_t index )           const;
 
 		SwizzlePermutations* operator->( void ) const;
 
-		void     operator= ( const IVariable& rhs );
-		void     operator+=( const IVariable& rhs );
-		void     operator*=( const IVariable& rhs );
+		void     operator= ( const Variable& rhs );
+		void     operator+=( const Variable& rhs );
+		void     operator*=( const Variable& rhs );
 
 	public:
 
-		virtual IVariable operator[]( const IVariable& index ) const;
+		virtual Variable operator[]( const Variable& index ) const;
 
 	protected:
 
@@ -86,10 +86,10 @@ namespace ShaderGen
 
 	};
 
-	inline IVariable operator+( double lhs, const IVariable& rhs ) { return ( IVariable( lhs ) + rhs ); }
-	inline IVariable operator-( double lhs, const IVariable& rhs ) { return ( IVariable( lhs ) - rhs ); }
-	inline IVariable operator*( double lhs, const IVariable& rhs ) { return ( IVariable( lhs ) * rhs ); }
-	inline IVariable operator/( double lhs, const IVariable& rhs ) { return ( IVariable( lhs ) / rhs ); }
+	inline Variable operator+( double lhs, const Variable& rhs ) { return ( Variable( lhs ) + rhs ); }
+	inline Variable operator-( double lhs, const Variable& rhs ) { return ( Variable( lhs ) - rhs ); }
+	inline Variable operator*( double lhs, const Variable& rhs ) { return ( Variable( lhs ) * rhs ); }
+	inline Variable operator/( double lhs, const Variable& rhs ) { return ( Variable( lhs ) / rhs ); }
 
 }
 

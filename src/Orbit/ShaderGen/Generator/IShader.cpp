@@ -155,7 +155,7 @@ namespace ShaderGen
 		return attribute_layout_;
 	}
 
-	IVariable IShader::CanonicalScreenPos( const IVariable& pos )
+	Variable IShader::CanonicalScreenPos( const Variable& pos )
 	{
 		assert( pos.data_type_ == DataType::FVec2 );
 
@@ -167,16 +167,16 @@ namespace ShaderGen
 		}
 	}
 
-	IVariable IShader::Transpose( const IVariable& matrix )
+	Variable IShader::Transpose( const Variable& matrix )
 	{
 		assert( matrix.GetDataType() == DataType::Mat4 );
 
 		matrix.SetUsed();
 
-		return IVariable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
+		return Variable( "transpose( " + matrix.GetValue() + " )", DataType::Mat4 );
 	}
 
-	IVariable IShader::Sample( const IVariable& sampler, const IVariable& texcoord )
+	Variable IShader::Sample( const Variable& sampler, const Variable& texcoord )
 	{
 		sampler.SetUsed();
 		texcoord.SetUsed();
@@ -191,51 +191,51 @@ namespace ShaderGen
 
 			case ShaderLanguage::HLSL:
 			{
-				IVariable var( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
+				Variable var( sampler.GetValue() + ".Sample( default_sampler_state, " + texcoord.GetValue() + " )", DataType::FVec4 );
 				var.StoreValue();
 				return var;
 			}
 
 			case ShaderLanguage::GLSL:
 			{
-				IVariable var( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
+				Variable var( "texture( " + sampler.GetValue() + ", " + texcoord.GetValue() + " )", DataType::FVec4 );
 				var.StoreValue();
 				return var;
 			}
 		}
 	}
 
-	IVariable IShader::Dot( const IVariable& lhs, const IVariable& rhs )
+	Variable IShader::Dot( const Variable& lhs, const Variable& rhs )
 	{
 		lhs.SetUsed();
 		rhs.SetUsed();
 
-		return IVariable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
+		return Variable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );
 	}
 
-	IVariable IShader::Normalize( const IVariable& vec )
+	Variable IShader::Normalize( const Variable& vec )
 	{
 		vec.SetUsed();
 
-		return IVariable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
+		return Variable( "normalize( " + vec.GetValue() + " )", vec.GetDataType() );
 	}
 
-	IVariable IShader::Cos( const IVariable& radians )
+	Variable IShader::Cos( const Variable& radians )
 	{
 		assert( radians.data_type_ == DataType::Float );
 
 		radians.SetUsed();
 
-		return IVariable( "cos( " + radians.GetValue() + " )", DataType::Float );
+		return Variable( "cos( " + radians.GetValue() + " )", DataType::Float );
 	}
 
-	IVariable IShader::Sin( const IVariable& radians )
+	Variable IShader::Sin( const Variable& radians )
 	{
 		assert( radians.data_type_ == DataType::Float );
 
 		radians.SetUsed();
 
-		return IVariable( "sin( " + radians.GetValue() + " )", DataType::Float );
+		return Variable( "sin( " + radians.GetValue() + " )", DataType::Float );
 	}
 
 	std::string IShader::GenerateHLSL( void )

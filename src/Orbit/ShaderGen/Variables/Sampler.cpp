@@ -27,7 +27,7 @@ ORB_NAMESPACE_BEGIN
 namespace ShaderGen
 {
 	Sampler::Sampler( void )
-		: IVariable( ShaderManager::GetInstance().NewSampler(), DataType::Unknown )
+		: Variable( ShaderManager::GetInstance().NewSampler(), DataType::Unknown )
 	{
 		stored_ = true;
 	}

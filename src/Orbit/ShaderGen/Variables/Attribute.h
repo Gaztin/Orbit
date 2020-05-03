@@ -17,7 +17,7 @@
 
 #pragma once
 #include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/ShaderGen/Variables/IVariable.h"
+#include "Orbit/ShaderGen/Variables/Variable.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -26,7 +26,7 @@ namespace ShaderGen
 	template< VertexComponent VC >
 	class AttributeHelper;
 
-	class ORB_API_SHADERGEN Attribute : public IVariable
+	class ORB_API_SHADERGEN Attribute : public Variable
 	{
 	public:
 
@@ -36,7 +36,7 @@ namespace ShaderGen
 		using TexCoord = AttributeHelper< VertexComponent::TexCoord >;
 		using JointIDs = AttributeHelper< VertexComponent::JointIDs >;
 		using Weights  = AttributeHelper< VertexComponent::Weights >;
-		using IVariable::operator=;
+		using Variable::operator=;
 
 	public:
 

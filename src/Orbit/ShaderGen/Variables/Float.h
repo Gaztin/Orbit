@@ -16,17 +16,17 @@
  */
 
 #pragma once
-#include "Orbit/ShaderGen/Variables/IVariable.h"
+#include "Orbit/ShaderGen/Variables/Variable.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	class ORB_API_SHADERGEN Float : public IVariable
+	class ORB_API_SHADERGEN Float : public Variable
 	{
 	public:
 
-		Float( const IVariable& f );
+		Float( const Variable& f );
 		Float( double f );
 
 	};

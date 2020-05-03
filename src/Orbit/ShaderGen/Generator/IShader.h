@@ -72,13 +72,13 @@ namespace ShaderGen
 
 	protected:
 
-		IVariable CanonicalScreenPos( const IVariable& pos );
-		IVariable Transpose         ( const IVariable& matrix );
-		IVariable Sample            ( const IVariable& sampler, const IVariable& texcoord );
-		IVariable Dot               ( const IVariable& lhs, const IVariable& rhs );
-		IVariable Normalize         ( const IVariable& vec );
-		IVariable Cos               ( const IVariable& radians );
-		IVariable Sin               ( const IVariable& radians );
+		Variable CanonicalScreenPos( const Variable& pos );
+		Variable Transpose         ( const Variable& matrix );
+		Variable Sample            ( const Variable& sampler, const Variable& texcoord );
+		Variable Dot               ( const Variable& lhs, const Variable& rhs );
+		Variable Normalize         ( const Variable& vec );
+		Variable Cos               ( const Variable& radians );
+		Variable Sin               ( const Variable& radians );
 
 	private:
 

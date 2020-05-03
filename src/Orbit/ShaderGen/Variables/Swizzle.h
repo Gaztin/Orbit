@@ -17,13 +17,13 @@
 
 #pragma once
 #include "Orbit/Core/Utility/StringLiteral.h"
-#include "Orbit/ShaderGen/Variables/IVariable.h"
+#include "Orbit/ShaderGen/Variables/Variable.h"
 
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	extern ORB_API_SHADERGEN IVariable* variable_to_be_swizzled;
+	extern ORB_API_SHADERGEN Variable* variable_to_be_swizzled;
 
 	template< char... Name >
 	class Swizzle
@@ -49,61 +49,61 @@ namespace ShaderGen
 
 	public:
 
-		IVariable operator-( void ) const
+		Variable operator-( void ) const
 		{
-			return -static_cast< IVariable >( *this );
+			return -static_cast< Variable >( *this );
 		}
 
-		IVariable operator+( const IVariable& rhs ) const
+		Variable operator+( const Variable& rhs ) const
 		{
-			return ( static_cast< IVariable >( *this ) + rhs );
+			return ( static_cast< Variable >( *this ) + rhs );
 		}
 
-		IVariable operator-( const IVariable& rhs ) const
+		Variable operator-( const Variable& rhs ) const
 		{
-			return ( static_cast< IVariable >( *this ) - rhs );
+			return ( static_cast< Variable >( *this ) - rhs );
 		}
 
-		IVariable operator*( const IVariable& rhs ) const
+		Variable operator*( const Variable& rhs ) const
 		{
-			return ( static_cast< IVariable >( *this ) * rhs );
+			return ( static_cast< Variable >( *this ) * rhs );
 		}
 
-		IVariable operator/( const IVariable& rhs ) const
+		Variable operator/( const Variable& rhs ) const
 		{
-			return ( static_cast< IVariable >( *this ) / rhs );
+			return ( static_cast< Variable >( *this ) / rhs );
 		}
 
-		void operator+=( const IVariable& rhs ) const
+		void operator+=( const Variable& rhs ) const
 		{
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
 			variable_to_be_swizzled->StoreValue();
 
-			static_cast< IVariable >( *this ) += rhs;
+			static_cast< Variable >( *this ) += rhs;
 		}
 
-		void operator*=( const IVariable& rhs ) const
+		void operator*=( const Variable& rhs ) const
 		{
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
 			variable_to_be_swizzled->StoreValue();
 
-			static_cast< IVariable >( *this ) *= rhs;
+			static_cast< Variable >( *this ) *= rhs;
 		}
 
-		void operator=( const IVariable& rhs ) const
+		void operator=( const Variable& rhs ) const
 		{
 			static_assert( !name.HasDuplicateChar(), "Cannot modify swizzles where the same component is used more than once" );
 
 			variable_to_be_swizzled->StoreValue();
 
-			static_cast< IVariable >( *this ) = rhs;
+			static_cast< Variable >( *this ) = rhs;
 		}
 
-		operator IVariable( void ) const
+		operator Variable( void ) const
 		{
-			IVariable component_variable( variable_to_be_swizzled->GetValue() + "." + name.value, GetDataType() );
+			Variable component_variable( variable_to_be_swizzled->GetValue() + "." + name.value, GetDataType() );
 
 			/* If parent is stored, then the swizzle component can be considered stored too.
 			 * Otherwise, we'd not be able to manipulate the components within variables.
@@ -115,24 +115,24 @@ namespace ShaderGen
 			return component_variable;
 		}
 
-		friend IVariable operator+( double d, const Swizzle& rhs )
+		friend Variable operator+( double d, const Swizzle& rhs )
 		{
-			return ( IVariable( d ) + static_cast< IVariable >( rhs ) );
+			return ( Variable( d ) + static_cast< Variable >( rhs ) );
 		}
 
-		friend IVariable operator-( double d, const Swizzle& rhs )
+		friend Variable operator-( double d, const Swizzle& rhs )
 		{
-			return ( IVariable( d ) - static_cast< IVariable >( rhs ) );
+			return ( Variable( d ) - static_cast< Variable >( rhs ) );
 		}
 
-		friend IVariable operator*( double d, const Swizzle& rhs )
+		friend Variable operator*( double d, const Swizzle& rhs )
 		{
-			return ( IVariable( d ) * static_cast< IVariable >( rhs ) );
+			return ( Variable( d ) * static_cast< Variable >( rhs ) );
 		}
 
-		friend IVariable operator/( double d, const Swizzle& rhs )
+		friend Variable operator/( double d, const Swizzle& rhs )
 		{
-			return ( IVariable( d ) / static_cast< IVariable >( rhs ) );
+			return ( Variable( d ) / static_cast< Variable >( rhs ) );
 		}
 
 	};

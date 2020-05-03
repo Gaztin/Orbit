@@ -23,16 +23,16 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	Vec2::Vec2( const IVariable& a )
-		: IVariable( "vec2( " + a.GetValue() + " )", DataType::FVec2 )
+	Vec2::Vec2( const Variable& a )
+		: Variable( "vec2( " + a.GetValue() + " )", DataType::FVec2 )
 	{
 		assert( a.GetDataType() == DataType::FVec2 );
 
 		a.SetUsed();
 	}
 	
-	Vec2::Vec2( const IVariable& a, const IVariable& b )
-		: IVariable( "vec2( " + a.GetValue() + ", " + b.GetValue() + " )", DataType::FVec2 )
+	Vec2::Vec2( const Variable& a, const Variable& b )
+		: Variable( "vec2( " + a.GetValue() + ", " + b.GetValue() + " )", DataType::FVec2 )
 	{
 		assert( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Float ) );
 

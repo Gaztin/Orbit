@@ -29,7 +29,7 @@ ORB_NAMESPACE_BEGIN
 namespace ShaderGen
 {
 	Varying::Varying( VertexComponent component )
-		: IVariable( ShaderManager::GetInstance().NewVarying( component ), DataTypeFromVertexComponent( component ) )
+		: Variable( ShaderManager::GetInstance().NewVarying( component ), DataTypeFromVertexComponent( component ) )
 	{
 		stored_ = true;
 	}

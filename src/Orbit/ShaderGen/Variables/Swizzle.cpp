@@ -21,7 +21,7 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	IVariable* variable_to_be_swizzled = nullptr;
+	Variable* variable_to_be_swizzled = nullptr;
 }
 
 ORB_NAMESPACE_END

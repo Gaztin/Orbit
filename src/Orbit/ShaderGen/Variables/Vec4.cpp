@@ -23,16 +23,16 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	Vec4::Vec4( const IVariable& a )
-		: IVariable( "vec4( " + a.GetValue() + " )", DataType::FVec4 )
+	Vec4::Vec4( const Variable& a )
+		: Variable( "vec4( " + a.GetValue() + " )", DataType::FVec4 )
 	{
 		assert( a.GetDataType() == DataType::FVec4 );
 
 		a.SetUsed();
 	}
 
-	Vec4::Vec4( const IVariable& a, const IVariable& b )
-		: IVariable( "vec4( " + a.GetValue() + ", " + b.GetValue() + " )", DataType::FVec4 )
+	Vec4::Vec4( const Variable& a, const Variable& b )
+		: Variable( "vec4( " + a.GetValue() + ", " + b.GetValue() + " )", DataType::FVec4 )
 	{
 		assert( ( ( a.GetDataType() == DataType::FVec3 ) && ( b.GetDataType() == DataType::Float ) ) ||
 		        ( ( a.GetDataType() == DataType::FVec2 ) && ( b.GetDataType() == DataType::FVec2 ) ) ||
@@ -42,8 +42,8 @@ namespace ShaderGen
 		b.SetUsed();
 	}
 
-	Vec4::Vec4( const IVariable& a, const IVariable& b, const IVariable& c )
-		: IVariable( "vec4( " + a.GetValue() + ", " + b.GetValue() + ", " + c.GetValue() + " )", DataType::FVec4 )
+	Vec4::Vec4( const Variable& a, const Variable& b, const Variable& c )
+		: Variable( "vec4( " + a.GetValue() + ", " + b.GetValue() + ", " + c.GetValue() + " )", DataType::FVec4 )
 	{
 		assert( ( ( a.GetDataType() == DataType::FVec2 ) && ( b.GetDataType() == DataType::Float ) && ( c.GetDataType() == DataType::Float ) ) ||
 		        ( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::FVec2 ) && ( c.GetDataType() == DataType::Float ) ) ||
@@ -54,8 +54,8 @@ namespace ShaderGen
 		c.SetUsed();
 	}
 
-	Vec4::Vec4( const IVariable& a, const IVariable& b, const IVariable& c, const IVariable& d )
-		: IVariable( "vec4( " + a.GetValue() + ", " + b.GetValue() + ", " + c.GetValue() + ", " + d.GetValue() + " )", DataType::FVec4 )
+	Vec4::Vec4( const Variable& a, const Variable& b, const Variable& c, const Variable& d )
+		: Variable( "vec4( " + a.GetValue() + ", " + b.GetValue() + ", " + c.GetValue() + ", " + d.GetValue() + " )", DataType::FVec4 )
 	{
 		assert( ( ( a.GetDataType() == DataType::Float ) && ( b.GetDataType() == DataType::Float ) && ( c.GetDataType() == DataType::Float ) && ( d.GetDataType() == DataType::Float ) ) );
 
