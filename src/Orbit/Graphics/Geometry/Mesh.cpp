@@ -271,51 +271,10 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 						geometry_positive.AddFace( pair_face );
 					}
 				}
-
-//////////////////////////////////////////////////////////////////////////
-
-				// Positive stitching
-				{
-					std::array< Vertex, 3 > stitched_vertices;
-					Face                    stitched_face;
-
-					stitched_vertices[ 0 ].position = Vector4( plane.Center(), 1.0f );
-
-					for( size_t i = 1; i < 3; ++i )
-						stitched_vertices[ i ] = intersection_vertices[ ( secluded_vertex_index + i ) % 3 ];
-
-					for( size_t i = 0; i < 3; ++i )
-						stitched_vertices[ i ].normal = -plane.normal;
-
-					for( size_t i = 0; i < 3; ++i )
-						stitched_face.indices[ i ] = geometry_positive.AddVertex( stitched_vertices[ i ] );
-
-					size_t f = geometry_positive.AddFace( stitched_face );
-					geometry_positive.FlipFaceTowards( f, -plane.normal );
-				}
-
-				// Negative stitching
-				{
-					std::array< Vertex, 3 > stitched_vertices;
-					Face                    stitched_face;
-
-					stitched_vertices[ 0 ].position = Vector4( plane.Center(), 1.0f );
-
-					for( size_t i = 1; i < 3; ++i )
-						stitched_vertices[ i ] = intersection_vertices[ ( secluded_vertex_index + i ) % 3 ];
-
-					for( size_t i = 0; i < 3; ++i )
-						stitched_vertices[ i ].normal = plane.normal;
-
-					for( size_t i = 0; i < 3; ++i )
-						stitched_face.indices[ i ] = geometry_negative.AddVertex( stitched_vertices[ i ] );
-
-					size_t f = geometry_negative.AddFace( stitched_face );
-					geometry_negative.FlipFaceTowards( f, plane.normal );
-				}
 			}
 			else
 			{
+				// No intersection
 				const Vector3 plane_center = plane.Center();
 				const float   dot_sum      = plane.normal.DotProduct( Vector3( src_vertices[ 0 ].position ) - plane_center ) +
 				                             plane.normal.DotProduct( Vector3( src_vertices[ 1 ].position ) - plane_center ) +
