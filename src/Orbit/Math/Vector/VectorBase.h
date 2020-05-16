@@ -159,6 +159,32 @@ public:
 		return ptr[ i ];
 	}
 
+	bool operator==( const VectorBase& rhs ) const
+	{
+		const Derived& self = Self();
+
+		for( size_t i = 0; i < Size; ++i )
+		{
+			if( self[ i ] != rhs[ i ] )
+				return false;
+		}
+
+		return true;
+	}
+
+	bool operator!=( const VectorBase& rhs ) const
+	{
+		const Derived& self = Self();
+
+		for( size_t i = 0; i < Size; ++i )
+		{
+			if( self[ i ] != rhs[ i ] )
+				return true;
+		}
+
+		return false;
+	}
+
 public:
 
 	float*       begin ( void )       { return &( *this )[ 0 ]; }
