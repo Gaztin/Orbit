@@ -16,37 +16,19 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Utility.h"
-#include "Orbit/Graphics/Private/ConstantBufferDetails.h"
-
-#include <memory>
+#include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS ConstantBuffer
+struct RenderCommand;
+
+class ORB_API_GRAPHICS IRenderer
 {
-public:
+protected:
 
-	explicit ConstantBuffer( size_t size );
-	        ~ConstantBuffer( void );
-
-public:
-
-	void Bind  ( ShaderType type, uint32_t local_slot, uint32_t global_slot ) const;
-	void Unbind( ShaderType type, uint32_t local_slot, uint32_t global_slot ) const;
-
-public:
-
-	void Update( const void* data, size_t size );
-
-private:
-
-	void* UpdateBegin( size_t size );
-	void  UpdateEnd  ( void );
-
-private:
-
-	Private::ConstantBufferDetails details_;
+	void BindConstantBuffers  ( const RenderCommand& command );
+	void UnbindConstantBuffers( const RenderCommand& command );
+	void APIDraw              ( const RenderCommand& command );
 
 };
 

@@ -16,13 +16,14 @@
  */
 
 #pragma once
+#include "Orbit/Graphics/Renderer/IRenderer.h"
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
 
 #include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS BasicRenderer
+class ORB_API_GRAPHICS BasicRenderer : public IRenderer
 {
 public:
 
