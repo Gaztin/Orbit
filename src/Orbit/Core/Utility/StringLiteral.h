@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Core/Core.h"
+#include "Orbit/Core/Utility/Utility.h"
 
 #include <cstddef>
 
@@ -103,8 +103,10 @@ private:
 };
 
 template< size_t Index, size_t Length >
-constexpr char StringLiteralGrab( [[ maybe_unused ]] const char ( &str )[ Length ] )
+constexpr char StringLiteralGrab( const char ( &str )[ Length ] )
 {
+	Use( str );
+
 	if constexpr( Index < Length ) return str[ Index ];
 	else                           return '\0';
 }

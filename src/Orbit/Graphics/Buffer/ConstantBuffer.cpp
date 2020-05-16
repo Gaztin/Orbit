@@ -105,6 +105,8 @@ ConstantBuffer::~ConstantBuffer( void )
 
 void ConstantBuffer::Bind( ShaderType type, uint32_t local_slot, uint32_t global_slot ) const
 {
+	Use( local_slot, global_slot );
+
 	switch( details_.index() )
 	{
 		default: break;
@@ -146,6 +148,8 @@ void ConstantBuffer::Bind( ShaderType type, uint32_t local_slot, uint32_t global
 
 void ConstantBuffer::Unbind( ShaderType type, uint32_t local_slot, uint32_t global_slot ) const
 {
+	Use( type, local_slot, global_slot );
+
 	switch( details_.index() )
 	{
 		default: break;
