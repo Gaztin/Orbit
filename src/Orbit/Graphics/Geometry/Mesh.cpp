@@ -149,14 +149,15 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 //////////////////////////////////////////////////////////////////////////
 
-		const size_t   vertex_stride     = vertex_layout_.GetStride();
-		const size_t   pos_offset        = vertex_layout_.OffsetOf( VertexComponent::Position );
-		const size_t   normal_offset     = vertex_layout_.OffsetOf( VertexComponent::Normal );
-		const size_t   color_offset      = vertex_layout_.OffsetOf( VertexComponent::Color );
-		const size_t   texcoord_offset   = vertex_layout_.OffsetOf( VertexComponent::TexCoord );
-		const Geometry geometry          = ToGeometry();
-		Geometry       geometry_positive( vertex_layout_ );
-		Geometry       geometry_negative( vertex_layout_ );
+		const size_t               vertex_stride     = vertex_layout_.GetStride();
+		const size_t               pos_offset        = vertex_layout_.OffsetOf( VertexComponent::Position );
+		const size_t               normal_offset     = vertex_layout_.OffsetOf( VertexComponent::Normal );
+		const size_t               color_offset      = vertex_layout_.OffsetOf( VertexComponent::Color );
+		const size_t               texcoord_offset   = vertex_layout_.OffsetOf( VertexComponent::TexCoord );
+		const Geometry             geometry          = ToGeometry();
+		Geometry                   geometry_positive( vertex_layout_ );
+		Geometry                   geometry_negative( vertex_layout_ );
+		std::vector< LineSegment > all_seams;
 
 		for( auto face : geometry.GetFaces() )
 		{
@@ -202,6 +203,19 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 			// Two intersections means the plane cuts the triangle in half.
 			if( intersection_count == 2 )
 			{
+				LineSegment seam;
+
+				switch( secluded_vertex_index )
+				{
+					case 0: { seam = LineSegment( intersections[ 1 ], intersections[ 2 ] ); } break;
+					case 1: { seam = LineSegment( intersections[ 0 ], intersections[ 2 ] ); } break;
+					case 2: { seam = LineSegment( intersections[ 0 ], intersections[ 1 ] ); } break;
+				}
+
+				all_seams.push_back( seam );
+
+//////////////////////////////////////////////////////////////////////////
+
 				std::array< Vertex, 3 > intersection_vertices
 				{
 					src_vertices[ secluded_vertex_index ],
@@ -300,6 +314,48 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 					geometry_positive.AddFace( secluded_face );
 				}
 			}
+		}
+
+//////////////////////////////////////////////////////////////////////////
+
+		std::vector< std::pair< LineSegment, LineSegment > > seam_pairs;
+
+		for( auto i = all_seams.begin(); i != all_seams.end(); )
+		{
+			bool did_remove = false;
+
+			for( auto j = i + 1; j != all_seams.end(); )
+			{
+				if( ( i->end   - j->start ).DotProduct() < FLT_EPSILON ||
+				    ( i->start - j->start ).DotProduct() < FLT_EPSILON ||
+				    ( i->end   - j->end   ).DotProduct() < FLT_EPSILON )
+				{
+					seam_pairs.emplace_back( *i, *j );
+
+					// Don't iterate either 'i' or 'j' again
+					i = all_seams.erase( i );
+					j = all_seams.end();
+					did_remove = true;
+				}
+				else
+				{
+					++j;
+				}
+			}
+
+			if( !did_remove )
+				++i;
+		}
+
+		for( size_t i = 0; i < seam_pairs.size(); ++i )
+		{
+			Face seam_face;
+			seam_face.indices[ 0 ] = geometry_positive.AddVertex( Vertex{ Vector4( seam_pairs[ i ].first.start, 1.0f ) } );
+			seam_face.indices[ 1 ] = geometry_positive.AddVertex( Vertex{ Vector4( seam_pairs[ i ].first.end,   1.0f ) } );
+			seam_face.indices[ 2 ] = geometry_positive.AddVertex( Vertex{ Vector4( seam_pairs[ i ].second.end,  1.0f ) } );
+
+			size_t face_index = geometry_positive.AddFace( seam_face );
+			geometry_positive.FlipFaceTowards( face_index, -plane.normal );
 		}
 
 //////////////////////////////////////////////////////////////////////////
