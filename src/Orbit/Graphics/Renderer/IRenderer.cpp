@@ -27,6 +27,11 @@
 
 ORB_NAMESPACE_BEGIN
 
+void IRenderer::PushCommand( RenderCommand command )
+{
+	commands_.emplace_back( std::move( command ) );
+}
+
 void IRenderer::BindConstantBuffers( const RenderCommand& command )
 {
 	uint32_t global_slot = 0;
@@ -101,15 +106,7 @@ void IRenderer::APIDraw( const RenderCommand& command )
 
 		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
 		{
-			OpenGLIndexType index_type = { };
-			OpenGLDrawMode  draw_mode  = { };
-
-			switch( command.index_buffer->GetFormat() )
-			{
-				case IndexFormat::Byte:       { index_type = OpenGLIndexType::Byte;  } break;
-				case IndexFormat::Word:       { index_type = OpenGLIndexType::Short; } break;
-				case IndexFormat::DoubleWord: { index_type = OpenGLIndexType::Int;   } break;
-			}
+			OpenGLDrawMode draw_mode  = { };
 
 			switch( command.topology )
 			{
@@ -118,8 +115,23 @@ void IRenderer::APIDraw( const RenderCommand& command )
 				case Topology::Triangles: { draw_mode = OpenGLDrawMode::Triangles; } break;
 			}
 
-			if( command.index_buffer ) glDrawElements( draw_mode, static_cast< GLsizei >( command.index_buffer->GetCount() ), index_type, nullptr );
-			else                       glDrawArrays( draw_mode, 0, command.vertex_buffer->GetCount() );
+			if( command.index_buffer )
+			{
+				OpenGLIndexType index_type = { };
+
+				switch( command.index_buffer->GetFormat() )
+				{
+					case IndexFormat::Byte:       { index_type = OpenGLIndexType::Byte;  } break;
+					case IndexFormat::Word:       { index_type = OpenGLIndexType::Short; } break;
+					case IndexFormat::DoubleWord: { index_type = OpenGLIndexType::Int;   } break;
+				}
+
+				glDrawElements( draw_mode, static_cast< GLsizei >( command.index_buffer->GetCount() ), index_type, nullptr );
+			}
+			else
+			{
+				glDrawArrays( draw_mode, 0, command.vertex_buffer->GetCount() );
+			}
 
 		} break;
 

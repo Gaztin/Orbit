@@ -18,17 +18,36 @@
 #pragma once
 #include "Orbit/Graphics/Graphics.h"
 
+#include <vector>
+
 ORB_NAMESPACE_BEGIN
 
 struct RenderCommand;
 
 class ORB_API_GRAPHICS IRenderer
 {
+public:
+
+	virtual ~IRenderer( void ) = default;
+
+public:
+
+	void PushCommand( RenderCommand command );
+	void Flush      ( void );
+
+public:
+
+	virtual void Render( void ) = 0;
+
 protected:
 
 	void BindConstantBuffers  ( const RenderCommand& command );
 	void UnbindConstantBuffers( const RenderCommand& command );
 	void APIDraw              ( const RenderCommand& command );
+
+protected:
+
+	std::vector< RenderCommand > commands_;
 
 };
 

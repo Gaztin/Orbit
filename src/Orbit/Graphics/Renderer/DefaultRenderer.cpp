@@ -15,25 +15,17 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "BasicRenderer.h"
+#include "DefaultRenderer.h"
 
-#include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
-#include "Orbit/Graphics/Buffer/ConstantBuffer.h"
 #include "Orbit/Graphics/Buffer/FrameBuffer.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Context/RenderContext.h"
 #include "Orbit/Graphics/Shader/Shader.h"
-#include "Orbit/Graphics/Texture/Texture2D.h"
+#include "Orbit/Graphics/Texture/Texture.h"
 
 ORB_NAMESPACE_BEGIN
 
-void BasicRenderer::QueueCommand( const RenderCommand& command )
-{
-	commands_.push_back( command );
-}
-
-void BasicRenderer::Render( void )
+void DefaultRenderer::Render( void )
 {
 	for( RenderCommand& command : commands_ )
 	{
