@@ -45,8 +45,7 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 			glBufferData( OpenGLBufferTarget::Array, total_size, data, OpenGLBufferUsage::StaticDraw );
 			glBindBuffer( OpenGLBufferTarget::Array, 0 );
 
-			break;
-		}
+		} break;
 
 	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
@@ -63,19 +62,19 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 
 			if( data )
 			{
-				D3D11_SUBRESOURCE_DATA initial_data { };
+				D3D11_SUBRESOURCE_DATA initial_data = { };
 				initial_data.pSysMem = data;
-				d3d11.device->CreateBuffer( &desc, &initial_data, &details.buffer.ptr_ );
+
+				ORB_CHECK_HRESULT( d3d11.device->CreateBuffer( &desc, &initial_data, &details.buffer.ptr_ ) );
 			}
 			else
 			{
-				d3d11.device->CreateBuffer( &desc, nullptr, &details.buffer.ptr_ );
+				ORB_CHECK_HRESULT( d3d11.device->CreateBuffer( &desc, nullptr, &details.buffer.ptr_ ) );
 			}
 
 			details.stride = static_cast< UINT >( stride );
 
-			break;
-		}
+		} break;
 
 	#endif // ORB_HAS_D3D11
 
@@ -96,8 +95,7 @@ VertexBuffer::~VertexBuffer( void )
 
 			glDeleteBuffers( 1, &details.id );
 
-			break;
-		}
+		} break;
 
 	#endif // ORB_HAS_OPENGL
 
@@ -118,8 +116,7 @@ void VertexBuffer::Bind( void )
 
 			glBindBuffer( OpenGLBufferTarget::Array, details.id );
 
-			break;
-		}
+		} break;
 
 	#endif // ORB_HAS_OPENGL
 	#if( ORB_HAS_D3D11 )
@@ -133,8 +130,7 @@ void VertexBuffer::Bind( void )
 
 			d3d11.device_context->IASetVertexBuffers( 0, 1, &details.buffer.ptr_, &stride, &offset );
 
-			break;
-		}
+		} break;
 
 	#endif // ORB_HAS_D3D11
 
