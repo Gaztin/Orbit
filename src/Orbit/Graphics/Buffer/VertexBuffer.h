@@ -24,10 +24,14 @@ class ORB_API_GRAPHICS VertexBuffer
 {
 public:
 
-	VertexBuffer( const void* data, size_t count, size_t stride );
+	VertexBuffer( const void* data, size_t count, size_t stride, bool is_static = true );
 
-	template< typename Vertex,
-		typename = typename std::enable_if_t< std::is_object_v< Vertex > > >
+	template<
+	  typename Vertex,
+	  typename = typename std::enable_if_t<
+	    std::is_object_v< Vertex >
+	  >
+	>
 	VertexBuffer( std::initializer_list< Vertex > vertices )
 		: VertexBuffer( vertices.begin(), vertices.size(), sizeof( Vertex ) )
 	{
@@ -37,16 +41,25 @@ public:
 
 public:
 
-	void Bind( void );
+	void  Update( const void* data, size_t count );
+	void  Bind  ( void );
+	void* Map   ( void );
+	void  Unmap ( void );
 
 public:
 
-	size_t GetCount( void ) const { return count_; }
+	size_t GetCount    ( void ) const { return count_; }
+	size_t GetStride   ( void ) const { return stride_; }
+	size_t GetTotalSize( void ) const { return count_ * stride_; }
 
 private:
 
 	Private::VertexBufferDetails details_;
+
 	size_t                       count_;
+	size_t                       stride_;
+
+	bool                         is_static_;
 
 };
 

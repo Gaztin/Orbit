@@ -17,18 +17,20 @@
 
 #include "VertexBuffer.h"
 
+#include "Orbit/Core/Platform/Windows/Win32Error.h"
 #include "Orbit/Core/Utility/Utility.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
 
 ORB_NAMESPACE_BEGIN
 
-VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
-	: details_{ }
-	, count_  { count }
+VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride, bool is_static )
+	: details_  { }
+	, count_    ( count )
+	, stride_   ( stride )
+	, is_static_( is_static )
 {
-	auto&        context_details = RenderContext::GetInstance().GetPrivateDetails();
-	const size_t total_size      = ( count * stride );
+	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
 	switch( context_details.index() )
 	{
@@ -42,7 +44,7 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 
 			glGenBuffers( 1, &details.id );
 			glBindBuffer( OpenGLBufferTarget::Array, details.id );
-			glBufferData( OpenGLBufferTarget::Array, total_size, data, OpenGLBufferUsage::StaticDraw );
+			glBufferData( OpenGLBufferTarget::Array, GetTotalSize(), data, is_static_ ? OpenGLBufferUsage::StaticDraw : OpenGLBufferUsage::StreamDraw );
 			glBindBuffer( OpenGLBufferTarget::Array, 0 );
 
 		} break;
@@ -55,9 +57,9 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 			auto& details = details_.emplace< Private::_VertexBufferDetailsD3D11 >();
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
-			D3D11_BUFFER_DESC desc { };
-			desc.ByteWidth = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
-			desc.Usage     = D3D11_USAGE_DEFAULT;
+			D3D11_BUFFER_DESC desc = { };
+			desc.ByteWidth = static_cast< UINT >( ( GetTotalSize() + 0xf ) & ~0xf ); // Align by 16 bytes
+			desc.Usage     = is_static_ ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
 			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
 			if( data )
@@ -71,8 +73,6 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride )
 			{
 				ORB_CHECK_HRESULT( d3d11.device->CreateBuffer( &desc, nullptr, &details.buffer.ptr_ ) );
 			}
-
-			details.stride = static_cast< UINT >( stride );
 
 		} break;
 
@@ -102,6 +102,63 @@ VertexBuffer::~VertexBuffer( void )
 	}
 }
 
+void VertexBuffer::Update( const void* data, size_t count )
+{
+	if( data == nullptr && count < count_ )
+		return;
+
+	count_ = count;
+
+	switch( details_.index() )
+	{
+		default: break;
+
+	#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_VertexBufferDetailsOpenGL, Private::VertexBufferDetails > ):
+		{
+			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( details_ );
+
+			glBindBuffer( OpenGLBufferTarget::Array, details.id );
+			glBufferData( OpenGLBufferTarget::Array, GetTotalSize(), data, is_static_ ? OpenGLBufferUsage::StaticDraw : OpenGLBufferUsage::StreamDraw );
+			glBindBuffer( OpenGLBufferTarget::Array, 0 );
+
+		} break;
+
+	#endif // ORB_HAS_OPENGL
+	#if( ORB_HAS_D3D11 )
+
+		case( unique_index_v< Private::_VertexBufferDetailsD3D11, Private::VertexBufferDetails > ):
+		{
+			auto& details = std::get< Private::_VertexBufferDetailsD3D11 >( details_ );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+
+			details.buffer = nullptr;
+
+			D3D11_BUFFER_DESC desc = { };
+			desc.ByteWidth = static_cast< UINT >( ( GetTotalSize() + 0xf ) & ~0xf ); // Align by 16 bytes
+			desc.Usage     = is_static_ ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
+			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+			if( data )
+			{
+				D3D11_SUBRESOURCE_DATA initial_data = { };
+				initial_data.pSysMem = data;
+
+				ORB_CHECK_HRESULT( d3d11.device->CreateBuffer( &desc, &initial_data, &details.buffer.ptr_ ) );
+			}
+			else
+			{
+				ORB_CHECK_HRESULT( d3d11.device->CreateBuffer( &desc, nullptr, &details.buffer.ptr_ ) );
+			}
+
+		} break;
+
+	#endif // ORB_HAS_D3D11
+
+	}
+}
+
 void VertexBuffer::Bind( void )
 {
 	switch( details_.index() )
@@ -125,10 +182,82 @@ void VertexBuffer::Bind( void )
 		{
 			auto& details = std::get< Private::_VertexBufferDetailsD3D11 >( details_ );
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
-			UINT  stride  = details.stride;
+			UINT  stride  = static_cast< UINT >( stride_ );
 			UINT  offset  = 0;
 
 			d3d11.device_context->IASetVertexBuffers( 0, 1, &details.buffer.ptr_, &stride, &offset );
+
+		} break;
+
+	#endif // ORB_HAS_D3D11
+
+	}
+}
+
+void* VertexBuffer::Map( void )
+{
+	switch( details_.index() )
+	{
+		default: return nullptr;
+
+	#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_VertexBufferDetailsOpenGL, Private::VertexBufferDetails > ):
+		{
+			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( details_ );
+
+			glBindBuffer( OpenGLBufferTarget::Array, details.id );
+			return glMapBufferRange( OpenGLBufferTarget::Array, 0, GetTotalSize(), OpenGLMapAccess::WriteBit );
+
+		} break;
+
+	#endif // ORB_HAS_OPENGL
+	#if ORB_HAS_D3D11
+
+		case( unique_index_v< Private::_VertexBufferDetailsD3D11, Private::VertexBufferDetails > ):
+		{
+			auto& details = std::get< Private::_VertexBufferDetailsD3D11 >( details_ );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+
+			D3D11_MAPPED_SUBRESOURCE mapped;
+			if( ORB_CHECK_HRESULT( d3d11.device_context->Map( details.buffer.ptr_, 0, D3D11_MAP_WRITE, 0, &mapped ) ) )
+				return mapped.pData;
+
+			return nullptr;
+
+		} break;
+
+	#endif // ORB_HAS_D3D11
+
+	}
+}
+
+void VertexBuffer::Unmap( void )
+{
+	switch( details_.index() )
+	{
+		default: break;
+
+	#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_VertexBufferDetailsOpenGL, Private::VertexBufferDetails > ):
+		{
+			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( details_ );
+
+			glUnmapBuffer( OpenGLBufferTarget::Array );
+			glBindBuffer( OpenGLBufferTarget::Array, 0 );
+
+		} break;
+
+	#endif // ORB_HAS_OPENGL
+	#if ORB_HAS_D3D11
+
+		case( unique_index_v< Private::_VertexBufferDetailsD3D11, Private::VertexBufferDetails > ):
+		{
+			auto& details = std::get< Private::_VertexBufferDetailsD3D11 >( details_ );
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+
+			d3d11.device_context->Unmap( details.buffer.ptr_, 0 );
 
 		} break;
 
