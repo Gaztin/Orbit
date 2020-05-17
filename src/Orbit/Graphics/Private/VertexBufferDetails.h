@@ -39,7 +39,6 @@ namespace Private
 	struct _VertexBufferDetailsD3D11
 	{
 		ComPtr< ID3D11Buffer > buffer;
-		UINT                   stride;
 	};
 
 #endif // ORB_HAS_D3D11
