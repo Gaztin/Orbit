@@ -19,6 +19,7 @@
 #include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Graphics/Buffer/ConstantBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
+#include "Orbit/Graphics/Geometry/GeometryData.h"
 #include "Orbit/Graphics/Shader/Shader.h"
 #include "Orbit/Math/Vector3.h"
 
@@ -34,6 +35,7 @@ class ORB_API_GRAPHICS DebugManager : public Singleton< DebugManager >
 public:
 
 	using LineSegmentVector = std::vector< std::pair< Vector3, Vector3 > >;
+	using SphereVector      = std::vector< Vector3 >;
 
 public:
 
@@ -42,6 +44,7 @@ public:
 public:
 
 	void PushLineSegment( Vector3 start, Vector3 end );
+	void PushSphere     ( Vector3 center );
 	void Render         ( IRenderer& renderer, const Matrix4& view_projection );
 	void Flush          ( void );
 
@@ -49,12 +52,15 @@ private:
 
 	Shader            shader_;
 
-	// TODO: Use @LineSegment
-	LineSegmentVector lines_;
+	LineSegmentVector lines_;   // TODO: Use @LineSegment
+	SphereVector      spheres_; // TODO: Use @Sphere
 
 	VertexBuffer      lines_vertex_buffer_;
+	VertexBuffer      spheres_vertex_buffer_;
 
 	ConstantBuffer    constant_buffer_;
+
+	GeometryData      sphere_geometry_;
 
 };
 

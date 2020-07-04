@@ -16,6 +16,7 @@
  */
 
 #pragma once
+#include "Orbit/Core/Shape/IShape.h"
 #include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Graphics/Graphics.h"
 
@@ -26,14 +27,14 @@ ORB_NAMESPACE_BEGIN
 
 class  GeometryData;
 class  VertexLayout;
-struct IShape;
 struct Mesh;
 
 class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >
 {
 public:
 
-	Mesh CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout ) const;
+	GeometryData CreateGeometryFromShape( ShapeType shape_type, const VertexLayout& vertex_layout ) const;
+	Mesh         CreateMeshFromShape    ( const IShape& shape, const VertexLayout& vertex_layout ) const;
 
 private:
 

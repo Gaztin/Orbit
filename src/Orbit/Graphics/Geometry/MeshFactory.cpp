@@ -29,12 +29,11 @@
 
 ORB_NAMESPACE_BEGIN
 
-Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout ) const
+GeometryData MeshFactory::CreateGeometryFromShape( ShapeType shape_type, const VertexLayout& vertex_layout ) const
 {
-	const size_t vertex_stride = vertex_layout.GetStride();
-	GeometryData geometry_data = GeometryData( vertex_layout );
+	GeometryData geometry_data( vertex_layout );
 
-	switch( shape.GetType() )
+	switch( shape_type )
 	{
 		case ShapeType::Cube:   { GenerateCubeData( geometry_data ); } break;
 		case ShapeType::Sphere: { GenerateSphereData( geometry_data ); } break;
@@ -42,9 +41,13 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 
 	geometry_data.GenerateNormals();
 
-//////////////////////////////////////////////////////////////////////////
+	return geometry_data;
+}
 
-	Mesh mesh = geometry_data.ToMesh();
+Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout ) const
+{
+	GeometryData geometry = CreateGeometryFromShape( shape.GetType(), vertex_layout );
+	Mesh         mesh     = geometry.ToMesh();
 
 	switch( shape.GetType() )
 	{

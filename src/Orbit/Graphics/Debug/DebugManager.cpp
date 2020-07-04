@@ -18,6 +18,7 @@
 #include "DebugManager.h"
 
 #include "Orbit/Core/Utility/Color.h"
+#include "Orbit/Graphics/Geometry/MeshFactory.h"
 #include "Orbit/Graphics/Renderer/DefaultRenderer.h"
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
 #include "Orbit/Math/Matrix4.h"
@@ -25,7 +26,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-struct Vertex
+struct DebugVertex
 {
 	Vector4 position;
 	Color   color;
@@ -109,16 +110,24 @@ static VertexLayout vertex_layout
 };
 
 DebugManager::DebugManager( void )
-	: shader_             ( shader_source, vertex_layout )
-	, lines_              { }
-	, lines_vertex_buffer_( nullptr, 0, vertex_layout.GetStride(), false )
-	, constant_buffer_    ( sizeof( Matrix4 ) )
+	: shader_               ( shader_source, vertex_layout )
+	, lines_                { }
+	, spheres_              { }
+	, lines_vertex_buffer_  ( nullptr, 0, vertex_layout.GetStride(), false )
+	, spheres_vertex_buffer_( nullptr, 0, vertex_layout.GetStride(), false )
+	, constant_buffer_      ( sizeof( Matrix4 ) )
+	, sphere_geometry_      ( MeshFactory::GetInstance().CreateGeometryFromShape( ShapeType::Sphere, vertex_layout ) )
 {
 }
 
 void DebugManager::PushLineSegment( Vector3 start, Vector3 end )
 {
 	lines_.emplace_back( std::pair( std::move( start ), std::move( end ) ) );
+}
+
+void DebugManager::PushSphere( Vector3 center )
+{
+	spheres_.emplace_back( std::move( center ) );
 }
 
 void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
@@ -129,14 +138,16 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 	{
 		lines_vertex_buffer_.Update( nullptr, lines_.size() * 2 );
 
-		Vertex* dst = static_cast< Vertex* >( lines_vertex_buffer_.Map() );
+		DebugVertex* dst = static_cast< DebugVertex* >( lines_vertex_buffer_.Map() );
 
 		for( size_t i = 0; i < lines_.size(); ++i )
 		{
+			const Color color( 1.0f, 0.0f, 0.0f );
+
 			dst[ i * 2 + 0 ].position = Vector4( lines_[ i ].first,  1.0f );
-			dst[ i * 2 + 0 ].color    = Color( 1.0f, 0.0f, 0.0f );
+			dst[ i * 2 + 0 ].color    = color;
 			dst[ i * 2 + 1 ].position = Vector4( lines_[ i ].second, 1.0f );
-			dst[ i * 2 + 1 ].color    = Color( 1.0f, 0.0f, 0.0f );
+			dst[ i * 2 + 1 ].color    = color;
 		}
 
 		lines_vertex_buffer_.Unmap();
@@ -150,11 +161,64 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		renderer.PushCommand( std::move( command ) );
 	}
+
+	if( !spheres_.empty() )
+	{
+		spheres_vertex_buffer_.Update( nullptr, spheres_.size() * sphere_geometry_.GetFaceCount() * 6 );
+
+		DebugVertex* dst = static_cast< DebugVertex* >( spheres_vertex_buffer_.Map() );
+
+		size_t i = 0;
+		for( const Vector3& sphere : spheres_ )
+		{
+			const Color color( 0.0f, 1.0f, 0.0f );
+
+			for( Face f : sphere_geometry_.GetFaces() )
+			{
+				Vertex v1 = sphere_geometry_.GetVertex( f.indices[ 0 ] );
+				Vertex v2 = sphere_geometry_.GetVertex( f.indices[ 1 ] );
+				Vertex v3 = sphere_geometry_.GetVertex( f.indices[ 2 ] );
+
+				v1.position += Vector4( sphere, 0.0f );
+				v2.position += Vector4( sphere, 0.0f );
+				v3.position += Vector4( sphere, 0.0f );
+
+				dst[ i + 0 ].position = v1.position;
+				dst[ i + 0 ].color    = color;
+				dst[ i + 1 ].position = v2.position;
+				dst[ i + 1 ].color    = color;
+
+				dst[ i + 2 ].position = v1.position;
+				dst[ i + 2 ].color    = color;
+				dst[ i + 3 ].position = v3.position;
+				dst[ i + 3 ].color    = color;
+
+				dst[ i + 4 ].position = v2.position;
+				dst[ i + 4 ].color    = color;
+				dst[ i + 5 ].position = v3.position;
+				dst[ i + 5 ].color    = color;
+
+				i += 6;
+			}
+		}
+
+		spheres_vertex_buffer_.Unmap();
+
+		// Create render command
+		RenderCommand render_command;
+		render_command.shader        = shader_;
+		render_command.vertex_buffer = spheres_vertex_buffer_;
+		render_command.topology      = Topology::Lines;
+		render_command.constant_buffers[ ShaderType::Vertex ].emplace_back( constant_buffer_ );
+
+		renderer.PushCommand( std::move( render_command ) );
+	}
 }
 
 void DebugManager::Flush( void )
 {
 	lines_.clear();
+	spheres_.clear();
 }
 
 ORB_NAMESPACE_END

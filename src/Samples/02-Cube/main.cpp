@@ -82,10 +82,14 @@ public:
 			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 		}
 
-		// Debug lines
+		// Debug rendering
 		if( Orbit::Input::GetKeyHeld( Orbit::Key::_1 ) )
 		{
 			Orbit::DebugManager::GetInstance().PushLineSegment( Orbit::Vector3( -5, 0, -5 ), Orbit::Vector3( 5, 0, 5 ) );
+		}
+		if( Orbit::Input::GetKeyHeld( Orbit::Key::_2 ) )
+		{
+			Orbit::DebugManager::GetInstance().PushSphere( Orbit::Vector3( 0, 0, 5 ) );
 		}
 
 		window_.PollEvents();
