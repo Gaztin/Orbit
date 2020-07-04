@@ -20,6 +20,7 @@
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Graphics/Renderer/DefaultRenderer.h"
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
+#include "Orbit/Math/Matrix4.h"
 #include "Orbit/Math/Vector4.h"
 
 ORB_NAMESPACE_BEGIN
@@ -32,6 +33,11 @@ struct Vertex
 
 constexpr std::string_view shader_source = R"(
 #if defined( HLSL )
+
+cbuffer VertexUniforms
+{
+	matrix u_view_projection;
+};
 
 struct VertexData
 {
@@ -48,7 +54,7 @@ struct PixelData
 PixelData VSMain( VertexData input )
 {
 	PixelData output;
-	output.position = input.position;
+	output.position = mul( input.position, u_view_projection );
 	output.color    = input.color;
 
 	return output;
@@ -63,6 +69,10 @@ float4 PSMain( PixelData input ) : SV_TARGET
 
 #if defined( VERTEX )
 
+ORB_CONSTANTS_BEGIN( VertexUniforms )
+	ORB_CONSTANT( mat4, u_view_projection );
+ORB_CONSTANTS_END
+
 ORB_ATTRIBUTE( 0 ) vec4 a_position;
 ORB_ATTRIBUTE( 1 ) vec4 a_color;
 
@@ -71,7 +81,7 @@ ORB_VARYING vec4 v_color;
 
 void main()
 {
-	v_position = a_position;
+	v_position = u_view_projection * a_position;
 	v_color    = a_color;
 
 	gl_Position = v_position;
@@ -102,6 +112,7 @@ DebugManager::DebugManager( void )
 	: shader_             ( shader_source, vertex_layout )
 	, lines_              { }
 	, lines_vertex_buffer_( nullptr, 0, vertex_layout.GetStride(), false )
+	, constant_buffer_    ( sizeof( Matrix4 ) )
 {
 }
 
@@ -110,10 +121,9 @@ void DebugManager::PushLineSegment( Vector3 start, Vector3 end )
 	lines_.emplace_back( std::pair( std::move( start ), std::move( end ) ) );
 }
 
-void DebugManager::Render( IRenderer* renderer )
+void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 {
-	if( !renderer )
-		renderer = &DefaultRenderer::GetInstance();
+	constant_buffer_.Update( &view_projection, sizeof( Matrix4 ) );
 
 	if( !lines_.empty() )
 	{
@@ -136,8 +146,9 @@ void DebugManager::Render( IRenderer* renderer )
 		command.shader        = shader_;
 		command.vertex_buffer = lines_vertex_buffer_;
 		command.topology      = Topology::Lines;
+		command.constant_buffers[ ShaderType::Vertex ].emplace_back( constant_buffer_ );
 
-		renderer->PushCommand( std::move( command ) );
+		renderer.PushCommand( std::move( command ) );
 	}
 }
 

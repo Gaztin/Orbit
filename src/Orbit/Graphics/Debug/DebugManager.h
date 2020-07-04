@@ -17,6 +17,7 @@
 
 #pragma once
 #include "Orbit/Core/Utility/Singleton.h"
+#include "Orbit/Graphics/Buffer/ConstantBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Shader/Shader.h"
 #include "Orbit/Math/Vector3.h"
@@ -26,6 +27,7 @@
 ORB_NAMESPACE_BEGIN
 
 class IRenderer;
+class Matrix4;
 
 class ORB_API_GRAPHICS DebugManager : public Singleton< DebugManager >
 {
@@ -40,7 +42,7 @@ public:
 public:
 
 	void PushLineSegment( Vector3 start, Vector3 end );
-	void Render         ( IRenderer* renderer = nullptr );
+	void Render         ( IRenderer& renderer, const Matrix4& view_projection );
 	void Flush          ( void );
 
 private:
@@ -51,6 +53,8 @@ private:
 	LineSegmentVector lines_;
 
 	VertexBuffer      lines_vertex_buffer_;
+
+	ConstantBuffer    constant_buffer_;
 
 };
 
