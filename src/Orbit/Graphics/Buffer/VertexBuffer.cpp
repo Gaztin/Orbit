@@ -58,9 +58,14 @@ VertexBuffer::VertexBuffer( const void* data, size_t count, size_t stride, bool 
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 			D3D11_BUFFER_DESC desc = { };
-			desc.ByteWidth = static_cast< UINT >( ( GetTotalSize() + 0xf ) & ~0xf ); // Align by 16 bytes
-			desc.Usage     = is_static_ ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
-			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			desc.ByteWidth      = static_cast< UINT >( ( GetTotalSize() + 0xf ) & ~0xf ); // Align by 16 bytes
+			desc.Usage          = is_static_ ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
+			desc.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
+			desc.CPUAccessFlags = is_static_ ? 0 : D3D11_CPU_ACCESS_WRITE;
+
+			// ByteWidth can't be 0
+			if( desc.ByteWidth == 0 )
+				desc.ByteWidth = 16;
 
 			if( data )
 			{
@@ -136,9 +141,14 @@ void VertexBuffer::Update( const void* data, size_t count )
 			details.buffer = nullptr;
 
 			D3D11_BUFFER_DESC desc = { };
-			desc.ByteWidth = static_cast< UINT >( ( GetTotalSize() + 0xf ) & ~0xf ); // Align by 16 bytes
-			desc.Usage     = is_static_ ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
-			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			desc.ByteWidth      = static_cast< UINT >( ( GetTotalSize() + 0xf ) & ~0xf ); // Align by 16 bytes
+			desc.Usage          = is_static_ ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
+			desc.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
+			desc.CPUAccessFlags = is_static_ ? 0 : D3D11_CPU_ACCESS_WRITE;
+
+			// ByteWidth can't be 0
+			if( desc.ByteWidth == 0 )
+				desc.ByteWidth = 16;
 
 			if( data )
 			{
@@ -220,7 +230,7 @@ void* VertexBuffer::Map( void )
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 
 			D3D11_MAPPED_SUBRESOURCE mapped;
-			if( ORB_CHECK_HRESULT( d3d11.device_context->Map( details.buffer.ptr_, 0, D3D11_MAP_WRITE, 0, &mapped ) ) )
+			if( ORB_CHECK_HRESULT( d3d11.device_context->Map( details.buffer.ptr_, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped ) ) )
 				return mapped.pData;
 
 			return nullptr;
