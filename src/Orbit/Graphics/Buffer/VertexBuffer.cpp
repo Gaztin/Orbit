@@ -252,8 +252,6 @@ void VertexBuffer::Unmap( void )
 
 		case( unique_index_v< Private::_VertexBufferDetailsOpenGL, Private::VertexBufferDetails > ):
 		{
-			auto& details = std::get< Private::_VertexBufferDetailsOpenGL >( details_ );
-
 			glUnmapBuffer( OpenGLBufferTarget::Array );
 			glBindBuffer( OpenGLBufferTarget::Array, 0 );
 
