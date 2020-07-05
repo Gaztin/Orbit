@@ -23,6 +23,7 @@
 #include "Orbit/Graphics/Shader/Shader.h"
 #include "Orbit/Math/Vector3.h"
 
+#include <chrono>
 #include <vector>
 
 ORB_NAMESPACE_BEGIN
@@ -34,8 +35,25 @@ class ORB_API_GRAPHICS DebugManager : public Singleton< DebugManager >
 {
 public:
 
-	using LineSegmentVector = std::vector< std::pair< Vector3, Vector3 > >;
-	using SphereVector      = std::vector< Vector3 >;
+	using Clock = std::chrono::steady_clock;
+
+	struct LineSegment
+	{
+		Vector3           start;
+		Vector3           end;
+
+		Clock::time_point death;
+	};
+
+	struct Sphere
+	{
+		Vector3           position;
+
+		Clock::time_point death;
+	};
+
+	using LineSegmentVector = std::vector< LineSegment >;
+	using SphereVector      = std::vector< Sphere >;
 
 public:
 
@@ -43,23 +61,19 @@ public:
 
 public:
 
-	void PushLineSegment( Vector3 start, Vector3 end );
-	void PushSphere     ( Vector3 center );
+	void PushLineSegment( Vector3 start, Vector3 end, double duration = 0.0 );
+	void PushSphere     ( Vector3 center, double duration = 0.0 );
 	void Render         ( IRenderer& renderer, const Matrix4& view_projection );
 	void Flush          ( void );
 
 private:
 
 	Shader            shader_;
-
 	LineSegmentVector line_segments_; // TODO: Use @LineSegment
 	SphereVector      spheres_;       // TODO: Use @Sphere
-
 	VertexBuffer      lines_vertex_buffer_;
 	VertexBuffer      spheres_vertex_buffer_;
-
 	ConstantBuffer    constant_buffer_;
-
 	GeometryData      sphere_geometry_;
 
 };

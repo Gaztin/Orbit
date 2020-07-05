@@ -23,6 +23,7 @@
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
 #include "Orbit/Math/Matrix4.h"
 #include "Orbit/Math/Vector4.h"
+#include "Orbit/Core/IO/Log.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -120,18 +121,31 @@ DebugManager::DebugManager( void )
 {
 }
 
-void DebugManager::PushLineSegment( Vector3 start, Vector3 end )
+void DebugManager::PushLineSegment( Vector3 start, Vector3 end, double duration )
 {
-	line_segments_.emplace_back( std::pair( std::move( start ), std::move( end ) ) );
+	LineSegment line_segment;
+	line_segment.start   = start;
+	line_segment.end     = end;
+	line_segment.death   = Clock::now();
+	line_segment.death  += std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
+
+	line_segments_.emplace_back( std::move( line_segment ) );
 }
 
-void DebugManager::PushSphere( Vector3 center )
+void DebugManager::PushSphere( Vector3 center, double duration )
 {
-	spheres_.emplace_back( std::move( center ) );
+	Sphere sphere;
+	sphere.position = center;
+	sphere.death    = Clock::now();
+	sphere.death   += std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
+
+	spheres_.emplace_back( std::move( sphere ) );
 }
 
 void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 {
+	auto now = Clock::now();
+
 	constant_buffer_.Update( &view_projection, sizeof( Matrix4 ) );
 
 	if( !line_segments_.empty() )
@@ -140,15 +154,15 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		DebugVertex* dst = static_cast< DebugVertex* >( lines_vertex_buffer_.Map() );
 
-		for( const auto& line_segment : line_segments_ )
+		for( const LineSegment& line_segment : line_segments_ )
 		{
 			const Color color( 1.0f, 0.0f, 0.0f );
 
-			dst->position = Vector4( line_segment.first,  1.0f );
+			dst->position = Vector4( line_segment.start,  1.0f );
 			dst->color    = color;
 			++dst;
 
-			dst->position = Vector4( line_segment.second, 1.0f );
+			dst->position = Vector4( line_segment.end, 1.0f );
 			dst->color    = color;
 			++dst;
 		}
@@ -171,7 +185,7 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		DebugVertex* dst = static_cast< DebugVertex* >( spheres_vertex_buffer_.Map() );
 
-		for( const Vector3& sphere : spheres_ )
+		for( const Sphere& sphere : spheres_ )
 		{
 			const Color color( 0.0f, 1.0f, 0.0f );
 
@@ -181,9 +195,9 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 				Vertex v2 = sphere_geometry_.GetVertex( face.indices[ 1 ] );
 				Vertex v3 = sphere_geometry_.GetVertex( face.indices[ 2 ] );
 
-				v1.position += Vector4( sphere, 0.0f );
-				v2.position += Vector4( sphere, 0.0f );
-				v3.position += Vector4( sphere, 0.0f );
+				v1.position += Vector4( sphere.position, 0.0f );
+				v2.position += Vector4( sphere.position, 0.0f );
+				v3.position += Vector4( sphere.position, 0.0f );
 
 				dst->position = v1.position;
 				dst->color    = color;
@@ -223,8 +237,23 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 void DebugManager::Flush( void )
 {
-	line_segments_.clear();
-	spheres_.clear();
+	auto now = Clock::now();
+
+	for( LineSegmentVector::iterator it = line_segments_.begin(); it != line_segments_.end(); )
+	{
+		auto time_left = ( it->death - now );
+
+		if( time_left < time_left.zero() ) it = line_segments_.erase( it );
+		else                               it++;
+	}
+
+	for( SphereVector::iterator it = spheres_.begin(); it != spheres_.end(); )
+	{
+		auto time_left = ( it->death - now );
+
+		if( time_left < time_left.zero() ) it = spheres_.erase( it );
+		else                               it++;
+	}
 }
 
 ORB_NAMESPACE_END

@@ -91,6 +91,10 @@ public:
 		{
 			Orbit::DebugManager::GetInstance().PushSphere( Orbit::Vector3( 0, 0, 5 ) );
 		}
+		if( Orbit::Input::GetKeyPressed( Orbit::Key::_3 ) )
+		{
+			Orbit::DebugManager::GetInstance().PushSphere( Orbit::Vector3( 5, 0, 0 ), 5.0 );
+		}
 
 		window_.PollEvents();
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
