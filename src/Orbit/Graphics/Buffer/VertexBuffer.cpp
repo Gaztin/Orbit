@@ -110,7 +110,10 @@ VertexBuffer::~VertexBuffer( void )
 void VertexBuffer::Update( const void* data, size_t count )
 {
 	if( data == nullptr && count < count_ )
+	{
+		count_ = count;
 		return;
+	}
 
 	count_ = count;
 
