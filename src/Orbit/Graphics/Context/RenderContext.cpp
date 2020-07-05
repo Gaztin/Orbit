@@ -447,9 +447,14 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			/* Create the render target */
 			{
+				D3D11_RENDER_TARGET_VIEW_DESC desc { };
+				desc.Format             = back_buffer_format;
+				desc.ViewDimension      = D3D11_RTV_DIMENSION_TEXTURE2D;
+				desc.Texture2D.MipSlice = 0;
+
 				ComPtr< ID3D11Texture2D > back_buffer;
 				details.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer.ptr_ ) );
-				details.device->CreateRenderTargetView( back_buffer.ptr_, NULL, &details.render_target_view.ptr_ );
+				details.device->CreateRenderTargetView( back_buffer.ptr_, &desc, &details.render_target_view.ptr_ );
 			}
 
 			/* Create the depth stencil */
