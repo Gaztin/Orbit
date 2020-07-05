@@ -47,6 +47,24 @@ public:
 
 public:
 
+	/** Enable this class to be sortable */
+	constexpr bool operator<( const BlendEquation& rhs ) const
+	{
+		return ( ( src_factor_color < rhs.src_factor_color ) ||
+		         ( src_factor_alpha < rhs.src_factor_alpha ) ||
+		         ( dst_factor_color < rhs.dst_factor_color ) ||
+		         ( dst_factor_alpha < rhs.dst_factor_alpha ) ||
+		         ( op_color < rhs.op_color )                 ||
+		         ( op_alpha < rhs.op_alpha )                 ||
+		         ( constant.r < rhs.constant.r )             ||
+		         ( constant.g < rhs.constant.g )             ||
+		         ( constant.b < rhs.constant.b )             ||
+		         ( constant.a < rhs.constant.a )
+		);
+	}
+
+public:
+
 	BlendFactor src_factor_color;
 	BlendFactor src_factor_alpha;
 	BlendFactor dst_factor_color;
