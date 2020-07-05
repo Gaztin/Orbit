@@ -125,6 +125,34 @@ enum class Topology
 	Triangles,
 };
 
+enum class BlendFactor
+{
+	Zero,
+	One,
+	SourceColor,
+	SourceAlpha,
+	DestinationColor,
+	DestinationAlpha,
+	ConstantColor,
+	ConstantAlpha,
+	SourceAlphaSaturate,
+	InvSourceColor,
+	InvDestinationColor,
+	InvSourceAlpha,
+	InvDestinationAlpha,
+	InvConstantColor,
+	InvConstantAlpha,
+};
+
+enum class BlendOp
+{
+	Add,
+	Subtract,
+	RevSubtract,
+	Min,
+	Max,
+};
+
 #if( ORB_HAS_D3D11 )
 constexpr GraphicsAPI default_graphics_api = GraphicsAPI::D3D11;
 #elif( ORB_HAS_OPENGL )
