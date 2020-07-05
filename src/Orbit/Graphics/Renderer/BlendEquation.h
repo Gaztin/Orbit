@@ -27,8 +27,8 @@ public:
 
 	constexpr BlendEquation( void )
 		: src_factor_color( BlendFactor::One )
-		, dst_factor_color( BlendFactor::Zero )
 		, src_factor_alpha( BlendFactor::One )
+		, dst_factor_color( BlendFactor::Zero )
 		, dst_factor_alpha( BlendFactor::Zero )
 		, op_color        ( BlendOp::Add )
 		, op_alpha        ( BlendOp::Add )
@@ -37,8 +37,8 @@ public:
 
 	constexpr BlendEquation( BlendFactor src_factor, BlendFactor dst_factor, BlendOp op )
 		: src_factor_color( src_factor )
-		, dst_factor_color( dst_factor )
 		, src_factor_alpha( src_factor )
+		, dst_factor_color( dst_factor )
 		, dst_factor_alpha( dst_factor )
 		, op_color        ( op )
 		, op_alpha        ( op )
@@ -48,8 +48,8 @@ public:
 public:
 
 	BlendFactor src_factor_color;
-	BlendFactor dst_factor_color;
 	BlendFactor src_factor_alpha;
+	BlendFactor dst_factor_color;
 	BlendFactor dst_factor_alpha;
 	BlendOp     op_color;
 	BlendOp     op_alpha;
