@@ -187,7 +187,8 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		for( const Sphere& sphere : spheres_ )
 		{
-			const Color color( 0.0f, 1.0f, 0.0f );
+			float time_left = std::chrono::duration_cast< std::chrono::duration< float > >( sphere.death - now ).count();
+			Color color     = Color( 0.0f, 1.0f, 0.0f, std::min( time_left, 1.0f ) * 0.5f );
 
 			for( Face face : sphere_geometry_.GetFaces() )
 			{
