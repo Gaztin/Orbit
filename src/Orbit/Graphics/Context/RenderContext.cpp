@@ -512,6 +512,17 @@ RenderContext::RenderContext( GraphicsAPI api )
 				details.device_context->RSSetState( details.rasterizer_state.ptr_ );
 			}
 
+			/* Create blend state for disabling blending */
+			{
+				D3D11_BLEND_DESC desc { };
+				desc.AlphaToCoverageEnable         = FALSE;
+				desc.IndependentBlendEnable        = FALSE;
+				desc.RenderTarget[ 0 ].BlendEnable = FALSE;
+
+				details.device->CreateBlendState( &desc, &details.disable_blending_blend_state.ptr_ );
+				details.device_context->OMSetBlendState( details.disable_blending_blend_state.ptr_, NULL, 0xFFFFFFFF );
+			}
+
 			/* Set default topology */
 			details.device_context->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
