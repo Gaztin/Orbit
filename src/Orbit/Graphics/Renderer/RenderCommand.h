@@ -17,7 +17,7 @@
 
 #pragma once
 #include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Graphics.h"
+#include "Orbit/Graphics/Renderer/BlendEquation.h"
 
 #include <map>
 #include <vector>
@@ -42,7 +42,10 @@ struct ORB_API_GRAPHICS RenderCommand
 	Ref< Shader >       shader;
 	Ref< FrameBuffer >  frame_buffer;
 
-	Topology topology = Topology::Triangles;
+	Topology      topology       = Topology::Triangles;
+	BlendEquation blend_equation = BlendFactor::One + BlendFactor::Zero;
+
+	bool blend_enabled = true;
 };
 
 ORB_NAMESPACE_END

@@ -371,12 +371,11 @@ RenderContext::RenderContext( GraphicsAPI api )
 			/* Load functions */
 			MakeCurrent();
 
+			// TODO: Expose these settings to RenderCommand
 			glEnable( GL_CULL_FACE );
 			glEnable( GL_DEPTH_TEST );
-			glEnable( GL_BLEND );
 			glCullFace( GL_BACK );
 			glFrontFace( GL_CW );
-			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
 			/* Create version */
 			details.version.Init();
@@ -511,24 +510,6 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 				details.device->CreateRasterizerState( &desc, &details.rasterizer_state.ptr_ );
 				details.device_context->RSSetState( details.rasterizer_state.ptr_ );
-			}
-
-			/* Create blend state */
-			{
-				D3D11_BLEND_DESC desc { };
-				desc.AlphaToCoverageEnable                   = false;
-				desc.IndependentBlendEnable                  = false;
-				desc.RenderTarget[ 0 ].BlendEnable           = true;
-				desc.RenderTarget[ 0 ].SrcBlend              = D3D11_BLEND_SRC_ALPHA;
-				desc.RenderTarget[ 0 ].DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
-				desc.RenderTarget[ 0 ].BlendOp               = D3D11_BLEND_OP_ADD;
-				desc.RenderTarget[ 0 ].SrcBlendAlpha         = D3D11_BLEND_SRC_ALPHA;
-				desc.RenderTarget[ 0 ].DestBlendAlpha        = D3D11_BLEND_INV_SRC_ALPHA;
-				desc.RenderTarget[ 0 ].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
-				desc.RenderTarget[ 0 ].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-				details.device->CreateBlendState( &desc, &details.blend_state.ptr_ );
-				details.device_context->OMSetBlendState( details.blend_state.ptr_, NULL, 0xFFFFFFFF );
 			}
 
 			/* Set default topology */
@@ -837,7 +818,6 @@ void RenderContext::SwapBuffers( void )
 			details.swap_chain->Present( 0, 0 );
 			details.device_context->OMSetDepthStencilState( details.depth_stencil_state.ptr_, 1 );
 			details.device_context->OMSetRenderTargets( 1, &details.render_target_view.ptr_, details.depth_stencil_view.ptr_ );
-			details.device_context->OMSetBlendState( details.blend_state.ptr_, NULL, 0xFFFFFFFF );
 
 			break;
 		}
