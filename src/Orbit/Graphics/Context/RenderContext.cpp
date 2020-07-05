@@ -371,8 +371,10 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			glEnable( GL_CULL_FACE );
 			glEnable( GL_DEPTH_TEST );
+			glEnable( GL_BLEND );
 			glCullFace( GL_BACK );
 			glFrontFace( GL_CW );
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
 			/* Create version */
 			details.version.Init();
@@ -502,6 +504,31 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 				details.device->CreateRasterizerState( &desc, &details.rasterizer_state.ptr_ );
 				details.device_context->RSSetState( details.rasterizer_state.ptr_ );
+			}
+
+			/* Create blend state */
+			{
+				D3D11_BLEND_DESC desc { };
+				desc.AlphaToCoverageEnable  = true;
+				desc.IndependentBlendEnable = true;
+
+				for( D3D11_RENDER_TARGET_BLEND_DESC& render_target_desc : desc.RenderTarget )
+				{
+					render_target_desc.BlendEnable           = true;
+					render_target_desc.SrcBlend              = D3D11_BLEND_SRC_ALPHA;
+					render_target_desc.DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
+					render_target_desc.BlendOp               = D3D11_BLEND_OP_ADD;
+					render_target_desc.SrcBlendAlpha         = D3D11_BLEND_SRC_ALPHA;
+					render_target_desc.DestBlendAlpha        = D3D11_BLEND_INV_SRC_ALPHA;
+					render_target_desc.BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+					render_target_desc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+				}
+
+				details.device->CreateBlendState( &desc, &details.blend_state.ptr_ );
+
+				const FLOAT blend_factor[ 4 ] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+				details.device_context->OMSetBlendState( details.blend_state.ptr_, blend_factor, 0xFFFFFFFF );
 			}
 
 			/* Set default topology */

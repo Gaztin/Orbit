@@ -87,6 +87,7 @@ namespace Private
 		ComPtr< ID3D11DepthStencilState > depth_stencil_state;
 		ComPtr< ID3D11DepthStencilView >  depth_stencil_view;
 		ComPtr< ID3D11RasterizerState >   rasterizer_state;
+		ComPtr< ID3D11BlendState >        blend_state;
 		Color                             clear_color;
 	};
 
