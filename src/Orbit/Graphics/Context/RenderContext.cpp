@@ -516,26 +516,19 @@ RenderContext::RenderContext( GraphicsAPI api )
 			/* Create blend state */
 			{
 				D3D11_BLEND_DESC desc { };
-				desc.AlphaToCoverageEnable  = true;
-				desc.IndependentBlendEnable = true;
-
-				for( D3D11_RENDER_TARGET_BLEND_DESC& render_target_desc : desc.RenderTarget )
-				{
-					render_target_desc.BlendEnable           = true;
-					render_target_desc.SrcBlend              = D3D11_BLEND_SRC_ALPHA;
-					render_target_desc.DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
-					render_target_desc.BlendOp               = D3D11_BLEND_OP_ADD;
-					render_target_desc.SrcBlendAlpha         = D3D11_BLEND_SRC_ALPHA;
-					render_target_desc.DestBlendAlpha        = D3D11_BLEND_INV_SRC_ALPHA;
-					render_target_desc.BlendOpAlpha          = D3D11_BLEND_OP_ADD;
-					render_target_desc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-				}
+				desc.AlphaToCoverageEnable                   = false;
+				desc.IndependentBlendEnable                  = false;
+				desc.RenderTarget[ 0 ].BlendEnable           = true;
+				desc.RenderTarget[ 0 ].SrcBlend              = D3D11_BLEND_SRC_ALPHA;
+				desc.RenderTarget[ 0 ].DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
+				desc.RenderTarget[ 0 ].BlendOp               = D3D11_BLEND_OP_ADD;
+				desc.RenderTarget[ 0 ].SrcBlendAlpha         = D3D11_BLEND_SRC_ALPHA;
+				desc.RenderTarget[ 0 ].DestBlendAlpha        = D3D11_BLEND_INV_SRC_ALPHA;
+				desc.RenderTarget[ 0 ].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+				desc.RenderTarget[ 0 ].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
 				details.device->CreateBlendState( &desc, &details.blend_state.ptr_ );
-
-				const FLOAT blend_factor[ 4 ] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-				details.device_context->OMSetBlendState( details.blend_state.ptr_, blend_factor, 0xFFFFFFFF );
+				details.device_context->OMSetBlendState( details.blend_state.ptr_, NULL, 0xFFFFFFFF );
 			}
 
 			/* Set default topology */
@@ -842,8 +835,9 @@ void RenderContext::SwapBuffers( void )
 			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( details_ );
 
 			details.swap_chain->Present( 0, 0 );
+			details.device_context->OMSetDepthStencilState( details.depth_stencil_state.ptr_, 1 );
 			details.device_context->OMSetRenderTargets( 1, &details.render_target_view.ptr_, details.depth_stencil_view.ptr_ );
-
+			details.device_context->OMSetBlendState( details.blend_state.ptr_, NULL, 0xFFFFFFFF );
 
 			break;
 		}
