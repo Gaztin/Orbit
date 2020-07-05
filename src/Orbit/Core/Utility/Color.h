@@ -22,7 +22,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE Color
+class Color
 {
 public:
 
