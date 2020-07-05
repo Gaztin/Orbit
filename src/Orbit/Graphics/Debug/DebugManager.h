@@ -52,8 +52,8 @@ private:
 
 	Shader            shader_;
 
-	LineSegmentVector lines_;   // TODO: Use @LineSegment
-	SphereVector      spheres_; // TODO: Use @Sphere
+	LineSegmentVector line_segments_; // TODO: Use @LineSegment
+	SphereVector      spheres_;       // TODO: Use @Sphere
 
 	VertexBuffer      lines_vertex_buffer_;
 	VertexBuffer      spheres_vertex_buffer_;

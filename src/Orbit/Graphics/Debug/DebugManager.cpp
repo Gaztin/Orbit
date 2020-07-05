@@ -111,7 +111,7 @@ static VertexLayout vertex_layout
 
 DebugManager::DebugManager( void )
 	: shader_               ( shader_source, vertex_layout )
-	, lines_                { }
+	, line_segments_        { }
 	, spheres_              { }
 	, lines_vertex_buffer_  ( nullptr, 0, vertex_layout.GetStride(), false )
 	, spheres_vertex_buffer_( nullptr, 0, vertex_layout.GetStride(), false )
@@ -122,7 +122,7 @@ DebugManager::DebugManager( void )
 
 void DebugManager::PushLineSegment( Vector3 start, Vector3 end )
 {
-	lines_.emplace_back( std::pair( std::move( start ), std::move( end ) ) );
+	line_segments_.emplace_back( std::pair( std::move( start ), std::move( end ) ) );
 }
 
 void DebugManager::PushSphere( Vector3 center )
@@ -134,20 +134,23 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 {
 	constant_buffer_.Update( &view_projection, sizeof( Matrix4 ) );
 
-	if( !lines_.empty() )
+	if( !line_segments_.empty() )
 	{
-		lines_vertex_buffer_.Update( nullptr, lines_.size() * 2 );
+		lines_vertex_buffer_.Update( nullptr, line_segments_.size() * 2 );
 
 		DebugVertex* dst = static_cast< DebugVertex* >( lines_vertex_buffer_.Map() );
 
-		for( size_t i = 0; i < lines_.size(); ++i )
+		for( const auto& line_segment : line_segments_ )
 		{
 			const Color color( 1.0f, 0.0f, 0.0f );
 
-			dst[ i * 2 + 0 ].position = Vector4( lines_[ i ].first,  1.0f );
-			dst[ i * 2 + 0 ].color    = color;
-			dst[ i * 2 + 1 ].position = Vector4( lines_[ i ].second, 1.0f );
-			dst[ i * 2 + 1 ].color    = color;
+			dst->position = Vector4( line_segment.first,  1.0f );
+			dst->color    = color;
+			++dst;
+
+			dst->position = Vector4( line_segment.second, 1.0f );
+			dst->color    = color;
+			++dst;
 		}
 
 		lines_vertex_buffer_.Unmap();
@@ -168,37 +171,40 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		DebugVertex* dst = static_cast< DebugVertex* >( spheres_vertex_buffer_.Map() );
 
-		size_t i = 0;
 		for( const Vector3& sphere : spheres_ )
 		{
 			const Color color( 0.0f, 1.0f, 0.0f );
 
-			for( Face f : sphere_geometry_.GetFaces() )
+			for( Face face : sphere_geometry_.GetFaces() )
 			{
-				Vertex v1 = sphere_geometry_.GetVertex( f.indices[ 0 ] );
-				Vertex v2 = sphere_geometry_.GetVertex( f.indices[ 1 ] );
-				Vertex v3 = sphere_geometry_.GetVertex( f.indices[ 2 ] );
+				Vertex v1 = sphere_geometry_.GetVertex( face.indices[ 0 ] );
+				Vertex v2 = sphere_geometry_.GetVertex( face.indices[ 1 ] );
+				Vertex v3 = sphere_geometry_.GetVertex( face.indices[ 2 ] );
 
 				v1.position += Vector4( sphere, 0.0f );
 				v2.position += Vector4( sphere, 0.0f );
 				v3.position += Vector4( sphere, 0.0f );
 
-				dst[ i + 0 ].position = v1.position;
-				dst[ i + 0 ].color    = color;
-				dst[ i + 1 ].position = v2.position;
-				dst[ i + 1 ].color    = color;
+				dst->position = v1.position;
+				dst->color    = color;
+				++dst;
+				dst->position = v2.position;
+				dst->color    = color;
+				++dst;
 
-				dst[ i + 2 ].position = v1.position;
-				dst[ i + 2 ].color    = color;
-				dst[ i + 3 ].position = v3.position;
-				dst[ i + 3 ].color    = color;
+				dst->position = v1.position;
+				dst->color    = color;
+				++dst;
+				dst->position = v3.position;
+				dst->color    = color;
+				++dst;
 
-				dst[ i + 4 ].position = v2.position;
-				dst[ i + 4 ].color    = color;
-				dst[ i + 5 ].position = v3.position;
-				dst[ i + 5 ].color    = color;
-
-				i += 6;
+				dst->position = v2.position;
+				dst->color    = color;
+				++dst;
+				dst->position = v3.position;
+				dst->color    = color;
+				++dst;
 			}
 		}
 
@@ -217,7 +223,7 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 void DebugManager::Flush( void )
 {
-	lines_.clear();
+	line_segments_.clear();
 	spheres_.clear();
 }
 
