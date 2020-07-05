@@ -26,13 +26,26 @@ class ORB_API_CORE Color
 {
 public:
 
-	Color( void );
-	Color( float r, float g, float b, float a = 1.0f );
+	constexpr Color( void )
+		: r( 0.0f )
+		, g( 0.0f )
+		, b( 0.0f )
+		, a( 1.0f )
+	{
+	}
+
+	constexpr Color( float r, float g, float b, float a = 1.0f )
+		: r( r )
+		, g( g )
+		, b( b )
+		, a( a )
+	{
+	}
 
 public:
 
-	float&       operator[]( size_t i )       { return ( &r )[ i ]; }
-	const float& operator[]( size_t i ) const { return ( &r )[ i ]; }
+	constexpr float&       operator[]( size_t i )       { return ( &r )[ i ]; }
+	constexpr const float& operator[]( size_t i ) const { return ( &r )[ i ]; }
 
 public:
 
