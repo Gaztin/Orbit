@@ -34,6 +34,8 @@
 #  include <android/native_window.h>
 #endif // ORB_OS_ANDROID
 
+constexpr uint32_t back_buffer_count = 2;
+
 ORB_NAMESPACE_BEGIN
 
 RenderContext::RenderContext( GraphicsAPI api )
@@ -434,9 +436,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 				desc.SampleDesc.Count       = 1;
 				desc.SampleDesc.Quality     = 0;
 				desc.BufferUsage            = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-				desc.BufferCount            = 1;
+				desc.BufferCount            = back_buffer_count;
 				desc.Scaling                = DXGI_SCALING_STRETCH;
-				desc.SwapEffect             = DXGI_SWAP_EFFECT_DISCARD;
+				desc.SwapEffect             = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 				desc.AlphaMode              = DXGI_ALPHA_MODE_IGNORE;
 				desc.Flags                  = 0;
 
@@ -728,7 +730,7 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 				swap_chain_desc.Height = height;
 			}
 
-			details.swap_chain->ResizeBuffers( 1, swap_chain_desc.Width, swap_chain_desc.Height, swap_chain_desc.Format, swap_chain_desc.Flags );
+			details.swap_chain->ResizeBuffers( back_buffer_count, swap_chain_desc.Width, swap_chain_desc.Height, swap_chain_desc.Format, swap_chain_desc.Flags );
 
 			/* Recreate render target */
 			{
@@ -835,6 +837,8 @@ void RenderContext::SwapBuffers( void )
 			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( details_ );
 
 			details.swap_chain->Present( 0, 0 );
+			details.device_context->OMSetRenderTargets( 1, &details.render_target_view.ptr_, details.depth_stencil_view.ptr_ );
+
 
 			break;
 		}
