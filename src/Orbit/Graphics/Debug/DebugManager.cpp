@@ -126,8 +126,8 @@ void DebugManager::PushLineSegment( Vector3 start, Vector3 end, double duration 
 	LineSegment line_segment;
 	line_segment.start   = start;
 	line_segment.end     = end;
-	line_segment.death   = Clock::now();
-	line_segment.death  += std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
+	line_segment.birth   = Clock::now();
+	line_segment.death   = line_segment.birth + std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
 
 	line_segments_.emplace_back( std::move( line_segment ) );
 }
@@ -136,8 +136,8 @@ void DebugManager::PushSphere( Vector3 center, double duration )
 {
 	Sphere sphere;
 	sphere.position = center;
-	sphere.death    = Clock::now();
-	sphere.death   += std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
+	sphere.birth    = Clock::now();
+	sphere.death    = sphere.birth + std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
 
 	spheres_.emplace_back( std::move( sphere ) );
 }
@@ -156,7 +156,7 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		for( const LineSegment& line_segment : line_segments_ )
 		{
-			const Color color( 1.0f, 0.0f, 0.0f );
+			const Color color( 1.0f, 0.0f, 0.0f, CalcAlphaForObject( line_segment, now ) );
 
 			dst->position = Vector4( line_segment.start,  1.0f );
 			dst->color    = color;
@@ -187,8 +187,7 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		for( const Sphere& sphere : spheres_ )
 		{
-			float time_left = std::chrono::duration_cast< std::chrono::duration< float > >( sphere.death - now ).count();
-			Color color     = Color( 0.0f, 1.0f, 0.0f, std::min( time_left, 1.0f ) * 0.5f );
+			const Color color( 0.0f, 1.0f, 0.0f, CalcAlphaForObject( sphere, now ) );
 
 			for( Face face : sphere_geometry_.GetFaces() )
 			{
@@ -255,6 +254,18 @@ void DebugManager::Flush( void )
 		if( time_left < time_left.zero() ) it = spheres_.erase( it );
 		else                               it++;
 	}
+}
+
+float DebugManager::CalcAlphaForObject( const DebugObjectBase& object, Clock::time_point now )
+{
+	// Single-frame objects should always be visible
+	if( object.birth == object.death )
+		return 1.0f;
+
+	float time_alive        = std::chrono::duration_cast< std::chrono::duration< float > >( now - object.birth ).count();
+	float time_left_to_live = std::chrono::duration_cast< std::chrono::duration< float > >( object.death - now ).count();
+
+	return ( time_left_to_live / std::min( time_alive + time_left_to_live, 1.0f ) );
 }
 
 ORB_NAMESPACE_END

@@ -37,19 +37,22 @@ public:
 
 	using Clock = std::chrono::steady_clock;
 
-	struct LineSegment
+	struct DebugObjectBase
 	{
-		Vector3           start;
-		Vector3           end;
-
+		Clock::time_point birth;
 		Clock::time_point death;
 	};
 
-	struct Sphere
+	struct LineSegment : DebugObjectBase
 	{
-		Vector3           position;
+		Vector3 start;
+		Vector3 end;
 
-		Clock::time_point death;
+	};
+
+	struct Sphere : DebugObjectBase
+	{
+		Vector3 position;
 	};
 
 	using LineSegmentVector = std::vector< LineSegment >;
@@ -65,6 +68,10 @@ public:
 	void PushSphere     ( Vector3 center, double duration = 0.0 );
 	void Render         ( IRenderer& renderer, const Matrix4& view_projection );
 	void Flush          ( void );
+
+private:
+
+	float CalcAlphaForObject( const DebugObjectBase& object, Clock::time_point now );
 
 private:
 
