@@ -16,6 +16,7 @@
  */
 
 #pragma once
+#include "Orbit/Core/IO/Log.h"
 #include "Orbit/Core/Utility/StringLiteral.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLEnums.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"
@@ -54,19 +55,29 @@ public:
 			ptr_ = GetOpenGLProcAddress( SL::value );
 		}
 
-		// Reset error code to 0
-		while( glGetError() != GL_NO_ERROR );
-
-		if constexpr( std::is_void_v< R > )
+		if( ptr_ )
 		{
-			reinterpret_cast< Proc >( ptr_ )( args... );
-			HandleOpenGLError( glGetError(), SL::value );
+			// Reset error code to 0
+			while( glGetError() != GL_NO_ERROR );
+
+			if constexpr( std::is_void_v< R > )
+			{
+				reinterpret_cast< Proc >( ptr_ )( args... );
+				HandleOpenGLError( glGetError(), SL::value );
+			}
+			else
+			{
+				R res = reinterpret_cast< Proc >( ptr_ )( args... );
+				HandleOpenGLError( glGetError(), SL::value );
+				return res;
+			}
 		}
 		else
 		{
-			R res = reinterpret_cast< Proc >( ptr_ )( args... );
-			HandleOpenGLError( glGetError(), SL::value );
-			return res;
+			LogWarning( "Could not call GL function %s. Failed to load from drivers.", SL::value );
+
+			if constexpr( !std::is_void_v< R > )
+				return R{ };
 		}
 	}
 
