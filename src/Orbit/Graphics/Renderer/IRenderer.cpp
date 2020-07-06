@@ -209,7 +209,7 @@ void IRenderer::APIDraw( const RenderCommand& command )
 			}
 
 			if( command.index_buffer ) d3d11.device_context->DrawIndexed( static_cast< UINT >( command.index_buffer->GetCount() ), 0, 0 );
-			else                       d3d11.device_context->Draw( command.vertex_buffer->GetCount(), 0 );
+			else                       d3d11.device_context->Draw( static_cast< UINT >( command.vertex_buffer->GetCount() ), 0 );
 
 		} break;
 
@@ -274,7 +274,7 @@ void IRenderer::APIDraw( const RenderCommand& command )
 			}
 			else
 			{
-				glDrawArrays( draw_mode, 0, command.vertex_buffer->GetCount() );
+				glDrawArrays( draw_mode, 0, static_cast< GLsizei >( command.vertex_buffer->GetCount() ) );
 			}
 
 		} break;
