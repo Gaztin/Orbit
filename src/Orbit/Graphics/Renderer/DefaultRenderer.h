@@ -16,22 +16,19 @@
  */
 
 #pragma once
+#include "Orbit/Core/Utility/Singleton.h"
+#include "Orbit/Graphics/Renderer/IRenderer.h"
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
 
 #include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS BasicRenderer
+class ORB_API_GRAPHICS DefaultRenderer : public IRenderer, public Singleton< DefaultRenderer >
 {
 public:
 
-	void QueueCommand( const RenderCommand& command );
-	void Render      ( void );
-
-private:
-
-	std::vector< RenderCommand > commands_;
+	void Render( void ) override;
 
 };
 

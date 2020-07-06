@@ -16,62 +16,39 @@
  */
 
 #pragma once
-#include "Orbit/Core/Core.h"
+#include "Orbit/Graphics/Graphics.h"
 
-#include <cassert>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-template< typename Derived >
-class ManualSingleton
+struct RenderCommand;
+
+class ORB_API_GRAPHICS IRenderer
 {
 public:
 
-	static Derived& GetInstance( void )
-	{
-		assert( instance_ != nullptr );
-		return *instance_;
-	}
+	virtual ~IRenderer( void ) = default;
 
-	static Derived* GetInstancePtr( void )
-	{
-		return instance_;
-	}
+public:
+
+	void PushCommand( RenderCommand command );
+	void Flush      ( void );
+
+public:
+
+	virtual void Render( void ) = 0;
 
 protected:
 
-	ManualSingleton( void )
-	{
-		assert( instance_ == nullptr );
-		instance_ = static_cast< Derived* >( this );
-	}
+	void BindConstantBuffers  ( const RenderCommand& command );
+	void UnbindConstantBuffers( const RenderCommand& command );
+	void APIDraw              ( const RenderCommand& command );
 
-	~ManualSingleton( void )
-	{
-		assert( instance_ == this );
-		instance_ = nullptr;
-	}
+protected:
 
-private:
-
-	static Derived* instance_;
+	std::vector< RenderCommand > commands_;
 
 };
-
-template< typename Derived >
-class Singleton
-{
-public:
-
-	static Derived& GetInstance( void )
-	{
-		static Derived instance = { };
-		return instance;
-	}
-
-};
-
-template< typename Derived >
-Derived* ManualSingleton< Derived >::instance_ = nullptr;
 
 ORB_NAMESPACE_END

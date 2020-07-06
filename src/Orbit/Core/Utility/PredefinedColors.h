@@ -15,24 +15,18 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Color.h"
+#pragma once
+#include "Orbit/Core/Utility/Color.h"
 
 ORB_NAMESPACE_BEGIN
 
-Color::Color( void )
-	: r{ 0.0f }
-	, g{ 0.0f }
-	, b{ 0.0f }
-	, a{ 0.0f }
-{
-}
-
-Color::Color( float r, float g, float b, float a )
-	: r{ r }
-	, g{ g }
-	, b{ b }
-	, a{ a }
-{
-}
+constexpr Color Black     = Color( 0.0f, 0.0f, 0.0f );
+constexpr Color White     = Color( 1.0f, 1.0f, 1.0f );
+constexpr Color Red       = Color( 1.0f, 0.0f, 0.0f );
+constexpr Color Green     = Color( 0.0f, 1.0f, 0.0f );
+constexpr Color Blue      = Color( 0.0f, 0.0f, 1.0f );
+constexpr Color Yellow    = Color( 1.0f, 1.0f, 0.0f );
+constexpr Color Magenta   = Color( 1.0f, 0.0f, 1.0f );
+constexpr Color Turquoise = Color( 0.0f, 1.0f, 1.0f );
 
 ORB_NAMESPACE_END

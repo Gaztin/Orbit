@@ -30,7 +30,7 @@
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
-#include <Orbit/Graphics/Renderer/BasicRenderer.h>
+#include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Literals.h>
@@ -93,8 +93,8 @@ public:
 		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 		command.textures.emplace_back( texture_.GetTexture2D() );
 
-		renderer_.QueueCommand( command );
-		renderer_.Render();
+		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+		Orbit::DefaultRenderer::GetInstance().Render();
 
 		render_context_.SwapBuffers();
 	}
@@ -103,14 +103,13 @@ public:
 
 private:
 
-	Orbit::Window            window_;
-	Orbit::RenderContext     render_context_;
-	Orbit::Shader            shader_;
-	Orbit::Mesh              mesh_;
-	Orbit::ConstantBuffer    constant_buffer_;
-	Orbit::Texture           texture_;
-	Orbit::BasicRenderer     renderer_;
-	Orbit::Matrix4           model_matrix_;
+	Orbit::Window         window_;
+	Orbit::RenderContext  render_context_;
+	Orbit::Shader         shader_;
+	Orbit::Mesh           mesh_;
+	Orbit::ConstantBuffer constant_buffer_;
+	Orbit::Texture        texture_;
+	Orbit::Matrix4        model_matrix_;
 
 	Camera camera_;
 
