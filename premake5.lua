@@ -28,7 +28,8 @@ local function get_platforms()
 	elseif( os.host() == 'windows' ) then
 		return os.is64bit() and { 'x64', 'x86' } or { 'x86' }
 	else
-		return { os.outputof( 'uname -m' ) }
+		local arch = os.outputof( 'uname -m' )
+		return { arch }
 	end
 end
 
