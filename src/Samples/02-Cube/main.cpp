@@ -25,11 +25,9 @@
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Shape/CubeShape.h>
-#include <Orbit/Core/Utility/PredefinedColors.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Debug/DebugManager.h>
 #include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
@@ -83,20 +81,6 @@ public:
 			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 		}
 
-		// Debug rendering
-		if( Orbit::Input::GetKeyHeld( Orbit::Key::_1 ) )
-		{
-			Orbit::DebugManager::GetInstance().PushLineSegment( Orbit::Vector3( -5, 0, -5 ), Orbit::Vector3( 5, 0, 5 ), Orbit::Red );
-		}
-		if( Orbit::Input::GetKeyHeld( Orbit::Key::_2 ) )
-		{
-			Orbit::DebugManager::GetInstance().PushSphere( Orbit::Vector3( 0, 0, 5 ), Orbit::Blue );
-		}
-		if( Orbit::Input::GetKeyPressed( Orbit::Key::_3 ) )
-		{
-			Orbit::DebugManager::GetInstance().PushSphere( Orbit::Vector3( 5, 0, 0 ), Orbit::Turquoise, 2.0 );
-		}
-
 		window_.PollEvents();
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
@@ -110,17 +94,8 @@ public:
 		command.textures.emplace_back( texture_.GetTexture2D() );
 
 		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
-
-		// Generate debug render commands
-		Orbit::DebugManager::GetInstance().Render( Orbit::DefaultRenderer::GetInstance(), constant_data.view_projection );
-
-		// Render the scene
 		Orbit::DefaultRenderer::GetInstance().Render();
 
-		// Clear all the debug objects
-		Orbit::DebugManager::GetInstance().Flush();
-
-		// Present the back buffer
 		render_context_.SwapBuffers();
 	}
 
