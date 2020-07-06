@@ -198,7 +198,7 @@ void IRenderer::APIDraw( const RenderCommand& command )
 
 					ComPtr< ID3D11BlendState > blend_state;
 					d3d11.device->CreateBlendState( &desc, &blend_state.ptr_ );
-					d3d11.blend_states.try_emplace( d3d11.blend_states.end(), command.blend_equation, std::move( blend_state ) );
+					it = d3d11.blend_states.try_emplace( d3d11.blend_states.end(), command.blend_equation, std::move( blend_state ) );
 				}
 
 				d3d11.device_context->OMSetBlendState( it->second.ptr_, &command.blend_equation.constant[ 0 ], 0xFFFFFFFF );
