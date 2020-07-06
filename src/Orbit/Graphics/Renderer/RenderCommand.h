@@ -43,7 +43,7 @@ struct ORB_API_GRAPHICS RenderCommand
 	Ref< FrameBuffer >  frame_buffer;
 
 	Topology      topology       = Topology::Triangles;
-	BlendEquation blend_equation = BlendFactor::One + BlendFactor::Zero;
+	BlendEquation blend_equation = BlendFactor::SourceAlpha + BlendFactor::InvSourceAlpha;
 
 	bool blend_enabled = true;
 };
