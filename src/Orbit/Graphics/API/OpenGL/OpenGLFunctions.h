@@ -87,9 +87,10 @@ private:
 
 };
 
-inline void glGetBooleanv( OpenGLStateParam pname, GLboolean* params ) { return ::glGetBooleanv( static_cast< GLenum >( pname ), params ); }
-inline void glGetFloatv  ( OpenGLStateParam pname, GLfloat* params )   { return ::glGetFloatv(   static_cast< GLenum >( pname ), params ); }
-inline void glGetIntegerv( OpenGLStateParam pname, GLint* params )     { return ::glGetIntegerv( static_cast< GLenum >( pname ), params ); }
+inline void glGetBooleanv( OpenGLStateParam pname, GLboolean* params )            { return ::glGetBooleanv( static_cast< GLenum >( pname ), params ); }
+inline void glGetFloatv  ( OpenGLStateParam pname, GLfloat* params )              { return ::glGetFloatv(   static_cast< GLenum >( pname ), params ); }
+inline void glGetIntegerv( OpenGLStateParam pname, GLint* params )                { return ::glGetIntegerv( static_cast< GLenum >( pname ), params ); }
+inline void glBlendFunc  ( OpenGLBlendFactor sfactor, OpenGLBlendFactor dfactor ) { ::glBlendFunc( static_cast< GLenum >( sfactor ), static_cast< GLenum >( dfactor ) ); }
 
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glActiveTexture" ),            void( OpenGLTextureUnit texture ) >                                                                                                                     glActiveTexture;
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glAttachShader" ),             void( GLuint program, GLuint shader ) >                                                                                                                 glAttachShader;
@@ -104,7 +105,6 @@ inline OpenGLFunction< ORB_STRING_LITERAL_32( "glBindVertexArray" ),          vo
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glBindVertexBuffer" ),         void( GLuint bindingindex, GLuint buffer, GLintptr offset, GLintptr stride ) >                                                                          glBindVertexBuffer;
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glBlendEquation" ),            void( OpenGLBlendMode mode ) >                                                                                                                          glBlendEquation;
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glBlendEquationSeparate" ),    void( OpenGLBlendMode modeRGB, OpenGLBlendMode modeAlpha ) >                                                                                            glBlendEquationSeparate;
-inline OpenGLFunction< ORB_STRING_LITERAL_32( "glBlendFunc" ),                void( OpenGLBlendFactor sfactor, OpenGLBlendFactor dfactor ) >                                                                                          glBlendFunc;
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glBlendFuncSeparate" ),        void( OpenGLBlendFactor srcRGB, OpenGLBlendFactor dstRGB, OpenGLBlendFactor srcAlpha, OpenGLBlendFactor dstAlpha ) >                                    glBlendFuncSeparate;
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glBufferData" ),               void( OpenGLBufferTarget target, GLsizeiptr size, const GLvoid* data, OpenGLBufferUsage usage ) >                                                       glBufferData;
 inline OpenGLFunction< ORB_STRING_LITERAL_32( "glBufferSubData" ),            void( OpenGLBufferTarget target, GLintptr offset, GLsizeiptr size, const GLvoid* data ) >                                                               glBufferSubData;
