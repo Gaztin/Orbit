@@ -41,6 +41,7 @@ public:
 	{
 		Clock::time_point birth;
 		Clock::time_point death;
+		Color             color;
 	};
 
 	struct LineSegment : DebugObjectBase
@@ -64,8 +65,8 @@ public:
 
 public:
 
-	void PushLineSegment( Vector3 start, Vector3 end, double duration = 0.0 );
-	void PushSphere     ( Vector3 center, double duration = 0.0 );
+	void PushLineSegment( Vector3 start, Vector3 end, Color color, double duration = 0.0 );
+	void PushSphere     ( Vector3 center, Color color, double duration = 0.0 );
 	void Render         ( IRenderer& renderer, const Matrix4& view_projection );
 	void Flush          ( void );
 

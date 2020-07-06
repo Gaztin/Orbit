@@ -25,6 +25,7 @@
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Shape/CubeShape.h>
+#include <Orbit/Core/Utility/PredefinedColors.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
@@ -85,15 +86,15 @@ public:
 		// Debug rendering
 		if( Orbit::Input::GetKeyHeld( Orbit::Key::_1 ) )
 		{
-			Orbit::DebugManager::GetInstance().PushLineSegment( Orbit::Vector3( -5, 0, -5 ), Orbit::Vector3( 5, 0, 5 ) );
+			Orbit::DebugManager::GetInstance().PushLineSegment( Orbit::Vector3( -5, 0, -5 ), Orbit::Vector3( 5, 0, 5 ), Orbit::Red );
 		}
 		if( Orbit::Input::GetKeyHeld( Orbit::Key::_2 ) )
 		{
-			Orbit::DebugManager::GetInstance().PushSphere( Orbit::Vector3( 0, 0, 5 ) );
+			Orbit::DebugManager::GetInstance().PushSphere( Orbit::Vector3( 0, 0, 5 ), Orbit::Blue );
 		}
 		if( Orbit::Input::GetKeyPressed( Orbit::Key::_3 ) )
 		{
-			Orbit::DebugManager::GetInstance().PushSphere( Orbit::Vector3( 5, 0, 0 ), 5.0 );
+			Orbit::DebugManager::GetInstance().PushSphere( Orbit::Vector3( 5, 0, 0 ), Orbit::Turquoise, 2.0 );
 		}
 
 		window_.PollEvents();
