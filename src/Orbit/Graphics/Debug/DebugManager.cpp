@@ -117,7 +117,7 @@ DebugManager::DebugManager( void )
 	, lines_vertex_buffer_  ( nullptr, 0, vertex_layout.GetStride(), false )
 	, spheres_vertex_buffer_( nullptr, 0, vertex_layout.GetStride(), false )
 	, constant_buffer_      ( sizeof( Matrix4 ) )
-	, sphere_geometry_      ( MeshFactory::GetInstance().CreateGeometryFromShape( ShapeType::Sphere, vertex_layout ) )
+	, sphere_geometry_      ( MeshFactory::GetInstance().CreateGeometryFromShape( ShapeType::Sphere, vertex_layout, MeshFactory::DetailLevel::Low ) )
 {
 }
 
