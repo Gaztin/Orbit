@@ -330,23 +330,60 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 		auto find_adjoined_seam = [ & ]( Vector3 point )
 		{
-			for( auto adjoined_seam = all_seams.begin(); adjoined_seam != all_seams.end(); ++adjoined_seam )
+			for( auto it = all_seams.begin(); it != all_seams.end(); ++it )
 			{
-				if( ( adjoined_seam->start - point ).IsZero( 0.00001f ) )
+				if( ( it->start - point ).IsZero( 0.00001f ) )
 				{
-					sorted_seams.push_back( *adjoined_seam );
+					sorted_seams.push_back( *it );
 
-					return adjoined_seam;
+					return it;
 				}
-				else if( ( adjoined_seam->end - point ).IsZero( 0.00001f ) )
+				else if( ( it->end - point ).IsZero( 0.00001f ) )
 				{
-					sorted_seams.emplace_back( adjoined_seam->end, adjoined_seam->start );
+					sorted_seams.emplace_back( it->end, it->start );
 
-					return adjoined_seam;
+					return it;
 				}
 			}
 
 			return all_seams.end();
+		};
+
+		auto find_nearest_seam = [ & ]( Vector3 point )
+		{
+			auto        nearest_seam             = all_seams.end();
+			float       nearest_squared_distance = std::numeric_limits< float >::max();
+			LineSegment seam_to_be_added;
+
+			for( auto it = all_seams.begin(); it != all_seams.end(); ++it )
+			{
+				const float squared_distance_to_start = ( it->start - point ).DotProduct();
+				const float squared_distance_to_end   = ( it->end - point ).DotProduct();
+
+				if( squared_distance_to_start < nearest_squared_distance || squared_distance_to_end < nearest_squared_distance )
+				{
+					nearest_seam = it;
+
+					if( squared_distance_to_start < squared_distance_to_end )
+					{
+						seam_to_be_added         = LineSegment( it->start, it->end );
+						nearest_squared_distance = squared_distance_to_start;
+					}
+					else
+					{
+						seam_to_be_added         = LineSegment( it->end, it->start );
+						nearest_squared_distance = squared_distance_to_end;
+					}
+				}
+			}
+
+			if( nearest_seam != all_seams.end() )
+			{
+				sorted_seams.emplace_back( point, seam_to_be_added.start );
+				sorted_seams.emplace_back( std::move( seam_to_be_added ) );
+			}
+
+			return nearest_seam;
 		};
 
 		while( !all_seams.empty() )
@@ -356,6 +393,8 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 			// Find adjoined seam
 			if( auto it = find_adjoined_seam( primary_seam.end ); it != all_seams.end() )
 				all_seams.erase( it );
+			else if( auto it2 = find_nearest_seam( primary_seam.end ); it2 != all_seams.end() )
+				all_seams.erase( it2 );
 			else
 				break;
 		}
@@ -369,7 +408,8 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 		const bool                hull_is_clockwise_around_plane = hull_triangle.IsClockwiseAround( plane.normal );
 		std::vector< Triangle3D > triangles;
 
-		while( sorted_seams.size() > 1 )
+		// #FIXME: 2 is temporary
+		while( sorted_seams.size() > 2 )
 		{
 			for( size_t i = 1; i < sorted_seams.size(); ++i )
 			{
