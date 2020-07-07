@@ -323,44 +323,101 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 //////////////////////////////////////////////////////////////////////////
 
-		std::vector< std::pair< LineSegment, LineSegment > > seam_pairs;
+		std::vector< LineSegment > sorted_seams;
+		sorted_seams.push_back( all_seams.front() );
+		all_seams.erase( all_seams.begin() );
 
-		for( auto i = all_seams.begin(); i != all_seams.end(); )
+		auto find_adjoined_seam = [ & ]( Vector3 point )
 		{
-			bool did_remove = false;
-
-			for( auto j = i + 1; j != all_seams.end(); )
+			for( auto adjoined_seam = all_seams.begin(); adjoined_seam != all_seams.end(); ++adjoined_seam )
 			{
-				if( ( i->end   - j->start ).DotProduct() < FLT_EPSILON ||
-				    ( i->start - j->start ).DotProduct() < FLT_EPSILON ||
-				    ( i->end   - j->end   ).DotProduct() < FLT_EPSILON )
+				if( adjoined_seam->start == point )
 				{
-					seam_pairs.emplace_back( *i, *j );
+					sorted_seams.push_back( *adjoined_seam );
 
-					// Don't iterate either 'i' or 'j' again
-					i = all_seams.erase( i );
-					j = all_seams.end();
-					did_remove = true;
+					return adjoined_seam;
 				}
-				else
+				else if( adjoined_seam->end == point )
 				{
-					++j;
+					sorted_seams.emplace_back( adjoined_seam->end, adjoined_seam->start );
+
+					return adjoined_seam;
 				}
 			}
 
-			if( !did_remove )
-				++i;
+			return all_seams.end();
+		};
+
+		while( !all_seams.empty() )
+		{
+			const LineSegment& primary_seam = sorted_seams.back();
+
+			// Find adjoined seam
+			if( auto it = find_adjoined_seam( primary_seam.end ); it != all_seams.end() )
+				all_seams.erase( it );
+			else
+				break;
 		}
 
-		for( size_t i = 0; i < seam_pairs.size(); ++i )
-		{
-			Face seam_face;
-			seam_face.indices[ 0 ] = geometry_positive.AddVertex( Vertex{ Vector4( seam_pairs[ i ].first.start, 1.0f ) } );
-			seam_face.indices[ 1 ] = geometry_positive.AddVertex( Vertex{ Vector4( seam_pairs[ i ].first.end,   1.0f ) } );
-			seam_face.indices[ 2 ] = geometry_positive.AddVertex( Vertex{ Vector4( seam_pairs[ i ].second.end,  1.0f ) } );
+//////////////////////////////////////////////////////////////////////////
 
-			size_t face_index = geometry_positive.AddFace( seam_face );
-			geometry_positive.FlipFaceTowards( face_index, -plane.normal );
+		struct Triangle
+		{
+			std::array< Vector3, 3 > points;
+		};
+
+		std::vector< Triangle > triangles;
+
+		while( sorted_seams.size() > 1 )
+		{
+			for( size_t i = 1; i < sorted_seams.size(); )
+			{
+				auto a = sorted_seams.begin() + i - 1;
+				auto b = sorted_seams.begin() + i;
+
+				bool can_make_triangle = true /* ... */;
+
+				if( can_make_triangle )
+				{
+					triangles.push_back( { a->start, a->end, b->end } );
+					sorted_seams.insert( b + 1, LineSegment( a->start, b->end ) );
+					sorted_seams.erase( a, b + 1 );
+
+					i += 1;
+				}
+				else
+				{
+					i += 2;
+				}
+			}
+		}
+
+//////////////////////////////////////////////////////////////////////////
+
+		for( const Triangle& triangle : triangles )
+		{
+			// Positive face
+			{
+				Face face;
+				face.indices[ 0 ] = geometry_positive.AddVertex( Vertex{ Vector4( triangle.points[ 0 ], 1.0f ) } );
+				face.indices[ 1 ] = geometry_positive.AddVertex( Vertex{ Vector4( triangle.points[ 1 ], 1.0f ) } );
+				face.indices[ 2 ] = geometry_positive.AddVertex( Vertex{ Vector4( triangle.points[ 2 ], 1.0f ) } );
+
+				size_t face_index = geometry_positive.AddFace( face );
+				geometry_positive.FlipFaceTowards( face_index, -plane.normal );
+			}
+
+			// Negative face
+			{
+				Face face;
+				face.indices[ 0 ] = geometry_negative.AddVertex( Vertex{ Vector4( triangle.points[ 0 ], 1.0f ) } );
+				face.indices[ 1 ] = geometry_negative.AddVertex( Vertex{ Vector4( triangle.points[ 2 ], 1.0f ) } );
+				face.indices[ 2 ] = geometry_negative.AddVertex( Vertex{ Vector4( triangle.points[ 1 ], 1.0f ) } );
+
+				size_t face_index = geometry_negative.AddFace( face );
+				geometry_negative.FlipFaceTowards( face_index, plane.normal );
+			}
+
 		}
 
 //////////////////////////////////////////////////////////////////////////
