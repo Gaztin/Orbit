@@ -61,9 +61,14 @@ public:
 
 	bool IsZero( void ) const
 	{
+		return IsZero( std::numeric_limits< float >::epsilon() );
+	}
+
+	bool IsZero( float epsilon ) const
+	{
 		for( size_t i = 0; i < Size; ++i )
 		{
-			if( std::fabs( ( *this )[ i ] ) >= std::numeric_limits< float >::epsilon() )
+			if( std::fabs( ( *this )[ i ] ) >= epsilon )
 				return false;
 		}
 
