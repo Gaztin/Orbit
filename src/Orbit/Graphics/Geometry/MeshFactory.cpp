@@ -29,9 +29,9 @@
 
 ORB_NAMESPACE_BEGIN
 
-GeometryData MeshFactory::CreateGeometryFromShape( ShapeType shape_type, const VertexLayout& vertex_layout, DetailLevel detail_level ) const
+Geometry MeshFactory::CreateGeometryFromShape( ShapeType shape_type, const VertexLayout& vertex_layout, DetailLevel detail_level ) const
 {
-	GeometryData geometry_data( vertex_layout );
+	Geometry geometry_data( vertex_layout );
 
 	switch( shape_type )
 	{
@@ -46,8 +46,8 @@ GeometryData MeshFactory::CreateGeometryFromShape( ShapeType shape_type, const V
 
 Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level ) const
 {
-	GeometryData geometry = CreateGeometryFromShape( shape.GetType(), vertex_layout, detail_level );
-	Mesh         mesh     = geometry.ToMesh();
+	Geometry geometry = CreateGeometryFromShape( shape.GetType(), vertex_layout, detail_level );
+	Mesh     mesh     = geometry.ToMesh( EvalShapeName( shape.GetType() ) );
 
 	switch( shape.GetType() )
 	{
@@ -142,7 +142,7 @@ void MeshFactory::GenerateCubeData( Geometry& geometry_data ) const
 	}
 }
 
-void MeshFactory::GenerateSphereData( GeometryData& geometry_data, DetailLevel detail_level ) const
+void MeshFactory::GenerateSphereData( Geometry& geometry, DetailLevel detail_level ) const
 {
 	/*
 	        .-.

@@ -21,8 +21,8 @@
 #include "Orbit/Graphics/Geometry/MeshFactory.h"
 #include "Orbit/Graphics/Renderer/DefaultRenderer.h"
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
-#include "Orbit/Math/Matrix4.h"
-#include "Orbit/Math/Vector4.h"
+#include "Orbit/Math/Matrix/Matrix4.h"
+#include "Orbit/Math/Vector/Vector4.h"
 #include "Orbit/Core/IO/Log.h"
 
 ORB_NAMESPACE_BEGIN

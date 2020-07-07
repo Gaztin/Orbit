@@ -48,6 +48,7 @@ public:
 
 public:
 
+	auto&  GetDetails  ( void )       { return details_; }
 	size_t GetCount    ( void ) const { return count_; }
 	size_t GetStride   ( void ) const { return stride_; }
 	size_t GetTotalSize( void ) const { return count_ * stride_; }
