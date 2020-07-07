@@ -147,7 +147,7 @@ public:
 
 		if( sliced_meshes_.empty() )
 		{
-			constant_data.model           = ( mesh_.transform * model_matrix_ );
+			constant_data.model           = ( mesh_.transform_ * model_matrix_ );
 			constant_data.model_inverse   = constant_data.model.Inverted();
 			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 
@@ -167,7 +167,7 @@ public:
 
 			for( int i = 0; i < sliced_meshes_.size(); ++i )
 			{
-				sliced_meshes_[ i ].transform.pos.x = std::sinf( play_time_ * Orbit::Pi * 0.5f ) * ( i == 0 ? -1 : 1 );
+				sliced_meshes_[ i ].transform_.pos.x = std::sinf( play_time_ * Orbit::Pi * 0.5f ) * ( i == 0 ? -1 : 1 );
 			}
 
 			Orbit::RenderCommand command;
@@ -177,7 +177,7 @@ public:
 
 			for( const Orbit::Mesh& mesh : sliced_meshes_ )
 			{
-				constant_data.model           = ( mesh.transform * model_matrix_ );
+				constant_data.model           = ( mesh.transform_ * model_matrix_ );
 				constant_data.model_inverse   = constant_data.model.Inverted();
 				constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 
