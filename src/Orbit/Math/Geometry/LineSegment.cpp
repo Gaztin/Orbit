@@ -30,6 +30,11 @@ Vector3 LineSegment::PointAt( float fraction ) const
 	 return ( start + ( ( end - start ) * fraction ) );
 }
 
+Vector3 LineSegment::Center( void ) const
+{
+	return PointAt( 0.5f );
+}
+
 Vector3 LineSegment::Direction( void ) const
 {
 	return ( end - start ).Normalized();

@@ -15,31 +15,22 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Math/Vector/Vector3.h"
+#include "Triangle3D.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_MATH LineSegment
+Triangle3D::Triangle3D( Vector3 point_a, Vector3 point_b, Vector3 point_c )
+	: point_a_( point_a )
+	, point_b_( point_b )
+	, point_c_( point_c )
 {
-public:
+}
 
-	LineSegment( void ) = default;
-	LineSegment( const Vector3& start, const Vector3& end );
+bool Triangle3D::IsClockwiseAround( Vector3 axis ) const
+{
+	const Vector3 cross = ( point_b_ - point_a_ ).CrossProduct( point_c_ - point_b_ );
 
-public:
-
-	Vector3 PointAt      ( float fraction ) const;
-	Vector3 Center       ( void )           const;
-	Vector3 Direction    ( void )           const;
-	float   Length       ( void )           const;
-	float   LengthSquared( void )           const;
-
-public:
-
-	Vector3 start;
-	Vector3 end;
-
-};
+	return std::signbit( cross.DotProduct( axis ) );
+}
 
 ORB_NAMESPACE_END

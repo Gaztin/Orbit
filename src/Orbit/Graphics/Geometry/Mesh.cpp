@@ -361,6 +361,16 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 //////////////////////////////////////////////////////////////////////////
 
+		// Detect clockwise or anti-clockwise direction of seams
+		const LineSegment& hull_seam_a   = sorted_seams[ ( 0 * sorted_seams.size() ) / 3 ];
+		const LineSegment& hull_seam_b   = sorted_seams[ ( 1 * sorted_seams.size() ) / 3 ];
+		const LineSegment& hull_seam_c   = sorted_seams[ ( 2 * sorted_seams.size() ) / 3 ];
+		Triangle3D         hull_triangle = Triangle3D( hull_seam_a.Center(), hull_seam_b.Center(), hull_seam_c.Center() );
+
+		LogInfo( "%s", hull_triangle.IsClockwiseAround( plane.normal ) ? "Clockwise" : "Anti-clockwise" );
+
+//////////////////////////////////////////////////////////////////////////
+
 		struct Triangle
 		{
 			std::array< Vector3, 3 > points;
