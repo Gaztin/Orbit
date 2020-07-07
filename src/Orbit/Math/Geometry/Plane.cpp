@@ -17,6 +17,8 @@
 
 #include "Plane.h"
 
+#include <limits>
+
 ORB_NAMESPACE_BEGIN
 
 Plane::Plane( void )
@@ -41,7 +43,7 @@ Plane::PlaneIntersectionResult Plane::Intersect( const Plane& other ) const
 	const Vector3 orthogonal = normal.CrossProduct( other.normal );
 
 	// Are planes parallel?
-	if( orthogonal.x == 0.0f && orthogonal.y == 0.0f && orthogonal.z == 0.0f )
+	if( orthogonal.IsZero() )
 	{
 		// Check if planes are the same
 		if( displacement == other.displacement )
