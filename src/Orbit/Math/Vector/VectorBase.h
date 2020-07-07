@@ -54,7 +54,7 @@ public:
 		return sqrtf( DotProduct() );
 	}
 
-	Derived Normalized( void )
+	Derived Normalized( void ) const
 	{
 		return ( *this / Length() );
 	}
