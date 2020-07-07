@@ -26,9 +26,11 @@
 #include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Shape/CubeShape.h>
 #include <Orbit/Core/Shape/SphereShape.h>
+#include <Orbit/Core/Utility/PredefinedColors.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
+#include <Orbit/Graphics/Debug/DebugManager.h>
 #include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
@@ -115,6 +117,19 @@ public:
 			play_time_ = 0.0f;
 		}
 
+		// Draw lines to show where plane is
+		{
+			constexpr float scale = 1.5f;
+
+			Orbit::Matrix4 plane_matrix;
+			plane_matrix.Rotate( plane_rotation_ );
+
+			Orbit::DebugManager::GetInstance().PushLineSegment( scale * ( -plane_matrix.right + -plane_matrix.forward ), scale * ( -plane_matrix.right +  plane_matrix.forward ), Orbit::Magenta );
+			Orbit::DebugManager::GetInstance().PushLineSegment( scale * ( -plane_matrix.right +  plane_matrix.forward ), scale * (  plane_matrix.right +  plane_matrix.forward ), Orbit::Magenta );
+			Orbit::DebugManager::GetInstance().PushLineSegment( scale * (  plane_matrix.right +  plane_matrix.forward ), scale * (  plane_matrix.right + -plane_matrix.forward ), Orbit::Magenta );
+			Orbit::DebugManager::GetInstance().PushLineSegment( scale * (  plane_matrix.right + -plane_matrix.forward ), scale * ( -plane_matrix.right + -plane_matrix.forward ), Orbit::Magenta );
+		}
+
 		// Press 'R' to reset
 		if( Orbit::Input::GetKeyPressed( Orbit::Key::R ) )
 		{
@@ -174,6 +189,9 @@ public:
 				Orbit::DefaultRenderer::GetInstance().Render();
 			}
 		}
+
+		Orbit::DebugManager::GetInstance().Render( Orbit::DefaultRenderer::GetInstance(), constant_data.view_projection );
+		Orbit::DebugManager::GetInstance().Flush();
 
 		render_context_.SwapBuffers();
 	}
