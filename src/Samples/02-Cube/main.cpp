@@ -29,6 +29,7 @@
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
+#include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
@@ -169,7 +170,7 @@ public:
 				command.vertex_buffer = mesh.GetVertexBuffer();
 				command.index_buffer  = mesh.GetIndexBuffer();
 				
-				Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+				Orbit::DefaultRenderer::GetInstance().PushCommand( command );
 				Orbit::DefaultRenderer::GetInstance().Render();
 			}
 		}

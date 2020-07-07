@@ -19,9 +19,9 @@
 #include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Graphics/Buffer/ConstantBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Geometry/GeometryData.h"
+#include "Orbit/Graphics/Geometry/Geometry.h"
 #include "Orbit/Graphics/Shader/Shader.h"
-#include "Orbit/Math/Vector3.h"
+#include "Orbit/Math/Vector/Vector3.h"
 
 #include <chrono>
 #include <vector>
@@ -82,7 +82,7 @@ private:
 	VertexBuffer      lines_vertex_buffer_;
 	VertexBuffer      spheres_vertex_buffer_;
 	ConstantBuffer    constant_buffer_;
-	GeometryData      sphere_geometry_;
+	Geometry          sphere_geometry_;
 
 };
 

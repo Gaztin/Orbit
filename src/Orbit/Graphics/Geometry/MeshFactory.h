@@ -29,7 +29,6 @@ ORB_NAMESPACE_BEGIN
 class  Geometry;
 class  Mesh;
 class  VertexLayout;
-struct Mesh;
 
 class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >
 {
@@ -44,13 +43,14 @@ public:
 
 public:
 
-	GeometryData CreateGeometryFromShape( ShapeType shape_type, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
-	Mesh         CreateMeshFromShape    ( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
+	Geometry CreateGeometryFromShape( ShapeType shape_type, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
+	Mesh     CreateMeshFromShape    ( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
 
 private:
 
-	void GenerateCubeData  ( GeometryData& geometry_data ) const;
-	void GenerateSphereData( GeometryData& geometry_data, DetailLevel detail_level ) const;
+	std::string_view EvalShapeName     ( ShapeType type ) const;
+	void             GenerateCubeData  ( Geometry& geometry ) const;
+	void             GenerateSphereData( Geometry& geometry, DetailLevel detail_level ) const;
 
 };
 
