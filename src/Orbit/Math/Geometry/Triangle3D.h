@@ -25,17 +25,17 @@ class ORB_API_MATH Triangle3D
 public:
 
 	Triangle3D( void ) = default;
-	Triangle3D( Vector3 point_a, Vector3 point_b, Vector3 point_c );
+	Triangle3D( Vector3 a, Vector3 b, Vector3 c );
 
 public:
 
 	bool IsClockwiseAround( Vector3 axis ) const;
 
-private:
+public:
 
-	Vector3 point_a_;
-	Vector3 point_b_;
-	Vector3 point_c_;
+	Vector3 a_;
+	Vector3 b_;
+	Vector3 c_;
 
 };
 
