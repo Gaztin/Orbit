@@ -255,10 +255,10 @@ Vector4 Matrix4::operator*( const Vector4& rhs ) const
 {
 	Vector4 ret;
 
-	for( size_t row = 0; row < 4; ++row )
+	for( size_t col = 0; col < 4; ++col )
 	{
-		for( size_t col = 0; col < 4; ++col )
-			ret[ row ] += ( *this )( col, row ) * rhs[ col ];
+		for( size_t row = 0; row < 4; ++row )
+			ret[ col ] += ( *this )( col, row ) * rhs[ row ];
 	}
 
 	return ret;
