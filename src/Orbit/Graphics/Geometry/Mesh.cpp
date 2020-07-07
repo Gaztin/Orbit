@@ -331,13 +331,13 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 		{
 			for( auto adjoined_seam = all_seams.begin(); adjoined_seam != all_seams.end(); ++adjoined_seam )
 			{
-				if( adjoined_seam->start == point )
+				if( ( adjoined_seam->start - point ).IsZero( 0.00001f ) )
 				{
 					sorted_seams.push_back( *adjoined_seam );
 
 					return adjoined_seam;
 				}
-				else if( adjoined_seam->end == point )
+				else if( ( adjoined_seam->end - point ).IsZero( 0.00001f ) )
 				{
 					sorted_seams.emplace_back( adjoined_seam->end, adjoined_seam->start );
 
