@@ -20,25 +20,22 @@
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_MATH LineSegment
+class ORB_API_MATH Triangle3D
 {
 public:
 
-	LineSegment( void ) = default;
-	LineSegment( const Vector3& start, const Vector3& end );
+	Triangle3D( void ) = default;
+	Triangle3D( Vector3 point_a, Vector3 point_b, Vector3 point_c );
 
 public:
 
-	Vector3 PointAt      ( float fraction ) const;
-	Vector3 Center       ( void )           const;
-	Vector3 Direction    ( void )           const;
-	float   Length       ( void )           const;
-	float   LengthSquared( void )           const;
+	bool IsClockwiseAround( Vector3 axis ) const;
 
-public:
+private:
 
-	Vector3 start;
-	Vector3 end;
+	Vector3 point_a_;
+	Vector3 point_b_;
+	Vector3 point_c_;
 
 };
 
