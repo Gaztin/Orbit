@@ -21,7 +21,9 @@
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLVersion.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"
+#include "Orbit/Graphics/Renderer/BlendEquation.h"
 
+#include <map>
 #include <optional>
 #include <type_traits>
 #include <variant>
@@ -87,7 +89,11 @@ namespace Private
 		ComPtr< ID3D11DepthStencilState > depth_stencil_state;
 		ComPtr< ID3D11DepthStencilView >  depth_stencil_view;
 		ComPtr< ID3D11RasterizerState >   rasterizer_state;
-		Color                             clear_color;
+		ComPtr< ID3D11BlendState >        disable_blending_blend_state;
+
+		std::map< BlendEquation, ComPtr< ID3D11BlendState > > blend_states;
+
+		Color clear_color;
 	};
 
 #endif // ORB_HAS_D3D11

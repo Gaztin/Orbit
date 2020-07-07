@@ -24,7 +24,7 @@
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Renderer/BasicRenderer.h>
+#include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Vector/Vector2.h>
@@ -57,7 +57,7 @@ public:
 
 	SampleApp( void )
 		: window_       ( 800, 600 )
-		, shader_       ( triangle_shader )
+		, shader_       ( triangle_shader.Generate(), triangle_shader.GetVertexLayout() )
 		, vertex_buffer_( vertex_data )
 		, index_buffer_ ( index_data )
 		, texture_      ( Orbit::Asset( "textures/checkerboard.tga" ) )
@@ -78,9 +78,10 @@ public:
 		command.index_buffer  = index_buffer_;
 		command.shader        = shader_;
 		command.textures.emplace_back( texture_.GetTexture2D() );
-		renderer_.QueueCommand( command );
 
-		renderer_.Render();
+		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+		Orbit::DefaultRenderer::GetInstance().Render();
+
 		render_context_.SwapBuffers();
 	}
 
@@ -88,13 +89,12 @@ public:
 
 private:
 
-	Orbit::Window           window_;
-	Orbit::RenderContext    render_context_;
-	Orbit::Shader           shader_;
-	Orbit::VertexBuffer     vertex_buffer_;
-	Orbit::IndexBuffer      index_buffer_;
-	Orbit::Texture          texture_;
-	Orbit::BasicRenderer    renderer_;
-	float                   time_;
+	Orbit::Window        window_;
+	Orbit::RenderContext render_context_;
+	Orbit::Shader        shader_;
+	Orbit::VertexBuffer  vertex_buffer_;
+	Orbit::IndexBuffer   index_buffer_;
+	Orbit::Texture       texture_;
+	float                time_;
 
 };

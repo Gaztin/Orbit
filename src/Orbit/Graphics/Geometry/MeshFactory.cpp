@@ -29,20 +29,25 @@
 
 ORB_NAMESPACE_BEGIN
 
-Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout ) const
+GeometryData MeshFactory::CreateGeometryFromShape( ShapeType shape_type, const VertexLayout& vertex_layout, DetailLevel detail_level ) const
 {
-	const size_t vertex_stride = vertex_layout.GetStride();
-	Geometry     geometry_data( vertex_layout );
+	GeometryData geometry_data( vertex_layout );
 
-	switch( shape.GetType() )
+	switch( shape_type )
 	{
-		case ShapeType::Cube:   { GenerateCubeData( geometry_data ); } break;
-		case ShapeType::Sphere: { GenerateSphereData( geometry_data ); } break;
+		case ShapeType::Cube:   { GenerateCubeData( geometry_data );                 } break;
+		case ShapeType::Sphere: { GenerateSphereData( geometry_data, detail_level ); } break;
 	}
 
-//////////////////////////////////////////////////////////////////////////
+	geometry_data.GenerateNormals();
 
-	Mesh mesh = geometry_data.ToMesh( EvalShapeName( shape.GetType() ) );
+	return geometry_data;
+}
+
+Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level ) const
+{
+	GeometryData geometry = CreateGeometryFromShape( shape.GetType(), vertex_layout, detail_level );
+	Mesh         mesh     = geometry.ToMesh();
 
 	switch( shape.GetType() )
 	{
@@ -137,7 +142,7 @@ void MeshFactory::GenerateCubeData( Geometry& geometry_data ) const
 	}
 }
 
-void MeshFactory::GenerateSphereData( Geometry& geometry ) const
+void MeshFactory::GenerateSphereData( GeometryData& geometry_data, DetailLevel detail_level ) const
 {
 	/*
 	        .-.
@@ -215,7 +220,14 @@ void MeshFactory::GenerateSphereData( Geometry& geometry ) const
 
 //////////////////////////////////////////////////////////////////////////
 
-	constexpr size_t recursion_level = 2;
+	size_t recursion_level = 0;
+
+	switch( detail_level )
+	{
+		case DetailLevel::Low:    { recursion_level = 1; } break;
+		case DetailLevel::Medium: { recursion_level = 2; } break;
+		case DetailLevel::High:   { recursion_level = 3; } break;
+	}
 
 	auto get_middle_point = [ & ]( Geometry& new_geometry_data, size_t p1, size_t p2 )
 	{

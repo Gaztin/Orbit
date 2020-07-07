@@ -24,7 +24,7 @@
 #include <Orbit/Graphics/Buffer/FrameBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Model.h>
-#include <Orbit/Graphics/Renderer/BasicRenderer.h>
+#include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Math/Vector/Vector3.h>
 
@@ -57,8 +57,8 @@ public:
 
 	SampleApp( void )
 		: window_                       ( 800, 600 )
-		, scene_shader_                 ( scene_shader )
-		, post_fx_shader_               ( post_fx_shader )
+		, scene_shader_                 ( scene_shader.Generate(), scene_shader.GetVertexLayout() )
+		, post_fx_shader_               ( post_fx_shader.Generate(), post_fx_shader.GetVertexLayout() )
 		, model_                        ( Orbit::Asset( "models/bunny.obj" ), scene_shader.GetVertexLayout() )
 		, scene_vertex_constant_buffer_ ( sizeof( SceneVertexConstantData ) )
 		, post_fx_pixel_constant_buffer_( sizeof( PostFXPixelConstantData ) )
@@ -97,7 +97,7 @@ public:
 			command.frame_buffer  = frame_buffer_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( scene_vertex_constant_buffer_ );
 
-			renderer_.QueueCommand( command );
+			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
 		/* Render quad */
@@ -109,10 +109,11 @@ public:
 			command.textures.emplace_back( frame_buffer_.GetTexture2D() );
 			command.constant_buffers[ Orbit::ShaderType::Fragment ].emplace_back( post_fx_pixel_constant_buffer_ );
 
-			renderer_.QueueCommand( command );
+			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
-		renderer_.Render();
+		Orbit::DefaultRenderer::GetInstance().Render();
+
 		render_context_.SwapBuffers();
 	}
 
@@ -128,7 +129,6 @@ private:
 	Orbit::ConstantBuffer scene_vertex_constant_buffer_;
 	Orbit::ConstantBuffer post_fx_pixel_constant_buffer_;
 	Orbit::FrameBuffer    frame_buffer_;
-	Orbit::BasicRenderer  renderer_;
 	Orbit::Matrix4        model_matrix_;
 
 	Camera     camera_;

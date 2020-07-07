@@ -23,7 +23,7 @@
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Model.h>
-#include <Orbit/Graphics/Renderer/BasicRenderer.h>
+#include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Math/Vector/Vector3.h>
 
@@ -48,7 +48,7 @@ public:
 
 	SampleApp( void )
 		: window_         ( 800, 600 )
-		, shader_         ( animation_shader )
+		, shader_         ( animation_shader.Generate(), animation_shader.GetVertexLayout() )
 		, model_          ( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
 		, animation_      ( Orbit::Asset( "animations/jump.dae" ) )
 		, constant_buffer_( sizeof( ConstantData ) )
@@ -108,15 +108,15 @@ public:
 			command.shader        = shader_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 
-			renderer_.QueueCommand( command );
+			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
-		renderer_.Render();
+		Orbit::DefaultRenderer::GetInstance().Render();
 
 		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning() override { return window_.IsOpen(); }
+	bool IsRunning( void ) override { return window_.IsOpen(); }
 
 private:
 
@@ -126,7 +126,6 @@ private:
 	Orbit::Model          model_;
 	Orbit::Animation      animation_;
 	Orbit::ConstantBuffer constant_buffer_;
-	Orbit::BasicRenderer  renderer_;
 	Orbit::Matrix4        model_matrix_;
 
 	Camera camera_;

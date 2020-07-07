@@ -17,8 +17,8 @@
 
 #include "ModelShader.h"
 
-#include <Orbit/Graphics/Shader/Generator/Variables/Float.h>
-#include <Orbit/Graphics/Shader/Generator/Variables/Vec4.h>
+#include <Orbit/ShaderGen/Variables/Float.h>
+#include <Orbit/ShaderGen/Variables/Vec4.h>
 
 ModelShader::Vec4 ModelShader::VSMain( void )
 {

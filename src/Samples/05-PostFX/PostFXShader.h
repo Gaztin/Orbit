@@ -16,10 +16,10 @@
  */
 
 #pragma once
-#include <Orbit/Graphics/Shader/Generator/Variables/Vec4.h>
-#include <Orbit/Graphics/Shader/Generator/IGenerator.h>
+#include <Orbit/ShaderGen/Generator/IShader.h>
+#include <Orbit/ShaderGen/Variables/Vec4.h>
 
-class PostFXShader final : public Orbit::ShaderGen::IGenerator
+class PostFXShader final : public Orbit::ShaderGen::IShader
 {
 private:
 

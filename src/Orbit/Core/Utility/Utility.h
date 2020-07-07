@@ -116,4 +116,9 @@ std::string Format( const char* fmt, Args... args )
 	return res;
 }
 
+template< typename... Args >
+constexpr void Use( Args&&... )
+{
+}
+
 ORB_NAMESPACE_END

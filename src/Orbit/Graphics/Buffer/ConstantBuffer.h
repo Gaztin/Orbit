@@ -32,8 +32,11 @@ public:
 
 public:
 
-	void Bind  ( ShaderType type, uint32_t local_slot, uint32_t global_slot );
-	void Unbind( ShaderType type, uint32_t local_slot, uint32_t global_slot );
+	void Bind  ( ShaderType type, uint32_t local_slot, uint32_t global_slot ) const;
+	void Unbind( ShaderType type, uint32_t local_slot, uint32_t global_slot ) const;
+
+public:
+
 	void Update( const void* data, size_t size );
 
 private:

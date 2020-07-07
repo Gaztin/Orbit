@@ -200,8 +200,10 @@ namespace Input
 		return PointerIndices{ };
 	}
 
-	void SetFPSCursor( [[ maybe_unused ]] bool enable )
+	void SetFPSCursor( bool enable )
 	{
+		Use( enable );
+
 		fps_cursor.enabled = enable;
 
 	#if defined( ORB_OS_WINDOWS )

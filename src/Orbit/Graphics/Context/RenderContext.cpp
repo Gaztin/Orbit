@@ -34,6 +34,8 @@
 #  include <android/native_window.h>
 #endif // ORB_OS_ANDROID
 
+constexpr uint32_t back_buffer_count = 2;
+
 ORB_NAMESPACE_BEGIN
 
 RenderContext::RenderContext( GraphicsAPI api )
@@ -369,6 +371,7 @@ RenderContext::RenderContext( GraphicsAPI api )
 			/* Load functions */
 			MakeCurrent();
 
+			// TODO: Expose these settings to RenderCommand
 			glEnable( GL_CULL_FACE );
 			glEnable( GL_DEPTH_TEST );
 			glCullFace( GL_BACK );
@@ -432,9 +435,9 @@ RenderContext::RenderContext( GraphicsAPI api )
 				desc.SampleDesc.Count       = 1;
 				desc.SampleDesc.Quality     = 0;
 				desc.BufferUsage            = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-				desc.BufferCount            = 1;
+				desc.BufferCount            = back_buffer_count;
 				desc.Scaling                = DXGI_SCALING_STRETCH;
-				desc.SwapEffect             = DXGI_SWAP_EFFECT_DISCARD;
+				desc.SwapEffect             = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 				desc.AlphaMode              = DXGI_ALPHA_MODE_IGNORE;
 				desc.Flags                  = 0;
 
@@ -443,9 +446,14 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 			/* Create the render target */
 			{
+				D3D11_RENDER_TARGET_VIEW_DESC desc { };
+				desc.Format             = back_buffer_format;
+				desc.ViewDimension      = D3D11_RTV_DIMENSION_TEXTURE2D;
+				desc.Texture2D.MipSlice = 0;
+
 				ComPtr< ID3D11Texture2D > back_buffer;
 				details.swap_chain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), reinterpret_cast< void** >( &back_buffer.ptr_ ) );
-				details.device->CreateRenderTargetView( back_buffer.ptr_, NULL, &details.render_target_view.ptr_ );
+				details.device->CreateRenderTargetView( back_buffer.ptr_, &desc, &details.render_target_view.ptr_ );
 			}
 
 			/* Create the depth stencil */
@@ -502,6 +510,17 @@ RenderContext::RenderContext( GraphicsAPI api )
 
 				details.device->CreateRasterizerState( &desc, &details.rasterizer_state.ptr_ );
 				details.device_context->RSSetState( details.rasterizer_state.ptr_ );
+			}
+
+			/* Create blend state for disabling blending */
+			{
+				D3D11_BLEND_DESC desc { };
+				desc.AlphaToCoverageEnable         = FALSE;
+				desc.IndependentBlendEnable        = FALSE;
+				desc.RenderTarget[ 0 ].BlendEnable = FALSE;
+
+				details.device->CreateBlendState( &desc, &details.disable_blending_blend_state.ptr_ );
+				details.device_context->OMSetBlendState( details.disable_blending_blend_state.ptr_, NULL, 0xFFFFFFFF );
 			}
 
 			/* Set default topology */
@@ -701,7 +720,7 @@ void RenderContext::Resize( uint32_t width, uint32_t height )
 				swap_chain_desc.Height = height;
 			}
 
-			details.swap_chain->ResizeBuffers( 1, swap_chain_desc.Width, swap_chain_desc.Height, swap_chain_desc.Format, swap_chain_desc.Flags );
+			details.swap_chain->ResizeBuffers( back_buffer_count, swap_chain_desc.Width, swap_chain_desc.Height, swap_chain_desc.Format, swap_chain_desc.Flags );
 
 			/* Recreate render target */
 			{
@@ -808,6 +827,8 @@ void RenderContext::SwapBuffers( void )
 			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( details_ );
 
 			details.swap_chain->Present( 0, 0 );
+			details.device_context->OMSetDepthStencilState( details.depth_stencil_state.ptr_, 1 );
+			details.device_context->OMSetRenderTargets( 1, &details.render_target_view.ptr_, details.depth_stencil_view.ptr_ );
 
 			break;
 		}

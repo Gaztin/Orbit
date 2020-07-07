@@ -32,7 +32,7 @@ enum class VertexComponent : uint8_t
 	Weights,
 };
 
-struct IndexedVertexComponent
+struct ORB_API_GRAPHICS IndexedVertexComponent
 {
 	size_t            GetSize     ( void ) const;
 	size_t            GetDataCount( void ) const;

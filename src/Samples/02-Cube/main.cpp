@@ -30,8 +30,7 @@
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
-#include <Orbit/Graphics/Geometry/MeshFactory.h>
-#include <Orbit/Graphics/Renderer/BasicRenderer.h>
+#include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Geometry/Plane.h>
@@ -57,8 +56,8 @@ public:
 
 	SampleApp( void )
 		: window_         ( 800, 600 )
-		, shader_         ( cube_shader )
-		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::SphereShape( 1.0f ), cube_shader.GetVertexLayout() ) )
+		, shader_         ( cube_shader.Generate(), cube_shader.GetVertexLayout() )
+		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), cube_shader.GetVertexLayout() ) )
 		, constant_buffer_( sizeof( ConstantData ) )
 		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
 		, plane_rotation_ ( 0.0f, 0.0f, 0.5f * Orbit::Pi )
@@ -143,8 +142,9 @@ public:
 			command.shader        = shader_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 			command.textures.emplace_back( texture_.GetTexture2D() );
-			renderer_.QueueCommand( command );
-			renderer_.Render();
+			
+			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+			Orbit::DefaultRenderer::GetInstance().Render();
 		}
 		else
 		{
@@ -168,8 +168,9 @@ public:
 
 				command.vertex_buffer = mesh.GetVertexBuffer();
 				command.index_buffer  = mesh.GetIndexBuffer();
-				renderer_.QueueCommand( command );
-				renderer_.Render();
+				
+				Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+				Orbit::DefaultRenderer::GetInstance().Render();
 			}
 		}
 
@@ -180,14 +181,13 @@ public:
 
 private:
 
-	Orbit::Window            window_;
-	Orbit::RenderContext     render_context_;
-	Orbit::Shader            shader_;
-	Orbit::Mesh              mesh_;
-	Orbit::ConstantBuffer    constant_buffer_;
-	Orbit::Texture           texture_;
-	Orbit::BasicRenderer     renderer_;
-	Orbit::Matrix4           model_matrix_;
+	Orbit::Window         window_;
+	Orbit::RenderContext  render_context_;
+	Orbit::Shader         shader_;
+	Orbit::Mesh           mesh_;
+	Orbit::ConstantBuffer constant_buffer_;
+	Orbit::Texture        texture_;
+	Orbit::Matrix4        model_matrix_;
 
 	std::vector< Orbit::Mesh > sliced_meshes_;
 	Orbit::Vector3             plane_rotation_;

@@ -65,7 +65,7 @@ public:
 
 	static Derived& GetInstance( void )
 	{
-		static Derived instance{ };
+		static Derived instance = { };
 		return instance;
 	}
 
