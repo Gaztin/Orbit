@@ -19,6 +19,7 @@
 #include "Orbit/Math/Math.h"
 
 #include <cmath>
+#include <limits>
 #include <type_traits>
 
 ORB_NAMESPACE_BEGIN
@@ -56,6 +57,17 @@ public:
 	Derived Normalized( void )
 	{
 		return ( *this / Length() );
+	}
+
+	bool IsZero( void ) const
+	{
+		for( size_t i = 0; i < Size; ++i )
+		{
+			if( std::fabs( ( *this )[ i ] ) >= std::numeric_limits< float >::epsilon() )
+				return false;
+		}
+
+		return true;
 	}
 
 public:
@@ -161,28 +173,12 @@ public:
 
 	bool operator==( const VectorBase& rhs ) const
 	{
-		const Derived& self = Self();
-
-		for( size_t i = 0; i < Size; ++i )
-		{
-			if( self[ i ] != rhs[ i ] )
-				return false;
-		}
-
-		return true;
+		return ( *this - rhs ).IsZero();
 	}
 
 	bool operator!=( const VectorBase& rhs ) const
 	{
-		const Derived& self = Self();
-
-		for( size_t i = 0; i < Size; ++i )
-		{
-			if( self[ i ] != rhs[ i ] )
-				return true;
-		}
-
-		return false;
+		return !( *this - rhs ).IsZero();
 	}
 
 public:
