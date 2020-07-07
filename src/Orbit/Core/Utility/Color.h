@@ -49,6 +49,18 @@ public:
 
 public:
 
+	static Color Random( void )
+	{
+		Color color;
+		color.r = rand() / static_cast< float >( RAND_MAX );
+		color.g = rand() / static_cast< float >( RAND_MAX );
+		color.b = rand() / static_cast< float >( RAND_MAX );
+
+		return color;
+	}
+
+public:
+
 	float r;
 	float g;
 	float b;
