@@ -199,4 +199,11 @@ private:
 
 };
 
+// Enable scalar to be on left-hand side of operation
+template< typename Derived, size_t Size >
+inline Derived operator*( float scalar, const VectorBase< Derived, Size >& rhs )
+{
+	return rhs * scalar;
+}
+
 ORB_NAMESPACE_END
