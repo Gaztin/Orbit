@@ -28,7 +28,12 @@
 
 #include <cassert>
 
+// #FIXME: For debugging purposes
+#include "Orbit/Graphics/Debug/DebugManager.h"
+
 ORB_NAMESPACE_BEGIN
+
+constexpr double debug_duration = 15.0;
 
 Mesh::Mesh( std::string_view name )
 	: name_( name )
@@ -328,18 +333,24 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 		sorted_seams.push_back( all_seams.front() );
 		all_seams.erase( all_seams.begin() );
 
+		DebugManager::GetInstance().PushLineSegment( LineSegment( sorted_seams.front().start + plane.normal * 0.1f, sorted_seams.front().end + plane.normal * 0.1f ), Color( 0.0f, 1.0f, 0.0f ), debug_duration );
+
 		auto find_adjoined_seam = [ & ]( Vector3 point )
 		{
 			for( auto it = all_seams.begin(); it != all_seams.end(); ++it )
 			{
 				if( ( it->start - point ).IsZero( 0.00001f ) )
 				{
+					DebugManager::GetInstance().PushLineSegment( LineSegment( it->start + plane.normal * 0.1f, it->end + plane.normal * 0.1f ), Color( 0.0f, 1.0f, 0.0f ), debug_duration );
+
 					sorted_seams.push_back( *it );
 
 					return it;
 				}
 				else if( ( it->end - point ).IsZero( 0.00001f ) )
 				{
+					DebugManager::GetInstance().PushLineSegment( LineSegment( it->end + plane.normal * 0.1f, it->start + plane.normal * 0.1f ), Color( 0.0f, 1.0f, 0.0f ), debug_duration );
+
 					sorted_seams.emplace_back( it->end, it->start );
 
 					return it;
@@ -379,6 +390,9 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 			if( nearest_seam != all_seams.end() )
 			{
+				DebugManager::GetInstance().PushLineSegment( LineSegment( point                  + plane.normal * 0.1f, seam_to_be_added.start + plane.normal * 0.1f ), Color( 1.0f, 0.0f, 1.0f ), debug_duration );
+				DebugManager::GetInstance().PushLineSegment( LineSegment( seam_to_be_added.start + plane.normal * 0.1f, seam_to_be_added.end   + plane.normal * 0.1f ), Color( 1.0f, 0.0f, 1.0f ), debug_duration );
+
 				sorted_seams.emplace_back( point, seam_to_be_added.start );
 				sorted_seams.emplace_back( std::move( seam_to_be_added ) );
 			}
@@ -453,6 +467,9 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 				geometry_negative.FlipFaceTowards( face_index, plane.normal );
 			}
 
+			DebugManager::GetInstance().PushLineSegment( LineSegment( triangle.a_, triangle.b_ ), Color( 1.0f, 0.0f, 0.0f ), debug_duration );
+			DebugManager::GetInstance().PushLineSegment( LineSegment( triangle.b_, triangle.c_ ), Color( 1.0f, 0.0f, 0.0f ), debug_duration );
+			DebugManager::GetInstance().PushLineSegment( LineSegment( triangle.c_, triangle.a_ ), Color( 1.0f, 0.0f, 0.0f ), debug_duration );
 		}
 
 //////////////////////////////////////////////////////////////////////////
