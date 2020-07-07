@@ -161,12 +161,17 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 		for( auto face : geometry.GetFaces() )
 		{
-			const Vertex src_vertices[ 3 ]
+			Vertex src_vertices[ 3 ]
 			{
 				geometry.GetVertex( face.indices[ 0 ] ),
 				geometry.GetVertex( face.indices[ 1 ] ),
 				geometry.GetVertex( face.indices[ 2 ] ),
 			};
+
+			// Take transform into account when slicing
+			src_vertices[ 0 ].position = transform_ * src_vertices[ 0 ].position;
+			src_vertices[ 1 ].position = transform_ * src_vertices[ 1 ].position;
+			src_vertices[ 2 ].position = transform_ * src_vertices[ 2 ].position;
 
 			// Edges are in a specific sequence so that 'edges[x]' is the opposite edge of the corner 'src_verticies[x]'
 			const LineSegment edges[ 3 ]
@@ -362,15 +367,13 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 		if( geometry_positive.GetFaceCount() )
 		{
-			Mesh mesh_positive      = geometry_positive.ToMesh( name_ + " (splice, positive)" );
-			mesh_positive.transform = transform;
+			Mesh mesh_positive = geometry_positive.ToMesh( name_ + " (splice, positive)" );
 			meshes.emplace_back( std::move( mesh_positive ) );
 		}
 
 		if( geometry_negative.GetFaceCount() )
 		{
-			Mesh mesh_negative      = geometry_negative.ToMesh( name_ + " (splice, negative)" );
-			mesh_negative.transform = transform;
+			Mesh mesh_negative = geometry_negative.ToMesh( name_ + " (splice, negative)" );
 			meshes.emplace_back( std::move( mesh_negative ) );
 		}
 	}
