@@ -119,15 +119,14 @@ public:
 
 		// Draw lines to show where plane is
 		{
-			constexpr float scale = 1.5f;
-
 			Orbit::Matrix4 plane_matrix;
 			plane_matrix.Rotate( plane_rotation_ );
+			plane_matrix.Scale( Orbit::Vector3( 1.5f ) );
 
-			Orbit::DebugManager::GetInstance().PushLineSegment( scale * ( -plane_matrix.right + -plane_matrix.forward ), scale * ( -plane_matrix.right +  plane_matrix.forward ), Orbit::Magenta );
-			Orbit::DebugManager::GetInstance().PushLineSegment( scale * ( -plane_matrix.right +  plane_matrix.forward ), scale * (  plane_matrix.right +  plane_matrix.forward ), Orbit::Magenta );
-			Orbit::DebugManager::GetInstance().PushLineSegment( scale * (  plane_matrix.right +  plane_matrix.forward ), scale * (  plane_matrix.right + -plane_matrix.forward ), Orbit::Magenta );
-			Orbit::DebugManager::GetInstance().PushLineSegment( scale * (  plane_matrix.right + -plane_matrix.forward ), scale * ( -plane_matrix.right + -plane_matrix.forward ), Orbit::Magenta );
+			Orbit::DebugManager::GetInstance().PushLineSegment( Orbit::LineSegment( -plane_matrix.right + -plane_matrix.forward, -plane_matrix.right +  plane_matrix.forward ), Orbit::Magenta );
+			Orbit::DebugManager::GetInstance().PushLineSegment( Orbit::LineSegment( -plane_matrix.right +  plane_matrix.forward,  plane_matrix.right +  plane_matrix.forward ), Orbit::Magenta );
+			Orbit::DebugManager::GetInstance().PushLineSegment( Orbit::LineSegment(  plane_matrix.right +  plane_matrix.forward,  plane_matrix.right + -plane_matrix.forward ), Orbit::Magenta );
+			Orbit::DebugManager::GetInstance().PushLineSegment( Orbit::LineSegment(  plane_matrix.right + -plane_matrix.forward, -plane_matrix.right + -plane_matrix.forward ), Orbit::Magenta );
 		}
 
 		// Press 'R' to reset

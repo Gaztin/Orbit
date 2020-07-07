@@ -121,27 +121,26 @@ DebugManager::DebugManager( void )
 {
 }
 
-void DebugManager::PushLineSegment( Vector3 start, Vector3 end, Color color, double duration )
+void DebugManager::PushLineSegment( const LineSegment& line_segment, Color color, double duration )
 {
-	LineSegment line_segment;
-	line_segment.birth   = Clock::now();
-	line_segment.death   = line_segment.birth + std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
-	line_segment.color   = color;
-	line_segment.start   = start;
-	line_segment.end     = end;
+	DebugLineSegment obj;
+	obj.birth        = Clock::now();
+	obj.death        = obj.birth + std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
+	obj.color        = color;
+	obj.line_segment = line_segment;
 
-	line_segments_.emplace_back( std::move( line_segment ) );
+	line_segments_.emplace_back( std::move( obj ) );
 }
 
 void DebugManager::PushSphere( Vector3 center, Color color, double duration )
 {
-	Sphere sphere;
-	sphere.birth    = Clock::now();
-	sphere.death    = sphere.birth + std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
-	sphere.color    = color;
-	sphere.position = center;
+	DebugSphere obj;
+	obj.birth    = Clock::now();
+	obj.death    = obj.birth + std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
+	obj.color    = color;
+	obj.position = center;
 
-	spheres_.emplace_back( std::move( sphere ) );
+	spheres_.emplace_back( std::move( obj ) );
 }
 
 void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
@@ -156,16 +155,16 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		DebugVertex* dst = static_cast< DebugVertex* >( lines_vertex_buffer_.Map() );
 
-		for( const LineSegment& line_segment : line_segments_ )
+		for( const DebugLineSegment& obj : line_segments_ )
 		{
-			Color color   = line_segment.color;
-			color.a       = CalcAlphaForObject( line_segment, now );
+			Color color   = obj.color;
+			color.a       = CalcAlphaForObject( obj, now );
 
-			dst->position = Vector4( line_segment.start,  1.0f );
+			dst->position = Vector4( obj.line_segment.start,  1.0f );
 			dst->color    = color;
 			++dst;
 
-			dst->position = Vector4( line_segment.end, 1.0f );
+			dst->position = Vector4( obj.line_segment.end, 1.0f );
 			dst->color    = color;
 			++dst;
 		}
@@ -188,10 +187,10 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		DebugVertex* dst = static_cast< DebugVertex* >( spheres_vertex_buffer_.Map() );
 
-		for( const Sphere& sphere : spheres_ )
+		for( const DebugSphere& obj : spheres_ )
 		{
-			Color color = sphere.color;
-			color.a     = CalcAlphaForObject( sphere, now );
+			Color color = obj.color;
+			color.a     = CalcAlphaForObject( obj, now );
 
 			for( Face face : sphere_geometry_.GetFaces() )
 			{
@@ -199,9 +198,9 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 				Vertex v2 = sphere_geometry_.GetVertex( face.indices[ 1 ] );
 				Vertex v3 = sphere_geometry_.GetVertex( face.indices[ 2 ] );
 
-				v1.position += Vector4( sphere.position, 0.0f );
-				v2.position += Vector4( sphere.position, 0.0f );
-				v3.position += Vector4( sphere.position, 0.0f );
+				v1.position += Vector4( obj.position, 0.0f );
+				v2.position += Vector4( obj.position, 0.0f );
+				v3.position += Vector4( obj.position, 0.0f );
 
 				dst->position = v1.position;
 				dst->color    = color;

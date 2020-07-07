@@ -21,6 +21,7 @@
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Geometry/Geometry.h"
 #include "Orbit/Graphics/Shader/Shader.h"
+#include "Orbit/Math/Geometry/LineSegment.h"
 #include "Orbit/Math/Vector/Vector3.h"
 
 #include <chrono>
@@ -44,20 +45,18 @@ public:
 		Color             color;
 	};
 
-	struct LineSegment : DebugObjectBase
+	struct DebugLineSegment : DebugObjectBase
 	{
-		Vector3 start;
-		Vector3 end;
-
+		LineSegment line_segment;
 	};
 
-	struct Sphere : DebugObjectBase
+	struct DebugSphere : DebugObjectBase
 	{
 		Vector3 position;
 	};
 
-	using LineSegmentVector = std::vector< LineSegment >;
-	using SphereVector      = std::vector< Sphere >;
+	using LineSegmentVector = std::vector< DebugLineSegment >;
+	using SphereVector      = std::vector< DebugSphere >;
 
 public:
 
@@ -65,7 +64,7 @@ public:
 
 public:
 
-	void PushLineSegment( Vector3 start, Vector3 end, Color color, double duration = 0.0 );
+	void PushLineSegment( const LineSegment& line_segment, Color color, double duration = 0.0 );
 	void PushSphere     ( Vector3 center, Color color, double duration = 0.0 );
 	void Render         ( IRenderer& renderer, const Matrix4& view_projection );
 	void Flush          ( void );
@@ -77,8 +76,8 @@ private:
 private:
 
 	Shader            shader_;
-	LineSegmentVector line_segments_; // TODO: Use @LineSegment
-	SphereVector      spheres_;       // TODO: Use @Sphere
+	LineSegmentVector line_segments_;
+	SphereVector      spheres_;
 	VertexBuffer      lines_vertex_buffer_;
 	VertexBuffer      spheres_vertex_buffer_;
 	ConstantBuffer    constant_buffer_;
