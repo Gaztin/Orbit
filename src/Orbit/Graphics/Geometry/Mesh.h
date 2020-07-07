@@ -50,7 +50,7 @@ public:
 
 public:
 
-	Matrix4 transform;
+	Matrix4 transform_;
 
 private:
 

@@ -495,7 +495,7 @@ bool Model::ParseCollada( ByteSpan data, const VertexLayout& layout )
 				std::istringstream ss( node[ "matrix" ].content );
 
 				for( size_t e = 0; e < 16; ++e )
-					ss >> meshes_[ it->second ].transform[ e ];
+					ss >> meshes_[ it->second ].transform_[ e ];
 			}
 			else
 			{
