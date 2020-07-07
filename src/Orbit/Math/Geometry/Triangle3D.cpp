@@ -19,16 +19,16 @@
 
 ORB_NAMESPACE_BEGIN
 
-Triangle3D::Triangle3D( Vector3 point_a, Vector3 point_b, Vector3 point_c )
-	: point_a_( point_a )
-	, point_b_( point_b )
-	, point_c_( point_c )
+Triangle3D::Triangle3D( Vector3 a, Vector3 b, Vector3 c )
+	: a_( a )
+	, b_( b )
+	, c_( c )
 {
 }
 
 bool Triangle3D::IsClockwiseAround( Vector3 axis ) const
 {
-	const Vector3 cross = ( point_b_ - point_a_ ).CrossProduct( point_c_ - point_b_ );
+	const Vector3 cross = ( b_ - a_ ).CrossProduct( c_ - b_ );
 
 	return std::signbit( cross.DotProduct( axis ) );
 }

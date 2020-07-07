@@ -24,6 +24,7 @@
 #include "Orbit/Graphics/Geometry/Geometry.h"
 #include "Orbit/Math/Geometry/LineSegment.h"
 #include "Orbit/Math/Geometry/Plane.h"
+#include "Orbit/Math/Geometry/Triangle3D.h"
 
 #include <cassert>
 
@@ -181,7 +182,7 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 				LineSegment( Vector3( src_vertices[ 0 ].position ), Vector3( src_vertices[ 1 ].position ) ),
 			};
 
-			struct Triangle
+			struct VertexTriangle
 			{
 				Vertex vertices[ 3 ];
 			};
@@ -236,8 +237,8 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 //////////////////////////////////////////////////////////////////////////
 
-				Triangle secluded_triangle;
-				Triangle paired_triangles[ 2 ];
+				VertexTriangle secluded_triangle;
+				VertexTriangle paired_triangles[ 2 ];
 
 				secluded_triangle.vertices[ 0 ] = src_vertices[ secluded_vertex_index ];
 				secluded_triangle.vertices[ 1 ] = intersection_vertices[ ( secluded_vertex_index + 2 ) % 3 ];
@@ -361,57 +362,41 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 
 //////////////////////////////////////////////////////////////////////////
 
-		// Detect clockwise or anti-clockwise direction of seams
-		const LineSegment& hull_seam_a   = sorted_seams[ ( 0 * sorted_seams.size() ) / 3 ];
-		const LineSegment& hull_seam_b   = sorted_seams[ ( 1 * sorted_seams.size() ) / 3 ];
-		const LineSegment& hull_seam_c   = sorted_seams[ ( 2 * sorted_seams.size() ) / 3 ];
-		Triangle3D         hull_triangle = Triangle3D( hull_seam_a.Center(), hull_seam_b.Center(), hull_seam_c.Center() );
-
-		LogInfo( "%s", hull_triangle.IsClockwiseAround( plane.normal ) ? "Clockwise" : "Anti-clockwise" );
-
-//////////////////////////////////////////////////////////////////////////
-
-		struct Triangle
-		{
-			std::array< Vector3, 3 > points;
-		};
-
-		std::vector< Triangle > triangles;
+		const LineSegment&        hull_seam_a                    = sorted_seams[ ( 0 * sorted_seams.size() ) / 3 ];
+		const LineSegment&        hull_seam_b                    = sorted_seams[ ( 1 * sorted_seams.size() ) / 3 ];
+		const LineSegment&        hull_seam_c                    = sorted_seams[ ( 2 * sorted_seams.size() ) / 3 ];
+		const Triangle3D          hull_triangle                  = Triangle3D( hull_seam_a.Center(), hull_seam_b.Center(), hull_seam_c.Center() );
+		const bool                hull_is_clockwise_around_plane = hull_triangle.IsClockwiseAround( plane.normal );
+		std::vector< Triangle3D > triangles;
 
 		while( sorted_seams.size() > 1 )
 		{
-			for( size_t i = 1; i < sorted_seams.size(); )
+			for( size_t i = 1; i < sorted_seams.size(); ++i )
 			{
-				auto a = sorted_seams.begin() + i - 1;
-				auto b = sorted_seams.begin() + i;
-
-				bool can_make_triangle = true /* ... */;
+				auto       a                 = sorted_seams.begin() + i - 1;
+				auto       b                 = sorted_seams.begin() + i;
+				Triangle3D triangle          = Triangle3D( a->start, a->end, b->end );
+				bool       can_make_triangle = triangle.IsClockwiseAround( plane.normal ) == hull_is_clockwise_around_plane;
 
 				if( can_make_triangle )
 				{
-					triangles.push_back( { a->start, a->end, b->end } );
+					triangles.emplace_back( std::move( triangle ) );
 					sorted_seams.insert( b + 1, LineSegment( a->start, b->end ) );
 					sorted_seams.erase( a, b + 1 );
-
-					i += 1;
-				}
-				else
-				{
-					i += 2;
 				}
 			}
 		}
 
 //////////////////////////////////////////////////////////////////////////
 
-		for( const Triangle& triangle : triangles )
+		for( const Triangle3D& triangle : triangles )
 		{
 			// Positive face
 			{
 				Face face;
-				face.indices[ 0 ] = geometry_positive.AddVertex( Vertex{ Vector4( triangle.points[ 0 ], 1.0f ) } );
-				face.indices[ 1 ] = geometry_positive.AddVertex( Vertex{ Vector4( triangle.points[ 1 ], 1.0f ) } );
-				face.indices[ 2 ] = geometry_positive.AddVertex( Vertex{ Vector4( triangle.points[ 2 ], 1.0f ) } );
+				face.indices[ 0 ] = geometry_positive.AddVertex( Vertex{ Vector4( triangle.a_, 1.0f ) } );
+				face.indices[ 1 ] = geometry_positive.AddVertex( Vertex{ Vector4( triangle.b_, 1.0f ) } );
+				face.indices[ 2 ] = geometry_positive.AddVertex( Vertex{ Vector4( triangle.c_, 1.0f ) } );
 
 				size_t face_index = geometry_positive.AddFace( face );
 				geometry_positive.FlipFaceTowards( face_index, -plane.normal );
@@ -420,9 +405,9 @@ std::vector< Mesh > Mesh::Slice( const Plane& plane ) const
 			// Negative face
 			{
 				Face face;
-				face.indices[ 0 ] = geometry_negative.AddVertex( Vertex{ Vector4( triangle.points[ 0 ], 1.0f ) } );
-				face.indices[ 1 ] = geometry_negative.AddVertex( Vertex{ Vector4( triangle.points[ 2 ], 1.0f ) } );
-				face.indices[ 2 ] = geometry_negative.AddVertex( Vertex{ Vector4( triangle.points[ 1 ], 1.0f ) } );
+				face.indices[ 0 ] = geometry_negative.AddVertex( Vertex{ Vector4( triangle.a_, 1.0f ) } );
+				face.indices[ 1 ] = geometry_negative.AddVertex( Vertex{ Vector4( triangle.c_, 1.0f ) } );
+				face.indices[ 2 ] = geometry_negative.AddVertex( Vertex{ Vector4( triangle.b_, 1.0f ) } );
 
 				size_t face_index = geometry_negative.AddFace( face );
 				geometry_negative.FlipFaceTowards( face_index, plane.normal );
