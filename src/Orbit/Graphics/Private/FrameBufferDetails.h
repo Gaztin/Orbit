@@ -39,9 +39,7 @@ namespace Private
 
 	struct _FrameBufferDetailsD3D11
 	{
-		ComPtr< ID3D11Texture2D >          buffer;
-		ComPtr< ID3D11RenderTargetView >   render_target_view;
-		ComPtr< ID3D11ShaderResourceView > shader_resource_view;
+		ComPtr< ID3D11RenderTargetView > render_target_view;
 	};
 
 #endif // ORB_HAS_D3D11

@@ -38,7 +38,7 @@ namespace Private
 
 	struct _Texture2DDetailsD3D11
 	{
-		ComPtr< ID3D11Texture2D >          texture_2d;
+		ComPtr< ID3D11Texture2D >          texture2d;
 		ComPtr< ID3D11ShaderResourceView > shader_resource_view;
 	};
 

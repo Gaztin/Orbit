@@ -26,10 +26,6 @@ class ORB_API_GRAPHICS FrameBuffer
 {
 public:
 
-	using OpaqueTexture2D = std::aligned_storage_t< sizeof( Texture2D ), alignof( Texture2D ) >;
-
-public:
-
 	 FrameBuffer( void );
 	~FrameBuffer( void );
 
@@ -41,7 +37,7 @@ public:
 
 public:
 
-	Texture2D& GetTexture2D( void ) { return *reinterpret_cast< Texture2D* >( &opaque_texture_2d_ ); }
+	Texture2D& GetTexture2D( void ) { return texture2d_; }
 
 private:
 
@@ -49,8 +45,8 @@ private:
 
 private:
 
-	Private::FrameBufferDetails details_;
-	OpaqueTexture2D             opaque_texture_2d_;
+	Private::FrameBufferDetails framebuffer_details_;
+	Texture2D                   texture2d_;
 	EventSubscription           on_resize_;
 
 };

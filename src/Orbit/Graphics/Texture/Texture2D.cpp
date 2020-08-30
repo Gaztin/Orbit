@@ -50,6 +50,46 @@ static DXGI_FORMAT PixelFormatToDXGIFormat( PixelFormat pixel_format )
 
 #endif // ORB_HAS_D3D11
 
+Texture2D::Texture2D( void )
+{
+	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
+
+	switch( context_details.index() )
+	{
+		default: break;
+
+	#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_RenderContextDetailsOpenGL, Private::RenderContextDetails > ):
+		{
+			auto& details = details_.emplace< Private::_Texture2DDetailsOpenGL >();
+
+			glGenTextures( 1, &details.id );
+			glBindTexture( GL_TEXTURE_2D, details.id );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+			glBindTexture( GL_TEXTURE_2D, 0 );
+
+			break;
+		}
+
+	#endif // ORB_HAS_OPENGL
+	#if( ORB_HAS_D3D11 )
+
+		case( unique_index_v< Private::_RenderContextDetailsD3D11, Private::RenderContextDetails > ):
+		{
+			details_.emplace< Private::_Texture2DDetailsD3D11 >();
+
+			break;
+		}
+
+	#endif // ORB_HAS_D3D11
+
+	}
+}
+
 Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data, PixelFormat pixel_format )
 {
 	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
@@ -109,21 +149,21 @@ Texture2D::Texture2D( uint32_t width, uint32_t height, const void* data, PixelFo
 				initial_data.pSysMem     = data;
 				initial_data.SysMemPitch = width * 4;
 
-				ORB_CHECK_HRESULT( d3d11.device->CreateTexture2D( &texture2d_desc, &initial_data, &details.texture_2d.ptr_ ) );
+				ORB_CHECK_HRESULT( d3d11.device->CreateTexture2D( &texture2d_desc, &initial_data, &details.texture2d.ptr_ ) );
 			}
 			else
 			{
-				ORB_CHECK_HRESULT( d3d11.device->CreateTexture2D( &texture2d_desc, nullptr, &details.texture_2d.ptr_ ) );
+				ORB_CHECK_HRESULT( d3d11.device->CreateTexture2D( &texture2d_desc, nullptr, &details.texture2d.ptr_ ) );
 			}
 
-			if( details.texture_2d )
+			if( details.texture2d )
 			{
 				D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc { };
 				srv_desc.Format              = texture2d_desc.Format;
 				srv_desc.ViewDimension       = D3D11_SRV_DIMENSION_TEXTURE2D;
 				srv_desc.Texture2D.MipLevels = 1;
 
-				ORB_CHECK_HRESULT( d3d11.device->CreateShaderResourceView( details.texture_2d.ptr_, &srv_desc, &details.shader_resource_view.ptr_ ) );
+				ORB_CHECK_HRESULT( d3d11.device->CreateShaderResourceView( details.texture2d.ptr_, &srv_desc, &details.shader_resource_view.ptr_ ) );
 			}
 		}
 	#endif // ORB_HAS_D3D11
