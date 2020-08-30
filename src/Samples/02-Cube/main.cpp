@@ -76,7 +76,7 @@ public:
 			model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
 			constant_data.view_projection = camera_.GetViewProjection();
-			constant_data.model           = ( mesh_.transform * model_matrix_ );
+			constant_data.model           = ( mesh_.transform_ * model_matrix_ );
 			constant_data.model_inverse   = constant_data.model.Inverted();
 			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 		}
