@@ -15,43 +15,46 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Geometry/Face.h"
+#include "Vector3.h"
+
+#include "Orbit/Math/Vector/Vector4.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Geometry;
-
-class ORB_API_GRAPHICS FaceRange
+Vector3::Vector3( void )
+	: x{ 0.0f }
+	, y{ 0.0f }
+	, z{ 0.0f }
 {
-	ORB_DISABLE_COPY( FaceRange );
+}
 
-public:
+Vector3::Vector3( float scalar )
+	: x{ scalar }
+	, y{ scalar }
+	, z{ scalar }
+{
+}
 
-	struct Iterator
-	{
-		Iterator& operator++( void );
-		Face      operator* ( void )                  const;
-		bool      operator!=( const Iterator& other ) const;
+Vector3::Vector3( float x, float y, float z )
+	: x{ x }
+	, y{ y }
+	, z{ z }
+{
+}
 
-		const FaceRange* range;
+Vector3::Vector3( const Vector4& vec )
+	: x{ vec.x }
+	, y{ vec.y }
+	, z{ vec.z }
+{
+}
 
-		size_t           index;
-	};
-
-public:
-
-	explicit FaceRange( const Geometry* geometry );
-
-public:
-
-	Iterator begin( void ) const;
-	Iterator end  ( void ) const;
-
-private:
-
-	const Geometry* geometry_;
-
-};
+Vector3 Vector3::CrossProduct( const Vector3& v ) const
+{
+	return Vector3( ( y * v.z ) - ( z * v.y ),
+	                ( z * v.x ) - ( x * v.z ),
+	                ( x * v.y ) - ( y * v.x )
+	);
+}
 
 ORB_NAMESPACE_END

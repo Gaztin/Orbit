@@ -17,7 +17,7 @@
 
 #include "FaceRange.h"
 
-#include "Orbit/Graphics/Geometry/GeometryData.h"
+#include "Orbit/Graphics/Geometry/Geometry.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -38,7 +38,7 @@ bool FaceRange::Iterator::operator!=( const Iterator& other ) const
 	return ( ( range != other.range ) || ( index != other.index ) );
 }
 
-FaceRange::FaceRange( const GeometryData* geometry )
+FaceRange::FaceRange( const Geometry* geometry )
 	: geometry_( geometry )
 {
 }

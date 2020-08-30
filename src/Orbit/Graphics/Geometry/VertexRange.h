@@ -20,7 +20,7 @@
 
 ORB_NAMESPACE_BEGIN
 
-class GeometryData;
+class Geometry;
 
 class ORB_API_GRAPHICS VertexRange
 {
@@ -41,7 +41,7 @@ public:
 
 public:
 
-	explicit VertexRange( const GeometryData* geometry );
+	explicit VertexRange( const Geometry* geometry );
 
 public:
 
@@ -50,7 +50,7 @@ public:
 
 private:
 
-	const GeometryData* geometry_;
+	const Geometry* geometry_;
 
 };
 

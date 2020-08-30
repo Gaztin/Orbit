@@ -44,8 +44,14 @@ public:
 
 public:
 
-	IndexFormat GetFormat( void ) const { return format_; }
-	size_t      GetCount ( void ) const { return count_; }
+	size_t GetSize( void ) const;
+
+public:
+
+	Private::IndexBufferDetails&       GetDetails( void )       { return details_; }
+	const Private::IndexBufferDetails& GetDetails( void ) const { return details_; }
+	IndexFormat                        GetFormat ( void ) const { return format_; }
+	size_t                             GetCount  ( void ) const { return count_; }
 
 private:
 

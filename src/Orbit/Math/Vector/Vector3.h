@@ -16,33 +16,30 @@
  */
 
 #pragma once
-#include "Orbit/Math/VectorBase.h"
+#include "Orbit/Math/Vector/VectorBase.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Vector2;
-class Vector3;
+class Vector4;
 
-class ORB_API_MATH Vector4 final : public VectorBase< Vector4, 4 >
+class ORB_API_MATH Vector3 final : public VectorBase< Vector3, 3 >
 {
 public:
 
-	Vector4         ( void );
-	explicit Vector4( float scalar );
-	Vector4         ( const Vector3& xyz, float w );
-	Vector4         ( const Vector2& xy, const Vector2& zw );
-	Vector4         ( const Vector2& xy, float z, float w );
-	Vector4         ( float x, const Vector3& yzw );
-	Vector4         ( float x, const Vector2& yz, float w );
-	Vector4         ( float x, float y, const Vector2& zw );
-	Vector4         ( float x, float y, float z, float w );
+	Vector3         ( void );
+	explicit Vector3( float scalar );
+	Vector3         ( float x, float y, float z );
+	explicit Vector3( const Vector4& vec );
+
+public:
+
+	Vector3 CrossProduct( const Vector3& v ) const;
 
 public:
 
 	float x;
 	float y;
 	float z;
-	float w;
 
 };
 

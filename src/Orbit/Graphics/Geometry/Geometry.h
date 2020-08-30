@@ -16,6 +16,7 @@
  */
 
 #pragma once
+#include "Orbit/Core/Utility/Span.h"
 #include "Orbit/Graphics/Geometry/Face.h"
 #include "Orbit/Graphics/Geometry/FaceRange.h"
 #include "Orbit/Graphics/Geometry/Mesh.h"
@@ -30,37 +31,41 @@ ORB_NAMESPACE_BEGIN
 struct Face;
 struct Vertex;
 
-class ORB_API_GRAPHICS GeometryData
+class ORB_API_GRAPHICS Geometry
 {
-	ORB_DISABLE_COPY( GeometryData );
+	ORB_DISABLE_COPY( Geometry );
 
 public:
 
-	explicit GeometryData( const VertexLayout& vertex_layout );
-	GeometryData( GeometryData&& other );
+	explicit Geometry( const VertexLayout& vertex_layout );
+	         Geometry( Geometry&& other );
 
 public:
 
+	void   SetFromData    ( ByteSpan vertex_data );
+	void   SetFromData    ( ByteSpan vertex_data, ByteSpan face_data, IndexFormat index_format );
 	void   Reserve        ( size_t vertex_count, size_t face_count );
 	size_t AddFace        ( const Face& face );
 	size_t AddVertex      ( const Vertex& vertex );
+	void   SetFace        ( size_t index, const Face& face );
 	void   SetVertex      ( size_t index, const Vertex& vertex );
 	void   GenerateNormals( void );
+	void   FlipFaceTowards( size_t index, const Vector3& direction );
 
 public:
 
-	VertexLayout GetVertexLayout( void )         const { return vertex_layout_; }
-	size_t       GetVertexCount ( void )         const;
-	size_t       GetFaceCount   ( void )         const;
-	Vertex       GetVertex      ( size_t index ) const;
-	Face         GetFace        ( size_t index ) const;
-	FaceRange    GetFaces       ( void )         const;
-	VertexRange  GetVertices    ( void )         const;
-	Mesh         ToMesh         ( void )         const;
+	VertexLayout GetVertexLayout( void )                  const { return vertex_layout_; }
+	size_t       GetVertexCount ( void )                  const;
+	size_t       GetFaceCount   ( void )                  const;
+	Vertex       GetVertex      ( size_t index )          const;
+	Face         GetFace        ( size_t index )          const;
+	FaceRange    GetFaces       ( void )                  const;
+	VertexRange  GetVertices    ( void )                  const;
+	Mesh         ToMesh         ( std::string_view name ) const;
 
 public:
 
-	GeometryData& operator=( GeometryData&& other );
+	Geometry& operator=( Geometry&& other );
 
 private:
 

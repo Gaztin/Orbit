@@ -15,43 +15,22 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Geometry/Face.h"
+#include "Triangle3D.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Geometry;
-
-class ORB_API_GRAPHICS FaceRange
+Triangle3D::Triangle3D( Vector3 a, Vector3 b, Vector3 c )
+	: a_( a )
+	, b_( b )
+	, c_( c )
 {
-	ORB_DISABLE_COPY( FaceRange );
+}
 
-public:
+bool Triangle3D::IsClockwiseAround( Vector3 axis ) const
+{
+	const Vector3 cross = ( b_ - a_ ).CrossProduct( c_ - b_ );
 
-	struct Iterator
-	{
-		Iterator& operator++( void );
-		Face      operator* ( void )                  const;
-		bool      operator!=( const Iterator& other ) const;
-
-		const FaceRange* range;
-
-		size_t           index;
-	};
-
-public:
-
-	explicit FaceRange( const Geometry* geometry );
-
-public:
-
-	Iterator begin( void ) const;
-	Iterator end  ( void ) const;
-
-private:
-
-	const Geometry* geometry_;
-
-};
+	return std::signbit( cross.DotProduct( axis ) );
+}
 
 ORB_NAMESPACE_END

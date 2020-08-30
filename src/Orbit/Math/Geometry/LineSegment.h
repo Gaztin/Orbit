@@ -16,30 +16,29 @@
  */
 
 #pragma once
-#include "Orbit/Math/VectorBase.h"
+#include "Orbit/Math/Vector/Vector3.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Vector4;
-
-class ORB_API_MATH Vector3 final : public VectorBase< Vector3, 3 >
+class ORB_API_MATH LineSegment
 {
 public:
 
-	Vector3         ( void );
-	explicit Vector3( float scalar );
-	Vector3         ( float x, float y, float z );
-	explicit Vector3( const Vector4& vec );
+	LineSegment( void ) = default;
+	LineSegment( const Vector3& start, const Vector3& end );
 
 public:
 
-	Vector3 CrossProduct( const Vector3& v ) const;
+	Vector3 PointAt      ( float fraction ) const;
+	Vector3 Center       ( void )           const;
+	Vector3 Direction    ( void )           const;
+	float   Length       ( void )           const;
+	float   LengthSquared( void )           const;
 
 public:
 
-	float x;
-	float y;
-	float z;
+	Vector3 start;
+	Vector3 end;
 
 };
 

@@ -16,50 +16,34 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/Math/Matrix/Matrix4.h"
-
-#include <memory>
-#include <string_view>
-#include <string>
+#include "Orbit/Math/Vector/VectorBase.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Plane;
+class Vector2;
+class Vector3;
 
-class ORB_API_GRAPHICS Mesh
+class ORB_API_MATH Vector4 final : public VectorBase< Vector4, 4 >
 {
-	friend class Geometry;
+public:
+
+	Vector4         ( void );
+	explicit Vector4( float scalar );
+	Vector4         ( const Vector3& xyz, float w );
+	Vector4         ( const Vector2& xy, const Vector2& zw );
+	Vector4         ( const Vector2& xy, float z, float w );
+	Vector4         ( float x, const Vector3& yzw );
+	Vector4         ( float x, const Vector2& yz, float w );
+	Vector4         ( float x, float y, const Vector2& zw );
+	Vector4         ( float x, float y, float z, float w );
 
 public:
 
-	explicit Mesh( std::string_view name );
+	float x;
+	float y;
+	float z;
+	float w;
 
-public:
-
-	Geometry ToGeometry( void ) const;
-
-public:
-
-	std::string_view    GetName        ( void ) const { return name_; }
-	Ref< VertexBuffer > GetVertexBuffer( void ) const { return vertex_buffer_ ? Ref( *vertex_buffer_ ) : nullptr; }
-	Ref< IndexBuffer >  GetIndexBuffer ( void ) const { return index_buffer_  ? Ref( *index_buffer_  ) : nullptr; }
-
-public:
-
-	Matrix4 transform_;
-
-private:
-
-	VertexLayout                    vertex_layout_;
-
-	std::string                     name_;
-
-	std::unique_ptr< VertexBuffer > vertex_buffer_;
-	std::unique_ptr< IndexBuffer >  index_buffer_;
 };
 
 ORB_NAMESPACE_END

@@ -15,34 +15,24 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Vector2.h"
-
-#include "Orbit/Math/Vector3.h"
+#pragma once
+#include "Orbit/Math/Vector/Vector2.h"
+#include "Orbit/Math/Vector/Vector3.h"
 
 ORB_NAMESPACE_BEGIN
 
-Vector2::Vector2( void )
-	: x{ 0.0f }
-	, y{ 0.0f }
+class ORB_API_MATH Line
 {
-}
+public:
 
-Vector2::Vector2( float scalar )
-	: x{ scalar }
-	, y{ scalar }
-{
-}
+	Line( void );
+	Line( const Vector3& direction, const Vector2& displacement );
 
-Vector2::Vector2( float x, float y )
-	: x{ x }
-	, y{ y }
-{
-}
+public:
 
-Vector2::Vector2( const Vector3& vec )
-	: x{ vec.x }
-	, y{ vec.y }
-{
-}
+	Vector3 direction;
+	Vector2 displacement;
+
+};
 
 ORB_NAMESPACE_END

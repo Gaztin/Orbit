@@ -31,10 +31,10 @@
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Literals.h>
-#include <Orbit/Math/Matrix4.h>
-#include <Orbit/Math/Vector2.h>
-#include <Orbit/Math/Vector3.h>
-#include <Orbit/Math/Vector4.h>
+#include <Orbit/Math/Matrix/Matrix4.h>
+#include <Orbit/Math/Vector/Vector2.h>
+#include <Orbit/Math/Vector/Vector3.h>
+#include <Orbit/Math/Vector/Vector4.h>
 
 static ModelShader model_shader;
 
@@ -98,8 +98,8 @@ public:
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
-			command.vertex_buffer = *mesh.vertex_buffer;
-			command.index_buffer  = *mesh.index_buffer;
+			command.vertex_buffer = mesh.GetVertexBuffer();
+			command.index_buffer  = mesh.GetIndexBuffer();
 			command.shader        = shader_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex   ].emplace_back( vertex_constant_buffer_ );
 			command.constant_buffers[ Orbit::ShaderType::Fragment ].emplace_back( fragment_constant_buffer_ );

@@ -17,7 +17,7 @@
 
 #include "VertexRange.h"
 
-#include "Orbit/Graphics/Geometry/GeometryData.h"
+#include "Orbit/Graphics/Geometry/Geometry.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -38,7 +38,7 @@ bool VertexRange::Iterator::operator!=( const Iterator& other ) const
 	return ( ( range != other.range ) || ( index != other.index ) );
 }
 
-VertexRange::VertexRange( const GeometryData* geometry )
+VertexRange::VertexRange( const Geometry* geometry )
 	: geometry_( geometry )
 {
 }

@@ -15,27 +15,39 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Math/VectorBase.h"
+#include "LineSegment.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Vector3;
-
-class ORB_API_MATH Vector2 final : public VectorBase< Vector2, 2 >
+LineSegment::LineSegment( const Vector3& start, const Vector3& end )
+	: start( start )
+	, end  ( end )
 {
-public:
+}
 
-	Vector2         ( void );
-	explicit Vector2( float scalar );
-	Vector2         ( float x, float y );
-	explicit Vector2( const Vector3& vec );
+Vector3 LineSegment::PointAt( float fraction ) const
+{
+	 return ( start + ( ( end - start ) * fraction ) );
+}
 
-public:
+Vector3 LineSegment::Center( void ) const
+{
+	return PointAt( 0.5f );
+}
 
-	float x;
-	float y;
+Vector3 LineSegment::Direction( void ) const
+{
+	return ( end - start ).Normalized();
+}
 
-};
+float LineSegment::Length( void ) const
+{
+	return ( end - start ).Length();
+}
+
+float LineSegment::LengthSquared( void ) const
+{
+	return ( end - start ).DotProduct();
+}
 
 ORB_NAMESPACE_END

@@ -16,50 +16,39 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/Math/Matrix/Matrix4.h"
+#include "Orbit/Math/Geometry/Line.h"
+#include "Orbit/Math/Geometry/LineSegment.h"
 
-#include <memory>
-#include <string_view>
-#include <string>
+#include <variant>
 
 ORB_NAMESPACE_BEGIN
 
-class Plane;
-
-class ORB_API_GRAPHICS Mesh
+class ORB_API_MATH Plane
 {
-	friend class Geometry;
+public:
+
+	using PlaneIntersectionResult       = std::variant< Plane, Line >;
+	using LineIntersectionResult        = std::variant< Line, Vector3 >;
+	using LineSegmentIntersectionResult = std::variant< LineSegment, Vector3 >;
 
 public:
 
-	explicit Mesh( std::string_view name );
+	Plane( void );
+	Plane( const Vector3& normal, float displacement );
 
 public:
 
-	Geometry ToGeometry( void ) const;
+	Vector3                       Center   ( void )                            const;
+	PlaneIntersectionResult       Intersect( const Plane& other )              const;
+	LineIntersectionResult        Intersect( const Line& line )                const;
+	LineSegmentIntersectionResult Intersect( const LineSegment& line_segment ) const;
 
 public:
 
-	std::string_view    GetName        ( void ) const { return name_; }
-	Ref< VertexBuffer > GetVertexBuffer( void ) const { return vertex_buffer_ ? Ref( *vertex_buffer_ ) : nullptr; }
-	Ref< IndexBuffer >  GetIndexBuffer ( void ) const { return index_buffer_  ? Ref( *index_buffer_  ) : nullptr; }
+	Vector3 normal;
 
-public:
+	float   displacement;
 
-	Matrix4 transform_;
-
-private:
-
-	VertexLayout                    vertex_layout_;
-
-	std::string                     name_;
-
-	std::unique_ptr< VertexBuffer > vertex_buffer_;
-	std::unique_ptr< IndexBuffer >  index_buffer_;
 };
 
 ORB_NAMESPACE_END

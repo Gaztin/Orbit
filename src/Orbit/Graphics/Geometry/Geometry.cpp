@@ -15,7 +15,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "GeometryData.h"
+#include "Geometry.h"
 
 #include "Orbit/Core/Debug/Trace.h"
 #include "Orbit/Graphics/Geometry/Face.h"
@@ -25,13 +25,13 @@
 
 ORB_NAMESPACE_BEGIN
 
-GeometryData::GeometryData( const VertexLayout& vertex_layout )
+Geometry::Geometry( const VertexLayout& vertex_layout )
 	: vertex_layout_( vertex_layout )
 	, index_size_   ( EvalIndexSize( 0 ) )
 {
 }
 
-GeometryData::GeometryData( GeometryData&& other )
+Geometry::Geometry( Geometry&& other )
 	: vertex_layout_( std::move( other.vertex_layout_ ) )
 	, vertex_data_  ( std::move( other.vertex_data_ ) )
 	, face_data_    ( std::move( other.face_data_ ) )
@@ -40,14 +40,37 @@ GeometryData::GeometryData( GeometryData&& other )
 	other.index_size_ = 0;
 }
 
-void GeometryData::Reserve( size_t vertex_count, size_t face_count )
+void Geometry::SetFromData( ByteSpan vertex_data )
+{
+	vertex_data_.assign( static_cast< const uint8_t* >( vertex_data.begin() ), static_cast< const uint8_t* >( vertex_data.end() ) );
+	face_data_.clear();
+
+	index_size_ = 0;
+}
+
+void Geometry::SetFromData( ByteSpan vertex_data, ByteSpan face_data, IndexFormat index_format )
+{
+	vertex_data_.assign( static_cast< const uint8_t* >( vertex_data.begin() ), static_cast< const uint8_t* >( vertex_data.end() ) );
+	face_data_.assign(   static_cast< const uint8_t* >( face_data.begin() ),   static_cast< const uint8_t* >( face_data.end() ) );
+
+	switch( index_format )
+	{
+		default: { assert( false ); } break;
+
+		case IndexFormat::Byte:       { index_size_ = 1; } break;
+		case IndexFormat::Word:       { index_size_ = 2; } break;
+		case IndexFormat::DoubleWord: { index_size_ = 4; } break;
+	}
+}
+
+void Geometry::Reserve( size_t vertex_count, size_t face_count )
 {
 	index_size_ = EvalIndexSize( vertex_count );
 	vertex_data_.reserve( vertex_layout_.GetStride() * vertex_count );
 	face_data_.reserve( index_size_ * face_count );
 }
 
-size_t GeometryData::AddFace( const Face& face )
+size_t Geometry::AddFace( const Face& face )
 {
 	const size_t highest_face_index = *std::max_element( face.indices.begin(), face.indices.end() );
 
@@ -61,9 +84,31 @@ size_t GeometryData::AddFace( const Face& face )
 
 	face_data_.resize( face_data_.size() + face_size );
 
-//////////////////////////////////////////////////////////////////////////
+	SetFace( index, face );
 
-	void* dst = &face_data_[ index * face_size ];
+	return index;
+}
+
+size_t Geometry::AddVertex( const Vertex& vertex )
+{
+	const size_t stride           = vertex_layout_.GetStride();
+	const size_t old_vertex_count = GetVertexCount();
+
+	// Do we need to upgrade our index buffer?
+	if( const uint8_t new_index_size = EvalIndexSize( old_vertex_count + 1 ); new_index_size > index_size_ )
+		UpgradeFaceData( new_index_size );
+
+	vertex_data_.resize( vertex_data_.size() + stride );
+
+	SetVertex( old_vertex_count, vertex );
+
+	return old_vertex_count;
+}
+
+void Geometry::SetFace( size_t index, const Face& face )
+{
+	const size_t face_size = ( index_size_ * 3 );
+	void*        dst       = &face_data_[ index * face_size ];
 
 	switch( index_size_ )
 	{
@@ -92,27 +137,9 @@ size_t GeometryData::AddFace( const Face& face )
 
 		} break;
 	}
-
-	return index;
 }
 
-size_t GeometryData::AddVertex( const Vertex& vertex )
-{
-	const size_t stride           = vertex_layout_.GetStride();
-	const size_t old_vertex_count = GetVertexCount();
-
-	// Do we need to upgrade our index buffer?
-	if( const uint8_t new_index_size = EvalIndexSize( old_vertex_count + 1 ); new_index_size > index_size_ )
-		UpgradeFaceData( new_index_size );
-
-	vertex_data_.resize( vertex_data_.size() + stride );
-
-	SetVertex( old_vertex_count, vertex );
-
-	return old_vertex_count;
-}
-
-void GeometryData::SetVertex( size_t index, const Vertex& vertex )
+void Geometry::SetVertex( size_t index, const Vertex& vertex )
 {
 	uint8_t* dst = &vertex_data_[ index * vertex_layout_.GetStride() ];
 
@@ -124,7 +151,7 @@ void GeometryData::SetVertex( size_t index, const Vertex& vertex )
 	if( vertex_layout_.Contains( VertexComponent::Weights ) )  memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Weights ),  &vertex.weights,   sizeof( float   ) * 4 );
 }
 
-void GeometryData::GenerateNormals( void )
+void Geometry::GenerateNormals( void )
 {
 	for( Face face : GetFaces() )
 	{
@@ -149,17 +176,46 @@ void GeometryData::GenerateNormals( void )
 	}
 }
 
-size_t GeometryData::GetVertexCount( void ) const
+void Geometry::FlipFaceTowards( size_t index, const Vector3& direction )
+{
+	if( !vertex_layout_.Contains( VertexComponent::Position ) )
+		return;
+
+//////////////////////////////////////////////////////////////////////////
+
+	const size_t stride     = vertex_layout_.GetStride();
+	const size_t pos_offset = vertex_layout_.OffsetOf( VertexComponent::Position );
+	Face         face       = GetFace( index );
+	Vector3      positions[ 3 ];
+
+	for( size_t i = 0; i < 3; ++i )
+		memcpy( &positions[ i ], &vertex_data_[ stride * face.indices[ i ] ] + pos_offset, sizeof( Vector3 ) );
+
+//////////////////////////////////////////////////////////////////////////
+
+	const Vector3 first_to_second = positions[ 1 ] - positions[ 0 ];
+	const Vector3 first_to_third  = positions[ 2 ] - positions[ 0 ];
+	const Vector3 facing          = first_to_second.CrossProduct( first_to_third );
+	const float   dot             = facing.DotProduct( direction );
+
+	// If face is facing the opposite direction, flip it.
+	if( std::signbit( dot ) )
+		std::swap( face.indices[ 1 ], face.indices[ 2 ] );
+
+	SetFace( index, face );
+}
+
+size_t Geometry::GetVertexCount( void ) const
 {
 	return ( vertex_data_.size() / vertex_layout_.GetStride() );
 }
 
-size_t GeometryData::GetFaceCount( void ) const
+size_t Geometry::GetFaceCount( void ) const
 {
 	return ( ( face_data_.size() / 3 ) / index_size_ );
 }
 
-Vertex GeometryData::GetVertex( size_t index ) const
+Vertex Geometry::GetVertex( size_t index ) const
 {
 	const uint8_t* src = &vertex_data_[ index * vertex_layout_.GetStride() ];
 	Vertex         vertex;
@@ -174,7 +230,7 @@ Vertex GeometryData::GetVertex( size_t index ) const
 	return vertex;
 }
 
-Face GeometryData::GetFace( size_t index ) const
+Face Geometry::GetFace( size_t index ) const
 {
 	Face face;
 
@@ -184,34 +240,36 @@ Face GeometryData::GetFace( size_t index ) const
 	return face;
 }
 
-FaceRange GeometryData::GetFaces( void ) const
+FaceRange Geometry::GetFaces( void ) const
 {
 	return FaceRange( this );
 }
 
-VertexRange GeometryData::GetVertices( void ) const
+VertexRange Geometry::GetVertices( void ) const
 {
 	return VertexRange( this );
 }
 
-Mesh GeometryData::ToMesh( void ) const
+Mesh Geometry::ToMesh( std::string_view name ) const
 {
 	const size_t vertex_stride = vertex_layout_.GetStride();
 	const size_t vertex_count  = GetVertexCount();
 	const size_t index_size    = EvalIndexSize( vertex_count );
 	const size_t index_count   = ( face_data_.size() / index_size );
-	Mesh         mesh;
+	Mesh         mesh( name );
+
+	mesh.vertex_layout_ = vertex_layout_;
 
 	if( !vertex_data_.empty() )
-		mesh.vertex_buffer = std::make_unique< VertexBuffer >( vertex_data_.data(), vertex_count, vertex_stride );
+		mesh.vertex_buffer_ = std::make_unique< VertexBuffer >( vertex_data_.data(), vertex_count, vertex_stride );
 
 	if( !face_data_.empty() )
-		mesh.index_buffer = std::make_unique< IndexBuffer >( GetIndexFormat(), face_data_.data(), index_count );
+		mesh.index_buffer_ = std::make_unique< IndexBuffer >( GetIndexFormat(), face_data_.data(), index_count );
 
 	return mesh;
 }
 
-GeometryData& GeometryData::operator=( GeometryData&& other )
+Geometry& Geometry::operator=( Geometry&& other )
 {
 	vertex_layout_ = std::move( other.vertex_layout_ );
 	vertex_data_   = std::move( other.vertex_data_ );
@@ -220,7 +278,7 @@ GeometryData& GeometryData::operator=( GeometryData&& other )
 	return *this;
 }
 
-void GeometryData::UpgradeFaceData( uint8_t new_index_size )
+void Geometry::UpgradeFaceData( uint8_t new_index_size )
 {
 	const size_t           old_index_size = index_size_;
 	const size_t           index_count    = face_data_.size() / old_index_size;
@@ -237,7 +295,7 @@ void GeometryData::UpgradeFaceData( uint8_t new_index_size )
 	index_size_ = new_index_size;
 }
 
-uint8_t GeometryData::EvalIndexSize( size_t index_or_vertex_count ) const
+uint8_t Geometry::EvalIndexSize( size_t index_or_vertex_count ) const
 {
 
 #if( !ORB_HAS_D3D11 )
@@ -256,7 +314,7 @@ uint8_t GeometryData::EvalIndexSize( size_t index_or_vertex_count ) const
 	return 0;
 }
 
-IndexFormat GeometryData::GetIndexFormat( void ) const
+IndexFormat Geometry::GetIndexFormat( void ) const
 {
 	switch( index_size_ )
 	{

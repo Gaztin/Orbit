@@ -69,9 +69,10 @@ IndexBuffer::IndexBuffer( IndexFormat format, const void* data, size_t count )
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( context_details );
 
 			D3D11_BUFFER_DESC desc { };
-			desc.ByteWidth = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
-			desc.Usage     = D3D11_USAGE_DEFAULT;
-			desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			desc.ByteWidth      = static_cast< UINT >( ( total_size + 0xf ) & ~0xf ); /* Align by 16 bytes */
+			desc.Usage          = D3D11_USAGE_DEFAULT;
+			desc.BindFlags      = D3D11_BIND_INDEX_BUFFER;
+			desc.CPUAccessFlags = 0;
 
 			if( data )
 			{
@@ -165,6 +166,11 @@ void IndexBuffer::Bind( void )
 	#endif // ORB_HAS_D3D11
 
 	}
+}
+
+size_t IndexBuffer::GetSize( void ) const
+{
+	return ( GetFormatSize( format_ ) * count_ );
 }
 
 ORB_NAMESPACE_END

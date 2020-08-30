@@ -25,7 +25,7 @@
 #include <Orbit/Graphics/Geometry/Model.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
-#include <Orbit/Math/Vector3.h>
+#include <Orbit/Math/Vector/Vector3.h>
 
 #include "Framework/Camera.h"
 #include "AnimationShader.h"
@@ -103,8 +103,8 @@ public:
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
-			command.vertex_buffer = *mesh.vertex_buffer;
-			command.index_buffer  = *mesh.index_buffer;
+			command.vertex_buffer = mesh.GetVertexBuffer();
+			command.index_buffer  = mesh.GetIndexBuffer();
 			command.shader        = shader_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 

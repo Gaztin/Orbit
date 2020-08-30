@@ -34,10 +34,10 @@
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Literals.h>
-#include <Orbit/Math/Matrix4.h>
-#include <Orbit/Math/Vector2.h>
-#include <Orbit/Math/Vector3.h>
-#include <Orbit/Math/Vector4.h>
+#include <Orbit/Math/Matrix/Matrix4.h>
+#include <Orbit/Math/Vector/Vector2.h>
+#include <Orbit/Math/Vector/Vector3.h>
+#include <Orbit/Math/Vector/Vector4.h>
 
 static CubeShader cube_shader;
 
@@ -76,7 +76,7 @@ public:
 			model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
 			constant_data.view_projection = camera_.GetViewProjection();
-			constant_data.model           = ( mesh_.transform * model_matrix_ );
+			constant_data.model           = ( mesh_.transform_ * model_matrix_ );
 			constant_data.model_inverse   = constant_data.model.Inverted();
 			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 		}
@@ -87,8 +87,8 @@ public:
 		camera_.Update( delta_time );
 
 		Orbit::RenderCommand command;
-		command.vertex_buffer = *mesh_.vertex_buffer;
-		command.index_buffer  = *mesh_.index_buffer;
+		command.vertex_buffer = mesh_.GetVertexBuffer();
+		command.index_buffer  = mesh_.GetIndexBuffer();
 		command.shader        = shader_;
 		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 		command.textures.emplace_back( texture_.GetTexture2D() );

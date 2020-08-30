@@ -17,7 +17,7 @@
 
 #pragma once
 #include "Orbit/Graphics/Graphics.h"
-#include "Orbit/Math/Matrix4.h"
+#include "Orbit/Math/Matrix/Matrix4.h"
 
 #include <string>
 #include <vector>

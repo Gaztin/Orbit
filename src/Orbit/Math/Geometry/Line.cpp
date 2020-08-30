@@ -15,43 +15,20 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Graphics/Geometry/Face.h"
+#include "Line.h"
 
 ORB_NAMESPACE_BEGIN
 
-class Geometry;
-
-class ORB_API_GRAPHICS FaceRange
+Line::Line( void )
+	: direction   ( 0.0f, 0.0f, 1.0f )
+	, displacement( 0.0f, 0.0f )
 {
-	ORB_DISABLE_COPY( FaceRange );
+}
 
-public:
-
-	struct Iterator
-	{
-		Iterator& operator++( void );
-		Face      operator* ( void )                  const;
-		bool      operator!=( const Iterator& other ) const;
-
-		const FaceRange* range;
-
-		size_t           index;
-	};
-
-public:
-
-	explicit FaceRange( const Geometry* geometry );
-
-public:
-
-	Iterator begin( void ) const;
-	Iterator end  ( void ) const;
-
-private:
-
-	const Geometry* geometry_;
-
-};
+Line::Line( const Vector3& direction, const Vector2& displacement )
+	: direction   ( direction )
+	, displacement( displacement )
+{
+}
 
 ORB_NAMESPACE_END

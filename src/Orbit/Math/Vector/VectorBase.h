@@ -19,6 +19,7 @@
 #include "Orbit/Math/Math.h"
 
 #include <cmath>
+#include <limits>
 #include <type_traits>
 
 ORB_NAMESPACE_BEGIN
@@ -53,9 +54,25 @@ public:
 		return sqrtf( DotProduct() );
 	}
 
-	Derived Normalized( void )
+	Derived Normalized( void ) const
 	{
 		return ( *this / Length() );
+	}
+
+	bool IsZero( void ) const
+	{
+		return IsZero( std::numeric_limits< float >::epsilon() );
+	}
+
+	bool IsZero( float epsilon ) const
+	{
+		for( size_t i = 0; i < Size; ++i )
+		{
+			if( std::fabs( ( *this )[ i ] ) >= epsilon )
+				return false;
+		}
+
+		return true;
 	}
 
 public:
@@ -65,6 +82,22 @@ public:
 		for( size_t i = 0; i < Size; ++i )
 			( *this )[ i ] = other[ i ];
 		return *this;
+	}
+
+	Derived operator+( void ) const
+	{
+		Derived v;
+		for( size_t i = 0; i < Size; ++i )
+			v[ i ] = ( *this )[ i ];
+		return v;
+	}
+
+	Derived operator-( void ) const
+	{
+		Derived v;
+		for( size_t i = 0; i < Size; ++i )
+			v[ i ] = -( ( *this )[ i ] );
+		return v;
 	}
 
 	Derived operator+( const VectorBase& rhs ) const
@@ -143,6 +176,16 @@ public:
 		return ptr[ i ];
 	}
 
+	bool operator==( const VectorBase& rhs ) const
+	{
+		return ( *this - rhs ).IsZero();
+	}
+
+	bool operator!=( const VectorBase& rhs ) const
+	{
+		return !( *this - rhs ).IsZero();
+	}
+
 public:
 
 	float*       begin ( void )       { return &( *this )[ 0 ]; }
@@ -156,5 +199,12 @@ private:
 	Derived&       Self( void )       { return *reinterpret_cast< Derived*       >( this ); }
 
 };
+
+// Enable scalar to be on left-hand side of operation
+template< typename Derived, size_t Size >
+inline Derived operator*( float scalar, const VectorBase< Derived, Size >& rhs )
+{
+	return rhs * scalar;
+}
 
 ORB_NAMESPACE_END
