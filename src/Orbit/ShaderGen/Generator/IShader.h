@@ -90,7 +90,7 @@ namespace ShaderGen
 		std::vector< UniformBase* > uniforms_;
 		VertexLayout                attribute_layout_;
 		VertexLayout                varying_layout_;
-		uint32_t                    sampler_count_;
+		uint32_t                    sampler_count_ = 0;
 
 	};
 }
