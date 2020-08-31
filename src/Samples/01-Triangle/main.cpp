@@ -24,45 +24,26 @@
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
+#include <Orbit/Graphics/Geometry/Geometry.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
 #include <Orbit/Math/Vector/Vector2.h>
 #include <Orbit/Math/Vector/Vector4.h>
 
-struct Vertex
-{
-	Orbit::Vector4 pos;
-	Orbit::Color   color;
-	Orbit::Vector2 texcoord;
-};
-
-static TriangleShader triangle_shader;
-
-const std::initializer_list< Vertex > vertex_data
-{
-	{ Orbit::Vector4( -1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f ), Orbit::Color( 1.0f, 0.0f, 1.0f, 1.0f ), Orbit::Vector2( 0.0f, 0.0f ) },
-	{ Orbit::Vector4(  0.0f,                              1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f ), Orbit::Color( 0.0f, 1.0f, 1.0f, 1.0f ), Orbit::Vector2( 0.5f, 1.0f ) },
-	{ Orbit::Vector4(  1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f ), Orbit::Color( 1.0f, 1.0f, 0.0f, 1.0f ), Orbit::Vector2( 1.0f, 0.0f ) },
-};
-
-const std::initializer_list< uint16_t > index_data
-{
-	0, 1, 2,
-};
-
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
 	SampleApp( void )
-		: window_       ( 800, 600 )
-		, shader_       ( triangle_shader.Generate(), triangle_shader.GetVertexLayout() )
-		, vertex_buffer_( vertex_data )
-		, index_buffer_ ( index_data )
-		, texture_      ( Orbit::Asset( "textures/checkerboard.tga" ) )
-		, time_         ( 0.0f )
+		: window_  ( 800, 600 )
+		, shader_  ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, mesh_    ( "Triangle" )
+		, texture_ ( Orbit::Asset( "textures/checkerboard.tga" ) )
+		, time_    ( 0.0f )
 	{
+		CreateTriangleMesh();
+
 		window_.SetTitle( "Orbit Sample (01-Triangle)" );
 		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
@@ -74,8 +55,8 @@ public:
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
 		Orbit::RenderCommand command;
-		command.vertex_buffer = vertex_buffer_;
-		command.index_buffer  = index_buffer_;
+		command.vertex_buffer = mesh_.GetVertexBuffer();
+		command.index_buffer  = mesh_.GetIndexBuffer();
 		command.shader        = shader_;
 		command.textures.emplace_back( texture_.GetTexture2D() );
 
@@ -89,11 +70,44 @@ public:
 
 private:
 
+	void CreateTriangleMesh( void )
+	{
+		Orbit::Geometry geometry( shader_source_.GetVertexLayout() );
+		Orbit::Face     face;
+		Orbit::Vertex   vertex;
+
+		// Bottom left corner
+		vertex.position   = Orbit::Vector4( -1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
+		vertex.color      = Orbit::Color( 1.0f, 0.0f, 1.0f, 1.0f );
+		vertex.tex_coord  = Orbit::Vector2( 0.0f, 0.0f );
+		face.indices[ 0 ] = geometry.AddVertex( vertex );
+
+		// Top center corner
+		vertex.position   = Orbit::Vector4(  0.0f,                              1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
+		vertex.color      = Orbit::Color( 0.0f, 1.0f, 1.0f, 1.0f );
+		vertex.tex_coord  = Orbit::Vector2( 0.5f, 1.0f );
+		face.indices[ 1 ] = geometry.AddVertex( vertex );
+
+		// Bottom right corner
+		vertex.position   = Orbit::Vector4(  1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
+		vertex.color      = Orbit::Color( 1.0f, 1.0f, 0.0f, 1.0f );
+		vertex.tex_coord  = Orbit::Vector2( 1.0f, 0.0f );
+		face.indices[ 2 ] = geometry.AddVertex( vertex );
+
+		// Create face
+		geometry.AddFace( face );
+
+		// Generate mesh
+		mesh_ = geometry.ToMesh( "Triangle" );
+	}
+
+private:
+
 	Orbit::Window        window_;
 	Orbit::RenderContext render_context_;
+	TriangleShader       shader_source_;
 	Orbit::Shader        shader_;
-	Orbit::VertexBuffer  vertex_buffer_;
-	Orbit::IndexBuffer   index_buffer_;
+	Orbit::Mesh          mesh_;
 	Orbit::Texture       texture_;
 	float                time_;
 
