@@ -36,8 +36,6 @@
 #include <Orbit/Math/Vector/Vector3.h>
 #include <Orbit/Math/Vector/Vector4.h>
 
-static ModelShader model_shader;
-
 struct VertexConstantData
 {
 	Orbit::Matrix4 view_projection;
@@ -58,8 +56,8 @@ public:
 
 	SampleApp( void )
 		: window_                  ( 800, 600 )
-		, shader_                  ( model_shader.Generate(), model_shader.GetVertexLayout() )
-		, model_                   ( Orbit::Asset( "models/teapot.obj" ), model_shader.GetVertexLayout() )
+		, shader_                  ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, model_                   ( Orbit::Asset( "models/teapot.obj" ), shader_source_.GetVertexLayout() )
 		, vertex_constant_buffer_  ( sizeof( VertexConstantData ) )
 		, fragment_constant_buffer_( sizeof( FragmentConstantData ) )
 		, texture_                 ( Orbit::Asset( "textures/checkerboard.tga" ) )
@@ -119,6 +117,7 @@ private:
 
 	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
+	ModelShader           shader_source_;
 	Orbit::Shader         shader_;
 	Orbit::Model          model_;
 	Orbit::ConstantBuffer vertex_constant_buffer_;

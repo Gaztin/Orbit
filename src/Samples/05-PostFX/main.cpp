@@ -35,9 +35,6 @@
 
 #include <cmath>
 
-static SceneShader  scene_shader;
-static PostFXShader post_fx_shader;
-
 struct SceneVertexConstantData
 {
 	Orbit::Matrix4 view_projection;
@@ -57,9 +54,9 @@ public:
 
 	SampleApp( void )
 		: window_                       ( 800, 600 )
-		, scene_shader_                 ( scene_shader.Generate(), scene_shader.GetVertexLayout() )
-		, post_fx_shader_               ( post_fx_shader.Generate(), post_fx_shader.GetVertexLayout() )
-		, model_                        ( Orbit::Asset( "models/bunny.obj" ), scene_shader.GetVertexLayout() )
+		, scene_shader_                 ( scene_shader_source_.Generate(), scene_shader_source_.GetVertexLayout() )
+		, post_fx_shader_               ( post_fx_shader_source_.Generate(), post_fx_shader_source_.GetVertexLayout() )
+		, model_                        ( Orbit::Asset( "models/bunny.obj" ), scene_shader_source_.GetVertexLayout() )
 		, scene_vertex_constant_buffer_ ( sizeof( SceneVertexConstantData ) )
 		, post_fx_pixel_constant_buffer_( sizeof( PostFXPixelConstantData ) )
 	{
@@ -123,6 +120,8 @@ private:
 
 	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
+	SceneShader           scene_shader_source_;
+	PostFXShader          post_fx_shader_source_;
 	Orbit::Shader         scene_shader_;
 	Orbit::Shader         post_fx_shader_;
 	Orbit::Model          model_;

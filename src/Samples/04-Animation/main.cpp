@@ -32,8 +32,6 @@
 
 #include <cmath>
 
-static AnimationShader animation_shader;
-
 struct ConstantData
 {
 	Orbit::Matrix4 view_projection;
@@ -48,8 +46,8 @@ public:
 
 	SampleApp( void )
 		: window_         ( 800, 600 )
-		, shader_         ( animation_shader.Generate(), animation_shader.GetVertexLayout() )
-		, model_          ( Orbit::Asset( "models/mannequin.dae" ), animation_shader.GetVertexLayout() )
+		, shader_         ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, model_          ( Orbit::Asset( "models/mannequin.dae" ), shader_source_.GetVertexLayout() )
 		, animation_      ( Orbit::Asset( "animations/jump.dae" ) )
 		, constant_buffer_( sizeof( ConstantData ) )
 		, life_time_      ( 0.0f )
@@ -122,6 +120,7 @@ private:
 
 	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
+	AnimationShader       shader_source_;
 	Orbit::Shader         shader_;
 	Orbit::Model          model_;
 	Orbit::Animation      animation_;

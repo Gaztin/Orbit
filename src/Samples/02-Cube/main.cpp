@@ -39,8 +39,6 @@
 #include <Orbit/Math/Vector/Vector3.h>
 #include <Orbit/Math/Vector/Vector4.h>
 
-static CubeShader cube_shader;
-
 struct ConstantData
 {
 	Orbit::Matrix4 view_projection;
@@ -55,8 +53,8 @@ public:
 
 	SampleApp( void )
 		: window_         ( 800, 600 )
-		, shader_         ( cube_shader.Generate(), cube_shader.GetVertexLayout() )
-		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), cube_shader.GetVertexLayout() ) )
+		, shader_         ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), shader_source_.GetVertexLayout() ) )
 		, constant_buffer_( sizeof( ConstantData ) )
 		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
@@ -105,6 +103,7 @@ private:
 
 	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
+	CubeShader            shader_source_;
 	Orbit::Shader         shader_;
 	Orbit::Mesh           mesh_;
 	Orbit::ConstantBuffer constant_buffer_;
