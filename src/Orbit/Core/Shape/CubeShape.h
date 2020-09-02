@@ -20,13 +20,20 @@
 
 ORB_NAMESPACE_BEGIN
 
-struct CubeShape : IShape
+class ORB_API_CORE CubeShape : public IShape
 {
-	explicit CubeShape( float half_extent ) : half_extent( half_extent ) { }
+public:
+
+	explicit CubeShape( float half_extent );
+
+public:
 
 	ShapeType GetType( void ) const override { return ShapeType::Cube; }
 
+public:
+
 	float half_extent;
+
 };
 
 ORB_NAMESPACE_END

@@ -15,25 +15,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Shape/IShape.h"
+#include "CubeShape.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE SphereShape : public IShape
+CubeShape::CubeShape( float half_extent )
+	: half_extent( half_extent )
 {
-public:
-
-	explicit SphereShape( float radius );
-
-public:
-
-	ShapeType GetType( void ) const override { return ShapeType::Sphere; }
-
-public:
-
-	float radius;
-
-};
+}
 
 ORB_NAMESPACE_END
