@@ -20,11 +20,13 @@
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
+#include <Orbit/Core/Shape/EquilateralTriangleShape.h>
 #include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Geometry.h>
+#include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
@@ -38,12 +40,10 @@ public:
 	SampleApp( void )
 		: window_  ( 800, 600 )
 		, shader_  ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
-		, mesh_    ( "Triangle" )
+		, mesh_    ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::EquilateralTriangleShape( 1.0f ), shader_source_.GetVertexLayout() ) )
 		, texture_ ( Orbit::Asset( "textures/checkerboard.tga" ) )
 		, time_    ( 0.0f )
 	{
-		CreateTriangleMesh();
-
 		window_.SetTitle( "Orbit Sample (01-Triangle)" );
 		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
@@ -67,39 +67,6 @@ public:
 	}
 
 	bool IsRunning( void ) override { return window_.IsOpen(); }
-
-private:
-
-	void CreateTriangleMesh( void )
-	{
-		Orbit::Geometry geometry( shader_source_.GetVertexLayout() );
-		Orbit::Face     face;
-		Orbit::Vertex   vertex;
-
-		// Bottom left corner
-		vertex.position   = Orbit::Vector4( -1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
-		vertex.color      = Orbit::Color( 1.0f, 0.0f, 1.0f, 1.0f );
-		vertex.tex_coord  = Orbit::Vector2( 0.0f, 0.0f );
-		face.indices[ 0 ] = geometry.AddVertex( vertex );
-
-		// Top center corner
-		vertex.position   = Orbit::Vector4(  0.0f,                              1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
-		vertex.color      = Orbit::Color( 0.0f, 1.0f, 1.0f, 1.0f );
-		vertex.tex_coord  = Orbit::Vector2( 0.5f, 1.0f );
-		face.indices[ 1 ] = geometry.AddVertex( vertex );
-
-		// Bottom right corner
-		vertex.position   = Orbit::Vector4(  1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
-		vertex.color      = Orbit::Color( 1.0f, 1.0f, 0.0f, 1.0f );
-		vertex.tex_coord  = Orbit::Vector2( 1.0f, 0.0f );
-		face.indices[ 2 ] = geometry.AddVertex( vertex );
-
-		// Create face
-		geometry.AddFace( face );
-
-		// Generate mesh
-		mesh_ = geometry.ToMesh( "Triangle" );
-	}
 
 private:
 
