@@ -15,29 +15,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Core.h"
+#include "EquilateralTriangleShape.h"
 
 ORB_NAMESPACE_BEGIN
 
-enum class ShapeType
+EquilateralTriangleShape::EquilateralTriangleShape( float scale )
+	: scale( scale )
 {
-	EquilateralTriangle,
-	Cube,
-	Sphere,
-};
-
-class ORB_API_CORE IShape
-{
-public:
-
-	         IShape( void ) = default;
-	virtual ~IShape( void ) = default;
-
-public:
-
-	virtual ShapeType GetType( void ) const = 0;
-
-};
+}
 
 ORB_NAMESPACE_END

@@ -17,42 +17,22 @@
 
 #pragma once
 #include "Orbit/Core/Shape/IShape.h"
-#include "Orbit/Core/Utility/Singleton.h"
-#include "Orbit/Graphics/Graphics.h"
-
-#include <memory>
-#include <string_view>
-#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-class Geometry;
-class IShape;
-class Mesh;
-class VertexLayout;
-
-class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >
+class ORB_API_CORE EquilateralTriangleShape : public IShape
 {
 public:
 
-	enum class DetailLevel
-	{
-		Low,
-		Medium,
-		High,
-	};
+	explicit EquilateralTriangleShape( float scale );
 
 public:
 
-	Geometry CreateGeometryFromShape( ShapeType shape_type, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
-	Mesh     CreateMeshFromShape    ( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
+	ShapeType GetType( void ) const override { return ShapeType::EquilateralTriangle; }
 
-private:
+public:
 
-	std::string_view EvalShapeName                   ( ShapeType type ) const;
-	void             GenerateCubeData                ( Geometry& geometry ) const;
-	void             GenerateSphereData              ( Geometry& geometry, DetailLevel detail_level ) const;
-	void             GenerateEquilateralTriangleData ( Geometry& geometry ) const;
+	float scale;
 
 };
 
