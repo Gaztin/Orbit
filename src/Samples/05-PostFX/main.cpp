@@ -18,7 +18,6 @@
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
-#include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Buffer/FrameBuffer.h>
@@ -53,15 +52,13 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: window_                       ( 800, 600 )
-		, scene_shader_                 ( scene_shader_source_.Generate(), scene_shader_source_.GetVertexLayout() )
-		, post_fx_shader_               ( post_fx_shader_source_.Generate(), post_fx_shader_source_.GetVertexLayout() )
-		, model_                        ( Orbit::Asset( "models/bunny.obj" ), scene_shader_source_.GetVertexLayout() )
 		, scene_vertex_constant_buffer_ ( sizeof( SceneVertexConstantData ) )
 		, post_fx_pixel_constant_buffer_( sizeof( PostFXPixelConstantData ) )
+		: scene_shader_  ( scene_shader_source_.Generate(), scene_shader_source_.GetVertexLayout() )
+		, post_fx_shader_( post_fx_shader_source_.Generate(), post_fx_shader_source_.GetVertexLayout() )
+		, model_         ( Orbit::Asset( "models/bunny.obj" ), scene_shader_source_.GetVertexLayout() )
+		, time_          ( 0.0f )
 	{
-		window_.SetTitle( "Orbit Sample (05-PostFX)" );
-		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
 		camera_.position = Orbit::Vector3( 0.03f, 0.17f, -0.2f );
@@ -72,10 +69,14 @@ public:
 
 	void OnFrame( float delta_time ) override
 	{
-		window_.PollEvents();
+		// Clear context and framebuffer
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 		frame_buffer_.Clear();
 
+		// Increment timer
+		time_ += delta_time;
+
+		// Update camera
 		camera_.Update( delta_time );
 
 		scene_vertex_constant_data.view_projection = camera_.GetViewProjection();
@@ -85,6 +86,7 @@ public:
 		post_fx_pixel_constant_data.time += delta_time;
 		post_fx_pixel_constant_buffer_.Update( &post_fx_pixel_constant_data, sizeof( PostFXPixelConstantData ) );
 
+		// Push meshes to render queue
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
@@ -93,7 +95,6 @@ public:
 			command.shader        = scene_shader_;
 			command.frame_buffer  = frame_buffer_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( scene_vertex_constant_buffer_ );
-
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
@@ -109,16 +110,15 @@ public:
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
+		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
 
+		// Swap buffers
 		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning( void ) override { return window_.IsOpen(); }
-
 private:
 
-	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
 	SceneShader           scene_shader_source_;
 	PostFXShader          post_fx_shader_source_;

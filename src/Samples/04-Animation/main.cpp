@@ -18,7 +18,6 @@
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
-#include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
@@ -45,15 +44,12 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: window_         ( 800, 600 )
-		, shader_         ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
-		, model_          ( Orbit::Asset( "models/mannequin.dae" ), shader_source_.GetVertexLayout() )
-		, animation_      ( Orbit::Asset( "animations/jump.dae" ) )
 		, constant_buffer_( sizeof( ConstantData ) )
-		, life_time_      ( 0.0f )
+		: shader_   ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, model_    ( Orbit::Asset( "models/mannequin.dae" ), shader_source_.GetVertexLayout() )
+		, animation_( Orbit::Asset( "animations/jump.dae" ) )
+		, life_time_( 0.0f )
 	{
-		window_.SetTitle( "Orbit Sample (03-Model)" );
-		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
 		model_matrix_.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
@@ -80,15 +76,17 @@ public:
 
 	void OnFrame( float delta_time ) override
 	{
-		life_time_ += delta_time;
-
-		window_.PollEvents();
+		// Clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
-		camera_.Update( delta_time );
+		// Increment life timer
+		life_time_ += delta_time;
 
 		constant_data.view_projection = camera_.GetViewProjection();
+		// Update camera
+		camera_.Update( delta_time );
 
+		// Update joint transforms
 		if( model_.HasJoints() )
 		{
 			const Orbit::Joint& root_joint = model_.GetRootJoint();
@@ -105,20 +103,18 @@ public:
 			command.index_buffer  = mesh.GetIndexBuffer();
 			command.shader        = shader_;
 			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
-
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
+		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
 
+		// Swap buffers
 		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning( void ) override { return window_.IsOpen(); }
-
 private:
 
-	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
 	AnimationShader       shader_source_;
 	Orbit::Shader         shader_;

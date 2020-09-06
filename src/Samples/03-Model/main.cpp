@@ -21,7 +21,6 @@
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
-#include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
@@ -55,15 +54,12 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: window_                  ( 800, 600 )
-		, shader_                  ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
-		, model_                   ( Orbit::Asset( "models/teapot.obj" ), shader_source_.GetVertexLayout() )
 		, vertex_constant_buffer_  ( sizeof( VertexConstantData ) )
 		, fragment_constant_buffer_( sizeof( FragmentConstantData ) )
-		, texture_                 ( Orbit::Asset( "textures/checkerboard.tga" ) )
+		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, model_  ( Orbit::Asset( "models/teapot.obj" ), shader_source_.GetVertexLayout() )
+		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
-		window_.SetTitle( "Orbit Sample (03-Model)" );
-		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
 	}
@@ -88,11 +84,11 @@ public:
 			fragment_constant_buffer_.Update( &fragment_constant_data, sizeof( FragmentConstantData ) );
 		}
 
-		window_.PollEvents();
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
 		camera_.Update( delta_time );
 
+		// Push meshes to render queue
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
@@ -102,20 +98,18 @@ public:
 			command.constant_buffers[ Orbit::ShaderType::Vertex   ].emplace_back( vertex_constant_buffer_ );
 			command.constant_buffers[ Orbit::ShaderType::Fragment ].emplace_back( fragment_constant_buffer_ );
 			command.textures.emplace_back( texture_.GetTexture2D() );
-
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
+		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
 
+		// Swap buffers
 		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning() override { return window_.IsOpen(); }
-
 private:
 
-	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
 	ModelShader           shader_source_;
 	Orbit::Shader         shader_;

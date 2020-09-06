@@ -25,7 +25,6 @@
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Shape/CubeShape.h>
-#include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/MeshFactory.h>
@@ -52,14 +51,11 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: window_         ( 800, 600 )
-		, shader_         ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
-		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), shader_source_.GetVertexLayout() ) )
 		, constant_buffer_( sizeof( ConstantData ) )
-		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
+		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, mesh_   ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), shader_source_.GetVertexLayout() ) )
+		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
-		window_.SetTitle( "Orbit Sample (02-Cube)" );
-		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		camera_.position.y = 2.000f;
 		camera_.rotation.x = 0.125f * Orbit::Pi;
@@ -79,29 +75,30 @@ public:
 			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
 		}
 
-		window_.PollEvents();
+		// Update window and clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
+		// Update camera
 		camera_.Update( delta_time );
 
+		// Push cube mesh to render queue
 		Orbit::RenderCommand command;
 		command.vertex_buffer = mesh_.GetVertexBuffer();
 		command.index_buffer  = mesh_.GetIndexBuffer();
 		command.shader        = shader_;
 		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 		command.textures.emplace_back( texture_.GetTexture2D() );
-
 		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+
+		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
 
+		// Swap buffers
 		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning( void ) override { return window_.IsOpen(); }
-
 private:
 
-	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
 	CubeShader            shader_source_;
 	Orbit::Shader         shader_;

@@ -19,6 +19,7 @@
 
 #include "Orbit/Core/Platform/iOS/UIApplicationDelegate.h"
 #include "Orbit/Core/Widget/Console.h"
+#include "Orbit/Core/Widget/Window.h"
 
 #include <chrono>
 
@@ -40,16 +41,22 @@ void ApplicationBase::RunInstance( void )
 	if( !Bootstrap::trampoline )
 		return;
 
-	/* Initialize application instance */
-	auto instance = std::static_pointer_cast< ApplicationBase >( Bootstrap::trampoline() );
-	auto time     = std::chrono::high_resolution_clock::now();
+	// Initialize application instance and create main window
+	Window main_window = Window( 800, 600 );
+	auto   instance    = std::static_pointer_cast< ApplicationBase >( Bootstrap::trampoline() );
+	auto   time        = std::chrono::high_resolution_clock::now();
 
-	while( instance->IsRunning() )
+	// Show main window
+	main_window.Show();
+
+	while( main_window.IsOpen() )
 	{
 		auto now   = std::chrono::high_resolution_clock::now();
 		auto delta = std::chrono::duration_cast< std::chrono::duration< float > >( now - time );
 
 		time = now;
+
+		main_window.PollEvents();
 
 		instance->OnFrame( delta.count() );
 	}

@@ -21,7 +21,6 @@
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/Shape/EquilateralTriangleShape.h>
-#include <Orbit/Core/Widget/Window.h>
 #include <Orbit/Graphics/Buffer/IndexBuffer.h>
 #include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
@@ -38,39 +37,36 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: window_  ( 800, 600 )
-		, shader_  ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
-		, mesh_    ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::EquilateralTriangleShape( 1.0f ), shader_source_.GetVertexLayout() ) )
-		, texture_ ( Orbit::Asset( "textures/checkerboard.tga" ) )
-		, time_    ( 0.0f )
+		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, mesh_   ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::EquilateralTriangleShape( 1.0f ), shader_source_.GetVertexLayout() ) )
+		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
+		, time_   ( 0.0f )
 	{
-		window_.SetTitle( "Orbit Sample (01-Triangle)" );
-		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 	}
 
 	void OnFrame( float /*delta_time*/ ) override
 	{
-		window_.PollEvents();
+		// Clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
+		// Push mesh to render queue
 		Orbit::RenderCommand command;
 		command.vertex_buffer = mesh_.GetVertexBuffer();
 		command.index_buffer  = mesh_.GetIndexBuffer();
 		command.shader        = shader_;
 		command.textures.emplace_back( texture_.GetTexture2D() );
-
 		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+
+		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
 
+		// Swap buffers
 		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning( void ) override { return window_.IsOpen(); }
-
 private:
 
-	Orbit::Window        window_;
 	Orbit::RenderContext render_context_;
 	TriangleShader       shader_source_;
 	Orbit::Shader        shader_;
