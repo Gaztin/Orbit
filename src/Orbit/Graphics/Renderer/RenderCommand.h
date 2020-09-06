@@ -33,8 +33,6 @@ class VertexBuffer;
 
 struct ORB_API_GRAPHICS RenderCommand
 {
-	std::map< ShaderType, std::vector< Ref< ConstantBuffer > > > constant_buffers;
-
 	std::vector< Ref< Texture2D > > textures;
 
 	Ref< VertexBuffer > vertex_buffer;

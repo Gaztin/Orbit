@@ -19,7 +19,6 @@
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Graphics/Animation/Animation.h>
-#include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Model.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
@@ -31,20 +30,11 @@
 
 #include <cmath>
 
-struct ConstantData
-{
-	Orbit::Matrix4 view_projection;
-
-	std::array< Orbit::Matrix4, AnimationShader::joint_transform_count > joint_transforms;
-
-} constant_data;
-
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
 	SampleApp( void )
-		, constant_buffer_( sizeof( ConstantData ) )
 		: shader_   ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
 		, model_    ( Orbit::Asset( "models/mannequin.dae" ), shader_source_.GetVertexLayout() )
 		, animation_( Orbit::Asset( "animations/jump.dae" ) )
@@ -68,7 +58,7 @@ public:
 		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 
 		if( joint.id >= 0 )
-			constant_data.joint_transforms[ joint.id ] = ( pose * joint.inverse_bind_transform ).Transposed();
+			joint_transforms_[ joint.id ] = ( pose * joint.inverse_bind_transform ).Transposed();
 
 		for( const Orbit::Joint& child : joint.children )
 			UpdateJointTransformsRecursive( child, pose );
@@ -82,27 +72,24 @@ public:
 		// Increment life timer
 		life_time_ += delta_time;
 
-		constant_data.view_projection = camera_.GetViewProjection();
 		// Update camera
 		camera_.Update( delta_time );
 
 		// Update joint transforms
 		if( model_.HasJoints() )
-		{
-			const Orbit::Joint& root_joint = model_.GetRootJoint();
+			UpdateJointTransformsRecursive( model_.GetRootJoint(), Orbit::Matrix4() );
 
-			UpdateJointTransformsRecursive( root_joint, Orbit::Matrix4() );
-		}
+		// Update uniforms
+		shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
+		shader_.SetVertexUniform( shader_source_.u_joint_transforms, joint_transforms_ );
 
-		constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
-
+		// Push meshes to render queue
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
 			command.vertex_buffer = mesh.GetVertexBuffer();
 			command.index_buffer  = mesh.GetIndexBuffer();
 			command.shader        = shader_;
-			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
@@ -115,16 +102,18 @@ public:
 
 private:
 
-	Orbit::RenderContext  render_context_;
-	AnimationShader       shader_source_;
-	Orbit::Shader         shader_;
-	Orbit::Model          model_;
-	Orbit::Animation      animation_;
-	Orbit::ConstantBuffer constant_buffer_;
-	Orbit::Matrix4        model_matrix_;
+	using JointTransformArray = std::array< Orbit::Matrix4, AnimationShader::joint_transform_count >;
 
-	Camera camera_;
+private:
 
-	float life_time_;
+	Orbit::RenderContext render_context_;
+	AnimationShader      shader_source_;
+	Orbit::Shader        shader_;
+	Orbit::Model         model_;
+	Orbit::Animation     animation_;
+	Orbit::Matrix4       model_matrix_;
+	Camera               camera_;
+	JointTransformArray  joint_transforms_;
+	float                life_time_;
 
 };

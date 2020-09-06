@@ -17,7 +17,6 @@
 
 #pragma once
 #include "Orbit/Core/Utility/Singleton.h"
-#include "Orbit/Graphics/Buffer/ConstantBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Geometry/Geometry.h"
 #include "Orbit/Graphics/Shader/Shader.h"
@@ -80,7 +79,6 @@ private:
 	SphereVector      spheres_;
 	VertexBuffer      lines_vertex_buffer_;
 	VertexBuffer      spheres_vertex_buffer_;
-	ConstantBuffer    constant_buffer_;
 	Geometry          sphere_geometry_;
 
 };

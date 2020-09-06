@@ -32,9 +32,18 @@ namespace Private
 
 	struct _ShaderDetailsOpenGL
 	{
+		struct UniformBlock
+		{
+			GLuint buffer;
+			GLint  referenced_by_vertex_shader;
+			GLint  referenced_by_fragment_shader;
+		};
+
 		VertexLayout layout;
 		GLuint       program;
 		GLuint       vao;
+
+		std::vector< UniformBlock > uniform_blocks;
 	};
 
 #endif // ORB_HAS_OPENGL
@@ -46,6 +55,9 @@ namespace Private
 		ComPtr< ID3D11PixelShader >  pixel_shader;
 		ComPtr< ID3D11InputLayout >  input_layout;
 		ComPtr< ID3D11SamplerState > sampler_state;
+
+		std::vector< ComPtr< ID3D11Buffer > > vertex_constant_buffers;
+		std::vector< ComPtr< ID3D11Buffer > > pixel_constant_buffers;
 	};
 
 #endif // ORB_HAS_D3D11

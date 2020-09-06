@@ -25,7 +25,6 @@
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Shape/CubeShape.h>
-#include <Orbit/Graphics/Buffer/ConstantBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
@@ -38,20 +37,11 @@
 #include <Orbit/Math/Vector/Vector3.h>
 #include <Orbit/Math/Vector/Vector4.h>
 
-struct ConstantData
-{
-	Orbit::Matrix4 view_projection;
-	Orbit::Matrix4 model;
-	Orbit::Matrix4 model_inverse;
-
-} constant_data;
-
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
 	SampleApp( void )
-		, constant_buffer_( sizeof( ConstantData ) )
 		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
 		, mesh_   ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), shader_source_.GetVertexLayout() ) )
 		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
@@ -65,15 +55,8 @@ public:
 
 	void OnFrame( float delta_time ) override
 	{
-		/* Update constant buffer */
-		{
-			model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
-
-			constant_data.view_projection = camera_.GetViewProjection();
-			constant_data.model           = ( mesh_.transform_ * model_matrix_ );
-			constant_data.model_inverse   = constant_data.model.Inverted();
-			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
-		}
+		// Rotate cube
+		model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
 		// Update window and clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
@@ -81,12 +64,17 @@ public:
 		// Update camera
 		camera_.Update( delta_time );
 
+		// Update uniforms
+		const Orbit::Matrix4 model = mesh_.transform_ * model_matrix_;
+		shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
+		shader_.SetVertexUniform( shader_source_.u_model,           model );
+		shader_.SetVertexUniform( shader_source_.u_model_inverse,   model.Inverted() );
+
 		// Push cube mesh to render queue
 		Orbit::RenderCommand command;
 		command.vertex_buffer = mesh_.GetVertexBuffer();
 		command.index_buffer  = mesh_.GetIndexBuffer();
 		command.shader        = shader_;
-		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 		command.textures.emplace_back( texture_.GetTexture2D() );
 		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 
@@ -103,7 +91,6 @@ private:
 	CubeShader            shader_source_;
 	Orbit::Shader         shader_;
 	Orbit::Mesh           mesh_;
-	Orbit::ConstantBuffer constant_buffer_;
 	Orbit::Texture        texture_;
 	Orbit::Matrix4        model_matrix_;
 

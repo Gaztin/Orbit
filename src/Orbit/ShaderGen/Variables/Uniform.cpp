@@ -33,6 +33,12 @@ namespace ShaderGen
 		stored_ = true;
 	}
 
+	std::string_view UniformBase::GetName( void ) const
+	{
+		// Uniforms are always stored which means @value_ will always contain the variable name
+		return value_;
+	}
+
 	UniformArrayBase::UniformArrayBase( DataType element_type )
 		: UniformBase   ( DataType::Array )
 		, element_type_( element_type )

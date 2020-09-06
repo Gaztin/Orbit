@@ -47,6 +47,8 @@ private:
 	Varying::TexCoord v_texcoord;
 	Varying::Normal   v_normal;
 
+public:
+
 	Uniform< Mat4 > u_view_projection;
 	Uniform< Mat4 > u_model;
 

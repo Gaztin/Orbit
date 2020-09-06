@@ -64,9 +64,8 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 				nullptr, nullptr,
 			};
 
+			// Create vertex shader
 			ComPtr< ID3DBlob > vertex_data;
-
-			/* Create vertex shader */
 			{
 				ComPtr< ID3DBlob > errors;
 
@@ -80,9 +79,9 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 				}
 			}
 
-			/* Create pixel shader */
+			// Create pixel shader
+			ComPtr< ID3DBlob > pixel_data;
 			{
-				ComPtr< ID3DBlob > pixel_data;
 				ComPtr< ID3DBlob > errors;
 
 				if( FAILED( D3DCompile( source.data(), source.size(), nullptr, macros, nullptr, "PSMain", "ps_5_0", flags, 0, &pixel_data.ptr_, &errors.ptr_ ) ) )
@@ -92,6 +91,116 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 				else
 				{
 					d3d11.device->CreatePixelShader( pixel_data->GetBufferPointer(), pixel_data->GetBufferSize(), nullptr, &details.pixel_shader.ptr_ );
+				}
+			}
+
+			// Reflect vertex shader to extract constant buffer members
+			{
+				ComPtr< ID3D11ShaderReflection > shader_reflection;
+
+				if( SUCCEEDED( D3DReflect( vertex_data->GetBufferPointer(), vertex_data->GetBufferSize(), __uuidof( ID3D11ShaderReflection ), reinterpret_cast< void** >( &shader_reflection.ptr_ ) ) ) )
+				{
+					// Get shader descriptor
+					D3D11_SHADER_DESC shader_desc;
+					shader_reflection->GetDesc( &shader_desc );
+
+					// Iterate all constant buffers in shader
+					for( UINT buffer_index = 0; buffer_index < shader_desc.ConstantBuffers; ++buffer_index )
+					{
+						ID3D11ShaderReflectionConstantBuffer* shader_buffer = shader_reflection->GetConstantBufferByIndex( buffer_index );
+
+						// Get descriptor
+						D3D11_SHADER_BUFFER_DESC buffer_desc;
+						shader_buffer->GetDesc( &buffer_desc );
+
+						// Create constant buffer
+						{
+							D3D11_BUFFER_DESC desc;
+							desc.ByteWidth           = buffer_desc.Size;
+							desc.Usage               = D3D11_USAGE_DYNAMIC;
+							desc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
+							desc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+							desc.MiscFlags           = 0;
+							desc.StructureByteStride = 0;
+
+							ComPtr< ID3D11Buffer > buffer;
+							d3d11.device->CreateBuffer( &desc, nullptr, &buffer.ptr_ );
+							details.vertex_constant_buffers.emplace_back( std::move( buffer ) );
+						}
+
+						// Iterate variables
+						for( UINT variable_index = 0; variable_index < buffer_desc.Variables; ++variable_index )
+						{
+							ID3D11ShaderReflectionVariable* variable = shader_buffer->GetVariableByIndex( variable_index );
+
+							// Get variable descriptor
+							D3D11_SHADER_VARIABLE_DESC variable_desc;
+							variable->GetDesc( &variable_desc );
+
+							// Register uniform
+							Uniform uniform;
+							uniform.name         = variable_desc.Name;
+							uniform.buffer_index = buffer_index;
+							uniform.size         = variable_desc.Size;
+							uniform.offset       = variable_desc.StartOffset;
+							vertex_uniforms_.emplace_back( std::move( uniform ) );
+						}
+					}
+				}
+			}
+
+			// Reflect pixel shader to extract constant buffer members
+			{
+				ComPtr< ID3D11ShaderReflection > shader_reflection;
+
+				if( SUCCEEDED( D3DReflect( pixel_data->GetBufferPointer(), pixel_data->GetBufferSize(), IID_ID3D11ShaderReflection, reinterpret_cast< void** >( &shader_reflection.ptr_ ) ) ) )
+				{
+					// Get shader descriptor
+					D3D11_SHADER_DESC shader_desc;
+					shader_reflection->GetDesc( &shader_desc );
+
+					// Iterate all constant buffers in shader
+					for( UINT buffer_index = 0; buffer_index < shader_desc.ConstantBuffers; ++buffer_index )
+					{
+						ID3D11ShaderReflectionConstantBuffer* shader_buffer = shader_reflection->GetConstantBufferByIndex( buffer_index );
+
+						// Get descriptor
+						D3D11_SHADER_BUFFER_DESC buffer_desc;
+						shader_buffer->GetDesc( &buffer_desc );
+
+						// Create constant buffer
+						{
+							D3D11_BUFFER_DESC desc;
+							desc.ByteWidth           = buffer_desc.Size;
+							desc.Usage               = D3D11_USAGE_DYNAMIC;
+							desc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
+							desc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+							desc.MiscFlags           = 0;
+							desc.StructureByteStride = 0;
+
+							ComPtr< ID3D11Buffer > buffer;
+							d3d11.device->CreateBuffer( &desc, nullptr, &buffer.ptr_ );
+							details.pixel_constant_buffers.emplace_back( std::move( buffer ) );
+						}
+
+						// Iterate variables
+						for( UINT variable_index = 0; variable_index < buffer_desc.Variables; ++variable_index )
+						{
+							ID3D11ShaderReflectionVariable* variable = shader_buffer->GetVariableByIndex( variable_index );
+
+							// Get variable descriptor
+							D3D11_SHADER_VARIABLE_DESC variable_desc;
+							variable->GetDesc( &variable_desc );
+
+							// Register uniform
+							Uniform uniform;
+							uniform.name         = variable_desc.Name;
+							uniform.buffer_index = buffer_index;
+							uniform.size         = variable_desc.Size;
+							uniform.offset       = variable_desc.StartOffset;
+							pixel_uniforms_.emplace_back( std::move( uniform ) );
+						}
+					}
 				}
 			}
 
@@ -204,6 +313,161 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 				glDeleteShader( vertex_shader );
 			}
 
+			// Reflect shader to register uniforms and buffers
+			{
+				if( gl.version.RequireGL( 3, 1 ) || gl.version.RequireGLES( 3 ) )
+				{
+					// Get number of uniform blocks
+					GLint active_uniform_blocks = 0;
+					glGetProgramiv( details.program, OpenGLProgramParam::ActiveUniformBlocks, &active_uniform_blocks );
+
+					for( GLint block_index = 0; block_index < active_uniform_blocks; ++block_index )
+					{
+						GLchar  block_name_buf[ 256 ]         = { };
+						GLsizei block_name_length             = 0;
+						GLint   data_size                     = 0;
+						GLint   referenced_by_vertex_shader   = 0;
+						GLint   referenced_by_fragment_shader = 0;
+						GLint   active_uniforms               = 0;
+
+						// Get info about the uniform block
+						glGetActiveUniformBlockName( details.program, block_index, std::size( block_name_buf ), &block_name_length, block_name_buf );
+						glGetActiveUniformBlockiv( details.program, block_index, OpenGLUniformBlockParam::DataSize,                   &data_size );
+						glGetActiveUniformBlockiv( details.program, block_index, OpenGLUniformBlockParam::ReferencedByVertexShader,   &referenced_by_vertex_shader );
+						glGetActiveUniformBlockiv( details.program, block_index, OpenGLUniformBlockParam::ReferencedByFragmentShader, &referenced_by_fragment_shader );
+						glGetActiveUniformBlockiv( details.program, block_index, OpenGLUniformBlockParam::ActiveUniforms,             &active_uniforms );
+						assert( referenced_by_vertex_shader ^ referenced_by_fragment_shader );
+
+						// Create buffer
+						GLuint buffer = 0;
+						glGenBuffers( 1, &buffer );
+						glBindBuffer( OpenGLBufferTarget::Uniform, buffer );
+						glBufferData( OpenGLBufferTarget::Uniform, data_size, nullptr, OpenGLBufferUsage::StreamDraw );
+						glBindBuffer( OpenGLBufferTarget::Uniform, 0 );
+
+						// Register uniform block
+						Private::_ShaderDetailsOpenGL::UniformBlock uniform_block;
+						uniform_block.buffer                        = buffer;
+						uniform_block.referenced_by_vertex_shader   = referenced_by_vertex_shader;
+						uniform_block.referenced_by_fragment_shader = referenced_by_fragment_shader;
+						details.uniform_blocks.push_back( uniform_block );
+
+						// Get uniform indices
+						auto active_uniform_indices = std::unique_ptr< GLint[] >( new GLint[ active_uniforms ] );
+						glGetActiveUniformBlockiv( details.program, block_index, OpenGLUniformBlockParam::ActiveUniformIndices, active_uniform_indices.get() );
+
+						// Iterate the variables
+						GLint uniform_offset = 0;
+						for( GLint uniform_index = 0; uniform_index < active_uniforms; ++uniform_index )
+						{
+							GLchar                uniform_name_buf[ 256 ] = { };
+							GLsizei               uniform_name_length     = 0;
+							GLint                 uniform_size            = 0;
+							OpenGLUniformDataType uniform_type;
+
+							// Get uniform information
+							glGetActiveUniform( details.program, active_uniform_indices[ uniform_index ], std::size( uniform_name_buf ), &uniform_name_length, &uniform_size, &uniform_type, uniform_name_buf );
+
+							// Magnify uniform size based on type
+							switch( uniform_type )
+							{
+								case OpenGLUniformDataType::Float:           { uniform_size *= ( sizeof( float )        * 1   ); } break;
+								case OpenGLUniformDataType::FloatVec2:       { uniform_size *= ( sizeof( float )        * 2   ); } break;
+								case OpenGLUniformDataType::FloatVec3:       { uniform_size *= ( sizeof( float )        * 3   ); } break;
+								case OpenGLUniformDataType::FloatVec4:       { uniform_size *= ( sizeof( float )        * 4   ); } break;
+								case OpenGLUniformDataType::Double:          { uniform_size *= ( sizeof( double )       * 1   ); } break;
+								case OpenGLUniformDataType::DoubleVec2:      { uniform_size *= ( sizeof( double )       * 2   ); } break;
+								case OpenGLUniformDataType::DoubleVec3:      { uniform_size *= ( sizeof( double )       * 3   ); } break;
+								case OpenGLUniformDataType::DoubleVec4:      { uniform_size *= ( sizeof( double )       * 4   ); } break;
+								case OpenGLUniformDataType::Int:             { uniform_size *= ( sizeof( int )          * 1   ); } break;
+								case OpenGLUniformDataType::IntVec2:         { uniform_size *= ( sizeof( int )          * 2   ); } break;
+								case OpenGLUniformDataType::IntVec3:         { uniform_size *= ( sizeof( int )          * 3   ); } break;
+								case OpenGLUniformDataType::IntVec4:         { uniform_size *= ( sizeof( int )          * 4   ); } break;
+								case OpenGLUniformDataType::UnsignedInt:     { uniform_size *= ( sizeof( unsigned int ) * 1   ); } break;
+								case OpenGLUniformDataType::UnsignedIntVec2: { uniform_size *= ( sizeof( unsigned int ) * 2   ); } break;
+								case OpenGLUniformDataType::UnsignedIntVec3: { uniform_size *= ( sizeof( unsigned int ) * 3   ); } break;
+								case OpenGLUniformDataType::UnsignedIntVec4: { uniform_size *= ( sizeof( unsigned int ) * 4   ); } break;
+								case OpenGLUniformDataType::Bool:            { uniform_size *= ( sizeof( bool )         * 1   ); } break;
+								case OpenGLUniformDataType::BoolVec2:        { uniform_size *= ( sizeof( bool )         * 2   ); } break;
+								case OpenGLUniformDataType::BoolVec3:        { uniform_size *= ( sizeof( bool )         * 3   ); } break;
+								case OpenGLUniformDataType::BoolVec4:        { uniform_size *= ( sizeof( bool )         * 4   ); } break;
+								case OpenGLUniformDataType::FloatMat2:       { uniform_size *= ( sizeof( float )        * 2*2 ); } break;
+								case OpenGLUniformDataType::FloatMat3:       { uniform_size *= ( sizeof( float )        * 3*3 ); } break;
+								case OpenGLUniformDataType::FloatMat4:       { uniform_size *= ( sizeof( float )        * 4*4 ); } break;
+								case OpenGLUniformDataType::FloatMat2x3:     { uniform_size *= ( sizeof( float )        * 2*3 ); } break;
+								case OpenGLUniformDataType::FloatMat2x4:     { uniform_size *= ( sizeof( float )        * 2*4 ); } break;
+								case OpenGLUniformDataType::FloatMat3x2:     { uniform_size *= ( sizeof( float )        * 3*2 ); } break;
+								case OpenGLUniformDataType::FloatMat3x4:     { uniform_size *= ( sizeof( float )        * 3*4 ); } break;
+								case OpenGLUniformDataType::FloatMat4x2:     { uniform_size *= ( sizeof( float )        * 4*2 ); } break;
+								case OpenGLUniformDataType::FloatMat4x3:     { uniform_size *= ( sizeof( float )        * 4*3 ); } break;
+								case OpenGLUniformDataType::DoubleMat2:      { uniform_size *= ( sizeof( double )       * 2*2 ); } break;
+								case OpenGLUniformDataType::DoubleMat3:      { uniform_size *= ( sizeof( double )       * 3*3 ); } break;
+								case OpenGLUniformDataType::DoubleMat4:      { uniform_size *= ( sizeof( double )       * 4*4 ); } break;
+								case OpenGLUniformDataType::DoubleMat2x3:    { uniform_size *= ( sizeof( double )       * 2*3 ); } break;
+								case OpenGLUniformDataType::DoubleMat2x4:    { uniform_size *= ( sizeof( double )       * 2*4 ); } break;
+								case OpenGLUniformDataType::DoubleMat3x2:    { uniform_size *= ( sizeof( double )       * 3*2 ); } break;
+								case OpenGLUniformDataType::DoubleMat3x4:    { uniform_size *= ( sizeof( double )       * 3*4 ); } break;
+								case OpenGLUniformDataType::DoubleMat4x2:    { uniform_size *= ( sizeof( double )       * 4*2 ); } break;
+								case OpenGLUniformDataType::DoubleMat4x3:    { uniform_size *= ( sizeof( double )       * 4*3 ); } break;
+								default:                                     { uniform_size  = 0;                                } break;
+							}
+
+							// Register uniform
+							Uniform uniform;
+							uniform.name   = uniform_name_buf;
+							uniform.offset = uniform_offset;
+							uniform.size   = uniform_size;
+
+							if( referenced_by_vertex_shader )
+							{
+								uniform.buffer_index = block_index;
+								vertex_uniforms_.push_back( uniform );
+							}
+
+							if( referenced_by_fragment_shader )
+							{
+								uniform.buffer_index = block_index;
+								pixel_uniforms_.push_back( uniform );
+							}
+
+							// Increment offset
+							uniform_offset += uniform_size;
+						}
+					}
+				}
+				else
+				{
+					// Get active uniforms
+					GLint active_uniforms = 0;
+					glGetProgramiv( details.program, OpenGLProgramParam::ActiveUniforms, &active_uniforms );
+
+					// Iterate the variables
+					GLint uniform_offset = 0;
+					for( GLint uniform_index = 0; uniform_index < active_uniforms; ++uniform_index )
+					{
+						GLchar                uniform_name_buf[ 256 ] = { };
+						GLsizei               uniform_name_length     = 0;
+						GLint                 uniform_size            = 0;
+						OpenGLUniformDataType uniform_type;
+
+						// Get uniform information
+						glGetActiveUniform( details.program, uniform_index, std::size( uniform_name_buf ), &uniform_name_length, &uniform_size, &uniform_type, uniform_name_buf	);
+
+						// Register uniform
+						Uniform uniform;
+						uniform.name         = uniform_name_buf;
+						uniform.buffer_index = 0;
+						uniform.offset       = uniform_offset;
+						uniform.size         = uniform_size;
+						vertex_uniforms_.push_back( uniform );
+						pixel_uniforms_.push_back( uniform );
+
+						// Increment offset
+						uniform_offset += uniform_size;
+					}
+				}
+			}
+
 			/* Create vertex array for GL 3.0+ or GLES 3+ */
 			if( gl.version.RequireGL( 3, 0 ) || gl.version.RequireGLES( 3 ) )
 			{
@@ -233,6 +497,9 @@ Shader::~Shader( void )
 	if( details_.index() == unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > )
 	{
 		auto& details = std::get< Private::_ShaderDetailsOpenGL >( details_ );
+
+		for( auto& uniform_block : details.uniform_blocks )
+			glDeleteBuffers( 1, &uniform_block.buffer );
 
 		if( details.vao )
 			glDeleteVertexArrays( 1, &details.vao );
@@ -269,6 +536,12 @@ void Shader::Bind( void )
 			if( details.sampler_state )
 				d3d11.device_context->PSSetSamplers( 0, 1, &details.sampler_state.ptr_ );
 
+			for( size_t i = 0; i < details.vertex_constant_buffers.size(); ++i )
+				d3d11.device_context->VSSetConstantBuffers( i, 1, &details.vertex_constant_buffers[ i ].ptr_ );
+
+			for( size_t i = 0; i < details.pixel_constant_buffers.size(); ++i )
+				d3d11.device_context->PSSetConstantBuffers( i, 1, &details.pixel_constant_buffers[ i ].ptr_ );
+
 			break;
 		}
 
@@ -302,6 +575,15 @@ void Shader::Bind( void )
 				}
 
 				ptr += component.GetSize();
+			}
+
+			for( size_t i = 0; i < details.uniform_blocks.size(); ++i )
+			{
+				auto& uniform_block = details.uniform_blocks[ i ];
+
+				glBindBuffer( OpenGLBufferTarget::Uniform, uniform_block.buffer );
+				glBindBufferBase( OpenGLBufferTarget::Uniform, i, uniform_block.buffer );
+				glUniformBlockBinding( details.program, i, i );
 			}
 
 			break;
@@ -385,6 +667,136 @@ void Shader::Unbind( void )
 
 			break;
 		}
+
+	#endif // ORB_HAS_OPENGL
+
+	}
+}
+
+void Shader::SetVertexUniform( std::string_view name, const void* data, size_t size )
+{
+	// Find uniform among registered uniforms
+	auto uniform = std::find_if( vertex_uniforms_.begin(), vertex_uniforms_.end(), [ name ]( const Uniform& u ) { return u.name == name; } );
+	assert( uniform != vertex_uniforms_.end() );
+	assert( uniform->size >= size );
+
+	switch( details_.index() )
+	{
+
+	#if( ORB_HAS_D3D11 )
+
+		case( unique_index_v< Private::_ShaderDetailsD3D11, Private::ShaderDetails > ):
+		{
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& details = std::get< Private::_ShaderDetailsD3D11 >( details_ );
+			auto& buffer  = details.vertex_constant_buffers[ uniform->buffer_index ];
+
+			D3D11_MAPPED_SUBRESOURCE subresource;
+			if( SUCCEEDED( d3d11.device_context->Map( buffer.ptr_, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &subresource ) ) )
+			{
+				assert( subresource.RowPitch >= uniform->size );
+
+				memcpy( static_cast< uint8_t* >( subresource.pData ) + uniform->offset, data, size );
+
+				d3d11.device_context->Unmap( buffer.ptr_, 0 );
+			}
+
+		} break;
+
+	#endif // ORB_HAS_D3D11
+	#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > ):
+		{
+			auto& gl      = std::get< Private::_RenderContextDetailsOpenGL >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& details = std::get< Private::_ShaderDetailsOpenGL >( details_ );
+
+			if( gl.version.RequireGL( 3, 1 ) || gl.version.RequireGLES( 3 ) )
+			{
+				auto& uniform_block = details.uniform_blocks[ uniform->buffer_index ];
+
+				glBindBuffer( OpenGLBufferTarget::Uniform, uniform_block.buffer );
+
+				void* dst = glMapBufferRange( OpenGLBufferTarget::Uniform, uniform->offset, uniform->size, OpenGLMapAccess::WriteBit );
+
+				memcpy( dst, data, size );
+
+				glUnmapBuffer( OpenGLBufferTarget::Uniform );
+			}
+			else
+			{
+				const GLint location = glGetUniformLocation( details.program, name.data() );
+
+				// #TODO: Not sure how to implement this in older versions of OpenGL. Would need to keep track of uniform type and such.
+				glUniform1fv( location, size / sizeof( float ), static_cast< const float* >( data ) );
+			}
+
+		} break;
+
+	#endif // ORB_HAS_OPENGL
+
+	}
+}
+
+void Shader::SetPixelUniform( std::string_view name, const void* data, size_t size )
+{
+	// Find uniform among registered uniforms
+	auto uniform = std::find_if( pixel_uniforms_.begin(), pixel_uniforms_.end(), [ name ]( const Uniform& u ) { return u.name == name; } );
+	assert( uniform != pixel_uniforms_.end() );
+	assert( uniform->size >= size );
+
+	switch( details_.index() )
+	{
+
+	#if( ORB_HAS_D3D11 )
+
+		case( unique_index_v< Private::_ShaderDetailsD3D11, Private::ShaderDetails > ):
+		{
+			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& details = std::get< Private::_ShaderDetailsD3D11 >( details_ );
+			auto& buffer  = details.pixel_constant_buffers[ uniform->buffer_index ];
+
+			D3D11_MAPPED_SUBRESOURCE subresource;
+			if( SUCCEEDED( d3d11.device_context->Map( buffer.ptr_, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &subresource ) ) )
+			{
+				assert( subresource.RowPitch >= uniform->size );
+
+				memcpy( static_cast< uint8_t* >( subresource.pData ) + uniform->offset, data, size );
+
+				d3d11.device_context->Unmap( buffer.ptr_, 0 );
+			}
+
+		} break;
+
+	#endif // ORB_HAS_D3D11
+	#if( ORB_HAS_OPENGL )
+
+		case( unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > ):
+		{
+			auto& gl      = std::get< Private::_RenderContextDetailsOpenGL >( RenderContext::GetInstance().GetPrivateDetails() );
+			auto& details = std::get< Private::_ShaderDetailsOpenGL >( details_ );
+
+			if( gl.version.RequireGL( 3, 1 ) || gl.version.RequireGLES( 3 ) )
+			{
+				auto& uniform_block = details.uniform_blocks[ uniform->buffer_index ];
+
+				glBindBuffer( OpenGLBufferTarget::Uniform, uniform_block.buffer );
+
+				void* dst = glMapBufferRange( OpenGLBufferTarget::Uniform, uniform->offset, uniform->size, OpenGLMapAccess::WriteBit );
+
+				memcpy( dst, data, size );
+
+				glUnmapBuffer( OpenGLBufferTarget::Uniform );
+			}
+			else
+			{
+				const GLint location = glGetUniformLocation( details.program, name.data() );
+
+				// #TODO: Not sure how to implement this in older versions of OpenGL. Would need to keep track of uniform type and such.
+				glUniform1fv( location, size / sizeof( float ), static_cast< const float* >( data ) );
+			}
+
+		} break;
 
 	#endif // ORB_HAS_OPENGL
 
