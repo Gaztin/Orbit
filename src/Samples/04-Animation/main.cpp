@@ -15,6 +15,9 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
+#include "Framework/Camera.h"
+#include "AnimationShader.h"
+
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
@@ -23,12 +26,6 @@
 #include <Orbit/Graphics/Geometry/Model.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
-#include <Orbit/Math/Vector/Vector3.h>
-
-#include "Framework/Camera.h"
-#include "AnimationShader.h"
-
-#include <cmath>
 
 class SampleApp final : public Orbit::Application< SampleApp >
 {

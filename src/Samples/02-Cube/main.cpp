@@ -20,10 +20,7 @@
 
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
-#include <Orbit/Core/Input/Input.h>
-#include <Orbit/Core/Input/Key.h>
 #include <Orbit/Core/IO/Asset.h>
-#include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Shape/CubeShape.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/MeshFactory.h>
@@ -31,11 +28,6 @@
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
-#include <Orbit/Math/Literals.h>
-#include <Orbit/Math/Matrix/Matrix4.h>
-#include <Orbit/Math/Vector/Vector2.h>
-#include <Orbit/Math/Vector/Vector3.h>
-#include <Orbit/Math/Vector/Vector4.h>
 
 class SampleApp final : public Orbit::Application< SampleApp >
 {
@@ -93,7 +85,6 @@ private:
 	Orbit::Mesh           mesh_;
 	Orbit::Texture        texture_;
 	Orbit::Matrix4        model_matrix_;
-
-	Camera camera_;
+	Camera                camera_;
 
 };

@@ -21,16 +21,12 @@
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/Shape/EquilateralTriangleShape.h>
-#include <Orbit/Graphics/Buffer/IndexBuffer.h>
-#include <Orbit/Graphics/Buffer/VertexBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Geometry/Geometry.h>
+#include <Orbit/Graphics/Geometry/Mesh.h>
 #include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
-#include <Orbit/Math/Vector/Vector2.h>
-#include <Orbit/Math/Vector/Vector4.h>
 
 class SampleApp final : public Orbit::Application< SampleApp >
 {
