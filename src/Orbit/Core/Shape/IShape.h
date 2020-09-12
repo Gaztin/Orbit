@@ -22,15 +22,22 @@ ORB_NAMESPACE_BEGIN
 
 enum class ShapeType
 {
+	EquilateralTriangle,
 	Cube,
 	Sphere,
 };
 
-struct IShape
+class ORB_API_CORE IShape
 {
+public:
+
+	         IShape( void ) = default;
 	virtual ~IShape( void ) = default;
 
+public:
+
 	virtual ShapeType GetType( void ) const = 0;
+
 };
 
 ORB_NAMESPACE_END

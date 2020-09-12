@@ -18,6 +18,8 @@
 #pragma once
 #include "Orbit/ShaderGen/Variables/Variable.h"
 
+#include <string_view>
+
 ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
@@ -50,6 +52,10 @@ namespace ShaderGen
 	public:
 
 		UniformBase( DataType type );
+
+	public:
+
+		std::string_view GetName( void ) const;
 
 	public:
 

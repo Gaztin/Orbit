@@ -15,56 +15,31 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include <Orbit/Core/Application/Application.h>
-#include <Orbit/Core/Application/EntryPoint.h>
-#include <Orbit/Core/IO/Asset.h>
-#include <Orbit/Core/Widget/Window.h>
-#include <Orbit/Graphics/Animation/Animation.h>
-#include <Orbit/Graphics/Buffer/ConstantBuffer.h>
-#include <Orbit/Graphics/Buffer/FrameBuffer.h>
-#include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Geometry/Model.h>
-#include <Orbit/Graphics/Renderer/DefaultRenderer.h>
-#include <Orbit/Graphics/Shader/Shader.h>
-#include <Orbit/Math/Vector/Vector3.h>
-
 #include "Framework/Camera.h"
 #include "Framework/RenderQuad.h"
 #include "PostFXShader.h"
 #include "SceneShader.h"
 
-#include <cmath>
-
-static SceneShader  scene_shader;
-static PostFXShader post_fx_shader;
-
-struct SceneVertexConstantData
-{
-	Orbit::Matrix4 view_projection;
-	Orbit::Matrix4 model;
-
-} scene_vertex_constant_data;
-
-struct PostFXPixelConstantData
-{
-	float time;
-
-} post_fx_pixel_constant_data;
+#include <Orbit/Core/Application/Application.h>
+#include <Orbit/Core/Application/EntryPoint.h>
+#include <Orbit/Core/IO/Asset.h>
+#include <Orbit/Core/Time/Clock.h>
+#include <Orbit/Graphics/Animation/Animation.h>
+#include <Orbit/Graphics/Buffer/FrameBuffer.h>
+#include <Orbit/Graphics/Context/RenderContext.h>
+#include <Orbit/Graphics/Geometry/Model.h>
+#include <Orbit/Graphics/Renderer/DefaultRenderer.h>
+#include <Orbit/Graphics/Shader/Shader.h>
 
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
 	SampleApp( void )
-		: window_                       ( 800, 600 )
-		, scene_shader_                 ( scene_shader.Generate(), scene_shader.GetVertexLayout() )
-		, post_fx_shader_               ( post_fx_shader.Generate(), post_fx_shader.GetVertexLayout() )
-		, model_                        ( Orbit::Asset( "models/bunny.obj" ), scene_shader.GetVertexLayout() )
-		, scene_vertex_constant_buffer_ ( sizeof( SceneVertexConstantData ) )
-		, post_fx_pixel_constant_buffer_( sizeof( PostFXPixelConstantData ) )
+		: scene_shader_  ( scene_shader_source_.Generate(), scene_shader_source_.GetVertexLayout() )
+		, post_fx_shader_( post_fx_shader_source_.Generate(), post_fx_shader_source_.GetVertexLayout() )
+		, model_         ( Orbit::Asset( "models/bunny.obj" ), scene_shader_source_.GetVertexLayout() )
 	{
-		window_.SetTitle( "Orbit Sample (05-PostFX)" );
-		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
 		camera_.position = Orbit::Vector3( 0.03f, 0.17f, -0.2f );
@@ -73,21 +48,26 @@ public:
 
 public:
 
-	void OnFrame( float delta_time ) override
+	void OnFrame( void ) override
 	{
-		window_.PollEvents();
+		const float life_time  = Orbit::Clock::GetLife();
+		const float delta_time = Orbit::Clock::GetDelta();
+
+		// Clear context and framebuffer
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 		frame_buffer_.Clear();
 
+		// Update camera
 		camera_.Update( delta_time );
 
-		scene_vertex_constant_data.view_projection = camera_.GetViewProjection();
-		scene_vertex_constant_data.model           = model_matrix_;
-		scene_vertex_constant_buffer_.Update( &scene_vertex_constant_data, sizeof( SceneVertexConstantData ) );
+		// Update scene shader uniforms
+		scene_shader_.SetVertexUniform( scene_shader_source_.u_view_projection, camera_.GetViewProjection() );
+		scene_shader_.SetVertexUniform( scene_shader_source_.u_model,           model_matrix_ );
 
-		post_fx_pixel_constant_data.time += delta_time;
-		post_fx_pixel_constant_buffer_.Update( &post_fx_pixel_constant_data, sizeof( PostFXPixelConstantData ) );
+		// Update post-fx shader uniforms
+		post_fx_shader_.SetPixelUniform( post_fx_shader_source_.u_time, life_time );
 
+		// Push meshes to render queue
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
@@ -95,43 +75,35 @@ public:
 			command.index_buffer  = mesh.GetIndexBuffer();
 			command.shader        = scene_shader_;
 			command.frame_buffer  = frame_buffer_;
-			command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( scene_vertex_constant_buffer_ );
-
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
-		/* Render quad */
-		{
-			Orbit::RenderCommand command;
-			command.vertex_buffer = render_quad_.vertex_buffer_;
-			command.index_buffer  = render_quad_.index_buffer_;
-			command.shader        = post_fx_shader_;
-			command.textures.emplace_back( frame_buffer_.GetTexture2D() );
-			command.constant_buffers[ Orbit::ShaderType::Fragment ].emplace_back( post_fx_pixel_constant_buffer_ );
+		// Push render quad to render queue
+		Orbit::RenderCommand command;
+		command.vertex_buffer = render_quad_.vertex_buffer_;
+		command.index_buffer  = render_quad_.index_buffer_;
+		command.shader        = post_fx_shader_;
+		command.textures.emplace_back( frame_buffer_.GetTexture2D() );
+		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 
-			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
-		}
-
+		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
 
+		// Swap buffers
 		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning( void ) override { return window_.IsOpen(); }
-
 private:
 
-	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
+	SceneShader           scene_shader_source_;
+	PostFXShader          post_fx_shader_source_;
 	Orbit::Shader         scene_shader_;
 	Orbit::Shader         post_fx_shader_;
 	Orbit::Model          model_;
-	Orbit::ConstantBuffer scene_vertex_constant_buffer_;
-	Orbit::ConstantBuffer post_fx_pixel_constant_buffer_;
 	Orbit::FrameBuffer    frame_buffer_;
 	Orbit::Matrix4        model_matrix_;
-
-	Camera     camera_;
-	RenderQuad render_quad_;
+	Camera                camera_;
+	RenderQuad            render_quad_;
 
 };

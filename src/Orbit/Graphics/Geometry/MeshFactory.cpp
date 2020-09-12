@@ -18,6 +18,7 @@
 #include "MeshFactory.h"
 
 #include "Orbit/Core/Shape/CubeShape.h"
+#include "Orbit/Core/Shape/EquilateralTriangleShape.h"
 #include "Orbit/Core/Shape/SphereShape.h"
 #include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Graphics/Geometry/Geometry.h"
@@ -35,8 +36,9 @@ Geometry MeshFactory::CreateGeometryFromShape( ShapeType shape_type, const Verte
 
 	switch( shape_type )
 	{
-		case ShapeType::Cube:   { GenerateCubeData( geometry_data );                 } break;
-		case ShapeType::Sphere: { GenerateSphereData( geometry_data, detail_level ); } break;
+		case ShapeType::EquilateralTriangle: { GenerateEquilateralTriangleData( geometry_data );  } break;
+		case ShapeType::Cube:                { GenerateCubeData( geometry_data );                 } break;
+		case ShapeType::Sphere:              { GenerateSphereData( geometry_data, detail_level ); } break;
 	}
 
 	geometry_data.GenerateNormals();
@@ -51,6 +53,14 @@ Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& 
 
 	switch( shape.GetType() )
 	{
+		case ShapeType::EquilateralTriangle:
+		{
+			const EquilateralTriangleShape& triangle_shape = static_cast< const EquilateralTriangleShape& >( shape );
+
+			mesh.transform_.Scale( Vector3( triangle_shape.scale ) );
+
+		} break;
+
 		case ShapeType::Cube:
 		{
 			const CubeShape& cube_shape = static_cast< const CubeShape& >( shape );
@@ -75,9 +85,10 @@ std::string_view MeshFactory::EvalShapeName( ShapeType type ) const
 {
 	switch( type )
 	{
-		case ShapeType::Cube:   return "Cube";
-		case ShapeType::Sphere: return "Sphere";
-		default:                return "UnknownShape";
+		case ShapeType::EquilateralTriangle: return "EquilateralTriangle";
+		case ShapeType::Cube:                return "Cube";
+		case ShapeType::Sphere:              return "Sphere";
+		default:                             return "UnknownShape";
 	}
 }
 
@@ -279,6 +290,41 @@ void MeshFactory::GenerateSphereData( Geometry& geometry, DetailLevel detail_lev
 		vertex.normal = Vector3( vertex.position ).Normalized();
 		geometry.SetVertex( i, vertex );
 	}
+}
+
+void MeshFactory::GenerateEquilateralTriangleData( Geometry& geometry ) const
+{
+	Face face;
+
+	// Bottom left corner
+	{
+		Vertex vertex;
+		vertex.position   = Orbit::Vector4( -1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
+		vertex.color      = Orbit::Color( 1.0f, 0.0f, 1.0f, 1.0f );
+		vertex.tex_coord  = Orbit::Vector2( 0.0f, 0.0f );
+		face.indices[ 0 ] = geometry.AddVertex( vertex );
+	}
+
+	// Top center corner
+	{
+		Vertex vertex;
+		vertex.position   = Orbit::Vector4(  0.0f,                              1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
+		vertex.color      = Orbit::Color( 0.0f, 1.0f, 1.0f, 1.0f );
+		vertex.tex_coord  = Orbit::Vector2( 0.5f, 1.0f );
+		face.indices[ 1 ] = geometry.AddVertex( vertex );
+	}
+
+	// Bottom right corner
+	{
+		Vertex vertex;
+		vertex.position   = Orbit::Vector4(  1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
+		vertex.color      = Orbit::Color( 1.0f, 1.0f, 0.0f, 1.0f );
+		vertex.tex_coord  = Orbit::Vector2( 1.0f, 0.0f );
+		face.indices[ 2 ] = geometry.AddVertex( vertex );
+	}
+
+	// Create face
+	geometry.AddFace( face );
 }
 
 ORB_NAMESPACE_END

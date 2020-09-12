@@ -17,6 +17,9 @@
 
 #pragma once
 #include "Orbit/Graphics/Private/ShaderDetails.h"
+#include "Orbit/ShaderGen/Variables/Uniform.h"
+
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
@@ -32,8 +35,22 @@ public:
 
 public:
 
-	void Bind  ( void );
-	void Unbind( void );
+	void Bind             ( void );
+	void Unbind           ( void );
+	void SetVertexUniform ( std::string_view name, const void* data, size_t size );
+	void SetPixelUniform  ( std::string_view name, const void* data, size_t size );
+
+	template< typename T >
+	void SetVertexUniform( const ShaderGen::UniformBase& uniform, const T& data )
+	{
+		SetVertexUniform( uniform.GetName(), &data, sizeof( T ) );
+	}
+	
+	template< typename T >
+	void SetPixelUniform( const ShaderGen::UniformBase& uniform, const T& data )
+	{
+		SetPixelUniform( uniform.GetName(), &data, sizeof( T ) );
+	}
 
 public:
 
@@ -41,7 +58,19 @@ public:
 
 private:
 
+	struct Uniform
+	{
+		std::string name;
+		size_t      buffer_index;
+		size_t      size;
+		size_t      offset;
+	};
+
+private:
+
 	Private::ShaderDetails details_;
+	std::vector< Uniform > vertex_uniforms_;
+	std::vector< Uniform > pixel_uniforms_;
 
 };
 

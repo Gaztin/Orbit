@@ -20,48 +20,25 @@
 
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
-#include <Orbit/Core/Input/Input.h>
-#include <Orbit/Core/Input/Key.h>
 #include <Orbit/Core/IO/Asset.h>
-#include <Orbit/Core/IO/Log.h>
 #include <Orbit/Core/Shape/CubeShape.h>
-#include <Orbit/Core/Widget/Window.h>
-#include <Orbit/Graphics/Buffer/ConstantBuffer.h>
+#include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
-#include <Orbit/Math/Literals.h>
-#include <Orbit/Math/Matrix/Matrix4.h>
-#include <Orbit/Math/Vector/Vector2.h>
-#include <Orbit/Math/Vector/Vector3.h>
-#include <Orbit/Math/Vector/Vector4.h>
-
-static CubeShader cube_shader;
-
-struct ConstantData
-{
-	Orbit::Matrix4 view_projection;
-	Orbit::Matrix4 model;
-	Orbit::Matrix4 model_inverse;
-
-} constant_data;
 
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
 	SampleApp( void )
-		: window_         ( 800, 600 )
-		, shader_         ( cube_shader.Generate(), cube_shader.GetVertexLayout() )
-		, mesh_           ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), cube_shader.GetVertexLayout() ) )
-		, constant_buffer_( sizeof( ConstantData ) )
-		, texture_        ( Orbit::Asset( "textures/checkerboard.tga" ) )
+		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, mesh_   ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), shader_source_.GetVertexLayout() ) )
+		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
-		window_.SetTitle( "Orbit Sample (02-Cube)" );
-		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		camera_.position.y = 2.000f;
 		camera_.rotation.x = 0.125f * Orbit::Pi;
@@ -69,48 +46,48 @@ public:
 
 public:
 
-	void OnFrame( float delta_time ) override
+	void OnFrame( void ) override
 	{
-		/* Update constant buffer */
-		{
-			model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
+		const float delta_time = Orbit::Clock::GetDelta();
 
-			constant_data.view_projection = camera_.GetViewProjection();
-			constant_data.model           = ( mesh_.transform_ * model_matrix_ );
-			constant_data.model_inverse   = constant_data.model.Inverted();
-			constant_buffer_.Update( &constant_data, sizeof( ConstantData ) );
-		}
+		// Rotate cube
+		model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
-		window_.PollEvents();
+		// Update window and clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
+		// Update camera
 		camera_.Update( delta_time );
 
+		// Update uniforms
+		const Orbit::Matrix4 model = mesh_.transform_ * model_matrix_;
+		shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
+		shader_.SetVertexUniform( shader_source_.u_model,           model );
+		shader_.SetVertexUniform( shader_source_.u_model_inverse,   model.Inverted() );
+
+		// Push cube mesh to render queue
 		Orbit::RenderCommand command;
 		command.vertex_buffer = mesh_.GetVertexBuffer();
 		command.index_buffer  = mesh_.GetIndexBuffer();
 		command.shader        = shader_;
-		command.constant_buffers[ Orbit::ShaderType::Vertex ].emplace_back( constant_buffer_ );
 		command.textures.emplace_back( texture_.GetTexture2D() );
-
 		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+
+		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
 
+		// Swap buffers
 		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning( void ) override { return window_.IsOpen(); }
-
 private:
 
-	Orbit::Window         window_;
 	Orbit::RenderContext  render_context_;
+	CubeShader            shader_source_;
 	Orbit::Shader         shader_;
 	Orbit::Mesh           mesh_;
-	Orbit::ConstantBuffer constant_buffer_;
 	Orbit::Texture        texture_;
 	Orbit::Matrix4        model_matrix_;
-
-	Camera camera_;
+	Camera                camera_;
 
 };

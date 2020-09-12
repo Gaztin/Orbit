@@ -41,9 +41,7 @@ void DefaultRenderer::Render( void )
 		if( command.index_buffer )
 			command.index_buffer->Bind();
 
-		BindConstantBuffers( command );
 		APIDraw( command );
-		UnbindConstantBuffers( command );
 
 //		if( command.index_buffer )
 //			command.index_buffer->Unbind();

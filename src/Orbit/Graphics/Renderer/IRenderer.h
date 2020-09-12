@@ -41,9 +41,7 @@ public:
 
 protected:
 
-	void BindConstantBuffers  ( const RenderCommand& command );
-	void UnbindConstantBuffers( const RenderCommand& command );
-	void APIDraw              ( const RenderCommand& command );
+	void APIDraw( const RenderCommand& command );
 
 protected:
 

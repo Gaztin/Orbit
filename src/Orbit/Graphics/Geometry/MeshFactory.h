@@ -26,10 +26,10 @@
 
 ORB_NAMESPACE_BEGIN
 
-class  Geometry;
-class  Mesh;
-class  VertexLayout;
-struct IShape;
+class Geometry;
+class IShape;
+class Mesh;
+class VertexLayout;
 
 class ORB_API_GRAPHICS MeshFactory final : public Singleton< MeshFactory >
 {
@@ -49,9 +49,10 @@ public:
 
 private:
 
-	std::string_view EvalShapeName     ( ShapeType type ) const;
-	void             GenerateCubeData  ( Geometry& geometry ) const;
-	void             GenerateSphereData( Geometry& geometry, DetailLevel detail_level ) const;
+	std::string_view EvalShapeName                   ( ShapeType type ) const;
+	void             GenerateCubeData                ( Geometry& geometry ) const;
+	void             GenerateSphereData              ( Geometry& geometry, DetailLevel detail_level ) const;
+	void             GenerateEquilateralTriangleData ( Geometry& geometry ) const;
 
 };
 

@@ -18,6 +18,7 @@
 #include "UIApplicationDelegate.h"
 
 #include "Orbit/Core/Application/Bootstrap.h"
+#include "Orbit/Core/Time/Clock.h"
 
 #if defined( ORB_OS_IOS )
 
@@ -25,8 +26,16 @@
 
 -( BOOL )application:( UIApplication* )__unused application didFinishLaunchingWithOptions:( NSDictionary* )__unused launchOptions
 {
+	// Start the engine clock
+	Clock::Start();
+
+	// Create the main window
+	main_window = std::make_shared< ORB_NAMESPACE Window >( 512, 512 );
+
+	// Create the application
 	application_instance = std::static_pointer_cast< ORB_NAMESPACE ApplicationBase >( ORB_NAMESPACE Bootstrap::trampoline() );
 
+	// Create the display link that will update our engine
 	CADisplayLink* display_link = [ CADisplayLink displayLinkWithTarget:application.delegate selector:@selector( OnFrame: ) ];
 	[ display_link addToRunLoop:[ NSRunLoop currentRunLoop ] forMode:NSDefaultRunLoopMode ];
 
@@ -55,7 +64,7 @@
 
 -( void )OnFrame:( CADisplayLink* )display_link
 {
-	float delta_time = static_cast< float >( [ display_link duration ] );
+	Clock::Update();
 
 	application_instance->OnFrame( delta_time );
 }

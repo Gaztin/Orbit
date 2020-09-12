@@ -16,34 +16,23 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Renderer/BlendEquation.h"
-
-#include <map>
-#include <vector>
+#include "Orbit/Core/Core.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
-
-struct ORB_API_GRAPHICS RenderCommand
+namespace Clock
 {
-	std::vector< Ref< Texture2D > > textures;
+	/** Returns the time (in seconds) since the engine was initialized */
+	ORB_API_CORE float GetLife( void );
 
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
+	/** Returns the time (in seconds) since the last frame */
+	ORB_API_CORE float GetDelta( void );
 
-	Topology      topology       = Topology::Triangles;
-	BlendEquation blend_equation = BlendFactor::SourceAlpha + BlendFactor::InvSourceAlpha;
+	/** Starts the internal timer. Initializes Life and Delta to current time. */
+	ORB_API_CORE void Start( void );
 
-	bool blend_enabled = true;
+	/** Update the internal timer. Increments Life and refreshes Delta. */
+	ORB_API_CORE void Update( void );
 };
 
 ORB_NAMESPACE_END

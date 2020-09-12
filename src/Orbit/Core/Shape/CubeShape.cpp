@@ -15,39 +15,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Utility/Utility.h"
-#include "Orbit/Graphics/Private/ConstantBufferDetails.h"
-
-#include <memory>
+#include "CubeShape.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS ConstantBuffer
+CubeShape::CubeShape( float half_extent )
+	: half_extent( half_extent )
 {
-public:
-
-	explicit ConstantBuffer( size_t size );
-	        ~ConstantBuffer( void );
-
-public:
-
-	void Bind  ( ShaderType type, uint32_t local_slot, uint32_t global_slot ) const;
-	void Unbind( ShaderType type, uint32_t local_slot, uint32_t global_slot ) const;
-
-public:
-
-	void Update( const void* data, size_t size );
-
-private:
-
-	void* UpdateBegin( size_t size );
-	void  UpdateEnd  ( void );
-
-private:
-
-	Private::ConstantBufferDetails details_;
-
-};
+}
 
 ORB_NAMESPACE_END

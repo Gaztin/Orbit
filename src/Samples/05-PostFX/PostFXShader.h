@@ -35,5 +35,8 @@ private:
 	Varying::Position v_position;
 	Varying::TexCoord v_texcoord;
 
+public:
+
 	Uniform< Float > u_time;
+
 };

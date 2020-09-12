@@ -15,35 +15,39 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Renderer/BlendEquation.h"
+#include "Clock.h"
 
-#include <map>
-#include <vector>
+#include <chrono>
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
+static std::chrono::high_resolution_clock::time_point start;
+static std::chrono::high_resolution_clock::time_point then;
+static std::chrono::high_resolution_clock::time_point now;
 
-struct ORB_API_GRAPHICS RenderCommand
+float Clock::GetLife( void )
 {
-	std::vector< Ref< Texture2D > > textures;
+	auto life_time = std::chrono::duration_cast< std::chrono::duration< float > >( now - start );
+	return life_time.count();
+}
 
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
+float Clock::GetDelta( void )
+{
+	auto delta_time = std::chrono::duration_cast< std::chrono::duration< float > >( now - then );
+	return delta_time.count();
+}
 
-	Topology      topology       = Topology::Triangles;
-	BlendEquation blend_equation = BlendFactor::SourceAlpha + BlendFactor::InvSourceAlpha;
+void Clock::Start( void )
+{
+	start = std::chrono::high_resolution_clock::now();
+	then  = start;
+	now   = start;
+}
 
-	bool blend_enabled = true;
-};
+void Clock::Update( void )
+{
+	then = now;
+	now  = std::chrono::high_resolution_clock::now();
+}
 
 ORB_NAMESPACE_END

@@ -18,7 +18,6 @@
 #include "IRenderer.h"
 
 #include "Orbit/Graphics/API/OpenGL/OpenGLFunctions.h"
-#include "Orbit/Graphics/Buffer/ConstantBuffer.h"
 #include "Orbit/Graphics/Buffer/IndexBuffer.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Context/RenderContext.h"
@@ -113,49 +112,6 @@ constexpr OpenGLBlendMode BlendOpToGL( BlendOp op )
 void IRenderer::PushCommand( RenderCommand command )
 {
 	commands_.emplace_back( std::move( command ) );
-}
-
-void IRenderer::BindConstantBuffers( const RenderCommand& command )
-{
-	uint32_t global_slot = 0;
-
-	for( auto& constant_buffers : command.constant_buffers )
-	{
-		for( size_t i = 0; i < constant_buffers.second.size(); ( ++i, ++global_slot ) )
-		{
-			const uint32_t local_slot     = static_cast< uint32_t >( i );
-			const auto&    shader_details = command.shader->GetPrivateDetails();
-
-			constant_buffers.second[ i ]->Bind( constant_buffers.first, local_slot, global_slot );
-
-		#if( ORB_HAS_OPENGL )
-
-			if( shader_details.index() == unique_index_v< Private::_ShaderDetailsOpenGL, Private::ShaderDetails > )
-			{
-				auto& shader_gl = std::get< Private::_ShaderDetailsOpenGL >( shader_details );
-
-				glUniformBlockBinding( shader_gl.program, global_slot, global_slot );
-			}
-
-		#endif // ORB_HAS_OPENGL
-
-		}
-	}
-}
-
-void IRenderer::UnbindConstantBuffers( const RenderCommand& command )
-{
-	uint32_t global_slot = 0;
-
-	for( auto& constant_buffers : command.constant_buffers )
-	{
-		for( size_t i = 0; i < constant_buffers.second.size(); ( ++i, ++global_slot ) )
-		{
-			const uint32_t local_slot = static_cast< uint32_t >( i );
-
-			constant_buffers.second[ i ]->Unbind( constant_buffers.first, local_slot, global_slot );
-		}
-	}
 }
 
 void IRenderer::APIDraw( const RenderCommand& command )

@@ -32,8 +32,7 @@ public:
 
 public:
 
-	virtual void OnFrame  ( float delta_time ) = 0;
-	virtual bool IsRunning( void ) = 0;
+	virtual void OnFrame( void ) = 0;
 
 public:
 

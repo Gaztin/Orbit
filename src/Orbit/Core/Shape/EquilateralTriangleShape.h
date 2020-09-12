@@ -16,34 +16,24 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Renderer/BlendEquation.h"
-
-#include <map>
-#include <vector>
+#include "Orbit/Core/Shape/IShape.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
-
-struct ORB_API_GRAPHICS RenderCommand
+class ORB_API_CORE EquilateralTriangleShape : public IShape
 {
-	std::vector< Ref< Texture2D > > textures;
+public:
 
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
+	explicit EquilateralTriangleShape( float scale );
 
-	Topology      topology       = Topology::Triangles;
-	BlendEquation blend_equation = BlendFactor::SourceAlpha + BlendFactor::InvSourceAlpha;
+public:
 
-	bool blend_enabled = true;
+	ShapeType GetType( void ) const override { return ShapeType::EquilateralTriangle; }
+
+public:
+
+	float scale;
+
 };
 
 ORB_NAMESPACE_END

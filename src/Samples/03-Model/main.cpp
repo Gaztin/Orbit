@@ -21,111 +21,75 @@
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
-#include <Orbit/Core/Widget/Window.h>
-#include <Orbit/Graphics/Buffer/ConstantBuffer.h>
-#include <Orbit/Graphics/Buffer/IndexBuffer.h>
-#include <Orbit/Graphics/Buffer/VertexBuffer.h>
+#include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Model.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
-#include <Orbit/Math/Literals.h>
-#include <Orbit/Math/Matrix/Matrix4.h>
-#include <Orbit/Math/Vector/Vector2.h>
-#include <Orbit/Math/Vector/Vector3.h>
-#include <Orbit/Math/Vector/Vector4.h>
-
-static ModelShader model_shader;
-
-struct VertexConstantData
-{
-	Orbit::Matrix4 view_projection;
-	Orbit::Matrix4 model;
-	Orbit::Matrix4 model_inverse;
-
-} vertex_constant_data;
-
-struct FragmentConstantData
-{
-	Orbit::Vector3 light_dir;
-
-} fragment_constant_data;
 
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
 	SampleApp( void )
-		: window_                  ( 800, 600 )
-		, shader_                  ( model_shader.Generate(), model_shader.GetVertexLayout() )
-		, model_                   ( Orbit::Asset( "models/teapot.obj" ), model_shader.GetVertexLayout() )
-		, vertex_constant_buffer_  ( sizeof( VertexConstantData ) )
-		, fragment_constant_buffer_( sizeof( FragmentConstantData ) )
-		, texture_                 ( Orbit::Asset( "textures/checkerboard.tga" ) )
+		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, model_  ( Orbit::Asset( "models/teapot.obj" ), shader_source_.GetVertexLayout() )
+		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
-		window_.SetTitle( "Orbit Sample (03-Model)" );
-		window_.Show();
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
 	}
 
 public:
 
-	void OnFrame( float delta_time ) override
+	void OnFrame( void ) override
 	{
-		/* Update constant buffers */
-		{
-			model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
+		const float delta_time = Orbit::Clock::GetDelta();
 
-			vertex_constant_data.view_projection = camera_.GetViewProjection();
-			vertex_constant_data.model           = model_matrix_;
-			vertex_constant_data.model_inverse   = model_matrix_;
-			vertex_constant_data.model_inverse.Invert();
-
-			/* Light position */
-			fragment_constant_data.light_dir = Orbit::Vector3( 1.0f, -1.0f, 1.0f );
-
-			vertex_constant_buffer_.Update( &vertex_constant_data, sizeof( VertexConstantData ) );
-			fragment_constant_buffer_.Update( &fragment_constant_data, sizeof( FragmentConstantData ) );
-		}
-
-		window_.PollEvents();
+		// Clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
+		// Update camera
 		camera_.Update( delta_time );
 
+		// Rotate model
+		model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
+
+		// Update vertex uniforms
+		shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
+		shader_.SetVertexUniform( shader_source_.u_model,           model_matrix_ );
+		shader_.SetVertexUniform( shader_source_.u_model_inverse,   model_matrix_.Inverted() );
+
+		// Update pixel uniforms
+		shader_.SetPixelUniform( shader_source_.u_light_dir, Orbit::Vector3( 1.0f, -1.0f, 1.0f ).Normalized() );
+
+		// Push meshes to render queue
 		for( const Orbit::Mesh& mesh : model_ )
 		{
 			Orbit::RenderCommand command;
 			command.vertex_buffer = mesh.GetVertexBuffer();
 			command.index_buffer  = mesh.GetIndexBuffer();
 			command.shader        = shader_;
-			command.constant_buffers[ Orbit::ShaderType::Vertex   ].emplace_back( vertex_constant_buffer_ );
-			command.constant_buffers[ Orbit::ShaderType::Fragment ].emplace_back( fragment_constant_buffer_ );
 			command.textures.emplace_back( texture_.GetTexture2D() );
-
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
+		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
 
+		// Swap buffers
 		render_context_.SwapBuffers();
 	}
 
-	bool IsRunning() override { return window_.IsOpen(); }
-
 private:
 
-	Orbit::Window         window_;
-	Orbit::RenderContext  render_context_;
-	Orbit::Shader         shader_;
-	Orbit::Model          model_;
-	Orbit::ConstantBuffer vertex_constant_buffer_;
-	Orbit::ConstantBuffer fragment_constant_buffer_;
-	Orbit::Texture        texture_;
-	Orbit::Matrix4        model_matrix_;
-
-	Camera camera_;
+	Orbit::RenderContext render_context_;
+	ModelShader          shader_source_;
+	Orbit::Shader        shader_;
+	Orbit::Model         model_;
+	Orbit::Texture       texture_;
+	Orbit::Matrix4       model_matrix_;
+	Camera               camera_;
 
 };

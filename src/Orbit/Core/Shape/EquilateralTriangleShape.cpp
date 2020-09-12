@@ -15,35 +15,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Renderer/BlendEquation.h"
-
-#include <map>
-#include <vector>
+#include "EquilateralTriangleShape.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ConstantBuffer;
-class FrameBuffer;
-class IndexBuffer;
-class Shader;
-class Texture2D;
-class VertexBuffer;
-
-struct ORB_API_GRAPHICS RenderCommand
+EquilateralTriangleShape::EquilateralTriangleShape( float scale )
+	: scale( scale )
 {
-	std::vector< Ref< Texture2D > > textures;
-
-	Ref< VertexBuffer > vertex_buffer;
-	Ref< IndexBuffer >  index_buffer;
-	Ref< Shader >       shader;
-	Ref< FrameBuffer >  frame_buffer;
-
-	Topology      topology       = Topology::Triangles;
-	BlendEquation blend_equation = BlendFactor::SourceAlpha + BlendFactor::InvSourceAlpha;
-
-	bool blend_enabled = true;
-};
+}
 
 ORB_NAMESPACE_END

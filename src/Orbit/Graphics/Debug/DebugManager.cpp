@@ -116,7 +116,6 @@ DebugManager::DebugManager( void )
 	, spheres_              { }
 	, lines_vertex_buffer_  ( nullptr, 0, vertex_layout.GetStride(), false )
 	, spheres_vertex_buffer_( nullptr, 0, vertex_layout.GetStride(), false )
-	, constant_buffer_      ( sizeof( Matrix4 ) )
 	, sphere_geometry_      ( MeshFactory::GetInstance().CreateGeometryFromShape( ShapeType::Sphere, vertex_layout, MeshFactory::DetailLevel::Low ) )
 {
 }
@@ -147,7 +146,7 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 {
 	auto now = Clock::now();
 
-	constant_buffer_.Update( &view_projection, sizeof( Matrix4 ) );
+	shader_.SetVertexUniform( "u_view_projection", &view_projection, sizeof( Matrix4 ) );
 
 	if( !line_segments_.empty() )
 	{
@@ -176,7 +175,6 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 		command.shader        = shader_;
 		command.vertex_buffer = lines_vertex_buffer_;
 		command.topology      = Topology::Lines;
-		command.constant_buffers[ ShaderType::Vertex ].emplace_back( constant_buffer_ );
 
 		renderer.PushCommand( std::move( command ) );
 	}
@@ -232,7 +230,6 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 		render_command.shader        = shader_;
 		render_command.vertex_buffer = spheres_vertex_buffer_;
 		render_command.topology      = Topology::Lines;
-		render_command.constant_buffers[ ShaderType::Vertex ].emplace_back( constant_buffer_ );
 
 		renderer.PushCommand( std::move( render_command ) );
 	}

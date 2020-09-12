@@ -20,12 +20,14 @@
 
 #if defined( ORB_OS_IOS )
 #  include "Orbit/Core/Application/Application.h"
+#  include "Orbit/Core/Widget/Window.h"
 
 #  include <UIKit/UIKit.h>
 
 @interface ORB_NAMESPACED_OBJC( UIApplicationDelegate ) : UIResponder< UIApplicationDelegate >
 {
 	std::shared_ptr< ORB_NAMESPACE ApplicationBase > application_instance;
+	std::shared_ptr< ORB_NAMESPACE Window >          main_window;
 }
 
 -( void )OnFrame:( CADisplayLink* )display_link;

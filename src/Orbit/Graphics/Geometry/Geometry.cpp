@@ -21,6 +21,7 @@
 #include "Orbit/Graphics/Geometry/Face.h"
 #include "Orbit/Graphics/Geometry/Vertex.h"
 
+#include <algorithm>
 #include <cassert>
 
 ORB_NAMESPACE_BEGIN
