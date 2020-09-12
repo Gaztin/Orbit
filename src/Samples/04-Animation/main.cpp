@@ -21,6 +21,7 @@
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
+#include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Model.h>
@@ -35,7 +36,6 @@ public:
 		: shader_   ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
 		, model_    ( Orbit::Asset( "models/mannequin.dae" ), shader_source_.GetVertexLayout() )
 		, animation_( Orbit::Asset( "animations/jump.dae" ) )
-		, life_time_( 0.0f )
 	{
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
@@ -50,7 +50,8 @@ public:
 
 	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& parent_pose )
 	{
-		const float          animation_time = std::fmod( life_time_, animation_.GetDuration() );
+		const float          life_time      = Orbit::Clock::GetLife();
+		const float          animation_time = std::fmod( life_time, animation_.GetDuration() );
 		const Orbit::Matrix4 local_pose     = animation_.JointPoseAtTime( joint.name, animation_time );
 		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 
@@ -61,13 +62,12 @@ public:
 			UpdateJointTransformsRecursive( child, pose );
 	}
 
-	void OnFrame( float delta_time ) override
+	void OnFrame( void ) override
 	{
+		const float delta_time = Orbit::Clock::GetDelta();
+
 		// Clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
-
-		// Increment life timer
-		life_time_ += delta_time;
 
 		// Update camera
 		camera_.Update( delta_time );
@@ -111,6 +111,5 @@ private:
 	Orbit::Matrix4       model_matrix_;
 	Camera               camera_;
 	JointTransformArray  joint_transforms_;
-	float                life_time_;
 
 };

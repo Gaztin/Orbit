@@ -36,12 +36,11 @@ public:
 		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
 		, mesh_   ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::EquilateralTriangleShape( 1.0f ), shader_source_.GetVertexLayout() ) )
 		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
-		, time_   ( 0.0f )
 	{
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 	}
 
-	void OnFrame( float /*delta_time*/ ) override
+	void OnFrame( void ) override
 	{
 		// Clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
@@ -68,6 +67,5 @@ private:
 	Orbit::Shader        shader_;
 	Orbit::Mesh          mesh_;
 	Orbit::Texture       texture_;
-	float                time_;
 
 };

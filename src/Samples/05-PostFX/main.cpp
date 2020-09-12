@@ -23,6 +23,7 @@
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
+#include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Buffer/FrameBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
@@ -38,7 +39,6 @@ public:
 		: scene_shader_  ( scene_shader_source_.Generate(), scene_shader_source_.GetVertexLayout() )
 		, post_fx_shader_( post_fx_shader_source_.Generate(), post_fx_shader_source_.GetVertexLayout() )
 		, model_         ( Orbit::Asset( "models/bunny.obj" ), scene_shader_source_.GetVertexLayout() )
-		, time_          ( 0.0f )
 	{
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
@@ -48,14 +48,14 @@ public:
 
 public:
 
-	void OnFrame( float delta_time ) override
+	void OnFrame( void ) override
 	{
+		const float life_time  = Orbit::Clock::GetLife();
+		const float delta_time = Orbit::Clock::GetDelta();
+
 		// Clear context and framebuffer
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 		frame_buffer_.Clear();
-
-		// Increment timer
-		time_ += delta_time;
 
 		// Update camera
 		camera_.Update( delta_time );
@@ -65,7 +65,7 @@ public:
 		scene_shader_.SetVertexUniform( scene_shader_source_.u_model,           model_matrix_ );
 
 		// Update post-fx shader uniforms
-		post_fx_shader_.SetPixelUniform( post_fx_shader_source_.u_time, time_ );
+		post_fx_shader_.SetPixelUniform( post_fx_shader_source_.u_time, life_time );
 
 		// Push meshes to render queue
 		for( const Orbit::Mesh& mesh : model_ )
@@ -105,6 +105,5 @@ private:
 	Orbit::Matrix4        model_matrix_;
 	Camera                camera_;
 	RenderQuad            render_quad_;
-	float                 time_;
 
 };

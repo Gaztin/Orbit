@@ -22,6 +22,7 @@
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/Shape/CubeShape.h>
+#include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/MeshFactory.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
@@ -45,8 +46,10 @@ public:
 
 public:
 
-	void OnFrame( float delta_time ) override
+	void OnFrame( void ) override
 	{
+		const float delta_time = Orbit::Clock::GetDelta();
+
 		// Rotate cube
 		model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 

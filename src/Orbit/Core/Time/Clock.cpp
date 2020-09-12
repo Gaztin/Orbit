@@ -15,53 +15,39 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Application.h"
-
-#include "Orbit/Core/Platform/iOS/UIApplicationDelegate.h"
-#include "Orbit/Core/Time/Clock.h"
-#include "Orbit/Core/Widget/Console.h"
-#include "Orbit/Core/Widget/Window.h"
+#include "Clock.h"
 
 #include <chrono>
 
 ORB_NAMESPACE_BEGIN
 
-void ApplicationBase::RunInstance( void )
+static std::chrono::high_resolution_clock::time_point start;
+static std::chrono::high_resolution_clock::time_point then;
+static std::chrono::high_resolution_clock::time_point now;
+
+float Clock::GetLife( void )
 {
-	Console console;
+	auto life_time = std::chrono::duration_cast< std::chrono::duration< float > >( now - start );
+	return life_time.count();
+}
 
-#if defined( ORB_OS_IOS )
+float Clock::GetDelta( void )
+{
+	auto delta_time = std::chrono::duration_cast< std::chrono::duration< float > >( now - then );
+	return delta_time.count();
+}
 
-	@autoreleasepool
-	{
-		UIApplicationMain( 0, nil, nil, NSStringFromClass( [ ORB_NAMESPACED_OBJC( UIApplicationDelegate ) class ] ) );
-	}
+void Clock::Start( void )
+{
+	start = std::chrono::high_resolution_clock::now();
+	then  = start;
+	now   = start;
+}
 
-#else
-
-	if( !Bootstrap::trampoline )
-		return;
-
-	// Start the engine clock
-	Clock::Start();
-
-	// Initialize application instance and create main window
-	Window main_window = Window( 800, 600 );
-	auto   instance    = std::static_pointer_cast< ApplicationBase >( Bootstrap::trampoline() );
-
-	// Show main window
-	main_window.Show();
-
-	while( main_window.IsOpen() )
-	{
-		Clock::Update();
-
-		main_window.PollEvents();
-		instance->OnFrame();
-	}
-
-#endif
-
+void Clock::Update( void )
+{
+	then = now;
+	now  = std::chrono::high_resolution_clock::now();
 }
 
 ORB_NAMESPACE_END

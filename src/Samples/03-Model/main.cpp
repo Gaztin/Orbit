@@ -21,6 +21,7 @@
 #include <Orbit/Core/Application/Application.h>
 #include <Orbit/Core/Application/EntryPoint.h>
 #include <Orbit/Core/IO/Asset.h>
+#include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Model.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
@@ -42,8 +43,10 @@ public:
 
 public:
 
-	void OnFrame( float delta_time ) override
+	void OnFrame( void ) override
 	{
+		const float delta_time = Orbit::Clock::GetDelta();
+
 		// Clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 

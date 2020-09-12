@@ -15,53 +15,24 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "Application.h"
-
-#include "Orbit/Core/Platform/iOS/UIApplicationDelegate.h"
-#include "Orbit/Core/Time/Clock.h"
-#include "Orbit/Core/Widget/Console.h"
-#include "Orbit/Core/Widget/Window.h"
-
-#include <chrono>
+#pragma once
+#include "Orbit/Core/Core.h"
 
 ORB_NAMESPACE_BEGIN
 
-void ApplicationBase::RunInstance( void )
+namespace Clock
 {
-	Console console;
+	/** Returns the time (in seconds) since the engine was initialized */
+	ORB_API_CORE float GetLife( void );
 
-#if defined( ORB_OS_IOS )
+	/** Returns the time (in seconds) since the last frame */
+	ORB_API_CORE float GetDelta( void );
 
-	@autoreleasepool
-	{
-		UIApplicationMain( 0, nil, nil, NSStringFromClass( [ ORB_NAMESPACED_OBJC( UIApplicationDelegate ) class ] ) );
-	}
+	/** Starts the internal timer. Initializes Life and Delta to current time. */
+	ORB_API_CORE void Start( void );
 
-#else
-
-	if( !Bootstrap::trampoline )
-		return;
-
-	// Start the engine clock
-	Clock::Start();
-
-	// Initialize application instance and create main window
-	Window main_window = Window( 800, 600 );
-	auto   instance    = std::static_pointer_cast< ApplicationBase >( Bootstrap::trampoline() );
-
-	// Show main window
-	main_window.Show();
-
-	while( main_window.IsOpen() )
-	{
-		Clock::Update();
-
-		main_window.PollEvents();
-		instance->OnFrame();
-	}
-
-#endif
-
-}
+	/** Update the internal timer. Increments Life and refreshes Delta. */
+	ORB_API_CORE void Update( void );
+};
 
 ORB_NAMESPACE_END
