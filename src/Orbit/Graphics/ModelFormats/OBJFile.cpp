@@ -15,17 +15,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Core.h"
-
-#include <string>
+#include "OBJFile.h"
 
 ORB_NAMESPACE_BEGIN
 
-struct XMLAttribute
+OBJFile::OBJFile( ByteSpan data, const VertexLayout& /*vertex_layout*/ )
 {
-	std::string name;
-	std::string value;
-};
+	Init( data.Size() );
+}
 
 ORB_NAMESPACE_END

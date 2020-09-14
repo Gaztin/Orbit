@@ -16,44 +16,52 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Span.h"
+#include "Orbit/Core/IO/File/Markup/XML/XMLFile.h"
 #include "Orbit/Graphics/Animation/Joint.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Geometry/Mesh.h"
-#include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/Graphics/Renderer/RenderCommand.h"
+#include "Orbit/Graphics/Geometry/Geometry.h"
+
+#include <map>
+#include <memory>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS Model
+class  VertexLayout;
+struct KeyFrame;
+
+class ORB_API_GRAPHICS COLLADAFile : public XMLFile
 {
-	ORB_DISABLE_COPY( Model );
+public:
+
+	struct ModelData
+	{
+		std::vector< std::shared_ptr< Mesh > > meshes;
+
+		Joint root_joint;
+	};
+
+	struct AnimationData
+	{
+		std::map< std::string, std::vector< KeyFrame > > keyframes;
+	};
 
 public:
 
-	explicit Model( ByteSpan data, const VertexLayout& layout );
+	explicit COLLADAFile( ByteSpan data, const VertexLayout& vertex_layout );
 
 public:
 
-	bool         HasJoints   ( void ) const { return root_joint_ != nullptr; }
-	const Joint& GetRootJoint( void ) const { return *root_joint_; }
-
-public:
-
-	auto begin( void ) const { return meshes_.begin(); }
-	auto end  ( void ) const { return meshes_.end(); }
+	ModelData     GetModelData     ( void ) const { return model_data_; }
+	AnimationData GetAnimationData ( void ) const { return animation_data_; }
 
 private:
 
-	bool ParseCollada( ByteSpan data, const VertexLayout& layout );
-	bool ParseOBJ    ( ByteSpan data, const VertexLayout& layout );
+	static Joint ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& parent_inverse_bind_transform, const std::vector< std::string >& all_joint_names, const std::vector< Matrix4 >& all_joint_transforms );
 
 private:
 
-	std::vector< Mesh > meshes_;
-
-	std::unique_ptr< Joint > root_joint_;
+	ModelData     model_data_;
+	AnimationData animation_data_;
 
 };
 

@@ -16,30 +16,28 @@
  */
 
 #pragma once
-#include "Orbit/Core/IO/Parser/IParser.h"
+#include "Orbit/Core/IO/File/TextFile.h"
+#include "Orbit/Graphics/Geometry/Mesh.h"
+
+#include <memory>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE ITextParser : public IParser
+class VertexLayout;
+
+class ORB_API_GRAPHICS OBJFile : public TextFile
 {
 public:
 
-	explicit ITextParser( ByteSpan data );
+	OBJFile( ByteSpan data, const VertexLayout& vertex_layout );
 
-protected:
+public:
 
-	void        SkipWhitespace  ( void );
-	std::string ReadAlphaNumeric( void );
-	std::string ReadPrintable   ( void );
-	std::string ReadLiteral     ( void );
+	std::shared_ptr< Mesh > GetMesh( void ) { return mesh_; }
 
-protected:
+private:
 
-	std::string Peek( size_t length ) const;
-
-protected:
-
-	bool ExpectString( std::string_view str );
+	std::shared_ptr< Mesh > mesh_;
 
 };
 

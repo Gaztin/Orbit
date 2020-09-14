@@ -251,21 +251,24 @@ VertexRange Geometry::GetVertices( void ) const
 	return VertexRange( this );
 }
 
-Mesh Geometry::ToMesh( std::string_view name ) const
+std::shared_ptr< Mesh > Geometry::ToMesh( std::string_view name ) const
 {
-	const size_t vertex_stride = vertex_layout_.GetStride();
+	if( vertex_data_.empty() )
+		return nullptr;
+
+//////////////////////////////////////////////////////////////////////////
+
 	const size_t vertex_count  = GetVertexCount();
-	const size_t index_size    = EvalIndexSize( vertex_count );
-	const size_t index_count   = ( face_data_.size() / index_size );
-	Mesh         mesh( name );
+	const size_t vertex_stride = vertex_layout_.GetStride();
+	const size_t index_count   = ( face_data_.size() / EvalIndexSize( vertex_count ) );
+	auto         mesh          = std::make_shared< Mesh >( name );
 
-	mesh.vertex_layout_ = vertex_layout_;
+	mesh->vertex_layout_ = vertex_layout_;
+	mesh->vertex_buffer_ = std::make_unique< VertexBuffer >( vertex_data_.data(), vertex_count, vertex_stride );
 
-	if( !vertex_data_.empty() )
-		mesh.vertex_buffer_ = std::make_unique< VertexBuffer >( vertex_data_.data(), vertex_count, vertex_stride );
-
+	// Index buffer is optional
 	if( !face_data_.empty() )
-		mesh.index_buffer_ = std::make_unique< IndexBuffer >( GetIndexFormat(), face_data_.data(), index_count );
+		mesh->index_buffer_ = std::make_unique< IndexBuffer >( GetIndexFormat(), face_data_.data(), index_count );
 
 	return mesh;
 }

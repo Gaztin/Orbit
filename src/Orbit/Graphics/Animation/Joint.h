@@ -32,7 +32,7 @@ struct Joint
 
 	Matrix4 inverse_bind_transform;
 
-	int id;
+	int id = -1;
 };
 
 ORB_NAMESPACE_END

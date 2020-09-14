@@ -23,34 +23,35 @@
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE IParser
+/** Base class for file format parsers.
+ * Does not store the data by default. This is by design in case the output can be processed in chunks rather than
+ * needing to wait until the entire file has been parsed.
+ */
+class ORB_API_CORE BinaryFile
 {
 public:
 
-	explicit IParser( ByteSpan data );
-	virtual ~IParser( void ) = default;
-
-public:
-
-	bool IsGood( void ) const { return good_; }
+	         BinaryFile( void ) = default;
+	virtual ~BinaryFile( void ) = default;
 
 protected:
 
-	void Skip     ( size_t size );
-	void ReadBytes( void* dst, size_t count );
+	/** Initializes the metadata */
+	void Init( size_t total_size );
 
-protected:
+	/** Skips forward @size amount of bytes */
+	void Skip( size_t size );
 
+	/** Reads @size amount of bytes from @src and writes them to @dst */
+	void ReadBytes( const void* src, void* dst, size_t size );
+
+	/** Returns whether or not the file has reached the end */
 	bool IsEOF( void ) const;
 
 protected:
 
-	std::unique_ptr< uint8_t[] > data_;
-
-	size_t                       size_;
-	size_t                       offset_;
-
-	bool                         good_;
+	size_t total_size_     = 0;
+	size_t current_offset_ = 0;
 
 };
 

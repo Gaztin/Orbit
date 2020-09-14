@@ -23,7 +23,8 @@
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Geometry/Model.h>
+#include <Orbit/Graphics/Geometry/Mesh.h>
+#include <Orbit/Graphics/ModelFormats/OBJFile.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
@@ -34,7 +35,7 @@ public:
 
 	SampleApp( void )
 		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
-		, model_  ( Orbit::Asset( "models/teapot.obj" ), shader_source_.GetVertexLayout() )
+		, mesh_   ( Orbit::OBJFile( Orbit::Asset( "models/teapot.obj" ), shader_source_.GetVertexLayout() ).GetMesh() )
 		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
@@ -65,11 +66,11 @@ public:
 		shader_.SetPixelUniform( shader_source_.u_light_dir, Orbit::Vector3( 1.0f, -1.0f, 1.0f ).Normalized() );
 
 		// Push meshes to render queue
-		for( const Orbit::Mesh& mesh : model_ )
+		if( mesh_ )
 		{
 			Orbit::RenderCommand command;
-			command.vertex_buffer = mesh.GetVertexBuffer();
-			command.index_buffer  = mesh.GetIndexBuffer();
+			command.vertex_buffer = mesh_->GetVertexBuffer();
+			command.index_buffer  = mesh_->GetIndexBuffer();
 			command.shader        = shader_;
 			command.textures.emplace_back( texture_.GetTexture2D() );
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
@@ -84,12 +85,12 @@ public:
 
 private:
 
-	Orbit::RenderContext render_context_;
-	ModelShader          shader_source_;
-	Orbit::Shader        shader_;
-	Orbit::Model         model_;
-	Orbit::Texture       texture_;
-	Orbit::Matrix4       model_matrix_;
-	Camera               camera_;
+	Orbit::RenderContext           render_context_;
+	ModelShader                    shader_source_;
+	Orbit::Shader                  shader_;
+	std::shared_ptr< Orbit::Mesh > mesh_;
+	Orbit::Texture                 texture_;
+	Orbit::Matrix4                 model_matrix_;
+	Camera                         camera_;
 
 };

@@ -15,35 +15,39 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/IO/Parser/XML/XMLElement.h"
-#include "Orbit/Core/IO/Parser/ITextParser.h"
+#include "BinaryFile.h"
 
-#include <vector>
+#include <cstring>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE XMLParser : public ITextParser
+void BinaryFile::Init( size_t total_size )
 {
-public:
+	total_size_     = total_size;
+	current_offset_ = 0;
+}
 
-	explicit XMLParser( ByteSpan data );
-	        ~XMLParser( void ) = default;
+void BinaryFile::Skip( size_t size )
+{
+	// Increment offset, but clamp it so it doesn't exceed the total size
+	current_offset_ = std::min( current_offset_ + size, total_size_ );
+}
 
-public:
+void BinaryFile::ReadBytes( const void* src, void* dst, size_t size )
+{
+	// Make sure we don't read more bytes than we have
+	const size_t bytes_to_write = std::min( size, total_size_ - current_offset_ );
 
-	const XMLElement& GetRootElement( void ) const { return root_element_; }
+	// Copy bytes from src to dst
+	std::memcpy( dst, static_cast< const uint8_t* >( src ) + current_offset_, bytes_to_write );
 
-private:
+	// Increment offset
+	current_offset_ += bytes_to_write;
+}
 
-	std::string ReadName    ( void );
-	std::string ReadContent ( void );
-	bool        ParseElement( XMLElement* parent );
-
-private:
-
-	XMLElement root_element_;
-
-};
+bool BinaryFile::IsEOF( void ) const
+{
+	return ( current_offset_ == total_size_ );
+}
 
 ORB_NAMESPACE_END

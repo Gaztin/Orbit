@@ -30,7 +30,7 @@ struct KeyFrame
 
 	Matrix4 transform;
 
-	float time;
+	double time = 0.0;
 };
 
 ORB_NAMESPACE_END

@@ -54,14 +54,14 @@ public:
 
 public:
 
-	VertexLayout GetVertexLayout( void )                  const { return vertex_layout_; }
-	size_t       GetVertexCount ( void )                  const;
-	size_t       GetFaceCount   ( void )                  const;
-	Vertex       GetVertex      ( size_t index )          const;
-	Face         GetFace        ( size_t index )          const;
-	FaceRange    GetFaces       ( void )                  const;
-	VertexRange  GetVertices    ( void )                  const;
-	Mesh         ToMesh         ( std::string_view name ) const;
+	VertexLayout            GetVertexLayout( void )                  const { return vertex_layout_; }
+	size_t                  GetVertexCount ( void )                  const;
+	size_t                  GetFaceCount   ( void )                  const;
+	Vertex                  GetVertex      ( size_t index )          const;
+	Face                    GetFace        ( size_t index )          const;
+	FaceRange               GetFaces       ( void )                  const;
+	VertexRange             GetVertices    ( void )                  const;
+	std::shared_ptr< Mesh > ToMesh         ( std::string_view name ) const;
 
 public:
 

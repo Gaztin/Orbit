@@ -15,43 +15,42 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "IParser.h"
+#pragma once
+#include "Orbit/Core/IO/File/Markup/XML/XMLElement.h"
+#include "Orbit/Core/IO/File/TextFile.h"
 
-#include <cstring>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-IParser::IParser( ByteSpan data )
-	: data_  { data.Copy() }
-	, size_  { data.Size() }
-	, offset_{ 0 }
-	, good_  { false }
+class ORB_API_CORE XMLFile : public TextFile
 {
-}
+public:
 
-void IParser::Skip( size_t size )
-{
-	if( ( offset_ + size ) < size_ ) offset_ += size;
-	else                             offset_  = size_;
-}
+	/** Parses @data into an element hierarchy */
+	explicit XMLFile( ByteSpan data );
+	        ~XMLFile( void ) = default;
 
-void IParser::ReadBytes( void* dst, size_t count )
-{
-	if( ( offset_ + count ) < size_ )
-	{
-		std::memcpy( dst, &data_[ offset_ ], count );
-		offset_ += count;
-	}
-	else
-	{
-		std::memcpy( dst, &data_[ offset_ ], ( offset_ - size_ ) );
-		offset_ = size_;
-	}
-}
+public:
 
-bool IParser::IsEOF( void ) const
-{
-	return ( offset_ == size_ );
-}
+	const XMLElement& GetRootElement( void ) const { return root_element_; }
+
+protected:
+
+	XMLElement root_element_;
+
+private:
+
+	/** Reads a string from @src, compatible as an XML element name, and returns the string */
+	std::string ReadName( const char* src );
+
+	/** Reads a string from @src, compatible as XML element content, and returns the string */
+	std::string ReadContent( const char* src );
+
+	/** Recursively parse elements from @src and insert them into @parent
+	 * Returns false if the data was ill-formed, and true if the parser succeeded to parse the data into @parent */
+	bool ParseElement( const char* src, XMLElement* parent );
+
+};
 
 ORB_NAMESPACE_END

@@ -59,19 +59,23 @@ public:
 		// Update camera
 		camera_.Update( delta_time );
 
-		// Update uniforms
-		const Orbit::Matrix4 model = mesh_.transform_ * model_matrix_;
-		shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
-		shader_.SetVertexUniform( shader_source_.u_model,           model );
-		shader_.SetVertexUniform( shader_source_.u_model_inverse,   model.Inverted() );
+		if( mesh_ )
+		{
+			const Orbit::Matrix4 model = mesh_->transform_ * model_matrix_;
 
-		// Push cube mesh to render queue
-		Orbit::RenderCommand command;
-		command.vertex_buffer = mesh_.GetVertexBuffer();
-		command.index_buffer  = mesh_.GetIndexBuffer();
-		command.shader        = shader_;
-		command.textures.emplace_back( texture_.GetTexture2D() );
-		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+			// Update uniforms
+			shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
+			shader_.SetVertexUniform( shader_source_.u_model,           model );
+			shader_.SetVertexUniform( shader_source_.u_model_inverse,   model.Inverted() );
+
+			// Push cube mesh to render queue
+			Orbit::RenderCommand command;
+			command.vertex_buffer = mesh_->GetVertexBuffer();
+			command.index_buffer  = mesh_->GetIndexBuffer();
+			command.shader        = shader_;
+			command.textures.emplace_back( texture_.GetTexture2D() );
+			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+		}
 
 		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
@@ -82,12 +86,12 @@ public:
 
 private:
 
-	Orbit::RenderContext  render_context_;
-	CubeShader            shader_source_;
-	Orbit::Shader         shader_;
-	Orbit::Mesh           mesh_;
-	Orbit::Texture        texture_;
-	Orbit::Matrix4        model_matrix_;
-	Camera                camera_;
+	Orbit::RenderContext           render_context_;
+	CubeShader                     shader_source_;
+	Orbit::Shader                  shader_;
+	std::shared_ptr< Orbit::Mesh > mesh_;
+	Orbit::Texture                 texture_;
+	Orbit::Matrix4                 model_matrix_;
+	Camera                         camera_;
 
 };

@@ -46,49 +46,46 @@ Geometry MeshFactory::CreateGeometryFromShape( ShapeType shape_type, const Verte
 	return geometry_data;
 }
 
-Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level ) const
+std::shared_ptr< Mesh > MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level ) const
 {
 	Geometry geometry = CreateGeometryFromShape( shape.GetType(), vertex_layout, detail_level );
-	Mesh     mesh     = geometry.ToMesh( EvalShapeName( shape.GetType() ) );
 
 	switch( shape.GetType() )
 	{
 		case ShapeType::EquilateralTriangle:
 		{
 			const EquilateralTriangleShape& triangle_shape = static_cast< const EquilateralTriangleShape& >( shape );
+			auto                            mesh           = geometry.ToMesh( "EquilateralTriangleShape" );
 
-			mesh.transform_.Scale( Vector3( triangle_shape.scale ) );
+			mesh->transform_.Scale( Vector3( triangle_shape.scale ) );
 
-		} break;
+			return mesh;
+		}
 
 		case ShapeType::Cube:
 		{
 			const CubeShape& cube_shape = static_cast< const CubeShape& >( shape );
+			auto             mesh       = geometry.ToMesh( "Cube" );
 
-			mesh.transform_.Scale( Vector3( cube_shape.half_extent ) );
+			mesh->transform_.Scale( Vector3( cube_shape.half_extent ) );
 
-		} break;
+			return mesh;
+		}
 
 		case ShapeType::Sphere:
 		{
 			const SphereShape& cube_shape = static_cast< const SphereShape& >( shape );
+			auto               mesh       = geometry.ToMesh( "Sphere" );
 
-			mesh.transform_.Scale( Vector3( cube_shape.radius ) );
+			mesh->transform_.Scale( Vector3( cube_shape.radius ) );
 
-		} break;
-	}
+			return mesh;
+		}
 
-	return mesh;
-}
-
-std::string_view MeshFactory::EvalShapeName( ShapeType type ) const
-{
-	switch( type )
-	{
-		case ShapeType::EquilateralTriangle: return "EquilateralTriangle";
-		case ShapeType::Cube:                return "Cube";
-		case ShapeType::Sphere:              return "Sphere";
-		default:                             return "UnknownShape";
+		default:
+		{
+			return nullptr;
+		}
 	}
 }
 

@@ -16,51 +16,23 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Ref.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/Math/Matrix/Matrix4.h"
+#include "Orbit/Core/Core.h"
 
-#include <memory>
-#include <string_view>
 #include <string>
+#include <string_view>
 
 ORB_NAMESPACE_BEGIN
 
-class Plane;
-
-class ORB_API_GRAPHICS Mesh
+struct XMLAttribute
 {
-	friend class Geometry;
+	std::string name;
+	std::string value;
+};
 
-public:
-
-	explicit Mesh( std::string_view name );
-
-public:
-
-	Geometry ToGeometry( void ) const;
-
-public:
-
-	std::string_view    GetName        ( void ) const { return name_; }
-	Ref< VertexBuffer > GetVertexBuffer( void ) const { return vertex_buffer_ ? Ref( *vertex_buffer_ ) : nullptr; }
-	Ref< IndexBuffer >  GetIndexBuffer ( void ) const { return index_buffer_  ? Ref( *index_buffer_  ) : nullptr; }
-
-public:
-
-	Matrix4 transform_;
-
-private:
-
-	VertexLayout vertex_layout_;
-
-	std::string name_;
-
-	std::unique_ptr< VertexBuffer > vertex_buffer_;
-	std::unique_ptr< IndexBuffer >  index_buffer_;
-
+struct XMLAttributeView
+{
+	std::string_view name;
+	std::string_view value;
 };
 
 ORB_NAMESPACE_END

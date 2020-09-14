@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Core/IO/Parser/XML/XMLAttribute.h"
+#include "Orbit/Core/IO/File/Markup/XML/XMLAttribute.h"
 
 #include <string>
 #include <vector>
@@ -27,28 +27,40 @@ class ORB_API_CORE XMLElement
 {
 public:
 
-	std::string_view Attribute( std::string_view key ) const;
+	/** Searches for an attribute with the name @name and returns its value */
+	std::string_view FindAttribute( std::string_view name ) const;
+
+	/** Searched for a child by the name @name */
+	const XMLElement* FindChild( std::string_view name ) const;
 
 public:
 
-	const XMLElement& ChildWithAttribute( std::string_view element, std::string_view attribute, std::string_view value ) const;
-	size_t            CountChildren     ( std::string_view element ) const;
-	bool              IsValid           ( void ) const;
+	/** Searches all children and returns a pointer to the first one with an element by the name @name that
+	 * contains the attribute @attribute.
+	 * Returns nullptr if no child was found.
+	 */
+	const XMLElement* FindChildWithAttribute( std::string_view name, XMLAttributeView attribute ) const;
+
+	/** Returns the number of children called @name */
+	size_t CountChildrenWithName( std::string_view name ) const;
 
 public:
 
-	auto begin( void ) const { return children.begin(); }
-	auto end  ( void ) const { return children.end(); }
+	/** Enable range-based looping over this element's children */
+	auto begin ( void ) const { return children.begin(); }
+	auto end   ( void ) const { return children.end(); }
 
 public:
 
-	const XMLElement& operator[]( std::string_view key ) const;
+	/** Returns a reference to a child with the name @key.
+	 * If no child was found, returns a reference to an empty dummy.
+	 */
+	const XMLElement& operator[]( std::string_view name ) const;
 
 public:
 
-	std::string name;
-	std::string content;
-
+	std::string                 name;
+	std::string                 content;
 	std::vector< XMLAttribute > attributes;
 	std::vector< XMLElement >   children;
 

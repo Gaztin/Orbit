@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Core/IO/Parser/IParser.h"
+#include "Orbit/Core/IO/File/BinaryFile.h"
 
 #include <cstdint>
 #include <memory>
@@ -24,22 +24,22 @@
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE TGAParser : public IParser
+class ORB_API_CORE TARGAFile : public BinaryFile
 {
 public:
 
-	explicit TGAParser( ByteSpan data );
+	explicit TARGAFile( ByteSpan data );
 
 public:
 
-	const uint32_t* ImageData( void ) const { return image_data_.get(); }
-	uint16_t        Width    ( void ) const { return width_; }
-	uint16_t        Height   ( void ) const { return height_; }
+	const uint32_t* ImageData ( void ) const { return image_data_.get(); }
+	uint16_t        Width     ( void ) const { return width_; }
+	uint16_t        Height    ( void ) const { return height_; }
 
 private:
 
-	uint32_t ReadTrueColor    ( void );
-	size_t   ReadNextRLEPacket( uint32_t* dst );
+	uint32_t ReadTrueColor     ( const void* src );
+	size_t   ReadNextRLEPacket ( const void* src, uint32_t* dst );
 
 private:
 
