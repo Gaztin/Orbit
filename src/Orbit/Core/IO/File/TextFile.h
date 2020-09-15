@@ -45,12 +45,14 @@ protected:
 	 */
 	std::string ReadCapturedStringLiteral( const char* src );
 
+	/** Reads characters from @src until it reaches a newline */
+	std::string_view ReadLine( const char* src );
+
 	/** Reads @length amount of characters from @src without moving the offset and returns them as one string */
 	std::string Peek( const char* src, size_t length ) const;
 
 	/** Search in @src for the character @c and return the number of characters traversed */
 	size_t FindCharacter( const char* src, char c ) const;
-
 };
 
 ORB_NAMESPACE_END

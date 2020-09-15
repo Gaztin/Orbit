@@ -97,15 +97,16 @@ std::string TextFile::ReadCapturedStringLiteral( const char* src )
 	return string;
 }
 
-size_t TextFile::FindCharacter( const char* src, char c ) const
+std::string_view TextFile::ReadLine( const char* src )
 {
-	const char* begin = src + current_offset_;
-	const char* it    = begin;
+	const size_t           carriage_return = FindCharacter( src, '\r' );
+	const size_t           line_feed       = FindCharacter( src, '\n' );
+	const std::string_view line            = std::string_view( src + current_offset_, std::min( carriage_return, line_feed ) );
 
-	// Increment offset until character is uncovered
-	for( ; *it != c; ++it );
+	// Move offset to after line feed character
+	current_offset_ += line_feed + 1;
 
-	return it - begin;
+	return line;
 }
 
 std::string TextFile::Peek( const char* src, size_t length ) const
@@ -114,6 +115,18 @@ std::string TextFile::Peek( const char* src, size_t length ) const
 	length = std::min( length, current_offset_ - total_size_ );
 
 	return std::string( src + current_offset_, length );
+}
+
+size_t TextFile::FindCharacter( const char* src, char c ) const
+{
+	const char* begin = src + current_offset_;
+	const char* end   = src + total_size_;
+	const char* it    = begin;
+
+	// Increment offset until character is uncovered
+	for( ; ( it < end && *it != c ); ++it );
+
+	return it - begin;
 }
 
 ORB_NAMESPACE_END
