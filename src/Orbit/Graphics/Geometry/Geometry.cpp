@@ -146,7 +146,7 @@ void Geometry::SetVertex( size_t index, const Vertex& vertex )
 
 	if( vertex_layout_.Contains( VertexComponent::Position ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Position ), &vertex.position,  sizeof( Vector4 )     );
 	if( vertex_layout_.Contains( VertexComponent::Normal ) )   memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Normal ),   &vertex.normal,    sizeof( Vector3 )     );
-	if( vertex_layout_.Contains( VertexComponent::Color ) )    memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Color ),    &vertex.color,     sizeof( Color   )     );
+	if( vertex_layout_.Contains( VertexComponent::Color ) )    memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Color ),    &vertex.color,     sizeof( RGBA    )     );
 	if( vertex_layout_.Contains( VertexComponent::TexCoord ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::TexCoord ), &vertex.tex_coord, sizeof( Vector2 )     );
 	if( vertex_layout_.Contains( VertexComponent::JointIDs ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::JointIDs ), &vertex.joint_ids, sizeof( int     ) * 4 );
 	if( vertex_layout_.Contains( VertexComponent::Weights ) )  memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Weights ),  &vertex.weights,   sizeof( float   ) * 4 );
@@ -223,7 +223,7 @@ Vertex Geometry::GetVertex( size_t index ) const
 
 	if( vertex_layout_.Contains( VertexComponent::Position ) ) memcpy( &vertex.position,  src + vertex_layout_.OffsetOf( VertexComponent::Position ), sizeof( Vector4 )     );
 	if( vertex_layout_.Contains( VertexComponent::Normal ) )   memcpy( &vertex.normal,    src + vertex_layout_.OffsetOf( VertexComponent::Normal ),   sizeof( Vector3 )     );
-	if( vertex_layout_.Contains( VertexComponent::Color ) )    memcpy( &vertex.color,     src + vertex_layout_.OffsetOf( VertexComponent::Color ),    sizeof( Color   )     );
+	if( vertex_layout_.Contains( VertexComponent::Color ) )    memcpy( &vertex.color,     src + vertex_layout_.OffsetOf( VertexComponent::Color ),    sizeof( RGBA    )     );
 	if( vertex_layout_.Contains( VertexComponent::TexCoord ) ) memcpy( &vertex.tex_coord, src + vertex_layout_.OffsetOf( VertexComponent::TexCoord ), sizeof( Vector2 )     );
 	if( vertex_layout_.Contains( VertexComponent::JointIDs ) ) memcpy( &vertex.joint_ids, src + vertex_layout_.OffsetOf( VertexComponent::JointIDs ), sizeof( int     ) * 4 );
 	if( vertex_layout_.Contains( VertexComponent::Weights ) )  memcpy( &vertex.weights,   src + vertex_layout_.OffsetOf( VertexComponent::Weights ),  sizeof( float   ) * 4 );

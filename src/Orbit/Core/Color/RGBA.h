@@ -16,25 +16,47 @@
  */
 
 #pragma once
-#include "Orbit/Core/Color/RGBA.h"
-#include "Orbit/Graphics/Graphics.h"
-#include "Orbit/Math/Vector/Vector2.h"
-#include "Orbit/Math/Vector/Vector3.h"
-#include "Orbit/Math/Vector/Vector4.h"
-
-#include <array>
+#include "Orbit/Core/Color/RGB.h"
 
 ORB_NAMESPACE_BEGIN
 
-struct Vertex
+class RGBA
 {
-	Vector4                position { 0.0f, 0.0f, 0.0f, 1.0f };
-	Vector3                normal   { 0.0f, 0.0f, 1.0f };
-	RGBA                   color    { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector2                tex_coord{ 0.0f, 0.0f };
-	std::array< int,   4 > joint_ids{ 0, 0, 0, 0 };
-	std::array< float, 4 > weights  { 1.0f, 0.0f, 0.0f, 0.0f };
-	
+public:
+
+	constexpr RGBA( void ) = default;
+
+	constexpr explicit RGBA( float grey )
+		: r( grey )
+		, g( grey )
+		, b( grey )
+		, a( 1.0f )
+	{
+	}
+
+	constexpr explicit RGBA( const RGB& rgb, float alpha = 1.0f )
+		: r( rgb.r )
+		, g( rgb.g )
+		, b( rgb.b )
+		, a( alpha )
+	{
+	}
+
+	constexpr RGBA( float red, float green, float blue, float alpha = 1.0f )
+		: r( red )
+		, g( green )
+		, b( blue )
+		, a( alpha )
+	{
+	}
+
+public:
+
+	float r = 0.0f;
+	float g = 0.0f;
+	float b = 0.0f;
+	float a = 1.0f;
+
 };
 
 ORB_NAMESPACE_END

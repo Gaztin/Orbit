@@ -16,9 +16,9 @@
  */
 
 #pragma once
+#include "Orbit/Core/Color/RGB.h"
 #include "Orbit/Core/Platform/Windows/ComPtr.h"
 #include "Orbit/Core/Private/WindowDetails.h"
-#include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGLVersion.h"
 #include "Orbit/Graphics/API/OpenGL/OpenGL.h"
 #include "Orbit/Graphics/Renderer/BlendEquation.h"
@@ -93,7 +93,7 @@ namespace Private
 
 		std::map< BlendEquation, ComPtr< ID3D11BlendState > > blend_states;
 
-		Color clear_color;
+		RGB clear_color;
 	};
 
 #endif // ORB_HAS_D3D11

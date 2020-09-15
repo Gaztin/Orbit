@@ -865,10 +865,15 @@ void RenderContext::Clear( BufferMask mask )
 			auto& details = std::get< Private::_RenderContextDetailsD3D11 >( details_ );
 
 			if( !!( mask & BufferMask::Color ) )
-				details.device_context->ClearRenderTargetView( details.render_target_view.ptr_, &details.clear_color[ 0 ] );
+			{
+				const RGBA rgba( details.clear_color, 1.0f );
+				details.device_context->ClearRenderTargetView( details.render_target_view.ptr_, &rgba.r );
+			}
 
 			if( !!( mask & BufferMask::Depth ) )
+			{
 				details.device_context->ClearDepthStencilView( details.depth_stencil_view.ptr_, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+			}
 
 			break;
 		}
@@ -902,7 +907,6 @@ void RenderContext::SetClearColor( float r, float g, float b )
 			details.clear_color.r = r;
 			details.clear_color.g = g;
 			details.clear_color.b = b;
-			details.clear_color.a = 1.0f;
 
 			break;
 		}

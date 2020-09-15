@@ -18,53 +18,39 @@
 #pragma once
 #include "Orbit/Core/Core.h"
 
-#include <cstdlib>
+// Fix macro interference on Windows
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+#  undef RGB
+#endif // ORB_OS_WINDOWS
 
 ORB_NAMESPACE_BEGIN
 
-class Color
+class RGB
 {
 public:
 
-	constexpr Color( void )
-		: r( 0.0f )
-		, g( 0.0f )
-		, b( 0.0f )
-		, a( 1.0f )
+	constexpr RGB( void ) = default;
+
+	constexpr explicit RGB( float grey )
+		: r( grey )
+		, g( grey )
+		, b( grey )
 	{
 	}
 
-	constexpr Color( float r, float g, float b, float a = 1.0f )
-		: r( r )
-		, g( g )
-		, b( b )
-		, a( a )
+	constexpr RGB( float red, float green, float blue )
+		: r( red )
+		, g( green )
+		, b( blue )
 	{
 	}
 
 public:
 
-	constexpr float&       operator[]( size_t i )       { return ( &r )[ i ]; }
-	constexpr const float& operator[]( size_t i ) const { return ( &r )[ i ]; }
-
-public:
-
-	static Color Random( void )
-	{
-		Color color;
-		color.r = rand() / static_cast< float >( RAND_MAX );
-		color.g = rand() / static_cast< float >( RAND_MAX );
-		color.b = rand() / static_cast< float >( RAND_MAX );
-
-		return color;
-	}
-
-public:
-
-	float r;
-	float g;
-	float b;
-	float a;
+	float r = 0.0f;
+	float g = 0.0f;
+	float b = 0.0f;
 
 };
 

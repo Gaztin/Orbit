@@ -17,7 +17,6 @@
 
 #include "DebugManager.h"
 
-#include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Graphics/Geometry/MeshFactory.h"
 #include "Orbit/Graphics/Renderer/DefaultRenderer.h"
 #include "Orbit/Graphics/Renderer/RenderCommand.h"
@@ -30,7 +29,7 @@ ORB_NAMESPACE_BEGIN
 struct DebugVertex
 {
 	Vector4 position;
-	Color   color;
+	RGBA    color;
 };
 
 constexpr std::string_view shader_source = R"(
@@ -120,7 +119,7 @@ DebugManager::DebugManager( void )
 {
 }
 
-void DebugManager::PushLineSegment( const LineSegment& line_segment, Color color, double duration )
+void DebugManager::PushLineSegment( const LineSegment& line_segment, RGBA color, double duration )
 {
 	DebugLineSegment obj;
 	obj.birth        = Clock::now();
@@ -131,7 +130,7 @@ void DebugManager::PushLineSegment( const LineSegment& line_segment, Color color
 	line_segments_.emplace_back( std::move( obj ) );
 }
 
-void DebugManager::PushSphere( Vector3 center, Color color, double duration )
+void DebugManager::PushSphere( Vector3 center, RGBA color, double duration )
 {
 	DebugSphere obj;
 	obj.birth    = Clock::now();
@@ -156,7 +155,7 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		for( const DebugLineSegment& obj : line_segments_ )
 		{
-			Color color   = obj.color;
+			RGBA color    = obj.color;
 			color.a       = CalcAlphaForObject( obj, now );
 
 			dst->position = Vector4( obj.line_segment.start,  1.0f );
@@ -187,8 +186,8 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 		for( const DebugSphere& obj : spheres_ )
 		{
-			Color color = obj.color;
-			color.a     = CalcAlphaForObject( obj, now );
+			RGBA color = obj.color;
+			color.a    = CalcAlphaForObject( obj, now );
 
 			for( Face face : sphere_geometry_.GetFaces() )
 			{
