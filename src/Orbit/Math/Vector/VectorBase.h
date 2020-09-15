@@ -59,6 +59,24 @@ public:
 		return ( *this / Length() );
 	}
 
+	Derived Abs( void ) const
+	{
+		Derived result;
+		for( size_t i = 0; i < Size; ++i )
+			result[ i ] = std::fabsf( ( *this )[ i ] );
+
+		return result;
+	}
+
+	Derived Pow( float exponent ) const
+	{
+		Derived result;
+		for( size_t i = 0; i < Size; ++i )
+			result[ i ] = std::powf( ( *this )[ i ], exponent );
+
+		return result;
+	}
+
 	bool IsZero( void ) const
 	{
 		return IsZero( std::numeric_limits< float >::epsilon() );
