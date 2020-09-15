@@ -177,6 +177,30 @@ void Geometry::GenerateNormals( void )
 	}
 }
 
+void Geometry::GenerateTexCoords( void )
+{
+	// Tri-planar mapping. Courtesy of https://www.martinpalko.com/triplanar-mapping/
+
+	for( Face face : GetFaces() )
+	{
+		for( size_t i = 0; i < 3; ++i )
+		{
+			constexpr float blend_sharpness = 1.0f;
+			Vertex          vertex          = GetVertex( face.indices[ i ] );
+			Vector2         x_uv            = Vector2( vertex.position.x, vertex.position.z );
+			Vector2         y_uv            = Vector2( vertex.position.z, vertex.position.y );
+			Vector2         z_uv            = Vector2( vertex.position.x, vertex.position.y );
+			Vector3         blend_weights   = vertex.normal.Abs().Pow( blend_sharpness );
+			blend_weights                   = blend_weights / ( blend_weights.x + blend_weights.y + blend_weights.z );
+
+			// #Note: Blending the texture coordinates may look a bit strange. Consider picking the one with the largest weight instead.
+			vertex.tex_coord = ( x_uv * blend_weights.x ) + ( y_uv * blend_weights.y ) + ( z_uv * blend_weights.z );
+
+			SetVertex( face.indices[ i ], vertex );
+		}
+	}
+}
+
 void Geometry::FlipFaceTowards( size_t index, const Vector3& direction )
 {
 	if( !vertex_layout_.Contains( VertexComponent::Position ) )

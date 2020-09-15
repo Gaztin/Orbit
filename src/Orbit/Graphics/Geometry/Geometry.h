@@ -42,15 +42,16 @@ public:
 
 public:
 
-	void   SetFromData    ( ByteSpan vertex_data );
-	void   SetFromData    ( ByteSpan vertex_data, ByteSpan face_data, IndexFormat index_format );
-	void   Reserve        ( size_t vertex_count, size_t face_count );
-	size_t AddFace        ( const Face& face );
-	size_t AddVertex      ( const Vertex& vertex );
-	void   SetFace        ( size_t index, const Face& face );
-	void   SetVertex      ( size_t index, const Vertex& vertex );
-	void   GenerateNormals( void );
-	void   FlipFaceTowards( size_t index, const Vector3& direction );
+	void   SetFromData       ( ByteSpan vertex_data );
+	void   SetFromData       ( ByteSpan vertex_data, ByteSpan face_data, IndexFormat index_format );
+	void   Reserve           ( size_t vertex_count, size_t face_count );
+	size_t AddFace           ( const Face& face );
+	size_t AddVertex         ( const Vertex& vertex );
+	void   SetFace           ( size_t index, const Face& face );
+	void   SetVertex         ( size_t index, const Vertex& vertex );
+	void   GenerateNormals   ( void );
+	void   GenerateTexCoords ( void );
+	void   FlipFaceTowards   ( size_t index, const Vector3& direction );
 
 public:
 
