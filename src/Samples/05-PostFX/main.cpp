@@ -28,7 +28,7 @@
 #include <Orbit/Graphics/Buffer/FrameBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
-#include <Orbit/Graphics/ModelFormats/OBJFile.h>
+#include <Orbit/Graphics/ModelFormats/WavefrontOBJFile.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 
@@ -39,7 +39,7 @@ public:
 	SampleApp( void )
 		: scene_shader_  ( scene_shader_source_.Generate(), scene_shader_source_.GetVertexLayout() )
 		, post_fx_shader_( post_fx_shader_source_.Generate(), post_fx_shader_source_.GetVertexLayout() )
-		, mesh_          ( Orbit::OBJFile( Orbit::Asset( "models/bunny.obj" ), scene_shader_source_.GetVertexLayout() ).GetMesh() )
+		, meshes_        ( Orbit::WavefrontOBJFile( Orbit::Asset( "models/bunny.obj" ), scene_shader_source_.GetVertexLayout() ).GetMeshes() )
 	{
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
@@ -69,11 +69,11 @@ public:
 		post_fx_shader_.SetPixelUniform( post_fx_shader_source_.u_time, life_time );
 
 		// Push meshe to render queue
-		if( mesh_ )
+		for( auto& mesh : meshes_ )
 		{
 			Orbit::RenderCommand command;
-			command.vertex_buffer = mesh_->GetVertexBuffer();
-			command.index_buffer  = mesh_->GetIndexBuffer();
+			command.vertex_buffer = mesh->GetVertexBuffer();
+			command.index_buffer  = mesh->GetIndexBuffer();
 			command.shader        = scene_shader_;
 			command.frame_buffer  = frame_buffer_;
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
@@ -98,15 +98,15 @@ public:
 
 private:
 
-	Orbit::RenderContext           render_context_;
-	SceneShader                    scene_shader_source_;
-	PostFXShader                   post_fx_shader_source_;
-	Orbit::Shader                  scene_shader_;
-	Orbit::Shader                  post_fx_shader_;
-	std::shared_ptr< Orbit::Mesh > mesh_;
-	Orbit::FrameBuffer             frame_buffer_;
-	Orbit::Matrix4                 model_matrix_;
-	Camera                         camera_;
-	RenderQuad                     render_quad_;
+	Orbit::RenderContext                          render_context_;
+	SceneShader                                   scene_shader_source_;
+	PostFXShader                                  post_fx_shader_source_;
+	Orbit::Shader                                 scene_shader_;
+	Orbit::Shader                                 post_fx_shader_;
+	std::vector< std::shared_ptr< Orbit::Mesh > > meshes_;
+	Orbit::FrameBuffer                            frame_buffer_;
+	Orbit::Matrix4                                model_matrix_;
+	Camera                                        camera_;
+	RenderQuad                                    render_quad_;
 
 };

@@ -15,13 +15,35 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "OBJFile.h"
+#pragma once
+#include "Orbit/Core/IO/File/TextFile.h"
+#include "Orbit/Graphics/Geometry/Mesh.h"
+
+#include <memory>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-OBJFile::OBJFile( ByteSpan data, const VertexLayout& /*vertex_layout*/ )
+class VertexLayout;
+
+class ORB_API_GRAPHICS WavefrontOBJFile : public TextFile
 {
-	Init( data.Size() );
-}
+public:
+
+	WavefrontOBJFile( ByteSpan data, const VertexLayout& vertex_layout );
+
+public:
+
+	auto GetMeshes( void ) { return meshes_; }
+
+private:
+
+	void ProduceMesh( Geometry& geometry, std::string_view mesh_name, bool generate_tex_coords, bool generate_normals );
+
+private:
+
+	std::vector< std::shared_ptr< Mesh > > meshes_;
+
+};
 
 ORB_NAMESPACE_END
