@@ -99,12 +99,22 @@ std::string TextFile::ReadCapturedStringLiteral( const char* src )
 
 std::string_view TextFile::ReadLine( const char* src )
 {
-	const size_t           carriage_return = FindCharacter( src, '\r' );
-	const size_t           line_feed       = FindCharacter( src, '\n' );
-	const std::string_view line            = std::string_view( src + current_offset_, std::min( carriage_return, line_feed ) );
+	const size_t     line_length = FindCharacter( src, '\n' );
+	std::string_view line        = std::string_view( src + current_offset_, line_length );
 
-	// Move offset to after line feed character
-	current_offset_ += line_feed + 1;
+	if( ( current_offset_ + line_length ) == total_size_ )
+	{
+		// Set EOF
+		current_offset_ = total_size_;
+	}
+	else
+	{
+		if( !line.empty() && line.back() == '\r' )
+			line.remove_suffix( 1 );
+
+		// Move offset to after line feed character
+		current_offset_ += ( line_length + 1 );
+	}
 
 	return line;
 }
