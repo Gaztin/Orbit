@@ -51,29 +51,31 @@ WavefrontOBJFile::WavefrontOBJFile( ByteSpan data, const VertexLayout& vertex_la
 
 //////////////////////////////////////////////////////////////////////////
 
-		char  string_buf[ 64 ];
 		float x, y, z, w;
 		float u, v;
 		int   v1, v2, v3;
 		int   vt1, vt2, vt3;
 		int   vn1, vn2, vn3;
 
-		if( std::sscanf( line.data(), "mtllib %s", string_buf ) > 0 )
+		if( line.substr( 0, 7 ) == "mtllib " )
 		{
-			const Asset            mtl_asset     = Asset( string_buf );
+			const std::string_view mtllib        = line.substr( 7 );
+			const Asset            mtl_asset     = Asset( mtllib );
 			const WavefrontMTLFile mtl_file      = WavefrontMTLFile( { mtl_asset.GetData(), mtl_asset.GetSize() } );
 			auto                   new_materials = mtl_file.GetMaterials();
 
 			// Store materials
 			materials.insert( materials.end(), new_materials.begin(), new_materials.end() );
 		}
-		else if( std::sscanf( line.data(), "o %s", string_buf ) > 0 )
+		else if( line.substr( 0, 2 ) == "o " )
 		{
+			const std::string_view o = line.substr( 2 );
+
 			if( current_geometry )
 				ProduceMesh( *current_geometry, current_mesh_name, tex_coords.empty(), normals.empty() );
 
 			current_geometry  = std::make_optional< Geometry >( vertex_layout );
-			current_mesh_name = string_buf;
+			current_mesh_name = o;
 
 			tex_coords.clear();
 			normals.clear();
@@ -198,8 +200,10 @@ WavefrontOBJFile::WavefrontOBJFile( ByteSpan data, const VertexLayout& vertex_la
 
 			current_geometry->AddFace( face );
 		}
-		else if( std::sscanf( line.data(), "usemtl %s", string_buf ) > 0 )
+		else if( line.substr( 0, 7 ) == "usemtl " )
 		{
+			const std::string_view usemtl = line.substr( 7 );
+
 			// #TODO: Use material in @materials
 		}
 		else if( line == "s 1" )
