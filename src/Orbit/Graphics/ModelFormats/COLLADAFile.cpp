@@ -32,574 +32,352 @@ ORB_NAMESPACE_BEGIN
 COLLADAFile::COLLADAFile( ByteSpan data, const VertexLayout& vertex_layout )
 	: XMLFile( data )
 {
-	std::vector< std::string >      all_joint_names;
-	std::vector< Matrix4 >          all_joint_transforms;
-	std::map< std::string, size_t > mesh_id_table;
+	LibraryEffects();
+	LibraryImages();
+	LibraryGeometries( vertex_layout );
+	LibraryAnimations();
+	LibraryVisualScenes();
+}
 
-	for( const XMLElement& geometry : root_element_[ "COLLADA" ][ "library_geometries" ] )
+std::string_view COLLADAFile::SourceID( const XMLElement& element )
+{
+	std::string_view source_id = element.FindAttribute( "source" );
+
+	// Remove leading '#'
+	source_id.remove_prefix( 1 );
+
+	return source_id;
+}
+
+void COLLADAFile::LibraryEffects( void )
+{
+	for( const XMLElement& elm_geometry : root_element_[ "COLLADA" ][ "library_effects" ] )
 	{
-		if( geometry.name != "geometry" )
-			continue;
+	}
+}
 
-		const std::string geometry_id = std::string( geometry.FindAttribute( "id" ) );
-		const XMLElement& polylist    = geometry[ "mesh" ][ "polylist" ];
+void COLLADAFile::LibraryImages( void )
+{
+	for( const XMLElement& elm_geometry : root_element_[ "COLLADA" ][ "library_images" ] )
+	{
+	}
+}
 
-		size_t vertex_count = 0;
-		/* Peek the number of vertices */
-		if( const XMLElement* input = geometry[ "mesh" ][ "vertices" ].FindChildWithAttribute( "input", { "semantic", "POSITION" } ) )
+void COLLADAFile::LibraryMaterials( void )
+{
+	for( const XMLElement& elm_geometry : root_element_[ "COLLADA" ][ "library_materials" ] )
+	{
+	}
+}
+
+void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
+{
+	for( const XMLElement& elm_geometry : root_element_[ "COLLADA" ][ "library_geometries" ] )
+	{
+		Geometry               geometry           = Geometry( vertex_layout );
+		const XMLElement&      elm_mesh           = elm_geometry[ "mesh" ];
+		const XMLElement&      elm_triangles      = *Or( elm_mesh.FindChild( "triangles" ), elm_mesh.FindChild( "polylist" ) );
+		const uint32_t         num_triangles      = FromString< uint32_t >( elm_triangles.FindAttribute( "count" ) );
+		const uint32_t         num_inputs         = elm_triangles.CountChildrenWithName( "input" );
+		const XMLElement&      elm_input_vertex   = *elm_triangles.FindChildWithAttribute( "input", { "semantic", "VERTEX" } );
+		const XMLElement&      elm_input_normal   = *elm_triangles.FindChildWithAttribute( "input", { "semantic", "NORMAL" } );
+		const XMLElement&      elm_input_texcoord = *elm_triangles.FindChildWithAttribute( "input", { "semantic", "TEXCOORD" } );
+		const std::string_view id_vertices        = SourceID( elm_input_vertex );
+		const XMLElement&      elm_vertices       = *elm_mesh.FindChildWithAttribute( "vertices", { "id", id_vertices } );
+		const XMLElement&      elm_input_position = *elm_vertices.FindChildWithAttribute( "input", { "semantic", "POSITION" } );
+		const std::string_view id_positions       = SourceID( elm_input_position );
+		const std::string_view id_normals         = SourceID( elm_input_normal );
+		const std::string_view id_texcoords_0     = SourceID( elm_input_texcoord );
+
+//////////////////////////////////////////////////////////////////////////
+
+		// Indices
+		std::vector< uint32_t > indices;
 		{
-			const std::string positions_source( input->FindAttribute( "source" ).substr( 1 ) );
+			const std::string_view material_name       = elm_triangles.FindAttribute( "material" );
+			const uint32_t         num_indices         = num_triangles * 3 * num_inputs;
+			std::string_view       content_index_array = elm_triangles[ "p" ].content;
 
-			if( const XMLElement* source = geometry[ "mesh" ].FindChildWithAttribute( "source", { "id", positions_source } ) )
+			for( uint32_t triangle_index = 0; triangle_index < num_indices; ++triangle_index )
 			{
-				std::istringstream ss( std::string( ( *source )[ "float_array" ].FindAttribute( "count" ) ) );
-				ss >> vertex_count;
-				assert( vertex_count % 3 == 0 );
-				vertex_count /= 3;
+				const size_t           space        = content_index_array.find_first_of( ' ' );
+				const std::string_view value_string = content_index_array.substr( 0, space );
+				const uint32_t         value        = FromString< uint32_t >( value_string );
+
+				// Store value in indices
+				indices.push_back( value );
+
+				// Chip away from the content string
+				content_index_array.remove_prefix( space + 1 );
 			}
 		}
 
-		const size_t face_count = FromString< size_t >( polylist.FindAttribute( "count" ) );
+//////////////////////////////////////////////////////////////////////////
 
-		// Abort if not COLLADA
-		if( vertex_count == 0 || face_count == 0 )
-			return;
+		// Find the largest amount of vertices required
+		uint32_t         minimum_vertices_required = 0;
+		std::string_view chosen_id;
+
+		for( const XMLElement& source : elm_mesh )
+		{
+			if( source.name == "source" )
+			{
+				const XMLElement& accessor = source[ "technique_common" ][ "accessor" ];
+				const uint32_t    count    = FromString< uint32_t >( accessor.FindAttribute( "count" ) );
+
+				if( count > minimum_vertices_required )
+				{
+					minimum_vertices_required = count;
+					chosen_id                 = source.FindAttribute( "id" );
+				}
+			}
+		}
+
+//////////////////////////////////////////////////////////////////////////
 
 		std::vector< Vector4 > positions;
-		std::vector< Vector3 > normals;
-		std::vector< Vector2 > tex_coords;
-		Geometry               mesh_geometry( vertex_layout );
-
-		mesh_geometry.Reserve( vertex_count, face_count );
 
 		if( vertex_layout.Contains( VertexComponent::Position ) )
 		{
-			if( const XMLElement* input = geometry[ "mesh" ][ "vertices" ].FindChildWithAttribute( "input", { "semantic", "POSITION" } ) )
+			const XMLElement&      elm_source_positions = *elm_mesh.FindChildWithAttribute( "source", { "id", id_positions } );
+			const XMLElement&      elm_accessor         = elm_source_positions[ "technique_common" ][ "accessor" ];
+			const uint32_t         count                = FromString< uint32_t >( elm_accessor.FindAttribute( "count" ) );
+			const uint32_t         stride               = FromString< uint32_t >( elm_accessor.FindAttribute( "stride" ) );
+			const std::string_view id_positions_array   = SourceID( elm_accessor );
+			const XMLElement&      elm_float_array      = *elm_source_positions.FindChildWithAttribute( "float_array", { "id", id_positions_array } );
+			std::string_view       stream               = elm_float_array.content;
+
+			assert( stride <= 4 ); // Maximum 4 components
+
+			for( uint32_t position_index = 0; position_index < count; ++position_index )
 			{
-				const std::string source_id( input->FindAttribute( "source" ).substr( 1 ) );
+				Vector4 position;
 
-				if( const XMLElement* source = geometry[ "mesh" ].FindChildWithAttribute( "source", { "id", source_id } ) )
+				for( uint32_t component_index = 0; component_index < stride; ++component_index )
 				{
-					const size_t       stride = FromString< size_t >( ( *source )[ "technique_common" ][ "accessor" ].FindAttribute( "stride" ) );
-					std::istringstream ss     = std::istringstream( ( *source )[ "float_array" ].content );
-					Vector4            vec    = Vector4( 0.0f, 0.0f, 0.0f, 1.0f );
-					size_t             i      = 0;
+					const size_t           space        = stream.find_first_of( ' ' );
+					const std::string_view value_string = stream.substr( 0, space );
+					const float            value        = FromString< float >( value_string );
 
-					while( ss >> vec[ i++ ] )
-					{
-						if( i == stride )
-						{
-							positions.push_back( vec );
-							i = 0;
-						}
-					}
+					// Store values in position
+					position[ component_index ] = value;
+
+					// Chip away from the content string
+					stream.remove_prefix( space + 1 );
 				}
+
+				// Add position to vector
+				positions.push_back( position );
 			}
 		}
+
+//////////////////////////////////////////////////////////////////////////
+
+		std::vector< Vector3 > normals;
 
 		if( vertex_layout.Contains( VertexComponent::Normal ) )
 		{
-			const size_t offset = vertex_layout.OffsetOf( VertexComponent::Normal );
+			const XMLElement&      elm_source       = *elm_mesh.FindChildWithAttribute( "source", { "id", id_normals } );
+			const XMLElement&      elm_accessor     = elm_source[ "technique_common" ][ "accessor" ];
+			const std::string_view id_normals_array = SourceID( elm_accessor );
+			const uint32_t         count            = FromString< uint32_t >( elm_accessor.FindAttribute( "count" ) );
+			const uint32_t         stride           = FromString< uint32_t >( elm_accessor.FindAttribute( "stride" ) );
+			const XMLElement&      elm_float_array  = *elm_source.FindChildWithAttribute( "float_array", { "id", id_normals_array } );
+			std::string_view       stream           = elm_float_array.content;
 
-			if( const XMLElement* input = polylist.FindChildWithAttribute( "input", { "semantic", "NORMAL" } ) )
+			assert( stride <= 3 ); // Maximum 3 components
+
+			for( uint32_t normal_index = 0; normal_index < count; ++normal_index )
 			{
-				const std::string source_id = std::string( input->FindAttribute( "source" ).substr( 1 ) );
+				Vector3 normal;
 
-				if( const XMLElement*  source = geometry[ "mesh" ].FindChildWithAttribute( "source", { "id", source_id } ) )
+				for( uint32_t component_index = 0; component_index < stride; ++component_index )
 				{
-					const size_t       stride = FromString< size_t >( ( *source )[ "technique_common" ][ "accessor" ].FindAttribute( "stride" ) );
-					std::istringstream ss     = std::istringstream( ( *source )[ "float_array" ].content );
-					Vector3            vec    = Vector3( 0.0f, 0.0f, 0.0f );
-					size_t             i      = 0;
+					const size_t           space        = stream.find_first_of( ' ' );
+					const std::string_view value_string = stream.substr( 0, space );
+					const float            value        = FromString< float >( value_string );
 
-					while( ss >> vec[ i++ ] )
-					{
-						if( i == stride )
-						{
-							normals.push_back( vec );
-							i = 0;
-						}
-					}
+					// Store values in normal
+					normal[ component_index ] = value;
+
+					// Chip away from the content string
+					stream.remove_prefix( space + 1 );
 				}
+
+				// Add normal to vector
+				normals.emplace_back( std::move( normal ) );
 			}
 		}
+
+//////////////////////////////////////////////////////////////////////////
+
+		std::vector< Vector2 > texcoords;
 
 		if( vertex_layout.Contains( VertexComponent::TexCoord ) )
 		{
-			const size_t offset = vertex_layout.OffsetOf( VertexComponent::TexCoord );
+			const XMLElement&      elm_source      = *elm_mesh.FindChildWithAttribute( "source", { "id", id_texcoords_0 } );
+			const XMLElement&      elm_accessor    = elm_source[ "technique_common" ][ "accessor" ];
+			const std::string_view id_map_0_array  = SourceID( elm_accessor );
+			const uint32_t         count           = FromString< uint32_t >( elm_accessor.FindAttribute( "count" ) );
+			const uint32_t         stride          = FromString< uint32_t >( elm_accessor.FindAttribute( "stride" ) );
+			const XMLElement&      elm_float_array = *elm_source.FindChildWithAttribute( "float_array", { "id", id_map_0_array } );
+			std::string_view       stream          = elm_float_array.content;
 
-			if( const XMLElement* input = polylist.FindChildWithAttribute( "input", { "semantic", "TEXCOORD" } ) )
+			assert( stride <= 2 ); // Maximum 2 components
+
+			for( uint32_t texcoord_index = 0; texcoord_index < count; ++texcoord_index )
 			{
-				const std::string source_id = std::string( input->FindAttribute( "source" ).substr( 1 ) );
+				Vector2 texcoord;
 
-				if( const XMLElement* source = geometry[ "mesh" ].FindChildWithAttribute( "source", { "id", source_id } ) )
+				for( uint32_t component_index = 0; component_index < stride; ++component_index )
 				{
-					const size_t       stride = FromString< size_t >( ( *source )[ "technique_common" ][ "accessor" ].FindAttribute( "stride" ) );
-					std::istringstream ss     = std::istringstream( ( *source )[ "float_array" ].content );
-					Vector2            vec    = Vector2( 0.0f, 0.0f );
-					size_t             i      = 0;
+					const size_t           space        = stream.find_first_of( ' ' );
+					const std::string_view value_string = stream.substr( 0, space );
+					const float            value        = FromString< float >( value_string );
 
-					while( ss >> vec[ i++ ] )
-					{
-						if( i == stride )
-						{
-							tex_coords.push_back( vec );
-							i = 0;
-						}
-					}
-				}
-			}
-		}
+					// Store values in normal
+					texcoord[ component_index ] = value;
 
-		// Write to index data
-		{
-			const size_t          input_count = polylist.CountChildrenWithName( "input" );
-			std::vector< size_t > all_indices;
-
-			{
-				std::istringstream ss( polylist[ "p" ].content );
-				size_t             index;
-
-				while( ss >> index )
-					all_indices.push_back( index );
-			}
-
-			std::vector< size_t > vcounts;
-			{
-				std::istringstream ss( polylist[ "vcount" ].content );
-				size_t             index;
-
-				while( ss >> index )
-					vcounts.push_back( index );
-			}
-
-			{
-				if( const XMLElement* input = polylist.FindChildWithAttribute( "input", { "semantic", "VERTEX" } ) )
-				{
-					size_t index = FromString< size_t >( input->FindAttribute( "offset" ) );
-
-					for( size_t f = 0; f < face_count; ++f )
-					{
-						Face face{ };
-
-						assert( vcounts[ f ] == 3 );
-
-						for( size_t v = 0; v < vcounts[ f ]; ++v )
-						{
-							face.indices[ v ] = all_indices[ index ];
-							index            += input_count;
-						}
-
-						mesh_geometry.AddFace( face );
-					}
-				}
-			}
-
-			for( size_t i = 0; i < vertex_count; ++i )
-			{
-				Vertex vertex   = { };
-				vertex.position = positions[ i ];
-
-				mesh_geometry.AddVertex( vertex );
-			}
-
-			if( const XMLElement* input = polylist.FindChildWithAttribute( "input", { "semantic", "NORMAL" } ) )
-			{
-				size_t normal_index = FromString< size_t >( input->FindAttribute( "offset" ) );
-
-				for( Face face : mesh_geometry.GetFaces() )
-				{
-					for( size_t index : face.indices )
-					{
-						Vertex vertex = mesh_geometry.GetVertex( index );
-						vertex.normal = normals[ all_indices[ normal_index ] ];
-						normal_index += input_count;
-					}
-				}
-			}
-
-			if( const XMLElement* input = polylist.FindChildWithAttribute( "input", { "semantic", "TEXCOORD" } ) )
-			{
-				size_t tex_coord_index = FromString< size_t >( input->FindAttribute( "offset" ) );
-
-				for( Face face : mesh_geometry.GetFaces() )
-				{
-					for( size_t index : face.indices )
-					{
-						Vertex vertex    = mesh_geometry.GetVertex( index );
-						vertex.tex_coord = tex_coords[ all_indices[ index ] ];
-						tex_coord_index += input_count;
-					}
-				}
-			}
-		}
-
-		if( vertex_layout.Contains( VertexComponent::JointIDs ) || vertex_layout.Contains( VertexComponent::Weights ) )
-		{
-			for( const XMLElement& controller : root_element_[ "COLLADA" ][ "library_controllers" ] )
-			{
-				const std::string controller_id  = std::string( controller.FindAttribute( "id" ) );
-				const XMLElement& skin           = controller[ "skin" ];
-				std::string       skin_source_id = std::string( skin.FindAttribute( "source" ).substr( 1 ) );
-
-				if( skin_source_id != geometry_id )
-					continue;
-
-				const XMLElement& vertex_weights = skin[ "vertex_weights" ];
-
-				std::string weight_source_id;
-				if( const XMLElement* input = vertex_weights.FindChildWithAttribute( "input", { "semantic", "WEIGHT" } ) )
-					weight_source_id = input->FindAttribute( "source" ).substr( 1 );
-
-				std::string joints_source_id;
-				if( const XMLElement* input = skin[ "joints" ].FindChildWithAttribute( "input", { "semantic", "JOINT" } ) )
-					joints_source_id = input->FindAttribute( "source" ).substr( 1 );
-
-				std::string matrices_source_id;
-				if( const XMLElement* input = skin[ "joints" ].FindChildWithAttribute( "input", { "semantic", "INV_BIND_MATRIX" } ) )
-					matrices_source_id = input->FindAttribute( "source" ).substr( 1 );
-
-				Matrix4 bind_shape_matrix;
-				{
-					std::istringstream ss( skin[ "bind_shape_matrix" ].content );
-
-					for( size_t i = 0; i < 16; ++i )
-						ss >> bind_shape_matrix[ i ];
+					// Chip away from the content string
+					stream.remove_prefix( space + 1 );
 				}
 
-				std::vector< float > weights;
-				for( const XMLElement& source : skin )
-				{
-					const std::string source_id( source.FindAttribute( "id" ) );
-
-					if( source_id == weight_source_id )
-					{
-						const XMLElement& float_array = source[ "float_array" ];
-
-						size_t count = 0;
-						{
-							std::istringstream ss( std::string( float_array.FindAttribute( "count" ) ) );
-							ss >> count;
-						}
-
-						std::istringstream ss( float_array.content );
-
-						weights.reserve( count );
-
-						for( size_t i = 0; i < count; ++i )
-						{
-							float weight = 0.0f;
-							ss >> weight;
-							weights.push_back( weight );
-						}
-					}
-					else if( source_id == joints_source_id )
-					{
-						const XMLElement& name_array = source[ "Name_array" ];
-
-						size_t count = 0;
-						{
-							std::istringstream ss( std::string( name_array.FindAttribute( "count" ) ) );
-							ss >> count;
-						}
-
-						if( all_joint_names.size() != count )
-						{
-							std::istringstream ss( name_array.content );
-
-							all_joint_names.clear();
-							all_joint_names.reserve( count );
-
-							for( size_t i = 0; i < count; ++i )
-							{
-								std::string joint_name;
-								ss >> joint_name;
-								all_joint_names.emplace_back( std::move( joint_name ) );
-							}
-						}
-					}
-					else if( source_id == matrices_source_id )
-					{
-						const XMLElement& float_array = source[ "float_array" ];
-
-						size_t count = 0;
-						{
-							std::istringstream ss( std::string( float_array.FindAttribute( "count" ) ) );
-							ss >> count;
-							assert( count % 16 == 0 );
-							count /= 16;
-						}
-
-						if( all_joint_transforms.size() != count )
-						{
-							std::istringstream ss( float_array.content );
-
-							all_joint_transforms.clear();
-							all_joint_transforms.reserve( count );
-
-							for( size_t i = 0; i < count; ++i )
-							{
-								Matrix4 joint_transform;
-								for( size_t e = 0; e < 16; ++e )
-									ss >> joint_transform[ e ];
-
-								all_joint_transforms.push_back( joint_transform * bind_shape_matrix );
-							}
-						}
-					}
-				}
-
-				size_t vertex_weight_count = 0;
-				{
-					std::istringstream ss( std::string( vertex_weights.FindAttribute( "count" ) ) );
-					ss >> vertex_weight_count;
-				}
-
-				std::vector< size_t > vcounts;
-				vcounts.reserve( vertex_weight_count );
-				{
-					std::istringstream ss( vertex_weights[ "vcount" ].content );
-
-					for( size_t i = 0; i < vertex_weight_count; ++i )
-					{
-						size_t count = 0;
-						ss >> count;
-						vcounts.push_back( count );
-					}
-				}
-
-				std::istringstream ss( vertex_weights[ "v" ].content );
-
-				for( size_t i = 0; i < vcounts.size(); ++i )
-				{
-					using WeightPair = std::pair< int, float >;
-
-					size_t vcount = vcounts[ i ];
-
-					std::vector< WeightPair > weight_pairs;
-					for( size_t v = 0; v < vcount; ++v )
-					{
-						int    joint_index = 0;
-						size_t weight_index = 0;
-
-						ss >> joint_index;
-						ss >> weight_index;
-
-						weight_pairs.emplace_back( joint_index, weights[ weight_index ] );
-					}
-
-					if( vcount > 4 )
-					{
-						std::sort( weight_pairs.begin(), weight_pairs.end(), []( const WeightPair& a, const WeightPair& b ) { return ( a.second > b.second ); } );
-
-						float weight_to_redistribute = 0.0f;
-						for( size_t v = 4; v < vcount; ++v )
-							weight_to_redistribute += weight_pairs[ v ].second;
-
-						for( size_t v = 0; v < 4; ++v )
-							weight_pairs[ v ].second += ( weight_to_redistribute / 4 );
-
-						weight_pairs.resize( 4 );
-						vcount = 4;
-					}
-
-					Vertex vertex = mesh_geometry.GetVertex( i );
-
-					for( size_t v = 0; v < vcount; ++v )
-					{
-						vertex.joint_ids[ v ] = weight_pairs[ v ].first;
-						vertex.weights  [ v ] = weight_pairs[ v ].second;
-					}
-
-					mesh_geometry.SetVertex( i, vertex );
-				}
-
-				break;
+				// Add texture coordinate to vector
+				texcoords.emplace_back( std::move( texcoord ) );
 			}
 		}
 
 //////////////////////////////////////////////////////////////////////////
 
-		// Generate normals
-		mesh_geometry.GenerateNormals();
+		const bool need_index_buffer = ( minimum_vertices_required < ( num_triangles * 3 ) );
+
+		// Create indices, unless the amount of vertices match with amount of indices
+		if( need_index_buffer ) geometry.Reserve( minimum_vertices_required, num_triangles );
+		else                    geometry.Reserve( minimum_vertices_required, 0 );
 
 //////////////////////////////////////////////////////////////////////////
 
-		auto mesh = mesh_geometry.ToMesh( geometry.FindAttribute( "name" ) );
+		const size_t index_stride = num_inputs * 3;
+		uint32_t     index_offset = 0;
 
-		// Add mesh to list
-		model_data_.meshes.emplace_back( std::move( mesh ) );
+		if( chosen_id == id_positions )
+		{
+			index_offset = FromString< uint32_t >( elm_input_vertex.FindAttribute( "offset" ) );
 
-		mesh_id_table[ "#" + geometry_id ] = model_data_.meshes.size();
+			for( const Vector4& position : positions )
+			{
+				Vertex vertex;
+				vertex.position = position;
+				geometry.AddVertex( vertex );
+			}
+		}
+		else if( chosen_id == id_normals )
+		{
+			index_offset = FromString< uint32_t >( elm_input_normal.FindAttribute( "offset" ) );
+
+			for( const Vector3& normal : normals )
+			{
+				Vertex vertex;
+				vertex.normal = normal;
+				geometry.AddVertex( vertex );
+			}
+		}
+		else if( chosen_id == id_texcoords_0 )
+		{
+			index_offset = FromString< uint32_t >( elm_input_texcoord.FindAttribute( "offset" ) );
+
+			for( const Vector2& texcoord : texcoords )
+			{
+				Vertex vertex;
+				vertex.tex_coord = texcoord;
+				geometry.AddVertex( vertex );
+			}
+		}
+
+		for( size_t i = 0; i < num_triangles; ++i )
+		{
+			Face face;
+			face.indices[ 0 ] = indices[ index_offset + num_inputs * ( i * 3 + 0 ) ];
+			face.indices[ 1 ] = indices[ index_offset + num_inputs * ( i * 3 + 1 ) ];
+			face.indices[ 2 ] = indices[ index_offset + num_inputs * ( i * 3 + 2 ) ];
+			geometry.AddFace( face );
+		}
+
+		if( chosen_id != id_positions )
+		{
+			const uint32_t offset       = FromString< uint32_t >( elm_input_vertex.FindAttribute( "offset" ) );
+			const size_t   num_vertices = geometry.GetVertexCount();
+
+			for( size_t face_index = 0; face_index < num_triangles; ++face_index )
+			{
+				const Face face = geometry.GetFace( face_index );
+
+				for( size_t i = 0; i < 3; ++i )
+				{
+					Vertex vertex   = geometry.GetVertex( face.indices[ i ] );
+					vertex.position = positions[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
+					geometry.SetVertex( face.indices[ i ], vertex );
+				}
+			}
+		}
+
+		if( chosen_id != id_normals )
+		{
+			const uint32_t offset       = FromString< uint32_t >( elm_input_normal.FindAttribute( "offset" ) );
+			const size_t   num_vertices = geometry.GetVertexCount();
+
+			for( size_t face_index = 0; face_index < num_triangles; ++face_index )
+			{
+				const Face face = geometry.GetFace( face_index );
+
+				for( size_t i = 0; i < 3; ++i )
+				{
+					Vertex vertex = geometry.GetVertex( face.indices[ i ] );
+					vertex.normal = normals[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
+					geometry.SetVertex( face.indices[ i ], vertex );
+				}
+			}
+		}
+
+		if( chosen_id != id_texcoords_0 )
+		{
+			const uint32_t offset       = FromString< uint32_t >( elm_input_texcoord.FindAttribute( "offset" ) );
+			const size_t   num_vertices = geometry.GetVertexCount();
+
+			for( size_t face_index = 0; face_index < num_triangles; ++face_index )
+			{
+				const Face face = geometry.GetFace( face_index );
+
+				for( size_t i = 0; i < 3; ++i )
+				{
+					Vertex vertex    = geometry.GetVertex( face.indices[ i ] );
+					vertex.tex_coord = texcoords[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
+					geometry.SetVertex( face.indices[ i ], vertex );
+				}
+			}
+		}
+
+//////////////////////////////////////////////////////////////////////////
+
+		const std::string_view geometry_name = elm_geometry.FindAttribute( "name" );
+
+		// Create mesh
+		model_data_.meshes.emplace_back( geometry.ToMesh( geometry_name ) );
 	}
-
-//////////////////////////////////////////////////////////////////////////
-
-	for( const XMLElement& animation : root_element_[ "COLLADA" ][ "library_animations" ] )
-	{
-		if( animation.name != "animation" )
-			continue;
-
-		const XMLElement& sampler = animation[ "sampler" ];
-
-		std::string input_source_id;
-		if( const XMLElement* input = sampler.FindChildWithAttribute( "input", { "semantic", "INPUT" } ) )
-		{
-			std::istringstream ss( std::string( input->FindAttribute( "source" ) ) );
-			ss.ignore( 1 );
-			ss >> input_source_id;
-		}
-
-		std::string output_source_id;
-		if( const XMLElement* input = sampler.FindChildWithAttribute( "input", { "semantic", "OUTPUT" } ) )
-		{
-			std::istringstream ss( std::string( input->FindAttribute( "source" ) ) );
-			ss.ignore( 1 );
-			ss >> output_source_id;
-		}
-
-		std::string interpolation_source_id;
-		if( const XMLElement* input = sampler.FindChildWithAttribute( "input", { "semantic", "INTERPOLATION" } ) )
-		{
-			std::istringstream ss( std::string( input->FindAttribute( "source" ) ) );
-			ss.ignore( 1 );
-			ss >> interpolation_source_id;
-		}
-
-		std::string target_joint;
-		{
-			std::istringstream ss( std::string( animation[ "channel" ].FindAttribute( "target" ) ) );
-			ss >> target_joint;
-			target_joint.erase( target_joint.rfind( "/" ) );
-		}
-
-		std::vector< KeyFrame > key_frames;
-		for( const XMLElement& source : animation )
-		{
-			if( source.name != "source" )
-				continue;
-
-			if( key_frames.empty() )
-			{
-				size_t count = 0;
-				{
-					std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].FindAttribute( "count" ) ) );
-					ss >> count;
-				}
-
-				key_frames.resize( count );
-			}
-
-			const std::string source_id( source.FindAttribute( "id" ) );
-
-			if( source_id == input_source_id )
-			{
-				std::istringstream ss( source[ "float_array" ].content );
-
-				for( KeyFrame& kf : key_frames )
-					ss >> kf.time;
-			}
-			else if( source_id == output_source_id )
-			{
-				std::istringstream ss( source[ "float_array" ].content );
-
-				for( KeyFrame& kf : key_frames )
-				{
-					for( size_t e = 0; e < 16; ++e )
-						ss >> kf.transform[ e ];
-				}
-			}
-			else if( source_id == interpolation_source_id )
-			{
-				std::istringstream ss( source[ "Name_array" ].content );
-
-				/* One of: LINEAR, BEZIER, CARDINAL, HERMITE, BSPLINE and STEP */
-				for( KeyFrame& kf : key_frames )
-					ss >> kf.interpolation_type;
-			}
-		}
-
-		// Sort keyframes
-		std::sort( key_frames.begin(), key_frames.end(), []( const KeyFrame& a, const KeyFrame& b ) { return a.time < b.time; } );
-
-		// Store keyframe
-		animation_data_.keyframes.try_emplace( std::move( target_joint ), std::move( key_frames ) );
-	}
-
-//////////////////////////////////////////////////////////////////////////
-
-	const XMLElement& visual_scene  = root_element_[ "COLLADA" ][ "library_visual_scenes" ][ "visual_scene" ];
-	bool              has_animation = false;
-
-	for( const XMLElement& node : visual_scene )
-	{
-		if( const XMLElement* instance_geometry = node.FindChild( "instance_geometry" ) )
-		{
-			if( auto it = mesh_id_table.find( std::string( instance_geometry->FindAttribute( "url" ) ) ); it != mesh_id_table.end() )
-			{
-				if( it->second >= model_data_.meshes.size() )
-					continue;
-
-				std::istringstream ss( node[ "matrix" ].content );
-
-				for( size_t e = 0; e < 16; ++e )
-					ss >> model_data_.meshes[ it->second ]->transform_[ e ];
-			}
-			else
-			{
-				// Failed to find mesh in ID table
-				assert( false );
-			}
-		}
-		else if( node.children.size() == 1 )
-		{
-			// Treat the lack of an "instance_xxx" element as being a joint node
-			has_animation = true;
-		}
-	}
-
-	// Parse joint hierarchy
-	if( has_animation )
-		model_data_.root_joint = ColladaParseNodeRecursive( visual_scene, Matrix4(), all_joint_names, all_joint_transforms );
 }
 
-Joint COLLADAFile::ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& parent_inverse_bind_transform, const std::vector< std::string >& all_joint_names, const std::vector< Matrix4 >& all_joint_transforms )
+void COLLADAFile::LibraryAnimations( void )
 {
-	Joint joint;
-	joint.name = node.FindAttribute( "id" );
-	
-	auto find_joint = [ &joint ]( const std::string& str ) { return str == joint.name; };
-
-	if( auto it = std::find_if( all_joint_names.begin(), all_joint_names.end(), find_joint ); it != all_joint_names.end() )
+	for( const XMLElement& animation : root_element_[ "COLLADA" ][ "library_animations" ] )
 	{
-		joint.id                     = static_cast< int >( it - all_joint_names.begin() );
-		joint.inverse_bind_transform = all_joint_transforms[ joint.id ];
 	}
-	else
+}
+
+void COLLADAFile::LibraryVisualScenes( void )
+{
+	for( const XMLElement& visual_scene : root_element_[ "COLLADA" ][ "library_visual_scenes" ] )
 	{
-		std::istringstream ss( node[ "matrix" ].content );
-		Matrix4            local_bind_transform;
-
-		joint.id = -1;
-
-		for( size_t i = 0; i < 16; ++i )
-			ss >> local_bind_transform[ i ];
-
-		const Matrix4 parent_bind_transform = parent_inverse_bind_transform.Inverted();
-		const Matrix4 bind_transform        = ( parent_bind_transform * local_bind_transform );
-
-		joint.inverse_bind_transform = bind_transform.Inverted();
 	}
-
-	for( const XMLElement& child : node )
-	{
-		if( child.name != "node" )
-			continue;
-
-		joint.children.push_back( ColladaParseNodeRecursive( child, joint.inverse_bind_transform, all_joint_names, all_joint_transforms ) );
-	}
-
-	return joint;
 }
 
 ORB_NAMESPACE_END

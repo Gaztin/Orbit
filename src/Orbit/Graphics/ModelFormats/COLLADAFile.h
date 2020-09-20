@@ -17,6 +17,7 @@
 
 #pragma once
 #include "Orbit/Core/IO/File/Markup/XML/XMLFile.h"
+#include "Orbit/Graphics/Animation/KeyFrame.h"
 #include "Orbit/Graphics/Animation/Joint.h"
 #include "Orbit/Graphics/Geometry/Geometry.h"
 
@@ -56,7 +57,13 @@ public:
 
 private:
 
-	static Joint ColladaParseNodeRecursive( const XMLElement& node, const Matrix4& parent_inverse_bind_transform, const std::vector< std::string >& all_joint_names, const std::vector< Matrix4 >& all_joint_transforms );
+	std::string_view SourceID            ( const XMLElement& element );
+	void             LibraryEffects      ( void );
+	void             LibraryImages       ( void );
+	void             LibraryMaterials    ( void );
+	void             LibraryGeometries   ( const VertexLayout& vertex_layout );
+	void             LibraryAnimations   ( void );
+	void             LibraryVisualScenes ( void );
 
 private:
 
