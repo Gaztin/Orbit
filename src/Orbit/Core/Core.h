@@ -18,8 +18,36 @@
 #pragma once
 #include "Orbit/Orbit.h"
 
+#include <type_traits>
+
 #if defined( ORB_BUILD_CORE )
 #  define ORB_API_CORE ORB_DLL_EXPORT
 #else // ORB_BUILD_CORE
 #  define ORB_API_CORE ORB_DLL_IMPORT
 #endif // !ORB_BUILD_CORE
+
+ORB_NAMESPACE_BEGIN
+
+template< typename T, typename... RemainingTypes >
+constexpr T Or( T first, RemainingTypes... remaining )
+{
+	static_assert( ( std::is_convertible_v< T, RemainingTypes > && ... ) );
+
+	if( !!first )
+	{
+		return first;
+	}
+	else
+	{
+		for( T var : { remaining... } )
+		{
+			if( !!var )
+				return var;
+		}
+	}
+
+	// None of them evaluated to true. Just return the first one.
+	return first;
+}
+
+ORB_NAMESPACE_END
