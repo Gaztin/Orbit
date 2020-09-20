@@ -19,33 +19,33 @@
 
 ORB_NAMESPACE_BEGIN
 
-std::string_view XMLElement::FindAttribute( std::string_view aname ) const
+std::string_view XMLElement::FindAttribute( std::string_view attribute_name ) const
 {
 	for( const XMLAttribute& attribute : attributes )
 	{
-		if( attribute.name == aname )
+		if( attribute.name == attribute_name )
 			return attribute.value;
 	}
 
 	return { };
 }
 
-const XMLElement* XMLElement::FindChild( std::string_view cname ) const
+const XMLElement* XMLElement::FindChild( std::string_view child_name ) const
 {
 	for( const XMLElement& child : children )
 	{
-		if( child.name == cname )
+		if( child.name == child_name )
 			return &child;
 	}
 
 	return nullptr;
 }
 
-const XMLElement* XMLElement::FindChildWithAttribute( std::string_view cname, XMLAttributeView attribute ) const
+const XMLElement* XMLElement::FindChildWithAttribute( std::string_view child_name, XMLAttributeView attribute ) const
 {
 	for( const XMLElement& child : children )
 	{
-		if( child.name == cname )
+		if( child.name == child_name )
 		{
 			for( const XMLAttribute& attrib : child.attributes )
 			{
@@ -58,24 +58,24 @@ const XMLElement* XMLElement::FindChildWithAttribute( std::string_view cname, XM
 	return nullptr;
 }
 
-size_t XMLElement::CountChildrenWithName( std::string_view cname ) const
+size_t XMLElement::CountChildrenWithName( std::string_view child_name ) const
 {
 	size_t count = 0;
 
 	for( const XMLElement& child : children )
 	{
-		if( child.name == cname )
+		if( child.name == child_name )
 			++count;
 	}
 
 	return count;
 }
 
-const XMLElement& XMLElement::operator[]( std::string_view cname ) const
+const XMLElement& XMLElement::operator[]( std::string_view child_name ) const
 {
 	for( const XMLElement& child : children )
 	{
-		if( child.name == cname )
+		if( child.name == child_name )
 			return child;
 	}
 

@@ -28,10 +28,10 @@ class ORB_API_CORE XMLElement
 public:
 
 	/** Searches for an attribute with the name @name and returns its value */
-	std::string_view FindAttribute( std::string_view name ) const;
+	std::string_view FindAttribute( std::string_view attribute_name ) const;
 
 	/** Searched for a child by the name @name */
-	const XMLElement* FindChild( std::string_view name ) const;
+	const XMLElement* FindChild( std::string_view child_name ) const;
 
 public:
 
@@ -39,10 +39,10 @@ public:
 	 * contains the attribute @attribute.
 	 * Returns nullptr if no child was found.
 	 */
-	const XMLElement* FindChildWithAttribute( std::string_view name, XMLAttributeView attribute ) const;
+	const XMLElement* FindChildWithAttribute( std::string_view child_name, XMLAttributeView attribute ) const;
 
 	/** Returns the number of children called @name */
-	size_t CountChildrenWithName( std::string_view name ) const;
+	size_t CountChildrenWithName( std::string_view child_name ) const;
 
 public:
 
@@ -55,7 +55,7 @@ public:
 	/** Returns a reference to a child with the name @key.
 	 * If no child was found, returns a reference to an empty dummy.
 	 */
-	const XMLElement& operator[]( std::string_view name ) const;
+	const XMLElement& operator[]( std::string_view child_name ) const;
 
 public:
 
