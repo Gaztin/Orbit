@@ -24,7 +24,7 @@
 #include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
-#include <Orbit/Graphics/ModelFormats/WavefrontOBJFile.h>
+#include <Orbit/Graphics/ModelFormats/COLLADAFile.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
@@ -35,11 +35,10 @@ public:
 
 	SampleApp( void )
 		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
-		, meshes_ ( Orbit::WavefrontOBJFile( Orbit::Asset( "models/teapot.obj" ), shader_source_.GetVertexLayout() ).GetMeshes() )
+		, meshes_ ( Orbit::COLLADAFile( Orbit::Asset( "models/suzanne.dae" ), shader_source_.GetVertexLayout() ).GetModelData().meshes )
 		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
-		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
 	}
 
 public:
