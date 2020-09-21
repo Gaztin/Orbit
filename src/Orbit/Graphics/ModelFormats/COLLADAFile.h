@@ -57,6 +57,7 @@ public:
 
 private:
 
+	void Asset               ( void );
 	void LibraryEffects      ( void );
 	void LibraryImages       ( void );
 	void LibraryMaterials    ( void );
@@ -72,6 +73,7 @@ private:
 
 	ModelData     model_data_;
 	AnimationData animation_data_;
+	Matrix4       correction_matrix_;
 
 };
 

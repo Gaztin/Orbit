@@ -32,11 +32,23 @@ ORB_NAMESPACE_BEGIN
 COLLADAFile::COLLADAFile( ByteSpan data, const VertexLayout& vertex_layout )
 	: XMLFile( data )
 {
+	Asset();
 	LibraryEffects();
 	LibraryImages();
 	LibraryGeometries( vertex_layout );
 	LibraryAnimations();
 	LibraryVisualScenes();
+}
+
+void COLLADAFile::Asset( void )
+{
+	const XMLElement&      elm_asset = root_element_[ "COLLADA" ][ "asset" ];
+	const std::string_view up_axis   = elm_asset[ "up_axis" ].content;
+
+	// Set up correction matrix based on which axis is upwards
+	/**/ if( up_axis == "X_UP" ) correction_matrix_.RotateZ( -Pi / 2 );
+	else if( up_axis == "Y_UP" ) correction_matrix_.SetIdentity();
+	else if( up_axis == "Z_UP" ) correction_matrix_.RotateX( -Pi / 2 );
 }
 
 void COLLADAFile::LibraryEffects( void )
@@ -156,6 +168,9 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 					stream.remove_prefix( space + 1 );
 				}
 
+				// Correct point vector
+				position = correction_matrix_ * position;
+
 				// Add position to vector
 				positions.push_back( position );
 			}
@@ -193,6 +208,9 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 					// Chip away from the content string
 					stream.remove_prefix( space + 1 );
 				}
+
+				// Correct unit vector
+				normal = Vector3( correction_matrix_ * Vector4( normal, 0 ) );
 
 				// Add normal to vector
 				normals.emplace_back( std::move( normal ) );
