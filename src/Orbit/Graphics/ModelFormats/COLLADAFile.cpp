@@ -151,7 +151,7 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 
 			for( uint32_t position_index = 0; position_index < count; ++position_index )
 			{
-				Vector4 position;
+				Vector4 position( 0, 0, 0, 1 );
 
 				for( uint32_t component_index = 0; component_index < stride; ++component_index )
 				{
