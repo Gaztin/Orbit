@@ -28,11 +28,11 @@ AnimationShader::Vec4 AnimationShader::VSMain( void )
 
 	for( size_t i = 0; i < 4; ++i )
 	{
-		Vec4 local_position = u_joint_transforms[ a_joint_ids[ i ] ] * a_position;
-		total_local_pos    += local_position * a_weights[ i ];
+		Vec4 local_position = u_joint_transforms[ a_blend_indices[ i ] ] * a_position;
+		total_local_pos    += local_position * a_blend_weights[ i ];
 
-		Vec4 world_normal = u_joint_transforms[ a_joint_ids[ i ] ] * Vec4( a_normal, 0.0 );
-		total_normal     += world_normal * a_weights[ i ];
+		Vec4 world_normal = u_joint_transforms[ a_blend_indices[ i ] ] * Vec4( a_normal, 0.0 );
+		total_normal     += world_normal * a_blend_weights[ i ];
 	}
 
 	total_normal = Normalize( total_normal );

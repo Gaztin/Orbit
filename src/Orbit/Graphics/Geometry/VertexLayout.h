@@ -26,10 +26,12 @@ enum class VertexComponent : uint8_t
 {
 	Position,
 	Normal,
+	Binormal,
+	Tangent,
 	Color,
 	TexCoord,
-	JointIDs,
-	Weights,
+	BlendIndices,
+	BlendWeights,
 };
 
 struct ORB_API_GRAPHICS IndexedVertexComponent
@@ -39,7 +41,8 @@ struct ORB_API_GRAPHICS IndexedVertexComponent
 	PrimitiveDataType GetDataType ( void ) const;
 
 	VertexComponent type;
-	size_t          index;
+	size_t          layout_index;
+	size_t          semantic_index;
 };
 
 class VertexLayout;

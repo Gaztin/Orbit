@@ -42,10 +42,10 @@ private:
 	Attribute::TexCoord a_texcoord;
 	Attribute::Color    a_color;
 
-	Varying::Position v_position;
-	Varying::Normal   v_normal;
-	Varying::TexCoord v_texcoord;
-	Varying::Color    v_color;
+	Varying::Position< 0 > v_position;
+	Varying::Normal  < 0 > v_normal;
+	Varying::TexCoord< 0 > v_texcoord;
+	Varying::Color   < 0 > v_color;
 
 public:
 

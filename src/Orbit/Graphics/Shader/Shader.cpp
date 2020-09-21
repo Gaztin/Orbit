@@ -214,16 +214,19 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 					D3D11_INPUT_ELEMENT_DESC desc { };
 					desc.AlignedByteOffset = descriptors.empty() ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
 					desc.InputSlotClass    = D3D11_INPUT_PER_VERTEX_DATA;
+					desc.SemanticIndex     = component.semantic_index;
 
 					switch( component.type )
 					{
-						default:                        { assert( false );                } break;
-						case VertexComponent::Position: { desc.SemanticName = "POSITION"; } break;
-						case VertexComponent::Normal:   { desc.SemanticName = "NORMAL";   } break;
-						case VertexComponent::Color:    { desc.SemanticName = "COLOR";    } break;
-						case VertexComponent::TexCoord: { desc.SemanticName = "TEXCOORD"; } break;
-						case VertexComponent::JointIDs: { desc.SemanticName = "JOINTIDS"; } break;
-						case VertexComponent::Weights:  { desc.SemanticName = "WEIGHTS";  } break;
+						default:                            { assert( false );                    } break;
+						case VertexComponent::Position:     { desc.SemanticName = "POSITION";     } break;
+						case VertexComponent::Binormal:     { desc.SemanticName = "BINORMAL";     } break;
+						case VertexComponent::Tangent:      { desc.SemanticName = "TANGENT";      } break;
+						case VertexComponent::Normal:       { desc.SemanticName = "NORMAL";       } break;
+						case VertexComponent::Color:        { desc.SemanticName = "COLOR";        } break;
+						case VertexComponent::TexCoord:     { desc.SemanticName = "TEXCOORD";     } break;
+						case VertexComponent::BlendIndices: { desc.SemanticName = "BLENDINDICES"; } break;
+						case VertexComponent::BlendWeights: { desc.SemanticName = "BLENDWEIGHT";  } break;
 					}
 
 					switch( component.GetDataType() )
@@ -559,18 +562,18 @@ void Shader::Bind( void )
 
 			for( IndexedVertexComponent component : details.layout )
 			{
-				glEnableVertexAttribArray( static_cast< GLuint >( component.index ) );
+				glEnableVertexAttribArray( static_cast< GLuint >( component.layout_index ) );
 
 				switch( component.GetDataType() )
 				{
 					case PrimitiveDataType::Float:
 					{
-						glVertexAttribPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Float, GL_FALSE, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
+						glVertexAttribPointer( static_cast< GLuint >( component.layout_index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Float, GL_FALSE, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
 					} break;
 
 					case PrimitiveDataType::Int:
 					{
-						glVertexAttribIPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Int, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
+						glVertexAttribIPointer( static_cast< GLuint >( component.layout_index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Int, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
 					} break;
 				}
 
@@ -658,7 +661,7 @@ void Shader::Unbind( void )
 			auto& details = std::get< Private::_ShaderDetailsOpenGL >( details_ );
 
 			for( IndexedVertexComponent component : details.layout )
-				glDisableVertexAttribArray( static_cast< GLuint >( component.index ) );
+				glDisableVertexAttribArray( static_cast< GLuint >( component.layout_index ) );
 
 			glUseProgram( 0 );
 

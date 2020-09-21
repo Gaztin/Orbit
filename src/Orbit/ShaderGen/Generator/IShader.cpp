@@ -63,17 +63,43 @@ namespace ShaderGen
 		return "error_type";
 	}
 
-	static std::string_view VertexComponentSemanticName( VertexComponent component, ShaderType shader_type )
+	static std::string_view AttributeSemanticName( VertexComponent component )
 	{
 		switch( component )
 		{
-			case VertexComponent::Position: return ( ( shader_type == ShaderType::Fragment ) ? "SV_POSITION" : "POSITION" );
-			case VertexComponent::Normal:   return "NORMAL";
-			case VertexComponent::Color:    return "COLOR";
-			case VertexComponent::TexCoord: return "TEXCOORD";
-			case VertexComponent::JointIDs: return "JOINTIDS";
-			case VertexComponent::Weights:  return "WEIGHTS";
-			default:                        return "ERROR";
+			case VertexComponent::Position:     return "POSITION";
+			case VertexComponent::Binormal:     return "BINORMAL";
+			case VertexComponent::Tangent:      return "TANGENT";
+			case VertexComponent::Normal:       return "NORMAL";
+			case VertexComponent::Color:        return "COLOR";
+			case VertexComponent::TexCoord:     return "TEXCOORD";
+			case VertexComponent::BlendIndices: return "BLENDINDICES";
+			case VertexComponent::BlendWeights: return "BLENDWEIGHT";
+			default:                            return "ERROR";
+		}
+	};
+
+	static std::string VaryingSemanticName( VertexComponent component, size_t resource_index )
+	{
+		using namespace std::literals::string_literals;
+
+		assert( resource_index <= 9 ); // Single digit
+
+//////////////////////////////////////////////////////////////////////////
+
+		const char digit_char = static_cast< char >( 0x30 + resource_index );
+
+		switch( component )
+		{
+			case VertexComponent::Position:     return ( resource_index == 0 ? "SV_POSITION"s : ( "POSITION"s + digit_char ) );
+			case VertexComponent::Binormal:     return "BINORMAL"s     + digit_char;
+			case VertexComponent::Tangent:      return "TANGENT"s      + digit_char;
+			case VertexComponent::Normal:       return "NORMAL"s       + digit_char;
+			case VertexComponent::Color:        return "COLOR"s        + digit_char;
+			case VertexComponent::TexCoord:     return "TEXCOORD"s     + digit_char;
+			case VertexComponent::BlendIndices: return "BLENDINDICES"s + digit_char;
+			case VertexComponent::BlendWeights: return "BLENDWEIGHT"s  + digit_char;
+			default:                            return "ERROR"s        + digit_char;
 		}
 	};
 
@@ -260,10 +286,10 @@ namespace ShaderGen
 		for( auto it : attribute_layout_ )
 		{
 			auto type_string   = VertexComponentTypeString( it );
-			auto semantic_name = VertexComponentSemanticName( it.type, ShaderType::Vertex );
+			auto semantic_name = AttributeSemanticName( it.type );
 
 			std::ostringstream ss;
-			ss << "\t" << type_string << " attribute_" << it.index << " : " << semantic_name << ";\n";
+			ss << "\t" << type_string << " attribute_" << it.layout_index << " : " << semantic_name << ";\n";
 
 			full_source_code.append( ss.str() );
 		}
@@ -273,10 +299,10 @@ namespace ShaderGen
 		for( auto it : varying_layout_ )
 		{
 			auto type_string   = VertexComponentTypeString( it );
-			auto semantic_name = VertexComponentSemanticName( it.type, ShaderType::Fragment );
+			auto semantic_name = VaryingSemanticName( it.type, it.semantic_index );
 
 			std::ostringstream ss;
-			ss << "\t" << type_string << " varying_" << it.index << " : " << semantic_name << ";\n";
+			ss << "\t" << type_string << " varying_" << it.layout_index << " : " << semantic_name << ";\n";
 
 			full_source_code.append( ss.str() );
 		}
@@ -399,7 +425,7 @@ namespace ShaderGen
 		for( auto it : attribute_layout_ )
 		{
 			std::ostringstream ss;
-			ss << "ORB_ATTRIBUTE( " << it.index << " ) " << VertexComponentTypeString( it ) << " attribute_" << it.index << ";\n";
+			ss << "ORB_ATTRIBUTE( " << it.layout_index << " ) " << VertexComponentTypeString( it ) << " attribute_" << it.layout_index << ";\n";
 
 			full_source_code.append( ss.str() );
 		}
@@ -408,7 +434,7 @@ namespace ShaderGen
 		for( auto it : varying_layout_ )
 		{
 			std::ostringstream ss;
-			ss << "ORB_VARYING " << VertexComponentTypeString( it ) << " varying_" << it.index << ";\n";
+			ss << "ORB_VARYING " << VertexComponentTypeString( it ) << " varying_" << it.layout_index << ";\n";
 
 			full_source_code.append( ss.str() );
 		}
@@ -483,7 +509,7 @@ namespace ShaderGen
 		for( auto it : varying_layout_ )
 		{
 			std::ostringstream ss;
-			ss << "ORB_VARYING " << VertexComponentTypeString( it ) << " varying_" << it.index << ";\n";
+			ss << "ORB_VARYING " << VertexComponentTypeString( it ) << " varying_" << it.layout_index << ";\n";
 
 			full_source_code.append( ss.str() );
 		}

@@ -30,12 +30,14 @@ namespace ShaderGen
 	{
 	public:
 
-		using Position = AttributeHelper< VertexComponent::Position >;
-		using Normal   = AttributeHelper< VertexComponent::Normal >;
-		using Color    = AttributeHelper< VertexComponent::Color >;
-		using TexCoord = AttributeHelper< VertexComponent::TexCoord >;
-		using JointIDs = AttributeHelper< VertexComponent::JointIDs >;
-		using Weights  = AttributeHelper< VertexComponent::Weights >;
+		using Position     = AttributeHelper< VertexComponent::Position >;
+		using Normal       = AttributeHelper< VertexComponent::Normal >;
+		using Binormal     = AttributeHelper< VertexComponent::Binormal >;
+		using Tangent      = AttributeHelper< VertexComponent::Tangent >;
+		using Color        = AttributeHelper< VertexComponent::Color >;
+		using TexCoord     = AttributeHelper< VertexComponent::TexCoord >;
+		using BlendIndices = AttributeHelper< VertexComponent::BlendIndices >;
+		using BlendWeights = AttributeHelper< VertexComponent::BlendWeights >;
 		using Variable::operator=;
 
 	public:

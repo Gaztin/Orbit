@@ -41,17 +41,17 @@ private:
 
 	Sampler diffuse_texture;
 
-	Attribute::Position a_position;
-	Attribute::Color    a_color;
-	Attribute::TexCoord a_texcoord;
-	Attribute::Normal   a_normal;
-	Attribute::JointIDs a_joint_ids;
-	Attribute::Weights  a_weights;
+	Attribute::Position     a_position;
+	Attribute::Color        a_color;
+	Attribute::TexCoord     a_texcoord;
+	Attribute::Normal       a_normal;
+	Attribute::BlendIndices a_blend_indices;
+	Attribute::BlendWeights a_blend_weights;
 
-	Varying::Position v_position;
-	Varying::Color    v_color;
-	Varying::TexCoord v_texcoord;
-	Varying::Normal   v_normal;
+	Varying::Position< 0 > v_position;
+	Varying::Color   < 0 > v_color;
+	Varying::TexCoord< 0 > v_texcoord;
+	Varying::Normal  < 0 > v_normal;
 
 public:
 
