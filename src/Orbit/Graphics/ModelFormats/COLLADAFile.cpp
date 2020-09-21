@@ -294,13 +294,16 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 			}
 		}
 
-		for( size_t i = 0; i < num_triangles; ++i )
+		if( need_index_buffer )
 		{
-			Face face;
-			face.indices[ 0 ] = indices[ index_offset + num_inputs * ( i * 3 + 0 ) ];
-			face.indices[ 1 ] = indices[ index_offset + num_inputs * ( i * 3 + 1 ) ];
-			face.indices[ 2 ] = indices[ index_offset + num_inputs * ( i * 3 + 2 ) ];
-			geometry.AddFace( face );
+			for( size_t i = 0; i < num_triangles; ++i )
+			{
+				Face face;
+				face.indices[ 0 ] = indices[ index_offset + num_inputs * ( i * 3 + 0 ) ];
+				face.indices[ 1 ] = indices[ index_offset + num_inputs * ( i * 3 + 1 ) ];
+				face.indices[ 2 ] = indices[ index_offset + num_inputs * ( i * 3 + 2 ) ];
+				geometry.AddFace( face );
+			}
 		}
 
 		if( chosen_id != id_positions )
@@ -310,13 +313,14 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 
 			for( size_t face_index = 0; face_index < num_triangles; ++face_index )
 			{
-				const Face face = geometry.GetFace( face_index );
-
 				for( size_t i = 0; i < 3; ++i )
 				{
-					Vertex vertex   = geometry.GetVertex( face.indices[ i ] );
-					vertex.position = positions[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
-					geometry.SetVertex( face.indices[ i ], vertex );
+					const uint32_t vertex_index = indices[ index_offset + num_inputs * ( face_index * 3 + i ) ];
+					Vertex         vertex       = geometry.GetVertex( vertex_index );
+
+					vertex.position             = positions[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
+
+					geometry.SetVertex( vertex_index, vertex );
 				}
 			}
 		}
@@ -328,13 +332,14 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 
 			for( size_t face_index = 0; face_index < num_triangles; ++face_index )
 			{
-				const Face face = geometry.GetFace( face_index );
-
 				for( size_t i = 0; i < 3; ++i )
 				{
-					Vertex vertex = geometry.GetVertex( face.indices[ i ] );
-					vertex.normal = normals[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
-					geometry.SetVertex( face.indices[ i ], vertex );
+					const uint32_t vertex_index = indices[ index_offset + num_inputs * ( face_index * 3 + i ) ];
+					Vertex         vertex       = geometry.GetVertex( vertex_index );
+
+					vertex.normal               = normals[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
+
+					geometry.SetVertex( vertex_index, vertex );
 				}
 			}
 		}
@@ -346,13 +351,14 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 
 			for( size_t face_index = 0; face_index < num_triangles; ++face_index )
 			{
-				const Face face = geometry.GetFace( face_index );
-
 				for( size_t i = 0; i < 3; ++i )
 				{
-					Vertex vertex    = geometry.GetVertex( face.indices[ i ] );
-					vertex.tex_coord = texcoords[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
-					geometry.SetVertex( face.indices[ i ], vertex );
+					const uint32_t vertex_index = indices[ index_offset + num_inputs * ( face_index * 3 + i ) ];
+					Vertex         vertex       = geometry.GetVertex( vertex_index );
+
+					vertex.tex_coord            = texcoords[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
+
+					geometry.SetVertex( vertex_index, vertex );
 				}
 			}
 		}
