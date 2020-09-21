@@ -39,16 +39,6 @@ COLLADAFile::COLLADAFile( ByteSpan data, const VertexLayout& vertex_layout )
 	LibraryVisualScenes();
 }
 
-std::string_view COLLADAFile::SourceID( const XMLElement& element )
-{
-	std::string_view source_id = element.FindAttribute( "source" );
-
-	// Remove leading '#'
-	source_id.remove_prefix( 1 );
-
-	return source_id;
-}
-
 void COLLADAFile::LibraryEffects( void )
 {
 	for( const XMLElement& elm_geometry : root_element_[ "COLLADA" ][ "library_effects" ] )
@@ -384,6 +374,16 @@ void COLLADAFile::LibraryVisualScenes( void )
 	for( const XMLElement& visual_scene : root_element_[ "COLLADA" ][ "library_visual_scenes" ] )
 	{
 	}
+}
+
+std::string_view COLLADAFile::SourceID( const XMLElement& element )
+{
+	std::string_view source_id = element.FindAttribute( "source" );
+
+	// Remove leading '#'
+	source_id.remove_prefix( 1 );
+
+	return source_id;
 }
 
 ORB_NAMESPACE_END

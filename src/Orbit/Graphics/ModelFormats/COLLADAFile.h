@@ -57,13 +57,16 @@ public:
 
 private:
 
-	std::string_view SourceID            ( const XMLElement& element );
-	void             LibraryEffects      ( void );
-	void             LibraryImages       ( void );
-	void             LibraryMaterials    ( void );
-	void             LibraryGeometries   ( const VertexLayout& vertex_layout );
-	void             LibraryAnimations   ( void );
-	void             LibraryVisualScenes ( void );
+	void LibraryEffects      ( void );
+	void LibraryImages       ( void );
+	void LibraryMaterials    ( void );
+	void LibraryGeometries   ( const VertexLayout& vertex_layout );
+	void LibraryAnimations   ( void );
+	void LibraryVisualScenes ( void );
+
+private:
+
+	std::string_view SourceID( const XMLElement& element );
 
 private:
 
