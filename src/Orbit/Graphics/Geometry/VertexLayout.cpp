@@ -86,8 +86,7 @@ bool VertexComponentIterator::operator!=( const VertexComponentIterator& other )
 	/* Trying to compare iterator from another layout */
 	assert( layout == other.layout );
 
-	return ( ( indexed_component.layout_index   != other.indexed_component.layout_index   ) ||
-	         ( indexed_component.semantic_index != other.indexed_component.semantic_index ) );
+	return ( indexed_component.layout_index != other.indexed_component.layout_index );
 }
 
 IndexedVertexComponent VertexComponentIterator::operator*( void ) const
