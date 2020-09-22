@@ -33,6 +33,7 @@ WavefrontOBJFile::WavefrontOBJFile( ByteSpan data, const VertexLayout& vertex_la
 	const char*                               src = reinterpret_cast< const char* >( data.Ptr() );
 	std::optional< Geometry >                 current_geometry;
 	std::string                               current_mesh_name = "Unnamed Wavefront Model";
+	std::vector< Vector4 >                    positions;
 	std::vector< Vector2 >                    tex_coords;
 	std::vector< Vector3 >                    normals;
 	std::vector< WavefrontMTLFile::Material > materials;
@@ -82,18 +83,7 @@ WavefrontOBJFile::WavefrontOBJFile( ByteSpan data, const VertexLayout& vertex_la
 		}
 		else if( w = 1.0f; std::sscanf( line.data(), "v %f %f %f %f", &x, &y, &z, &w ) >= 3 )
 		{
-			// Backup geometry if 'o' tag was missing
-			if( !current_geometry )
-				current_geometry = std::make_optional< Geometry >( vertex_layout );
-
-			// Create vertex
-			Vertex vertex;
-			vertex.position.x = x;
-			vertex.position.y = y;
-			vertex.position.z = z;
-			vertex.position.w = w;
-
-			current_geometry->AddVertex( vertex );
+			positions.emplace_back( x, y, z, w );
 		}
 		else if( v = 0.0f, w = 0.0f; std::sscanf( line.data(), "vt %f %f %f", &u, &v, &w ) >= 1 )
 		{
@@ -108,97 +98,91 @@ WavefrontOBJFile::WavefrontOBJFile( ByteSpan data, const VertexLayout& vertex_la
 			assert( tex_coords.empty() );
 			assert( normals.empty() );
 
-			// Create face
-			Face face;
-			face.indices[ 0 ] = v1 - 1;
-			face.indices[ 1 ] = v2 - 1;
-			face.indices[ 2 ] = v3 - 1;
+			// Backup geometry if 'o' tag was missing
+			if( !current_geometry )
+				current_geometry = std::make_optional< Geometry >( vertex_layout );
 
-			current_geometry->AddFace( face );
+			Vertex vertex1;
+			vertex1.position = positions.at( v1 - 1 );
+			current_geometry->AddVertex( vertex1 );
+
+			Vertex vertex2;
+			vertex2.position = positions.at( v2 - 1 );
+			current_geometry->AddVertex( vertex2 );
+
+			Vertex vertex3;
+			vertex3.position = positions.at( v3 - 1 );
+			current_geometry->AddVertex( vertex3 );
 		}
 		else if( std::sscanf( line.data(), "f %d/%d %d/%d %d/%d", &v1, &vt1, &v2, &vt2, &v3, &vt3 ) == 6 )
 		{
 			assert( normals.empty() );
 
-			// Fetch vertices
-			Vertex vertex1 = current_geometry->GetVertex( v1 - 1 );
-			Vertex vertex2 = current_geometry->GetVertex( v2 - 1 );
-			Vertex vertex3 = current_geometry->GetVertex( v3 - 1 );
+			// Backup geometry if 'o' tag was missing
+			if( !current_geometry )
+				current_geometry = std::make_optional< Geometry >( vertex_layout );
 
-			// Update texture coordinates
+			Vertex vertex1;
+			vertex1.position  = positions.at( v1 - 1 );
 			vertex1.tex_coord = tex_coords.at( vt1 - 1 );
+			current_geometry->AddVertex( vertex1 );
+
+			Vertex vertex2;
+			vertex2.position  = positions.at( v2 - 1 );
 			vertex2.tex_coord = tex_coords.at( vt2 - 1 );
+			current_geometry->AddVertex( vertex2 );
+
+			Vertex vertex3;
+			vertex3.position  = positions.at( v3 - 1 );
 			vertex3.tex_coord = tex_coords.at( vt3 - 1 );
-
-			// Update geometry
-			current_geometry->SetVertex( v1 - 1, vertex1 );
-			current_geometry->SetVertex( v2 - 1, vertex2 );
-			current_geometry->SetVertex( v3 - 1, vertex3 );
-
-			// Create face
-			Face face;
-			face.indices[ 0 ] = v1 - 1;
-			face.indices[ 1 ] = v2 - 1;
-			face.indices[ 2 ] = v3 - 1;
-
-			current_geometry->AddFace( face );
+			current_geometry->AddVertex( vertex3 );
 		}
 		else if( std::sscanf( line.data(), "f %d/%d/%d %d/%d/%d %d/%d/%d", &v1, &vt1, &vn1, &v2, &vt2, &vn2, &v3, &vt3, &vn3 ) == 9 )
 		{
-			// Fetch vertices
-			Vertex vertex1 = current_geometry->GetVertex( v1 - 1 );
-			Vertex vertex2 = current_geometry->GetVertex( v2 - 1 );
-			Vertex vertex3 = current_geometry->GetVertex( v3 - 1 );
+			// Backup geometry if 'o' tag was missing
+			if( !current_geometry )
+				current_geometry = std::make_optional< Geometry >( vertex_layout );
 
-			// Update texture coordinates
+			Vertex vertex1;
+			vertex1.position  = positions.at( v1 - 1 );
 			vertex1.tex_coord = tex_coords.at( vt1 - 1 );
+			vertex1.normal    = normals.at( vn1 - 1 );
+			current_geometry->AddVertex( vertex1 );
+
+			Vertex vertex2;
+			vertex2.position  = positions.at( v2 - 1 );
 			vertex2.tex_coord = tex_coords.at( vt2 - 1 );
+			vertex2.normal    = normals.at( vn2 - 1 );
+			current_geometry->AddVertex( vertex2 );
+
+			Vertex vertex3;
+			vertex3.position  = positions.at( v3 - 1 );
 			vertex3.tex_coord = tex_coords.at( vt3 - 1 );
-
-			// Update normals
-			vertex1.normal = normals.at( vn1 - 1 );
-			vertex2.normal = normals.at( vn2 - 1 );
-			vertex3.normal = normals.at( vn3 - 1 );
-
-			// Update geometry
-			current_geometry->SetVertex( v1 - 1, vertex1 );
-			current_geometry->SetVertex( v2 - 1, vertex2 );
-			current_geometry->SetVertex( v3 - 1, vertex3 );
-
-			// Create face
-			Face face;
-			face.indices[ 0 ] = v1 - 1;
-			face.indices[ 1 ] = v2 - 1;
-			face.indices[ 2 ] = v3 - 1;
-
-			current_geometry->AddFace( face );
+			vertex3.normal    = normals.at( vn3 - 1 );
+			current_geometry->AddVertex( vertex3 );
 		}
 		else if( std::sscanf( line.data(), "f %d//%d %d//%d %d//%d", &v1, &vn1, &v2, &vn2, &v3, &vn3 ) == 6 )
 		{
 			assert( tex_coords.empty() );
 
-			// Fetch vertices
-			Vertex vertex1 = current_geometry->GetVertex( v1 - 1 );
-			Vertex vertex2 = current_geometry->GetVertex( v2 - 1 );
-			Vertex vertex3 = current_geometry->GetVertex( v3 - 1 );
+			// Backup geometry if 'o' tag was missing
+			if( !current_geometry )
+				current_geometry = std::make_optional< Geometry >( vertex_layout );
 
-			// Update normals
-			vertex1.normal = normals.at( vn1 - 1 );
-			vertex2.normal = normals.at( vn2 - 1 );
-			vertex3.normal = normals.at( vn3 - 1 );
+			Vertex vertex1;
+			vertex1.position = positions.at( v1 - 1 );
+			vertex1.normal   = normals.at( vn1 - 1 );
+			current_geometry->AddVertex( vertex1 );
 
-			// Update geometry
-			current_geometry->SetVertex( v1 - 1, vertex1 );
-			current_geometry->SetVertex( v2 - 1, vertex2 );
-			current_geometry->SetVertex( v3 - 1, vertex3 );
+			Vertex vertex2;
+			vertex2.position = positions.at( v2 - 1 );
+			vertex2.normal   = normals.at( vn2 - 1 );
+			current_geometry->AddVertex( vertex2 );
 
-			// Create face
-			Face face;
-			face.indices[ 0 ] = v1 - 1;
-			face.indices[ 1 ] = v2 - 1;
-			face.indices[ 2 ] = v3 - 1;
-
-			current_geometry->AddFace( face );
+			Vertex vertex3;
+			vertex3.position = positions.at( v3 - 1 );
+			vertex3.normal   = normals.at( vn3 - 1 );
+			current_geometry->AddVertex( vertex3 );
 		}
 		else if( line.substr( 0, 7 ) == "usemtl " )
 		{
