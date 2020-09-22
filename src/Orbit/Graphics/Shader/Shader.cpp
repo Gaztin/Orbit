@@ -680,7 +680,9 @@ void Shader::SetVertexUniform( std::string_view name, const void* data, size_t s
 {
 	// Find uniform among registered uniforms
 	auto uniform = std::find_if( vertex_uniforms_.begin(), vertex_uniforms_.end(), [ name ]( const Uniform& u ) { return u.name == name; } );
-	assert( uniform != vertex_uniforms_.end() );
+	if( uniform == vertex_uniforms_.end() )
+		return;
+
 	assert( uniform->size >= size );
 
 	switch( details_.index() )
@@ -745,7 +747,9 @@ void Shader::SetPixelUniform( std::string_view name, const void* data, size_t si
 {
 	// Find uniform among registered uniforms
 	auto uniform = std::find_if( pixel_uniforms_.begin(), pixel_uniforms_.end(), [ name ]( const Uniform& u ) { return u.name == name; } );
-	assert( uniform != pixel_uniforms_.end() );
+	if( uniform == pixel_uniforms_.end() )
+		return;
+
 	assert( uniform->size >= size );
 
 	switch( details_.index() )
