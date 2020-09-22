@@ -23,6 +23,7 @@
 #include <Orbit/Core/IO/Asset.h>
 #include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
+#include <Orbit/Graphics/Debug/DebugManager.h>
 #include <Orbit/Graphics/Geometry/Mesh.h>
 #include <Orbit/Graphics/ModelFormats/COLLADAFile.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
@@ -46,6 +47,7 @@ public:
 	void OnFrame( void ) override
 	{
 		const float delta_time = Orbit::Clock::GetDelta();
+		const float life_time  = Orbit::Clock::GetLife();
 
 		// Clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
@@ -53,16 +55,22 @@ public:
 		// Update camera
 		camera_.Update( delta_time );
 
-		// Rotate model
-		model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
-
 		// Update vertex uniforms
 		shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
 		shader_.SetVertexUniform( shader_source_.u_model,           model_matrix_ );
 		shader_.SetVertexUniform( shader_source_.u_cam_pos,         camera_.position );
 
+		Orbit::Vector3 light_pos;
+		light_pos.x = cosf( life_time * Orbit::Pi / 2 ) * 2.0f;
+		light_pos.y = 0.5f;
+		light_pos.z = sinf( life_time * Orbit::Pi / 2 ) * 2.0f;
+
+		// Add debug sphere at light pos
+		Orbit::DebugManager::GetInstance().PushSphere( light_pos, Orbit::RGBA( 1, 1, 0 ) );
+
 		// Update pixel uniforms
-		shader_.SetPixelUniform( shader_source_.u_light_dir, Orbit::Vector3( 1.0f, -1.0f, 1.0f ).Normalized() );
+		shader_.SetPixelUniform( shader_source_.u_light_pos,   light_pos );
+		shader_.SetPixelUniform( shader_source_.u_light_color, Orbit::RGB( 0.7f, 0.4f, 0.2f ) );
 
 		// Push meshes to render queue
 		for( auto& mesh : meshes_ )
@@ -74,6 +82,10 @@ public:
 			command.textures.emplace_back( texture_.GetTexture2D() );
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
+
+		// Render debug objects
+		Orbit::DebugManager::GetInstance().Render( Orbit::DefaultRenderer::GetInstance(), camera_.GetViewProjection() );
+		Orbit::DebugManager::GetInstance().Flush();
 
 		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
