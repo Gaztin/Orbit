@@ -93,12 +93,31 @@ namespace ShaderGen
 
 	Variable Variable::operator*( const Variable& rhs ) const
 	{
-		assert( ( data_type_ == rhs.data_type_ ) ||
-		        ( data_type_ == DataType::Mat4  && ( rhs.data_type_ == DataType::FVec4                                                                             ) ) ||
-		        ( data_type_ == DataType::FVec4 && ( rhs.data_type_ == DataType::Mat4  || rhs.data_type_ == DataType::Float                                       ) ) ||
-		        ( data_type_ == DataType::FVec3 && ( rhs.data_type_ == DataType::Float                                                                             ) ) ||
-		        ( data_type_ == DataType::FVec2 && ( rhs.data_type_ == DataType::Float                                                                             ) ) ||
-		        ( data_type_ == DataType::Float && ( rhs.data_type_ == DataType::FVec4 || rhs.data_type_ == DataType::FVec3 || rhs.data_type_ == DataType::FVec2 ) ) );
+		assert( ( ( data_type_ == DataType::Int )   && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::Float ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::Float ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::FVec2 ) && ( rhs.data_type_ == DataType::FVec2 ) ) ||
+		        ( ( data_type_ == DataType::FVec3 ) && ( rhs.data_type_ == DataType::FVec3 ) ) ||
+		        ( ( data_type_ == DataType::FVec4 ) && ( rhs.data_type_ == DataType::FVec4 ) ) ||
+		        ( ( data_type_ == DataType::FVec2 ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::FVec3 ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::FVec4 ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::IVec2 ) && ( rhs.data_type_ == DataType::IVec2 ) ) ||
+		        ( ( data_type_ == DataType::IVec3 ) && ( rhs.data_type_ == DataType::IVec3 ) ) ||
+		        ( ( data_type_ == DataType::IVec4 ) && ( rhs.data_type_ == DataType::IVec4 ) ) ||
+		        ( ( data_type_ == DataType::IVec2 ) && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::IVec3 ) && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::IVec4 ) && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::Int )   && ( rhs.data_type_ == DataType::IVec2 ) ) ||
+		        ( ( data_type_ == DataType::Int )   && ( rhs.data_type_ == DataType::IVec3 ) ) ||
+		        ( ( data_type_ == DataType::Int )   && ( rhs.data_type_ == DataType::IVec4 ) ) ||
+		        ( ( data_type_ == DataType::Float ) && ( rhs.data_type_ == DataType::FVec2 ) ) ||
+		        ( ( data_type_ == DataType::Float ) && ( rhs.data_type_ == DataType::FVec3 ) ) ||
+		        ( ( data_type_ == DataType::Float ) && ( rhs.data_type_ == DataType::FVec4 ) ) ||
+		        ( ( data_type_ == DataType::Float ) && ( rhs.data_type_ == DataType::Mat4 ) )  ||
+		        ( ( data_type_ == DataType::FVec4 ) && ( rhs.data_type_ == DataType::Mat4 ) )  ||
+		        ( ( data_type_ == DataType::Mat4 )  && ( rhs.data_type_ == DataType::FVec4 ) ) ||
+		        ( ( data_type_ == DataType::Mat4 )  && ( rhs.data_type_ == DataType::Mat4 ) ) );
 
 		DataType result_type = DataType::Unknown;
 		switch( data_type_ )
@@ -127,19 +146,52 @@ namespace ShaderGen
 
 	Variable Variable::operator/( const Variable& rhs ) const
 	{
-		assert( ( ( data_type_ == DataType::Float ) || ( data_type_ == DataType::FVec2 ) || ( data_type_ == DataType::FVec3 ) || ( data_type_ == DataType::FVec4 ) ) &&
-		        ( rhs.data_type_ == DataType::Float ) );
+		assert( ( ( data_type_ == DataType::Int )   && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::Float ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::FVec2 ) && ( rhs.data_type_ == DataType::FVec2 ) ) ||
+		        ( ( data_type_ == DataType::FVec3 ) && ( rhs.data_type_ == DataType::FVec3 ) ) ||
+		        ( ( data_type_ == DataType::FVec4 ) && ( rhs.data_type_ == DataType::FVec4 ) ) ||
+		        ( ( data_type_ == DataType::IVec2 ) && ( rhs.data_type_ == DataType::IVec2 ) ) ||
+		        ( ( data_type_ == DataType::IVec3 ) && ( rhs.data_type_ == DataType::IVec3 ) ) ||
+		        ( ( data_type_ == DataType::IVec4 ) && ( rhs.data_type_ == DataType::IVec4 ) ) ||
+		        ( ( data_type_ == DataType::IVec2 ) && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::IVec3 ) && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::IVec4 ) && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::FVec2 ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::FVec3 ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::FVec4 ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::Mat4 )  && ( rhs.data_type_ == DataType::Float ) ) );
 
 		return Variable( "( " + GetValue() + " / " + rhs.GetValue() + " )", data_type_ );
 	}
 
 	Variable Variable::operator+( const Variable& rhs ) const
 	{
+		assert( ( ( data_type_ == DataType::Int )   && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::Float ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::IVec2 ) && ( rhs.data_type_ == DataType::IVec2 ) ) ||
+		        ( ( data_type_ == DataType::IVec3 ) && ( rhs.data_type_ == DataType::IVec3 ) ) ||
+		        ( ( data_type_ == DataType::IVec4 ) && ( rhs.data_type_ == DataType::IVec4 ) ) ||
+		        ( ( data_type_ == DataType::FVec2 ) && ( rhs.data_type_ == DataType::FVec2 ) ) ||
+		        ( ( data_type_ == DataType::FVec3 ) && ( rhs.data_type_ == DataType::FVec3 ) ) ||
+		        ( ( data_type_ == DataType::FVec4 ) && ( rhs.data_type_ == DataType::FVec4 ) ) ||
+		        ( ( data_type_ == DataType::Mat4 )  && ( rhs.data_type_ == DataType::Mat4 ) ) );
+
 		return Variable( "( " + GetValue() + " + " + rhs.GetValue() + " )", data_type_ );
 	}
 
 	Variable Variable::operator-( const Variable& rhs ) const
 	{
+		assert( ( ( data_type_ == DataType::Int )   && ( rhs.data_type_ == DataType::Int ) )   ||
+		        ( ( data_type_ == DataType::Float ) && ( rhs.data_type_ == DataType::Float ) ) ||
+		        ( ( data_type_ == DataType::IVec2 ) && ( rhs.data_type_ == DataType::IVec2 ) ) ||
+		        ( ( data_type_ == DataType::IVec3 ) && ( rhs.data_type_ == DataType::IVec3 ) ) ||
+		        ( ( data_type_ == DataType::IVec4 ) && ( rhs.data_type_ == DataType::IVec4 ) ) ||
+		        ( ( data_type_ == DataType::FVec2 ) && ( rhs.data_type_ == DataType::FVec2 ) ) ||
+		        ( ( data_type_ == DataType::FVec3 ) && ( rhs.data_type_ == DataType::FVec3 ) ) ||
+		        ( ( data_type_ == DataType::FVec4 ) && ( rhs.data_type_ == DataType::FVec4 ) ) ||
+		        ( ( data_type_ == DataType::Mat4 )  && ( rhs.data_type_ == DataType::Mat4 ) ) );
+
 		return Variable( "( " + GetValue() + " - " + rhs.GetValue() + " )", data_type_ );
 	}
 
