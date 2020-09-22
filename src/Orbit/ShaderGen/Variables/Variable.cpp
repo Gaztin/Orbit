@@ -105,25 +105,22 @@ namespace ShaderGen
 		{
 			case DataType::Float:
 			case DataType::Mat4:
-			{
 				result_type = rhs.data_type_;
-			} break;
+				break;
 
 			case DataType::FVec2:
 			case DataType::FVec3:
 			case DataType::FVec4:
-			{
 				result_type = data_type_;
-			} break;
+				break;
 
-			default: break;
+			default:
+				break;
 		}
 
-		if( ShaderManager::GetInstance().GetLanguage() == ShaderLanguage::HLSL &&
-		    ( data_type_ == DataType::Mat4 || rhs.data_type_ == DataType::Mat4 ) )
-		{
+		// For HLSL, if either lhs or rhs are of matrix type, use `mul()`
+		if( ShaderManager::GetInstance().GetLanguage() == ShaderLanguage::HLSL && ( data_type_ == DataType::Mat4 || rhs.data_type_ == DataType::Mat4 ) )
 			return Variable( "mul( " + rhs.GetValue() + ", " + GetValue() + " )", result_type );
-		}
 
 		return Variable( "( " + GetValue() + " * " + rhs.GetValue() + " )", result_type );
 	}
@@ -151,9 +148,9 @@ namespace ShaderGen
 		return Variable( "( -" + GetValue() + " )", data_type_ );
 	}
 
-	Variable Variable::operator[]( size_t index ) const
+	Variable Variable::operator[]( int index ) const
 	{
-		return ( *this )[ Variable( static_cast< int >( index ) ) ];
+		return ( *this )[ Variable( index ) ];
 	}
 
 	SwizzlePermutations* Variable::operator->( void ) const
