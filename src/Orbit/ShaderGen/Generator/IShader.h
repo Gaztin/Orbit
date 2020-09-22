@@ -75,6 +75,8 @@ namespace ShaderGen
 		Variable CanonicalScreenPos( const Variable& pos );
 		Variable Transpose         ( const Variable& matrix );
 		Variable Sample            ( const Variable& sampler, const Variable& texcoord );
+		Variable Max               ( const Variable& lhs, const Variable& rhs );
+		Variable Min               ( const Variable& lhs, const Variable& rhs );
 		Variable Dot               ( const Variable& lhs, const Variable& rhs );
 		Variable Normalize         ( const Variable& vec );
 		Variable Cos               ( const Variable& radians );

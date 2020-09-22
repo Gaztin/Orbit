@@ -59,7 +59,7 @@ public:
 		// Update vertex uniforms
 		shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
 		shader_.SetVertexUniform( shader_source_.u_model,           model_matrix_ );
-		shader_.SetVertexUniform( shader_source_.u_model_inverse,   model_matrix_.Inverted() );
+		shader_.SetVertexUniform( shader_source_.u_cam_pos,         camera_.position );
 
 		// Update pixel uniforms
 		shader_.SetPixelUniform( shader_source_.u_light_dir, Orbit::Vector3( 1.0f, -1.0f, 1.0f ).Normalized() );

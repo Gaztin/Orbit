@@ -226,6 +226,20 @@ namespace ShaderGen
 		}
 	}
 
+	Variable IShader::Max( const Variable& lhs, const Variable& rhs )
+	{
+		assert( lhs.GetDataType() == rhs.GetDataType() );
+
+		return Variable( "max( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", lhs.GetDataType() );
+	}
+
+	Variable IShader::Min( const Variable& lhs, const Variable& rhs )
+	{
+		assert( lhs.GetDataType() == rhs.GetDataType() );
+
+		return Variable( "min( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", lhs.GetDataType() );
+	}
+
 	Variable IShader::Dot( const Variable& lhs, const Variable& rhs )
 	{
 		return Variable( "dot( " + lhs.GetValue() + ", " + rhs.GetValue() + " )", DataType::Float );

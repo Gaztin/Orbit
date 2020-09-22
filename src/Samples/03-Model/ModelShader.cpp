@@ -18,25 +18,31 @@
 #include "ModelShader.h"
 
 #include <Orbit/ShaderGen/Variables/Float.h>
+#include <Orbit/ShaderGen/Variables/Vec3.h>
 #include <Orbit/ShaderGen/Variables/Vec4.h>
 
 ModelShader::Vec4 ModelShader::VSMain( void )
 {
-	v_position = u_view_projection * u_model * a_position;
-	v_color    = a_color;
-	v_texcoord = a_texcoord;
-	v_normal   = ( Transpose( u_model_inverse ) * Vec4( a_normal, 1.0 ) )->xyz;
+	v_position       = u_view_projection * u_model * a_position;
+	v_color          = a_color;
+	v_texcoord       = a_texcoord;
+	v_normal         = ( u_model * Vec4( a_normal, 0.0f ) )->xyz;
+	v_world_position = u_model * a_position;
 
 	return v_position;
 }
 
 ModelShader::Vec4 ModelShader::PSMain( void )
 {
-	Vec4 tex_color = Sample( diffuse_texture, v_texcoord );
-	Vec4 out_color = tex_color + v_color;
+	constexpr float ambient_luminance = 0.1f;
 
-	Float diffuse  = ( -Dot( v_normal, u_light_dir ) * 0.5 );
-	out_color->rgb *= diffuse;
+	Vec4  albedo    = Sample( diffuse_texture, v_texcoord );
+	Vec3  ambient   = u_light_color * ambient_luminance;
+	Vec3  norm      = Normalize( v_normal );
+	Vec3  light_dir = Normalize( u_light_pos - v_world_position->xyz );
+	Float NdotL     = Max( Dot( norm, light_dir ), 0.0f );
+	Vec3  diffuse   = u_light_color * NdotL;
+	Vec3  phong     = ( ambient + diffuse ) * v_color->rgb;
 
-	return out_color;
+	return Vec4( phong, 1.0f );
 }
