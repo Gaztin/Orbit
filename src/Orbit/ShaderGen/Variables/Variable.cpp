@@ -84,6 +84,13 @@ namespace ShaderGen
 		}
 	}
 
+	std::string Variable::GetValue( void ) const
+	{
+		used_ = true;
+
+		return GetValueDerived();
+	}
+
 	Variable Variable::operator*( const Variable& rhs ) const
 	{
 		assert( ( data_type_ == rhs.data_type_ ) ||

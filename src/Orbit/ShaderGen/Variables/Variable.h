@@ -45,14 +45,16 @@ namespace ShaderGen
 		 * a variable, since `Vec2(1.0, 0.5).g *= 2.0;` is ill-behaved. */
 		void StoreValue( void );
 
+		/** Fetch the value of this variable. Marks this variable as used. */
+		std::string GetValue( void ) const;
+
 	public:
 
-		DataType    GetDataType( void )      const { return data_type_; };
-		bool        IsUsed     ( void )      const { return used_; }
-		void        SetUsed    ( bool used ) const { used_ = used; }
-		bool        IsStored   ( void )      const { return stored_; };
-		void        SetStored  ( bool stored )     { stored_ = stored; }
-		std::string GetValue   ( void )      const { used_ = true; return GetValueDerived(); }
+		DataType GetDataType( void )        const { return data_type_; };
+		bool     IsUsed     ( void )        const { return used_; }
+		void     SetUsed    ( bool used )   const { used_ = used; }
+		bool     IsStored   ( void )        const { return stored_; };
+		void     SetStored  ( bool stored )       { stored_ = stored; }
 
 	public:
 
