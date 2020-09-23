@@ -156,26 +156,11 @@ void Geometry::SetVertex( size_t index, const Vertex& vertex )
 
 void Geometry::GenerateNormals( void )
 {
-	for( Face face : GetFaces() )
+	for( size_t i = 0; i < GetVertexCount(); ++i )
 	{
-		const Vertex triangle_vertices[ 3 ]
-		{
-			GetVertex( face.indices[ 0 ] ),
-			GetVertex( face.indices[ 1 ] ),
-			GetVertex( face.indices[ 2 ] ),
-		};
-
-		const Orbit::Vector3 pos0_to_pos1 = Vector3( triangle_vertices[ 1 ].position - triangle_vertices[ 0 ].position );
-		const Orbit::Vector3 pos0_to_pos2 = Vector3( triangle_vertices[ 2 ].position - triangle_vertices[ 0 ].position );
-		const Orbit::Vector3 normal       = ( pos0_to_pos1.CrossProduct( pos0_to_pos2 ) ).Normalized();
-
-		for( size_t i = 0; i < 3; ++i )
-		{
-			Vertex vertex = triangle_vertices[ i ];
-			vertex.normal = normal;
-
-			SetVertex( face.indices[ i ], vertex );
-		}
+		Vertex vertex = GetVertex( i );
+		vertex.normal = Vector3( vertex.position ).Normalized();
+		SetVertex( i, vertex );
 	}
 }
 
