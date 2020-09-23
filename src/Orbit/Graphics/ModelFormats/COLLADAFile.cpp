@@ -81,38 +81,9 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 		const XMLElement&      elm_triangles      = *Or( elm_mesh.FindChild( "triangles" ), elm_mesh.FindChild( "polylist" ) );
 		const uint32_t         num_triangles      = FromString< uint32_t >( elm_triangles.FindAttribute( "count" ) );
 		const uint32_t         num_inputs         = elm_triangles.CountChildrenWithName( "input" );
-		const XMLElement&      elm_input_vertex   = *elm_triangles.FindChildWithAttribute( "input", { "semantic", "VERTEX" } );
-		const XMLElement&      elm_input_normal   = *elm_triangles.FindChildWithAttribute( "input", { "semantic", "NORMAL" } );
-		const XMLElement&      elm_input_texcoord = *elm_triangles.FindChildWithAttribute( "input", { "semantic", "TEXCOORD" } );
-		const std::string_view id_vertices        = SourceID( elm_input_vertex );
-		const XMLElement&      elm_vertices       = *elm_mesh.FindChildWithAttribute( "vertices", { "id", id_vertices } );
-		const XMLElement&      elm_input_position = *elm_vertices.FindChildWithAttribute( "input", { "semantic", "POSITION" } );
-		const std::string_view id_positions       = SourceID( elm_input_position );
-		const std::string_view id_normals         = SourceID( elm_input_normal );
-		const std::string_view id_texcoords_0     = SourceID( elm_input_texcoord );
-
-//////////////////////////////////////////////////////////////////////////
-
-		// Indices
-		std::vector< uint32_t > indices;
-		{
-			const std::string_view material_name       = elm_triangles.FindAttribute( "material" );
-			const uint32_t         num_indices         = num_triangles * 3 * num_inputs;
-			std::string_view       content_index_array = elm_triangles[ "p" ].content;
-
-			for( uint32_t triangle_index = 0; triangle_index < num_indices; ++triangle_index )
-			{
-				const size_t           space        = content_index_array.find_first_of( ' ' );
-				const std::string_view value_string = content_index_array.substr( 0, space );
-				const uint32_t         value        = FromString< uint32_t >( value_string );
-
-				// Store value in indices
-				indices.push_back( value );
-
-				// Chip away from the content string
-				content_index_array.remove_prefix( space + 1 );
-			}
-		}
+		const XMLElement*      elm_input_vertex   = elm_triangles.FindChildWithAttribute( "input", { "semantic", "VERTEX" } );
+		const XMLElement*      elm_input_normal   = elm_triangles.FindChildWithAttribute( "input", { "semantic", "NORMAL" } );
+		const XMLElement*      elm_input_texcoord = elm_triangles.FindChildWithAttribute( "input", { "semantic", "TEXCOORD" } );
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -139,40 +110,47 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 
 		std::vector< Vector4 > positions;
 
-		if( vertex_layout.Contains( VertexComponent::Position ) )
+		if( elm_input_vertex && vertex_layout.Contains( VertexComponent::Position ) )
 		{
-			const XMLElement&      elm_source_positions = *elm_mesh.FindChildWithAttribute( "source", { "id", id_positions } );
-			const XMLElement&      elm_accessor         = elm_source_positions[ "technique_common" ][ "accessor" ];
-			const uint32_t         count                = FromString< uint32_t >( elm_accessor.FindAttribute( "count" ) );
-			const uint32_t         stride               = FromString< uint32_t >( elm_accessor.FindAttribute( "stride" ) );
-			const std::string_view id_positions_array   = SourceID( elm_accessor );
-			const XMLElement&      elm_float_array      = *elm_source_positions.FindChildWithAttribute( "float_array", { "id", id_positions_array } );
-			std::string_view       stream               = elm_float_array.content;
+			const std::string_view id_vertices  = SourceID( *elm_input_vertex );
+			const XMLElement&      elm_vertices = *elm_mesh.FindChildWithAttribute( "vertices", { "id", id_vertices } );
 
-			assert( stride <= 4 ); // Maximum 4 components
-
-			for( uint32_t position_index = 0; position_index < count; ++position_index )
+			if( const XMLElement* elm_input_position = elm_vertices.FindChildWithAttribute( "input", { "semantic", "POSITION" } ) )
 			{
-				Vector4 position( 0, 0, 0, 1 );
+				const std::string_view id_positions         = SourceID( *elm_input_position );
+				const XMLElement&      elm_source_positions = *elm_mesh.FindChildWithAttribute( "source", { "id", id_positions } );
+				const XMLElement&      elm_accessor         = elm_source_positions[ "technique_common" ][ "accessor" ];
+				const uint32_t         count                = FromString< uint32_t >( elm_accessor.FindAttribute( "count" ) );
+				const uint32_t         stride               = FromString< uint32_t >( elm_accessor.FindAttribute( "stride" ) );
+				const std::string_view id_positions_array   = SourceID( elm_accessor );
+				const XMLElement&      elm_float_array      = *elm_source_positions.FindChildWithAttribute( "float_array", { "id", id_positions_array } );
+				std::string_view       stream               = elm_float_array.content;
 
-				for( uint32_t component_index = 0; component_index < stride; ++component_index )
+				assert( stride <= 4 ); // Maximum 4 components
+
+				for( uint32_t position_index = 0; position_index < count; ++position_index )
 				{
-					const size_t           space        = stream.find_first_of( ' ' );
-					const std::string_view value_string = stream.substr( 0, space );
-					const float            value        = FromString< float >( value_string );
+					Vector4 position( 0, 0, 0, 1 );
 
-					// Store values in position
-					position[ component_index ] = value;
+					for( uint32_t component_index = 0; component_index < stride; ++component_index )
+					{
+						const size_t           space        = stream.find_first_of( ' ' );
+						const std::string_view value_string = stream.substr( 0, space );
+						const float            value        = FromString< float >( value_string );
 
-					// Chip away from the content string
-					stream.remove_prefix( space + 1 );
+						// Store values in position
+						position[ component_index ] = value;
+
+						// Chip away from the content string
+						stream.remove_prefix( space + 1 );
+					}
+
+					// Correct point vector
+					position = correction_matrix_ * position;
+
+					// Add position to vector
+					positions.push_back( position );
 				}
-
-				// Correct point vector
-				position = correction_matrix_ * position;
-
-				// Add position to vector
-				positions.push_back( position );
 			}
 		}
 
@@ -180,8 +158,9 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 
 		std::vector< Vector3 > normals;
 
-		if( vertex_layout.Contains( VertexComponent::Normal ) )
+		if( elm_input_normal && vertex_layout.Contains( VertexComponent::Normal ) )
 		{
+			const std::string_view id_normals       = SourceID( *elm_input_normal );
 			const XMLElement&      elm_source       = *elm_mesh.FindChildWithAttribute( "source", { "id", id_normals } );
 			const XMLElement&      elm_accessor     = elm_source[ "technique_common" ][ "accessor" ];
 			const std::string_view id_normals_array = SourceID( elm_accessor );
@@ -221,8 +200,9 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 
 		std::vector< Vector2 > texcoords;
 
-		if( vertex_layout.Contains( VertexComponent::TexCoord ) )
+		if( elm_input_texcoord && vertex_layout.Contains( VertexComponent::TexCoord ) )
 		{
+			const std::string_view id_texcoords_0  = SourceID( *elm_input_texcoord );
 			const XMLElement&      elm_source      = *elm_mesh.FindChildWithAttribute( "source", { "id", id_texcoords_0 } );
 			const XMLElement&      elm_accessor    = elm_source[ "technique_common" ][ "accessor" ];
 			const std::string_view id_map_0_array  = SourceID( elm_accessor );
@@ -257,118 +237,31 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 
 //////////////////////////////////////////////////////////////////////////
 
-		const bool need_index_buffer = ( minimum_vertices_required < ( num_triangles * 3 ) );
+		std::string_view content_p = elm_triangles[ "p" ].content;
 
-		// Create indices, unless the amount of vertices match with amount of indices
-		if( need_index_buffer ) geometry.Reserve( minimum_vertices_required, num_triangles );
-		else                    geometry.Reserve( minimum_vertices_required, 0 );
-
-//////////////////////////////////////////////////////////////////////////
-
-		const size_t index_stride = num_inputs * 3;
-		uint32_t     index_offset = 0;
-
-		if( chosen_id == id_positions )
+		while( !content_p.empty() )
 		{
-			index_offset = FromString< uint32_t >( elm_input_vertex.FindAttribute( "offset" ) );
+			Vertex vertex;
 
-			for( const Vector4& position : positions )
+			for( int input_offset = 0; input_offset < num_inputs; ++input_offset )
 			{
-				Vertex vertex;
-				vertex.position = position;
-				geometry.AddVertex( vertex );
+				const size_t           space                        = content_p.find_first_of( ' ' );
+				const uint32_t         index                        = FromString< uint32_t >( content_p.substr( 0, space ) );
+				const std::string      current_input_offset_string  = std::to_string( input_offset );
+				const XMLElement&      elm_input_for_current_offset = *elm_triangles.FindChildWithAttribute( "input", { "offset", current_input_offset_string } );
+				const std::string_view semantic                     = elm_input_for_current_offset.FindAttribute( "semantic" );
+
+				/**/ if( semantic == "VERTEX" )   { vertex.position  = positions.at( index ); }
+				else if( semantic == "NORMAL" )   { vertex.normal    = normals  .at( index ); }
+				else if( semantic == "TEXCOORD" ) { vertex.tex_coord = texcoords.at( index ); }
+
+				// Chip away on the content string until it reaches the end
+				if( space == std::string_view::npos ) content_p.remove_prefix( content_p.length() );
+				else                                  content_p.remove_prefix( space + 1 );
 			}
-		}
-		else if( chosen_id == id_normals )
-		{
-			index_offset = FromString< uint32_t >( elm_input_normal.FindAttribute( "offset" ) );
 
-			for( const Vector3& normal : normals )
-			{
-				Vertex vertex;
-				vertex.normal = normal;
-				geometry.AddVertex( vertex );
-			}
-		}
-		else if( chosen_id == id_texcoords_0 )
-		{
-			index_offset = FromString< uint32_t >( elm_input_texcoord.FindAttribute( "offset" ) );
-
-			for( const Vector2& texcoord : texcoords )
-			{
-				Vertex vertex;
-				vertex.tex_coord = texcoord;
-				geometry.AddVertex( vertex );
-			}
-		}
-
-		if( need_index_buffer )
-		{
-			for( size_t i = 0; i < num_triangles; ++i )
-			{
-				Face face;
-				face.indices[ 0 ] = indices[ index_offset + num_inputs * ( i * 3 + 0 ) ];
-				face.indices[ 1 ] = indices[ index_offset + num_inputs * ( i * 3 + 1 ) ];
-				face.indices[ 2 ] = indices[ index_offset + num_inputs * ( i * 3 + 2 ) ];
-				geometry.AddFace( face );
-			}
-		}
-
-		if( chosen_id != id_positions )
-		{
-			const uint32_t offset       = FromString< uint32_t >( elm_input_vertex.FindAttribute( "offset" ) );
-			const size_t   num_vertices = geometry.GetVertexCount();
-
-			for( size_t face_index = 0; face_index < num_triangles; ++face_index )
-			{
-				for( size_t i = 0; i < 3; ++i )
-				{
-					const uint32_t vertex_index = indices[ index_offset + num_inputs * ( face_index * 3 + i ) ];
-					Vertex         vertex       = geometry.GetVertex( vertex_index );
-
-					vertex.position             = positions[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
-
-					geometry.SetVertex( vertex_index, vertex );
-				}
-			}
-		}
-
-		if( chosen_id != id_normals )
-		{
-			const uint32_t offset       = FromString< uint32_t >( elm_input_normal.FindAttribute( "offset" ) );
-			const size_t   num_vertices = geometry.GetVertexCount();
-
-			for( size_t face_index = 0; face_index < num_triangles; ++face_index )
-			{
-				for( size_t i = 0; i < 3; ++i )
-				{
-					const uint32_t vertex_index = indices[ index_offset + num_inputs * ( face_index * 3 + i ) ];
-					Vertex         vertex       = geometry.GetVertex( vertex_index );
-
-					vertex.normal               = normals[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
-
-					geometry.SetVertex( vertex_index, vertex );
-				}
-			}
-		}
-
-		if( chosen_id != id_texcoords_0 )
-		{
-			const uint32_t offset       = FromString< uint32_t >( elm_input_texcoord.FindAttribute( "offset" ) );
-			const size_t   num_vertices = geometry.GetVertexCount();
-
-			for( size_t face_index = 0; face_index < num_triangles; ++face_index )
-			{
-				for( size_t i = 0; i < 3; ++i )
-				{
-					const uint32_t vertex_index = indices[ index_offset + num_inputs * ( face_index * 3 + i ) ];
-					Vertex         vertex       = geometry.GetVertex( vertex_index );
-
-					vertex.tex_coord            = texcoords[ indices[ offset + num_inputs * ( face_index * 3 + i ) ] ];
-
-					geometry.SetVertex( vertex_index, vertex );
-				}
-			}
+			// Create vertex
+			geometry.AddVertex( vertex );
 		}
 
 //////////////////////////////////////////////////////////////////////////
