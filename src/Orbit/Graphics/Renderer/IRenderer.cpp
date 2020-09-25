@@ -118,6 +118,10 @@ void IRenderer::APIDraw( const RenderCommand& command )
 {
 	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
+	// Invoke the before-draw callback
+	if( command.before_draw_callback )
+		command.before_draw_callback( command );
+
 	switch( context_details.index() )
 	{
 		default: break;

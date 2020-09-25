@@ -19,6 +19,7 @@
 #include "Orbit/Core/Utility/Ref.h"
 #include "Orbit/Graphics/Renderer/BlendEquation.h"
 
+#include <functional>
 #include <map>
 #include <vector>
 
@@ -33,7 +34,8 @@ class VertexBuffer;
 
 struct ORB_API_GRAPHICS RenderCommand
 {
-	std::vector< Ref< Texture2D > > textures;
+	std::function< void( const RenderCommand& ) > before_draw_callback;
+	std::vector< Ref< Texture2D > >               textures;
 
 	Ref< VertexBuffer > vertex_buffer;
 	Ref< IndexBuffer >  index_buffer;
