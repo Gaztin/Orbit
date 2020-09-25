@@ -23,6 +23,7 @@
 #include "Orbit/Math/Matrix/Matrix4.h"
 #include "Orbit/Math/Vector/Vector4.h"
 #include "Orbit/Core/IO/Log.h"
+#include "Orbit/Core/Shape/SphereShape.h"
 
 ORB_NAMESPACE_BEGIN
 
@@ -37,6 +38,8 @@ constexpr std::string_view shader_source = R"(
 
 cbuffer VertexUniforms
 {
+	float4 u_color;
+	matrix u_model;
 	matrix u_view_projection;
 };
 
@@ -55,8 +58,8 @@ struct PixelData
 PixelData VSMain( VertexData input )
 {
 	PixelData output;
-	output.position = mul( input.position, u_view_projection );
-	output.color    = input.color;
+	output.position = mul( mul( input.position, u_model ), u_view_projection );
+	output.color    = input.color * u_color;
 
 	return output;
 }
@@ -71,6 +74,8 @@ float4 PSMain( PixelData input ) : SV_TARGET
 #if defined( VERTEX )
 
 ORB_CONSTANTS_BEGIN( VertexUniforms )
+	ORB_CONSTANT( vec4, u_color );
+	ORB_CONSTANT( mat4, u_model );
 	ORB_CONSTANT( mat4, u_view_projection );
 ORB_CONSTANTS_END
 
@@ -82,8 +87,8 @@ ORB_VARYING vec4 v_color;
 
 void main()
 {
-	v_position = u_view_projection * a_position;
-	v_color    = a_color;
+	v_position = u_view_projection * u_model * a_position;
+	v_color    = a_color * u_color;
 
 	gl_Position = v_position;
 }
@@ -110,12 +115,11 @@ static VertexLayout vertex_layout
 };
 
 DebugManager::DebugManager( void )
-	: shader_               ( shader_source, vertex_layout )
-	, line_segments_        { }
-	, spheres_              { }
-	, lines_vertex_buffer_  ( nullptr, 0, vertex_layout.GetStride(), false )
-	, spheres_vertex_buffer_( nullptr, 0, vertex_layout.GetStride(), false )
-	, sphere_geometry_      ( MeshFactory::GetInstance().CreateGeometryFromShape( ShapeType::Sphere, vertex_layout, MeshFactory::DetailLevel::Low ) )
+	: shader_             ( shader_source, vertex_layout )
+	, line_segments_      { }
+	, spheres_            { }
+	, lines_vertex_buffer_( nullptr, 0, vertex_layout.GetStride(), false )
+	, sphere_mesh_        ( MeshFactory::GetInstance().CreateMeshFromShape( SphereShape( 1.0f ), vertex_layout, MeshFactory::DetailLevel::Low ) )
 {
 }
 
@@ -130,13 +134,14 @@ void DebugManager::PushLineSegment( const LineSegment& line_segment, RGBA color,
 	line_segments_.emplace_back( std::move( obj ) );
 }
 
-void DebugManager::PushSphere( Vector3 center, RGBA color, double duration )
+void DebugManager::PushSphere( Vector3 center, float radius, RGBA color, double duration )
 {
 	DebugSphere obj;
-	obj.birth    = Clock::now();
-	obj.death    = obj.birth + std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
-	obj.color    = color;
-	obj.position = center;
+	obj.birth  = Clock::now();
+	obj.death  = obj.birth + std::chrono::duration_cast< Clock::duration >( std::chrono::duration< double >( duration ) );
+	obj.color  = color;
+	obj.center = center;
+	obj.radius = radius;
 
 	spheres_.emplace_back( std::move( obj ) );
 }
@@ -158,7 +163,7 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 			RGBA color    = obj.color;
 			color.a       = CalcAlphaForObject( obj, now );
 
-			dst->position = Vector4( obj.line_segment.start,  1.0f );
+			dst->position = Vector4( obj.line_segment.start, 1.0f );
 			dst->color    = color;
 			++dst;
 
@@ -180,57 +185,33 @@ void DebugManager::Render( IRenderer& renderer, const Matrix4& view_projection )
 
 	if( !spheres_.empty() )
 	{
-		spheres_vertex_buffer_.Update( nullptr, spheres_.size() * sphere_geometry_.GetFaceCount() * 6 );
-
-		DebugVertex* dst = static_cast< DebugVertex* >( spheres_vertex_buffer_.Map() );
-
 		for( const DebugSphere& obj : spheres_ )
 		{
+			Matrix4 scale;
+			scale.Scale( Vector3( obj.radius ) );
+
+			Matrix4 translation;
+			translation.Translate( obj.center );
+
+			const Matrix4 transform = scale * translation;
+
 			RGBA color = obj.color;
 			color.a    = CalcAlphaForObject( obj, now );
 
-			for( Face face : sphere_geometry_.GetFaces() )
+			// Create render command
+			RenderCommand render_command;
+			render_command.vertex_buffer        = sphere_mesh_->GetVertexBuffer();
+			render_command.index_buffer         = sphere_mesh_->GetIndexBuffer();
+			render_command.shader               = shader_;
+			render_command.topology             = Topology::Lines;
+			render_command.before_draw_callback = [ transform, color ]( const RenderCommand& command )
 			{
-				Vertex v1 = sphere_geometry_.GetVertex( face.indices[ 0 ] );
-				Vertex v2 = sphere_geometry_.GetVertex( face.indices[ 1 ] );
-				Vertex v3 = sphere_geometry_.GetVertex( face.indices[ 2 ] );
+				command.shader->SetVertexUniform( "u_model", &transform, sizeof( Matrix4 ) );
+				command.shader->SetVertexUniform( "u_color", &color,     sizeof( RGBA ) );
+			};
 
-				v1.position += Vector4( obj.position, 0.0f );
-				v2.position += Vector4( obj.position, 0.0f );
-				v3.position += Vector4( obj.position, 0.0f );
-
-				dst->position = v1.position;
-				dst->color    = color;
-				++dst;
-				dst->position = v2.position;
-				dst->color    = color;
-				++dst;
-
-				dst->position = v1.position;
-				dst->color    = color;
-				++dst;
-				dst->position = v3.position;
-				dst->color    = color;
-				++dst;
-
-				dst->position = v2.position;
-				dst->color    = color;
-				++dst;
-				dst->position = v3.position;
-				dst->color    = color;
-				++dst;
-			}
+			renderer.PushCommand( std::move( render_command ) );
 		}
-
-		spheres_vertex_buffer_.Unmap();
-
-		// Create render command
-		RenderCommand render_command;
-		render_command.shader        = shader_;
-		render_command.vertex_buffer = spheres_vertex_buffer_;
-		render_command.topology      = Topology::Lines;
-
-		renderer.PushCommand( std::move( render_command ) );
 	}
 }
 
@@ -264,7 +245,7 @@ float DebugManager::CalcAlphaForObject( const DebugObjectBase& object, Clock::ti
 	float time_alive        = std::chrono::duration_cast< std::chrono::duration< float > >( now - object.birth ).count();
 	float time_left_to_live = std::chrono::duration_cast< std::chrono::duration< float > >( object.death - now ).count();
 
-	return ( time_left_to_live / std::min( time_alive + time_left_to_live, 1.0f ) );
+	return std::min( 1.0f, ( time_left_to_live / std::min( time_alive + time_left_to_live, 1.0f ) ) );
 }
 
 ORB_NAMESPACE_END

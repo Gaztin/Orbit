@@ -19,11 +19,14 @@
 #include "Orbit/Core/Utility/Singleton.h"
 #include "Orbit/Graphics/Buffer/VertexBuffer.h"
 #include "Orbit/Graphics/Geometry/Geometry.h"
+#include "Orbit/Graphics/Geometry/Mesh.h"
 #include "Orbit/Graphics/Shader/Shader.h"
 #include "Orbit/Math/Geometry/LineSegment.h"
+#include "Orbit/Math/Matrix/Matrix4.h"
 #include "Orbit/Math/Vector/Vector3.h"
 
 #include <chrono>
+#include <memory>
 #include <vector>
 
 ORB_NAMESPACE_BEGIN
@@ -51,7 +54,8 @@ public:
 
 	struct DebugSphere : DebugObjectBase
 	{
-		Vector3 position;
+		Vector3 center;
+		float   radius = 0.5f;
 	};
 
 	using LineSegmentVector = std::vector< DebugLineSegment >;
@@ -64,7 +68,7 @@ public:
 public:
 
 	void PushLineSegment( const LineSegment& line_segment, RGBA color, double duration = 0.0 );
-	void PushSphere     ( Vector3 center, RGBA color, double duration = 0.0 );
+	void PushSphere     ( Vector3 center, float radius, RGBA color, double duration = 0.0 );
 	void Render         ( IRenderer& renderer, const Matrix4& view_projection );
 	void Flush          ( void );
 
@@ -74,12 +78,11 @@ private:
 
 private:
 
-	Shader            shader_;
-	LineSegmentVector line_segments_;
-	SphereVector      spheres_;
-	VertexBuffer      lines_vertex_buffer_;
-	VertexBuffer      spheres_vertex_buffer_;
-	Geometry          sphere_geometry_;
+	Shader                  shader_;
+	LineSegmentVector       line_segments_;
+	SphereVector            spheres_;
+	VertexBuffer            lines_vertex_buffer_;
+	std::shared_ptr< Mesh > sphere_mesh_;
 
 };
 
