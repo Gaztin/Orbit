@@ -37,17 +37,17 @@ public:
 
 	void Bind             ( void );
 	void Unbind           ( void );
-	void SetVertexUniform ( std::string_view name, const void* data, size_t size );
-	void SetPixelUniform  ( std::string_view name, const void* data, size_t size );
+	void SetVertexUniform ( std::string_view name, const void* data, size_t size ) const;
+	void SetPixelUniform  ( std::string_view name, const void* data, size_t size ) const;
 
 	template< typename T >
-	void SetVertexUniform( const ShaderGen::UniformBase& uniform, const T& data )
+	void SetVertexUniform( const ShaderGen::UniformBase& uniform, const T& data ) const
 	{
 		SetVertexUniform( uniform.GetName(), &data, sizeof( T ) );
 	}
 	
 	template< typename T >
-	void SetPixelUniform( const ShaderGen::UniformBase& uniform, const T& data )
+	void SetPixelUniform( const ShaderGen::UniformBase& uniform, const T& data ) const
 	{
 		SetPixelUniform( uniform.GetName(), &data, sizeof( T ) );
 	}
