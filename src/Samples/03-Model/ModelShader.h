@@ -42,17 +42,19 @@ private:
 	Attribute::TexCoord a_texcoord;
 	Attribute::Normal   a_normal;
 
-	Varying::Position v_position;
-	Varying::Color    v_color;
-	Varying::TexCoord v_texcoord;
-	Varying::Normal   v_normal;
+	Varying::Position< 0 > v_position;
+	Varying::Color   < 0 > v_color;
+	Varying::TexCoord< 0 > v_texcoord;
+	Varying::Normal  < 0 > v_normal;
+	Varying::Position< 1 > v_world_position;
 
 public:
 
 	Uniform< Mat4 > u_view_projection;
 	Uniform< Mat4 > u_model;
-	Uniform< Mat4 > u_model_inverse;
 
-	Uniform< Vec3 > u_light_dir;
+	Uniform< Vec3 > u_light_pos;
+	Uniform< Vec3 > u_light_color;
+	Uniform< Vec3 > u_cam_pos;
 
 };

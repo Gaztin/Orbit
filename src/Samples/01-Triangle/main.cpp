@@ -46,12 +46,15 @@ public:
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
 
 		// Push mesh to render queue
-		Orbit::RenderCommand command;
-		command.vertex_buffer = mesh_.GetVertexBuffer();
-		command.index_buffer  = mesh_.GetIndexBuffer();
-		command.shader        = shader_;
-		command.textures.emplace_back( texture_.GetTexture2D() );
-		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+		if( mesh_ )
+		{
+			Orbit::RenderCommand command;
+			command.vertex_buffer = mesh_->GetVertexBuffer();
+			command.index_buffer  = mesh_->GetIndexBuffer();
+			command.shader        = shader_;
+			command.textures.emplace_back( texture_.GetTexture2D() );
+			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+		}
 
 		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
@@ -62,10 +65,10 @@ public:
 
 private:
 
-	Orbit::RenderContext render_context_;
-	TriangleShader       shader_source_;
-	Orbit::Shader        shader_;
-	Orbit::Mesh          mesh_;
-	Orbit::Texture       texture_;
+	Orbit::RenderContext           render_context_;
+	TriangleShader                 shader_source_;
+	Orbit::Shader                  shader_;
+	std::shared_ptr< Orbit::Mesh > mesh_;
+	Orbit::Texture                 texture_;
 
 };

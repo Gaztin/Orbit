@@ -40,8 +40,8 @@ private:
 	Attribute::Color    a_color;
 	Attribute::TexCoord a_texcoord;
 
-	Varying::Position v_position;
-	Varying::Color    v_color;
-	Varying::TexCoord v_texcoord;
+	Varying::Position< 0 > v_position;
+	Varying::Color   < 0 > v_color;
+	Varying::TexCoord< 0 > v_texcoord;
 
 };

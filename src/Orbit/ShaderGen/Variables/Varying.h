@@ -23,30 +23,38 @@ ORB_NAMESPACE_BEGIN
 
 namespace ShaderGen
 {
-	template< VertexComponent VC >
+	template< VertexComponent VC, size_t RI >
 	class VaryingHelper;
-	
+
 	class ORB_API_SHADERGEN Varying : public Variable
 	{
 	public:
-	
-		using Position = VaryingHelper< VertexComponent::Position >;
-		using Normal   = VaryingHelper< VertexComponent::Normal >;
-		using Color    = VaryingHelper< VertexComponent::Color >;
-		using TexCoord = VaryingHelper< VertexComponent::TexCoord >;
+
+		template< size_t RI > using Position     = VaryingHelper< VertexComponent::Position,     RI >;
+		template< size_t RI > using Normal       = VaryingHelper< VertexComponent::Normal,       RI >;
+		template< size_t RI > using Binormal     = VaryingHelper< VertexComponent::Binormal,     RI >;
+		template< size_t RI > using Tangent      = VaryingHelper< VertexComponent::Tangent,      RI >;
+		template< size_t RI > using Color        = VaryingHelper< VertexComponent::Color,        RI >;
+		template< size_t RI > using TexCoord     = VaryingHelper< VertexComponent::TexCoord,     RI >;
+		template< size_t RI > using BlendIndices = VaryingHelper< VertexComponent::BlendIndices, RI >;
+		template< size_t RI > using BlendWeights = VaryingHelper< VertexComponent::BlendWeights, RI >;
 		using Variable::operator=;
 	
 	public:
 	
-		Varying( VertexComponent component );
+		Varying( VertexComponent component, size_t resource_index );
 
 	private:
 	
 		std::string GetValueDerived( void ) const override;
+
+	private:
+
+		size_t resource_index_;
 	
 	};
 	
-	template< VertexComponent VC >
+	template< VertexComponent VC, size_t RI >
 	class VaryingHelper : public Varying
 	{
 	public:
@@ -56,7 +64,7 @@ namespace ShaderGen
 	public:
 	
 		VaryingHelper( void )
-			: Varying( VC )
+			: Varying( VC, RI )
 		{
 		}
 	

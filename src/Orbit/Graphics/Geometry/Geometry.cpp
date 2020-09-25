@@ -144,33 +144,44 @@ void Geometry::SetVertex( size_t index, const Vertex& vertex )
 {
 	uint8_t* dst = &vertex_data_[ index * vertex_layout_.GetStride() ];
 
-	if( vertex_layout_.Contains( VertexComponent::Position ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Position ), &vertex.position,  sizeof( Vector4 )     );
-	if( vertex_layout_.Contains( VertexComponent::Normal ) )   memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Normal ),   &vertex.normal,    sizeof( Vector3 )     );
-	if( vertex_layout_.Contains( VertexComponent::Color ) )    memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Color ),    &vertex.color,     sizeof( Color   )     );
-	if( vertex_layout_.Contains( VertexComponent::TexCoord ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::TexCoord ), &vertex.tex_coord, sizeof( Vector2 )     );
-	if( vertex_layout_.Contains( VertexComponent::JointIDs ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::JointIDs ), &vertex.joint_ids, sizeof( int     ) * 4 );
-	if( vertex_layout_.Contains( VertexComponent::Weights ) )  memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Weights ),  &vertex.weights,   sizeof( float   ) * 4 );
+	if( vertex_layout_.Contains( VertexComponent::Position ) )     memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Position ),     &vertex.position,      sizeof( Vector4 )     );
+	if( vertex_layout_.Contains( VertexComponent::Binormal ) )     memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Binormal ),     &vertex.binormal,      sizeof( Vector3 )     );
+	if( vertex_layout_.Contains( VertexComponent::Tangent ) )      memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Tangent ),      &vertex.tangent,       sizeof( Vector3 )     );
+	if( vertex_layout_.Contains( VertexComponent::Normal ) )       memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Normal ),       &vertex.normal,        sizeof( Vector3 )     );
+	if( vertex_layout_.Contains( VertexComponent::Color ) )        memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::Color ),        &vertex.color,         sizeof( RGBA    )     );
+	if( vertex_layout_.Contains( VertexComponent::TexCoord ) )     memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::TexCoord ),     &vertex.tex_coord,     sizeof( Vector2 )     );
+	if( vertex_layout_.Contains( VertexComponent::BlendIndices ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::BlendIndices ), &vertex.blend_indices, sizeof( int     ) * 4 );
+	if( vertex_layout_.Contains( VertexComponent::BlendWeights ) ) memcpy( dst + vertex_layout_.OffsetOf( VertexComponent::BlendWeights ), &vertex.blend_weights, sizeof( float   ) * 4 );
 }
 
 void Geometry::GenerateNormals( void )
 {
+	for( size_t i = 0; i < GetVertexCount(); ++i )
+	{
+		Vertex vertex = GetVertex( i );
+		vertex.normal = Vector3( vertex.position ).Normalized();
+		SetVertex( i, vertex );
+	}
+}
+
+void Geometry::GenerateTexCoords( void )
+{
+	// Tri-planar mapping. Courtesy of https://www.martinpalko.com/triplanar-mapping/
+
 	for( Face face : GetFaces() )
 	{
-		const Vertex triangle_vertices[ 3 ]
-		{
-			GetVertex( face.indices[ 0 ] ),
-			GetVertex( face.indices[ 1 ] ),
-			GetVertex( face.indices[ 2 ] ),
-		};
-
-		const Orbit::Vector3 pos0_to_pos1 = Vector3( triangle_vertices[ 1 ].position - triangle_vertices[ 0 ].position );
-		const Orbit::Vector3 pos0_to_pos2 = Vector3( triangle_vertices[ 2 ].position - triangle_vertices[ 0 ].position );
-		const Orbit::Vector3 normal       = ( pos0_to_pos1.CrossProduct( pos0_to_pos2 ) ).Normalized();
-
 		for( size_t i = 0; i < 3; ++i )
 		{
-			Vertex vertex = triangle_vertices[ i ];
-			vertex.normal = normal;
+			constexpr float blend_sharpness = 1.0f;
+			Vertex          vertex          = GetVertex( face.indices[ i ] );
+			Vector2         x_uv            = Vector2( vertex.position.x, vertex.position.z );
+			Vector2         y_uv            = Vector2( vertex.position.z, vertex.position.y );
+			Vector2         z_uv            = Vector2( vertex.position.x, vertex.position.y );
+			Vector3         blend_weights   = vertex.normal.Abs().Pow( blend_sharpness );
+			blend_weights                   = blend_weights / ( blend_weights.x + blend_weights.y + blend_weights.z );
+
+			// #Note: Blending the texture coordinates may look a bit strange. Consider picking the one with the largest weight instead.
+			vertex.tex_coord = ( x_uv * blend_weights.x ) + ( y_uv * blend_weights.y ) + ( z_uv * blend_weights.z );
 
 			SetVertex( face.indices[ i ], vertex );
 		}
@@ -221,12 +232,14 @@ Vertex Geometry::GetVertex( size_t index ) const
 	const uint8_t* src = &vertex_data_[ index * vertex_layout_.GetStride() ];
 	Vertex         vertex;
 
-	if( vertex_layout_.Contains( VertexComponent::Position ) ) memcpy( &vertex.position,  src + vertex_layout_.OffsetOf( VertexComponent::Position ), sizeof( Vector4 )     );
-	if( vertex_layout_.Contains( VertexComponent::Normal ) )   memcpy( &vertex.normal,    src + vertex_layout_.OffsetOf( VertexComponent::Normal ),   sizeof( Vector3 )     );
-	if( vertex_layout_.Contains( VertexComponent::Color ) )    memcpy( &vertex.color,     src + vertex_layout_.OffsetOf( VertexComponent::Color ),    sizeof( Color   )     );
-	if( vertex_layout_.Contains( VertexComponent::TexCoord ) ) memcpy( &vertex.tex_coord, src + vertex_layout_.OffsetOf( VertexComponent::TexCoord ), sizeof( Vector2 )     );
-	if( vertex_layout_.Contains( VertexComponent::JointIDs ) ) memcpy( &vertex.joint_ids, src + vertex_layout_.OffsetOf( VertexComponent::JointIDs ), sizeof( int     ) * 4 );
-	if( vertex_layout_.Contains( VertexComponent::Weights ) )  memcpy( &vertex.weights,   src + vertex_layout_.OffsetOf( VertexComponent::Weights ),  sizeof( float   ) * 4 );
+	if( vertex_layout_.Contains( VertexComponent::Position ) )     memcpy( &vertex.position,      src + vertex_layout_.OffsetOf( VertexComponent::Position ),     sizeof( Vector4 )     );
+	if( vertex_layout_.Contains( VertexComponent::Binormal ) )     memcpy( &vertex.normal,        src + vertex_layout_.OffsetOf( VertexComponent::Binormal ),     sizeof( Vector3 )     );
+	if( vertex_layout_.Contains( VertexComponent::Tangent ) )      memcpy( &vertex.normal,        src + vertex_layout_.OffsetOf( VertexComponent::Tangent ),      sizeof( Vector3 )     );
+	if( vertex_layout_.Contains( VertexComponent::Normal ) )       memcpy( &vertex.normal,        src + vertex_layout_.OffsetOf( VertexComponent::Normal ),       sizeof( Vector3 )     );
+	if( vertex_layout_.Contains( VertexComponent::Color ) )        memcpy( &vertex.color,         src + vertex_layout_.OffsetOf( VertexComponent::Color ),        sizeof( RGBA    )     );
+	if( vertex_layout_.Contains( VertexComponent::TexCoord ) )     memcpy( &vertex.tex_coord,     src + vertex_layout_.OffsetOf( VertexComponent::TexCoord ),     sizeof( Vector2 )     );
+	if( vertex_layout_.Contains( VertexComponent::BlendIndices ) ) memcpy( &vertex.blend_indices, src + vertex_layout_.OffsetOf( VertexComponent::BlendIndices ), sizeof( int     ) * 4 );
+	if( vertex_layout_.Contains( VertexComponent::BlendWeights ) ) memcpy( &vertex.blend_weights, src + vertex_layout_.OffsetOf( VertexComponent::BlendWeights ), sizeof( float   ) * 4 );
 
 	return vertex;
 }
@@ -251,21 +264,24 @@ VertexRange Geometry::GetVertices( void ) const
 	return VertexRange( this );
 }
 
-Mesh Geometry::ToMesh( std::string_view name ) const
+std::shared_ptr< Mesh > Geometry::ToMesh( std::string_view name ) const
 {
-	const size_t vertex_stride = vertex_layout_.GetStride();
+	if( vertex_data_.empty() )
+		return nullptr;
+
+//////////////////////////////////////////////////////////////////////////
+
 	const size_t vertex_count  = GetVertexCount();
-	const size_t index_size    = EvalIndexSize( vertex_count );
-	const size_t index_count   = ( face_data_.size() / index_size );
-	Mesh         mesh( name );
+	const size_t vertex_stride = vertex_layout_.GetStride();
+	const size_t index_count   = ( face_data_.size() / EvalIndexSize( vertex_count ) );
+	auto         mesh          = std::make_shared< Mesh >( name );
 
-	mesh.vertex_layout_ = vertex_layout_;
+	mesh->vertex_layout_ = vertex_layout_;
+	mesh->vertex_buffer_ = std::make_unique< VertexBuffer >( vertex_data_.data(), vertex_count, vertex_stride );
 
-	if( !vertex_data_.empty() )
-		mesh.vertex_buffer_ = std::make_unique< VertexBuffer >( vertex_data_.data(), vertex_count, vertex_stride );
-
+	// Index buffer is optional
 	if( !face_data_.empty() )
-		mesh.index_buffer_ = std::make_unique< IndexBuffer >( GetIndexFormat(), face_data_.data(), index_count );
+		mesh->index_buffer_ = std::make_unique< IndexBuffer >( GetIndexFormat(), face_data_.data(), index_count );
 
 	return mesh;
 }

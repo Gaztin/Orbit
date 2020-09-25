@@ -54,12 +54,13 @@ public:
 
 private:
 
-	VertexLayout                    vertex_layout_;
+	VertexLayout vertex_layout_;
 
-	std::string                     name_;
+	std::string name_;
 
 	std::unique_ptr< VertexBuffer > vertex_buffer_;
 	std::unique_ptr< IndexBuffer >  index_buffer_;
+
 };
 
 ORB_NAMESPACE_END

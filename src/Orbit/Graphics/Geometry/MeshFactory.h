@@ -44,15 +44,14 @@ public:
 
 public:
 
-	Geometry CreateGeometryFromShape( ShapeType shape_type, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
-	Mesh     CreateMeshFromShape    ( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
+	Geometry                CreateGeometryFromShape ( ShapeType shape_type, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
+	std::shared_ptr< Mesh > CreateMeshFromShape     ( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level = DetailLevel::Medium ) const;
 
 private:
 
-	std::string_view EvalShapeName                   ( ShapeType type ) const;
-	void             GenerateCubeData                ( Geometry& geometry ) const;
-	void             GenerateSphereData              ( Geometry& geometry, DetailLevel detail_level ) const;
-	void             GenerateEquilateralTriangleData ( Geometry& geometry ) const;
+	void GenerateCubeData                ( Geometry& geometry ) const;
+	void GenerateSphereData              ( Geometry& geometry, DetailLevel detail_level ) const;
+	void GenerateEquilateralTriangleData ( Geometry& geometry ) const;
 
 };
 

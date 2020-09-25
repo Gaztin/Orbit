@@ -118,6 +118,10 @@ void IRenderer::APIDraw( const RenderCommand& command )
 {
 	auto& context_details = RenderContext::GetInstance().GetPrivateDetails();
 
+	// Invoke the before-draw callback
+	if( command.before_draw_callback )
+		command.before_draw_callback( command );
+
 	switch( context_details.index() )
 	{
 		default: break;
@@ -157,7 +161,7 @@ void IRenderer::APIDraw( const RenderCommand& command )
 					it = d3d11.blend_states.try_emplace( d3d11.blend_states.end(), command.blend_equation, std::move( blend_state ) );
 				}
 
-				d3d11.device_context->OMSetBlendState( it->second.ptr_, &command.blend_equation.constant[ 0 ], 0xFFFFFFFF );
+				d3d11.device_context->OMSetBlendState( it->second.ptr_, &command.blend_equation.constant.r, 0xFFFFFFFF );
 			}
 			else
 			{

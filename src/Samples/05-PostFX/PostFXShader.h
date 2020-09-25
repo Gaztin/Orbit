@@ -32,8 +32,8 @@ private:
 
 	Attribute::Position a_position;
 
-	Varying::Position v_position;
-	Varying::TexCoord v_texcoord;
+	Varying::Position< 0 > v_position;
+	Varying::TexCoord< 0 > v_texcoord;
 
 public:
 

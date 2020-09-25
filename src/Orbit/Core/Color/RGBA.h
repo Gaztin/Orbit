@@ -16,41 +16,46 @@
  */
 
 #pragma once
-#include "Orbit/Core/IO/Parser/XML/XMLAttribute.h"
-
-#include <string>
-#include <vector>
+#include "Orbit/Core/Color/RGB.h"
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE XMLElement
+class RGBA
 {
 public:
 
-	std::string_view Attribute( std::string_view key ) const;
+	constexpr RGBA( void ) = default;
+
+	constexpr explicit RGBA( float grey )
+		: r( grey )
+		, g( grey )
+		, b( grey )
+		, a( 1.0f )
+	{
+	}
+
+	constexpr explicit RGBA( const RGB& rgb, float alpha = 1.0f )
+		: r( rgb.r )
+		, g( rgb.g )
+		, b( rgb.b )
+		, a( alpha )
+	{
+	}
+
+	constexpr RGBA( float red, float green, float blue, float alpha = 1.0f )
+		: r( red )
+		, g( green )
+		, b( blue )
+		, a( alpha )
+	{
+	}
 
 public:
 
-	const XMLElement& ChildWithAttribute( std::string_view element, std::string_view attribute, std::string_view value ) const;
-	size_t            CountChildren     ( std::string_view element ) const;
-	bool              IsValid           ( void ) const;
-
-public:
-
-	auto begin( void ) const { return children.begin(); }
-	auto end  ( void ) const { return children.end(); }
-
-public:
-
-	const XMLElement& operator[]( std::string_view key ) const;
-
-public:
-
-	std::string name;
-	std::string content;
-
-	std::vector< XMLAttribute > attributes;
-	std::vector< XMLElement >   children;
+	float r = 0.0f;
+	float g = 0.0f;
+	float b = 0.0f;
+	float a = 1.0f;
 
 };
 

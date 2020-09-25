@@ -37,7 +37,7 @@ ORB_NAMESPACE_BEGIN
 
 Asset::Asset( std::string_view path )
 {
-	ORB_TRACE( "Loading asset: %s", path.data() );
+	ORB_TRACE( "Loading asset: %.*s", path.size(), path.data() );
 
 #if defined( ORB_OS_WINDOWS )
 

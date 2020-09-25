@@ -16,41 +16,33 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Span.h"
+#include "Orbit/Core/IO/File/TextFile.h"
+#include "Orbit/Graphics/Geometry/Mesh.h"
 
 #include <memory>
-#include <string_view>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE IParser
+class VertexLayout;
+
+class ORB_API_GRAPHICS WavefrontOBJFile : public TextFile
 {
 public:
 
-	explicit IParser( ByteSpan data );
-	virtual ~IParser( void ) = default;
+	WavefrontOBJFile( ByteSpan data, const VertexLayout& vertex_layout );
 
 public:
 
-	bool IsGood( void ) const { return good_; }
+	auto GetMeshes( void ) { return meshes_; }
 
-protected:
+private:
 
-	void Skip     ( size_t size );
-	void ReadBytes( void* dst, size_t count );
+	void ProduceMesh( Geometry& geometry, std::string_view mesh_name, bool generate_tex_coords, bool generate_normals );
 
-protected:
+private:
 
-	bool IsEOF( void ) const;
-
-protected:
-
-	std::unique_ptr< uint8_t[] > data_;
-
-	size_t                       size_;
-	size_t                       offset_;
-
-	bool                         good_;
+	std::vector< std::shared_ptr< Mesh > > meshes_;
 
 };
 

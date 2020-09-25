@@ -18,14 +18,40 @@
 #pragma once
 #include "Orbit/Core/Core.h"
 
-#include <string>
+// Fix macro interference on Windows
+#if defined( ORB_OS_WINDOWS )
+#  include <Windows.h>
+#  undef RGB
+#endif // ORB_OS_WINDOWS
 
 ORB_NAMESPACE_BEGIN
 
-struct XMLAttribute
+class RGB
 {
-	std::string name;
-	std::string value;
+public:
+
+	constexpr RGB( void ) = default;
+
+	constexpr explicit RGB( float grey )
+		: r( grey )
+		, g( grey )
+		, b( grey )
+	{
+	}
+
+	constexpr RGB( float red, float green, float blue )
+		: r( red )
+		, g( green )
+		, b( blue )
+	{
+	}
+
+public:
+
+	float r = 0.0f;
+	float g = 0.0f;
+	float b = 0.0f;
+
 };
 
 ORB_NAMESPACE_END

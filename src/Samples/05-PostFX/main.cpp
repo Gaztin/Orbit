@@ -27,7 +27,8 @@
 #include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Buffer/FrameBuffer.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Geometry/Model.h>
+#include <Orbit/Graphics/Geometry/Mesh.h>
+#include <Orbit/Graphics/ModelFormats/WavefrontOBJFile.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 
@@ -38,7 +39,7 @@ public:
 	SampleApp( void )
 		: scene_shader_  ( scene_shader_source_.Generate(), scene_shader_source_.GetVertexLayout() )
 		, post_fx_shader_( post_fx_shader_source_.Generate(), post_fx_shader_source_.GetVertexLayout() )
-		, model_         ( Orbit::Asset( "models/bunny.obj" ), scene_shader_source_.GetVertexLayout() )
+		, meshes_        ( Orbit::WavefrontOBJFile( Orbit::Asset( "models/bunny.obj" ), scene_shader_source_.GetVertexLayout() ).GetMeshes() )
 	{
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Rotate( Orbit::Vector3( 0.0f, Orbit::Pi * 1.0f, 0.0f ) );
@@ -67,24 +68,26 @@ public:
 		// Update post-fx shader uniforms
 		post_fx_shader_.SetPixelUniform( post_fx_shader_source_.u_time, life_time );
 
-		// Push meshes to render queue
-		for( const Orbit::Mesh& mesh : model_ )
+		// Push meshe to render queue
+		for( auto& mesh : meshes_ )
 		{
 			Orbit::RenderCommand command;
-			command.vertex_buffer = mesh.GetVertexBuffer();
-			command.index_buffer  = mesh.GetIndexBuffer();
+			command.vertex_buffer = mesh->GetVertexBuffer();
+			command.index_buffer  = mesh->GetIndexBuffer();
 			command.shader        = scene_shader_;
 			command.frame_buffer  = frame_buffer_;
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
 
 		// Push render quad to render queue
-		Orbit::RenderCommand command;
-		command.vertex_buffer = render_quad_.vertex_buffer_;
-		command.index_buffer  = render_quad_.index_buffer_;
-		command.shader        = post_fx_shader_;
-		command.textures.emplace_back( frame_buffer_.GetTexture2D() );
-		Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+		{
+			Orbit::RenderCommand command;
+			command.vertex_buffer = render_quad_.vertex_buffer_;
+			command.index_buffer  = render_quad_.index_buffer_;
+			command.shader        = post_fx_shader_;
+			command.textures.emplace_back( frame_buffer_.GetTexture2D() );
+			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
+		}
 
 		// Render scene
 		Orbit::DefaultRenderer::GetInstance().Render();
@@ -95,15 +98,15 @@ public:
 
 private:
 
-	Orbit::RenderContext  render_context_;
-	SceneShader           scene_shader_source_;
-	PostFXShader          post_fx_shader_source_;
-	Orbit::Shader         scene_shader_;
-	Orbit::Shader         post_fx_shader_;
-	Orbit::Model          model_;
-	Orbit::FrameBuffer    frame_buffer_;
-	Orbit::Matrix4        model_matrix_;
-	Camera                camera_;
-	RenderQuad            render_quad_;
+	Orbit::RenderContext                          render_context_;
+	SceneShader                                   scene_shader_source_;
+	PostFXShader                                  post_fx_shader_source_;
+	Orbit::Shader                                 scene_shader_;
+	Orbit::Shader                                 post_fx_shader_;
+	std::vector< std::shared_ptr< Orbit::Mesh > > meshes_;
+	Orbit::FrameBuffer                            frame_buffer_;
+	Orbit::Matrix4                                model_matrix_;
+	Camera                                        camera_;
+	RenderQuad                                    render_quad_;
 
 };

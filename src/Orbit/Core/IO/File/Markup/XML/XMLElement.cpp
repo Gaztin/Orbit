@@ -19,60 +19,63 @@
 
 ORB_NAMESPACE_BEGIN
 
-std::string_view XMLElement::Attribute( std::string_view key ) const
+std::string_view XMLElement::FindAttribute( std::string_view attribute_name ) const
 {
 	for( const XMLAttribute& attribute : attributes )
 	{
-		if( attribute.name == key )
+		if( attribute.name == attribute_name )
 			return attribute.value;
 	}
 
 	return { };
 }
 
-const XMLElement& XMLElement::ChildWithAttribute( std::string_view element, std::string_view attribute, std::string_view value ) const
+const XMLElement* XMLElement::FindChild( std::string_view child_name ) const
 {
 	for( const XMLElement& child : children )
 	{
-		if( child.name != element )
-			continue;
+		if( child.name == child_name )
+			return &child;
+	}
 
-		for( const XMLAttribute& attrib : child.attributes )
+	return nullptr;
+}
+
+const XMLElement* XMLElement::FindChildWithAttribute( std::string_view child_name, XMLAttributeView attribute ) const
+{
+	for( const XMLElement& child : children )
+	{
+		if( child.name == child_name )
 		{
-			if( attrib.name != attribute || attrib.value != value )
-				continue;
-
-			return child;
+			for( const XMLAttribute& attrib : child.attributes )
+			{
+				if( attrib.name == attribute.name && attrib.value == attribute.value )
+					return &child;
+			}
 		}
 	}
 
-	static XMLElement dummy;
-	return dummy;
+	return nullptr;
 }
 
-size_t XMLElement::CountChildren( std::string_view element ) const
+size_t XMLElement::CountChildrenWithName( std::string_view child_name ) const
 {
 	size_t count = 0;
 
 	for( const XMLElement& child : children )
 	{
-		if( child.name == element )
+		if( child.name == child_name )
 			++count;
 	}
 
 	return count;
 }
 
-bool XMLElement::IsValid( void ) const
-{
-	return !( name.empty() && content.empty() && children.empty() && attributes.empty() );
-}
-
-const XMLElement& XMLElement::operator[]( std::string_view key ) const
+const XMLElement& XMLElement::operator[]( std::string_view child_name ) const
 {
 	for( const XMLElement& child : children )
 	{
-		if( child.name == key )
+		if( child.name == child_name )
 			return child;
 	}
 

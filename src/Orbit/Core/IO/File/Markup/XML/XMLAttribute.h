@@ -16,31 +16,23 @@
  */
 
 #pragma once
-#include "Orbit/Core/IO/Parser/IParser.h"
+#include "Orbit/Core/Core.h"
+
+#include <string>
+#include <string_view>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE ITextParser : public IParser
+struct XMLAttribute
 {
-public:
+	std::string name;
+	std::string value;
+};
 
-	explicit ITextParser( ByteSpan data );
-
-protected:
-
-	void        SkipWhitespace  ( void );
-	std::string ReadAlphaNumeric( void );
-	std::string ReadPrintable   ( void );
-	std::string ReadLiteral     ( void );
-
-protected:
-
-	std::string Peek( size_t length ) const;
-
-protected:
-
-	bool ExpectString( std::string_view str );
-
+struct XMLAttributeView
+{
+	std::string_view name;
+	std::string_view value;
 };
 
 ORB_NAMESPACE_END

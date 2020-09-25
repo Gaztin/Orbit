@@ -17,10 +17,10 @@
 
 #include "MeshFactory.h"
 
+#include "Orbit/Core/Color/RGBA.h"
 #include "Orbit/Core/Shape/CubeShape.h"
 #include "Orbit/Core/Shape/EquilateralTriangleShape.h"
 #include "Orbit/Core/Shape/SphereShape.h"
-#include "Orbit/Core/Utility/Color.h"
 #include "Orbit/Graphics/Geometry/Geometry.h"
 #include "Orbit/Graphics/Geometry/Mesh.h"
 #include "Orbit/Graphics/Geometry/VertexLayout.h"
@@ -46,49 +46,46 @@ Geometry MeshFactory::CreateGeometryFromShape( ShapeType shape_type, const Verte
 	return geometry_data;
 }
 
-Mesh MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level ) const
+std::shared_ptr< Mesh > MeshFactory::CreateMeshFromShape( const IShape& shape, const VertexLayout& vertex_layout, DetailLevel detail_level ) const
 {
 	Geometry geometry = CreateGeometryFromShape( shape.GetType(), vertex_layout, detail_level );
-	Mesh     mesh     = geometry.ToMesh( EvalShapeName( shape.GetType() ) );
 
 	switch( shape.GetType() )
 	{
 		case ShapeType::EquilateralTriangle:
 		{
 			const EquilateralTriangleShape& triangle_shape = static_cast< const EquilateralTriangleShape& >( shape );
+			auto                            mesh           = geometry.ToMesh( "EquilateralTriangleShape" );
 
-			mesh.transform_.Scale( Vector3( triangle_shape.scale ) );
+			mesh->transform_.Scale( Vector3( triangle_shape.scale ) );
 
-		} break;
+			return mesh;
+		}
 
 		case ShapeType::Cube:
 		{
 			const CubeShape& cube_shape = static_cast< const CubeShape& >( shape );
+			auto             mesh       = geometry.ToMesh( "Cube" );
 
-			mesh.transform_.Scale( Vector3( cube_shape.half_extent ) );
+			mesh->transform_.Scale( Vector3( cube_shape.half_extent ) );
 
-		} break;
+			return mesh;
+		}
 
 		case ShapeType::Sphere:
 		{
 			const SphereShape& cube_shape = static_cast< const SphereShape& >( shape );
+			auto               mesh       = geometry.ToMesh( "Sphere" );
 
-			mesh.transform_.Scale( Vector3( cube_shape.radius ) );
+			mesh->transform_.Scale( Vector3( cube_shape.radius ) );
 
-		} break;
-	}
+			return mesh;
+		}
 
-	return mesh;
-}
-
-std::string_view MeshFactory::EvalShapeName( ShapeType type ) const
-{
-	switch( type )
-	{
-		case ShapeType::EquilateralTriangle: return "EquilateralTriangle";
-		case ShapeType::Cube:                return "Cube";
-		case ShapeType::Sphere:              return "Sphere";
-		default:                             return "UnknownShape";
+		default:
+		{
+			return nullptr;
+		}
 	}
 }
 
@@ -141,8 +138,8 @@ void MeshFactory::GenerateCubeData( Geometry& geometry_data ) const
 		                   -1.0f + ( 2.0f * ( ( position_indices[ i ] & 2 ) != 0 ) ),
 		                   -1.0f + ( 2.0f * ( ( position_indices[ i ] & 4 ) != 0 ) ),
 		                    1.0f );
-		const Color color( 0.75f, 0.75f, 0.75f, 1.0f );
-		Vertex      vertex;
+		const RGBA color( 0.75f, 0.75f, 0.75f, 1.0f );
+		Vertex     vertex;
 
 		vertex.position  = pos;
 		vertex.normal    = normals[ i / 4 ];
@@ -215,19 +212,19 @@ void MeshFactory::GenerateSphereData( Geometry& geometry, DetailLevel detail_lev
 
 //////////////////////////////////////////////////////////////////////////
 
-	//                    Position                                                                         Normal                       Color                               TexCoord
-	geometry.AddVertex( { Vector4( Vector3( -1.0f,        GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3(  1.0f,        GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3( -1.0f,       -GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3(  1.0f,       -GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3(  0.0f,       -1.0f,        GoldenRatio ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3(  0.0f,        1.0f,        GoldenRatio ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3(  0.0f,       -1.0f,       -GoldenRatio ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3(  0.0f,        1.0f,       -GoldenRatio ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3(  GoldenRatio, 0.0f,       -1.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3(  GoldenRatio, 0.0f,        1.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3( -GoldenRatio, 0.0f,       -1.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
-	geometry.AddVertex( { Vector4( Vector3( -GoldenRatio, 0.0f,        1.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Color( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
+	//                    Position                                                                         Binormal                     Tangent                      Normal                       Color                              TexCoord
+	geometry.AddVertex( { Vector4( Vector3( -1.0f,        GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 1.0f, 0.0f, 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3(  1.0f,        GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 1.0f, 0.0f, 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3( -1.0f,       -GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 1.0f, 0.0f, 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3(  1.0f,       -GoldenRatio, 0.0f        ).Normalized(), 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 1.0f, 0.0f, 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3(  0.0f,       -1.0f,        GoldenRatio ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 1.0f, 0.0f, 0.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3(  0.0f,        1.0f,        GoldenRatio ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 1.0f, 0.0f, 0.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3(  0.0f,       -1.0f,       -GoldenRatio ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 1.0f, 0.0f, 0.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3(  0.0f,        1.0f,       -GoldenRatio ).Normalized(), 1.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 1.0f, 0.0f, 0.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3(  GoldenRatio, 0.0f,       -1.0f        ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 1.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3(  GoldenRatio, 0.0f,        1.0f        ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 1.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3( -GoldenRatio, 0.0f,       -1.0f        ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 0.0f, 0.0f ) } );
+	geometry.AddVertex( { Vector4( Vector3( -GoldenRatio, 0.0f,        1.0f        ).Normalized(), 1.0f ), Vector3( 1.0f, 0.0f, 0.0f ), Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, 1.0f, 0.0f ), RGBA( 0.75f, 0.75f, 0.75f, 1.0f ), Vector2( 1.0f, 0.0f ) } );
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -299,27 +296,27 @@ void MeshFactory::GenerateEquilateralTriangleData( Geometry& geometry ) const
 	// Bottom left corner
 	{
 		Vertex vertex;
-		vertex.position   = Orbit::Vector4( -1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
-		vertex.color      = Orbit::Color( 1.0f, 0.0f, 1.0f, 1.0f );
-		vertex.tex_coord  = Orbit::Vector2( 0.0f, 0.0f );
+		vertex.position   = Vector4( -1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
+		vertex.color      = RGBA( 1.0f, 0.0f, 1.0f, 1.0f );
+		vertex.tex_coord  = Vector2( 0.0f, 0.0f );
 		face.indices[ 0 ] = geometry.AddVertex( vertex );
 	}
 
 	// Top center corner
 	{
 		Vertex vertex;
-		vertex.position   = Orbit::Vector4(  0.0f,                              1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
-		vertex.color      = Orbit::Color( 0.0f, 1.0f, 1.0f, 1.0f );
-		vertex.tex_coord  = Orbit::Vector2( 0.5f, 1.0f );
+		vertex.position   = Vector4( 0.0f, 1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
+		vertex.color      = RGBA( 0.0f, 1.0f, 1.0f, 1.0f );
+		vertex.tex_coord  = Vector2( 0.5f, 1.0f );
 		face.indices[ 1 ] = geometry.AddVertex( vertex );
 	}
 
 	// Bottom right corner
 	{
 		Vertex vertex;
-		vertex.position   = Orbit::Vector4(  1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
-		vertex.color      = Orbit::Color( 1.0f, 1.0f, 0.0f, 1.0f );
-		vertex.tex_coord  = Orbit::Vector2( 1.0f, 0.0f );
+		vertex.position   = Vector4( 1.0f / Orbit::PythagorasConstant, -1.0f / Orbit::PythagorasConstant, 0.0f, 1.0f );
+		vertex.color      = RGBA( 1.0f, 1.0f, 0.0f, 1.0f );
+		vertex.tex_coord  = Vector2( 1.0f, 0.0f );
 		face.indices[ 2 ] = geometry.AddVertex( vertex );
 	}
 

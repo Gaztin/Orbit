@@ -25,11 +25,13 @@
 
 ORB_NAMESPACE_BEGIN
 
+using JointKeyFrameMap = std::map< std::string, std::vector< KeyFrame > >;
+
 class ORB_API_GRAPHICS Animation
 {
 public:
 
-	explicit Animation( ByteSpan data );
+	explicit Animation( JointKeyFrameMap keyframes );
 
 public:
 
@@ -37,17 +39,13 @@ public:
 
 public:
 
-	float GetDuration( void ) const { return duration_; }
+	double GetDuration( void ) const { return duration_; }
 
 private:
 
-	bool ParseCollada( ByteSpan data );
+	JointKeyFrameMap keyframes_;
 
-private:
-
-	std::map< std::string, std::vector< KeyFrame > > joint_key_frames_;
-
-	float duration_;
+	double duration_ = 0.0;
 
 };
 

@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Color.h"
+#include "Orbit/Core/Color/RGBA.h"
 #include "Orbit/Graphics/Graphics.h"
 
 ORB_NAMESPACE_BEGIN
@@ -71,7 +71,7 @@ public:
 	BlendFactor dst_factor_alpha;
 	BlendOp     op_color;
 	BlendOp     op_alpha;
-	Color       constant;
+	RGBA        constant;
 
 };
 

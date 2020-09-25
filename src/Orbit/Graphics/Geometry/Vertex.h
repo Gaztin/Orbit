@@ -16,7 +16,7 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Color.h"
+#include "Orbit/Core/Color/RGBA.h"
 #include "Orbit/Graphics/Graphics.h"
 #include "Orbit/Math/Vector/Vector2.h"
 #include "Orbit/Math/Vector/Vector3.h"
@@ -28,12 +28,14 @@ ORB_NAMESPACE_BEGIN
 
 struct Vertex
 {
-	Vector4                position { 0.0f, 0.0f, 0.0f, 1.0f };
-	Vector3                normal   { 0.0f, 0.0f, 1.0f };
-	Color                  color    { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector2                tex_coord{ 0.0f, 0.0f };
-	std::array< int,   4 > joint_ids{ 0, 0, 0, 0 };
-	std::array< float, 4 > weights  { 1.0f, 0.0f, 0.0f, 0.0f };
+	Vector4                position      { 0.0f, 0.0f, 0.0f, 1.0f };
+	Vector3                binormal      { 1.0f, 0.0f, 0.0f };
+	Vector3                tangent       { 0.0f, 1.0f, 0.0f };
+	Vector3                normal        { 0.0f, 0.0f, 1.0f };
+	RGBA                   color         { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector2                tex_coord     { 0.0f, 0.0f };
+	std::array< int,   4 > blend_indices { 0, 0, 0, 0 };
+	std::array< float, 4 > blend_weights { 1.0f, 0.0f, 0.0f, 0.0f };
 	
 };
 

@@ -17,18 +17,16 @@
 
 #include "Texture.h"
 
-#include "Orbit/Core/IO/Parser/TGA/TGAParser.h"
+#include "Orbit/Core/IO/File/Image/TARGA/TARGAFile.h"
 
 ORB_NAMESPACE_BEGIN
 
 Texture::Texture( ByteSpan data )
 {
-	TGAParser tga_parser( data );
-	if( tga_parser.IsGood() )
-	{
-		texture2d_.emplace( tga_parser.Width(), tga_parser.Height(), tga_parser.ImageData(), PixelFormat::RGBA );
-		return;
-	}
+	// #TODO: Take generic image data as parameter so we can load any kind of image file
+	const TARGAFile file( data );
+
+	texture2d_.emplace( file.Width(), file.Height(), file.ImageData(), PixelFormat::RGBA );
 }
 
 ORB_NAMESPACE_END

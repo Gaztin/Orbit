@@ -113,7 +113,24 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 						D3D11_SHADER_BUFFER_DESC buffer_desc;
 						shader_buffer->GetDesc( &buffer_desc );
 
-						// Create constant buffer
+						// Create constant CPU buffer
+						{
+							D3D11_BUFFER_DESC desc;
+							desc.ByteWidth           = buffer_desc.Size;
+							desc.Usage               = D3D11_USAGE_STAGING;
+							desc.BindFlags           = 0;
+							desc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+							desc.MiscFlags           = 0;
+							desc.StructureByteStride = 0;
+
+							ComPtr< ID3D11Buffer > buffer;
+							if( SUCCEEDED( d3d11.device->CreateBuffer( &desc, nullptr, &buffer.ptr_ ) ) )
+							{
+								details.vertex_constant_cpu_buffers.emplace_back( std::move( buffer ) );
+							}
+						}
+
+						// Create constant GPU buffer
 						{
 							D3D11_BUFFER_DESC desc;
 							desc.ByteWidth           = buffer_desc.Size;
@@ -124,8 +141,10 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 							desc.StructureByteStride = 0;
 
 							ComPtr< ID3D11Buffer > buffer;
-							d3d11.device->CreateBuffer( &desc, nullptr, &buffer.ptr_ );
-							details.vertex_constant_buffers.emplace_back( std::move( buffer ) );
+							if( SUCCEEDED( d3d11.device->CreateBuffer( &desc, nullptr, &buffer.ptr_ ) ) )
+							{
+								details.vertex_constant_gpu_buffers.emplace_back( std::move( buffer ) );
+							}
 						}
 
 						// Iterate variables
@@ -168,7 +187,24 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 						D3D11_SHADER_BUFFER_DESC buffer_desc;
 						shader_buffer->GetDesc( &buffer_desc );
 
-						// Create constant buffer
+						// Create constant CPU buffer
+						{
+							D3D11_BUFFER_DESC desc;
+							desc.ByteWidth           = buffer_desc.Size;
+							desc.Usage               = D3D11_USAGE_STAGING;
+							desc.BindFlags           = 0;
+							desc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+							desc.MiscFlags           = 0;
+							desc.StructureByteStride = 0;
+
+							ComPtr< ID3D11Buffer > buffer;
+							if( SUCCEEDED( d3d11.device->CreateBuffer( &desc, nullptr, &buffer.ptr_ ) ) )
+							{
+								details.pixel_constant_cpu_buffers.emplace_back( std::move( buffer ) );
+							}
+						}
+
+						// Create constant GPU buffer
 						{
 							D3D11_BUFFER_DESC desc;
 							desc.ByteWidth           = buffer_desc.Size;
@@ -179,8 +215,10 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 							desc.StructureByteStride = 0;
 
 							ComPtr< ID3D11Buffer > buffer;
-							d3d11.device->CreateBuffer( &desc, nullptr, &buffer.ptr_ );
-							details.pixel_constant_buffers.emplace_back( std::move( buffer ) );
+							if( SUCCEEDED( d3d11.device->CreateBuffer( &desc, nullptr, &buffer.ptr_ ) ) )
+							{
+								details.pixel_constant_gpu_buffers.emplace_back( std::move( buffer ) );
+							}
 						}
 
 						// Iterate variables
@@ -214,16 +252,19 @@ Shader::Shader( std::string_view source, const VertexLayout& vertex_layout )
 					D3D11_INPUT_ELEMENT_DESC desc { };
 					desc.AlignedByteOffset = descriptors.empty() ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
 					desc.InputSlotClass    = D3D11_INPUT_PER_VERTEX_DATA;
+					desc.SemanticIndex     = component.semantic_index;
 
 					switch( component.type )
 					{
-						default:                        { assert( false );                } break;
-						case VertexComponent::Position: { desc.SemanticName = "POSITION"; } break;
-						case VertexComponent::Normal:   { desc.SemanticName = "NORMAL";   } break;
-						case VertexComponent::Color:    { desc.SemanticName = "COLOR";    } break;
-						case VertexComponent::TexCoord: { desc.SemanticName = "TEXCOORD"; } break;
-						case VertexComponent::JointIDs: { desc.SemanticName = "JOINTIDS"; } break;
-						case VertexComponent::Weights:  { desc.SemanticName = "WEIGHTS";  } break;
+						default:                            { assert( false );                    } break;
+						case VertexComponent::Position:     { desc.SemanticName = "POSITION";     } break;
+						case VertexComponent::Binormal:     { desc.SemanticName = "BINORMAL";     } break;
+						case VertexComponent::Tangent:      { desc.SemanticName = "TANGENT";      } break;
+						case VertexComponent::Normal:       { desc.SemanticName = "NORMAL";       } break;
+						case VertexComponent::Color:        { desc.SemanticName = "COLOR";        } break;
+						case VertexComponent::TexCoord:     { desc.SemanticName = "TEXCOORD";     } break;
+						case VertexComponent::BlendIndices: { desc.SemanticName = "BLENDINDICES"; } break;
+						case VertexComponent::BlendWeights: { desc.SemanticName = "BLENDWEIGHT";  } break;
 					}
 
 					switch( component.GetDataType() )
@@ -536,11 +577,17 @@ void Shader::Bind( void )
 			if( details.sampler_state )
 				d3d11.device_context->PSSetSamplers( 0, 1, &details.sampler_state.ptr_ );
 
-			for( size_t i = 0; i < details.vertex_constant_buffers.size(); ++i )
-				d3d11.device_context->VSSetConstantBuffers( i, 1, &details.vertex_constant_buffers[ i ].ptr_ );
+			for( size_t i = 0; i < details.vertex_constant_gpu_buffers.size(); ++i )
+			{
+				d3d11.device_context->CopyResource( details.vertex_constant_gpu_buffers[ i ].ptr_, details.vertex_constant_cpu_buffers[ i ].ptr_ );
+				d3d11.device_context->VSSetConstantBuffers( i, 1, &details.vertex_constant_gpu_buffers[ i ].ptr_ );
+			}
 
-			for( size_t i = 0; i < details.pixel_constant_buffers.size(); ++i )
-				d3d11.device_context->PSSetConstantBuffers( i, 1, &details.pixel_constant_buffers[ i ].ptr_ );
+			for( size_t i = 0; i < details.pixel_constant_gpu_buffers.size(); ++i )
+			{
+				d3d11.device_context->CopyResource( details.pixel_constant_gpu_buffers[ i ].ptr_, details.pixel_constant_cpu_buffers[ i ].ptr_ );
+				d3d11.device_context->PSSetConstantBuffers( i, 1, &details.pixel_constant_gpu_buffers[ i ].ptr_ );
+			}
 
 			break;
 		}
@@ -559,18 +606,18 @@ void Shader::Bind( void )
 
 			for( IndexedVertexComponent component : details.layout )
 			{
-				glEnableVertexAttribArray( static_cast< GLuint >( component.index ) );
+				glEnableVertexAttribArray( static_cast< GLuint >( component.layout_index ) );
 
 				switch( component.GetDataType() )
 				{
 					case PrimitiveDataType::Float:
 					{
-						glVertexAttribPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Float, GL_FALSE, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
+						glVertexAttribPointer( static_cast< GLuint >( component.layout_index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Float, GL_FALSE, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
 					} break;
 
 					case PrimitiveDataType::Int:
 					{
-						glVertexAttribIPointer( static_cast< GLuint >( component.index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Int, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
+						glVertexAttribIPointer( static_cast< GLuint >( component.layout_index ), static_cast< GLint >( component.GetDataCount() ), OpenGLVertexAttribDataType::Int, static_cast< GLsizei >( details.layout.GetStride() ), ptr );
 					} break;
 				}
 
@@ -658,7 +705,7 @@ void Shader::Unbind( void )
 			auto& details = std::get< Private::_ShaderDetailsOpenGL >( details_ );
 
 			for( IndexedVertexComponent component : details.layout )
-				glDisableVertexAttribArray( static_cast< GLuint >( component.index ) );
+				glDisableVertexAttribArray( static_cast< GLuint >( component.layout_index ) );
 
 			glUseProgram( 0 );
 
@@ -673,11 +720,13 @@ void Shader::Unbind( void )
 	}
 }
 
-void Shader::SetVertexUniform( std::string_view name, const void* data, size_t size )
+void Shader::SetVertexUniform( std::string_view name, const void* data, size_t size ) const
 {
 	// Find uniform among registered uniforms
 	auto uniform = std::find_if( vertex_uniforms_.begin(), vertex_uniforms_.end(), [ name ]( const Uniform& u ) { return u.name == name; } );
-	assert( uniform != vertex_uniforms_.end() );
+	if( uniform == vertex_uniforms_.end() )
+		return;
+
 	assert( uniform->size >= size );
 
 	switch( details_.index() )
@@ -689,10 +738,10 @@ void Shader::SetVertexUniform( std::string_view name, const void* data, size_t s
 		{
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 			auto& details = std::get< Private::_ShaderDetailsD3D11 >( details_ );
-			auto& buffer  = details.vertex_constant_buffers[ uniform->buffer_index ];
+			auto& buffer  = details.vertex_constant_cpu_buffers[ uniform->buffer_index ];
 
 			D3D11_MAPPED_SUBRESOURCE subresource;
-			if( SUCCEEDED( d3d11.device_context->Map( buffer.ptr_, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &subresource ) ) )
+			if( SUCCEEDED( d3d11.device_context->Map( buffer.ptr_, 0, D3D11_MAP_WRITE, 0, &subresource ) ) )
 			{
 				assert( subresource.RowPitch >= uniform->size );
 
@@ -722,6 +771,7 @@ void Shader::SetVertexUniform( std::string_view name, const void* data, size_t s
 				memcpy( dst, data, size );
 
 				glUnmapBuffer( OpenGLBufferTarget::Uniform );
+				glBindBuffer( OpenGLBufferTarget::Uniform, 0 );
 			}
 			else
 			{
@@ -738,11 +788,13 @@ void Shader::SetVertexUniform( std::string_view name, const void* data, size_t s
 	}
 }
 
-void Shader::SetPixelUniform( std::string_view name, const void* data, size_t size )
+void Shader::SetPixelUniform( std::string_view name, const void* data, size_t size ) const
 {
 	// Find uniform among registered uniforms
 	auto uniform = std::find_if( pixel_uniforms_.begin(), pixel_uniforms_.end(), [ name ]( const Uniform& u ) { return u.name == name; } );
-	assert( uniform != pixel_uniforms_.end() );
+	if( uniform == pixel_uniforms_.end() )
+		return;
+
 	assert( uniform->size >= size );
 
 	switch( details_.index() )
@@ -754,10 +806,10 @@ void Shader::SetPixelUniform( std::string_view name, const void* data, size_t si
 		{
 			auto& d3d11   = std::get< Private::_RenderContextDetailsD3D11 >( RenderContext::GetInstance().GetPrivateDetails() );
 			auto& details = std::get< Private::_ShaderDetailsD3D11 >( details_ );
-			auto& buffer  = details.pixel_constant_buffers[ uniform->buffer_index ];
+			auto& buffer  = details.pixel_constant_cpu_buffers[ uniform->buffer_index ];
 
 			D3D11_MAPPED_SUBRESOURCE subresource;
-			if( SUCCEEDED( d3d11.device_context->Map( buffer.ptr_, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &subresource ) ) )
+			if( SUCCEEDED( d3d11.device_context->Map( buffer.ptr_, 0, D3D11_MAP_WRITE, 0, &subresource ) ) )
 			{
 				assert( subresource.RowPitch >= uniform->size );
 

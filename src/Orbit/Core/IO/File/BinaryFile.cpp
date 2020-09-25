@@ -15,57 +15,39 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#pragma once
-#include "Orbit/Core/Core.h"
+#include "BinaryFile.h"
 
-#include <cstdlib>
+#include <cstring>
 
 ORB_NAMESPACE_BEGIN
 
-class Color
+void BinaryFile::Init( size_t total_size )
 {
-public:
+	total_size_     = total_size;
+	current_offset_ = 0;
+}
 
-	constexpr Color( void )
-		: r( 0.0f )
-		, g( 0.0f )
-		, b( 0.0f )
-		, a( 1.0f )
-	{
-	}
+void BinaryFile::Skip( size_t size )
+{
+	// Increment offset, but clamp it so it doesn't exceed the total size
+	current_offset_ = std::min( current_offset_ + size, total_size_ );
+}
 
-	constexpr Color( float r, float g, float b, float a = 1.0f )
-		: r( r )
-		, g( g )
-		, b( b )
-		, a( a )
-	{
-	}
+void BinaryFile::ReadBytes( const void* src, void* dst, size_t size )
+{
+	// Make sure we don't read more bytes than we have
+	const size_t bytes_to_write = std::min( size, total_size_ - current_offset_ );
 
-public:
+	// Copy bytes from src to dst
+	std::memcpy( dst, static_cast< const uint8_t* >( src ) + current_offset_, bytes_to_write );
 
-	constexpr float&       operator[]( size_t i )       { return ( &r )[ i ]; }
-	constexpr const float& operator[]( size_t i ) const { return ( &r )[ i ]; }
+	// Increment offset
+	current_offset_ += bytes_to_write;
+}
 
-public:
-
-	static Color Random( void )
-	{
-		Color color;
-		color.r = rand() / static_cast< float >( RAND_MAX );
-		color.g = rand() / static_cast< float >( RAND_MAX );
-		color.b = rand() / static_cast< float >( RAND_MAX );
-
-		return color;
-	}
-
-public:
-
-	float r;
-	float g;
-	float b;
-	float a;
-
-};
+bool BinaryFile::IsEOF( void ) const
+{
+	return ( current_offset_ == total_size_ );
+}
 
 ORB_NAMESPACE_END

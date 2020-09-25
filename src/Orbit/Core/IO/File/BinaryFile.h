@@ -16,39 +16,42 @@
  */
 
 #pragma once
-#include "Orbit/Core/IO/Parser/IParser.h"
+#include "Orbit/Core/Utility/Span.h"
 
-#include <cstdint>
 #include <memory>
-#include <vector>
+#include <string_view>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_CORE TGAParser : public IParser
+/** Base class for file format parsers.
+ * Does not store the data by default. This is by design in case the output can be processed in chunks rather than
+ * needing to wait until the entire file has been parsed.
+ */
+class ORB_API_CORE BinaryFile
 {
 public:
 
-	explicit TGAParser( ByteSpan data );
+	         BinaryFile( void ) = default;
+	virtual ~BinaryFile( void ) = default;
 
-public:
+protected:
 
-	const uint32_t* ImageData( void ) const { return image_data_.get(); }
-	uint16_t        Width    ( void ) const { return width_; }
-	uint16_t        Height   ( void ) const { return height_; }
+	/** Initializes the metadata */
+	void Init( size_t total_size );
 
-private:
+	/** Skips forward @size amount of bytes */
+	void Skip( size_t size );
 
-	uint32_t ReadTrueColor    ( void );
-	size_t   ReadNextRLEPacket( uint32_t* dst );
+	/** Reads @size amount of bytes from @src and writes them to @dst */
+	void ReadBytes( const void* src, void* dst, size_t size );
 
-private:
+	/** Returns whether or not the file has reached the end */
+	bool IsEOF( void ) const;
 
-	std::unique_ptr< uint32_t[] > image_data_;
+protected:
 
-	size_t bytes_per_pixel_;
-
-	uint16_t width_;
-	uint16_t height_;
+	size_t total_size_     = 0;
+	size_t current_offset_ = 0;
 
 };
 

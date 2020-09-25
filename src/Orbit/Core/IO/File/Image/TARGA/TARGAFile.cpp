@@ -15,7 +15,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "TGAParser.h"
+#include "TARGAFile.h"
 
 #include <algorithm>
 
@@ -71,23 +71,24 @@ struct Header
 	ImageSpecification    image_specification;
 };
 
-TGAParser::TGAParser( ByteSpan data )
-	: IParser( data )
+TARGAFile::TARGAFile( ByteSpan data )
 {
+	Init( data.Size() );
+
 	Header header;
 
-	ReadBytes( &header.id_length, 1 );
-	ReadBytes( &header.color_map_type, 1 );
-	ReadBytes( &header.image_type, 1 );
-	ReadBytes( &header.color_map_specification.first_entry_index, 2 );
-	ReadBytes( &header.color_map_specification.color_map_length, 2 );
-	ReadBytes( &header.color_map_specification.color_map_entry_size, 1 );
-	ReadBytes( &header.image_specification.x, 2 );
-	ReadBytes( &header.image_specification.y, 2 );
-	ReadBytes( &header.image_specification.width, 2 );
-	ReadBytes( &header.image_specification.height, 2 );
-	ReadBytes( &header.image_specification.depth, 1 );
-	ReadBytes( &header.image_specification.descriptor, 1 );
+	ReadBytes( data.Ptr(), &header.id_length, 1 );
+	ReadBytes( data.Ptr(), &header.color_map_type, 1 );
+	ReadBytes( data.Ptr(), &header.image_type, 1 );
+	ReadBytes( data.Ptr(), &header.color_map_specification.first_entry_index, 2 );
+	ReadBytes( data.Ptr(), &header.color_map_specification.color_map_length, 2 );
+	ReadBytes( data.Ptr(), &header.color_map_specification.color_map_entry_size, 1 );
+	ReadBytes( data.Ptr(), &header.image_specification.x, 2 );
+	ReadBytes( data.Ptr(), &header.image_specification.y, 2 );
+	ReadBytes( data.Ptr(), &header.image_specification.width, 2 );
+	ReadBytes( data.Ptr(), &header.image_specification.height, 2 );
+	ReadBytes( data.Ptr(), &header.image_specification.depth, 1 );
+	ReadBytes( data.Ptr(), &header.image_specification.descriptor, 1 );
 
 	if( ( header.image_specification.width == 0 ) || ( header.image_specification.height == 0 ) )
 		return;
@@ -111,19 +112,19 @@ TGAParser::TGAParser( ByteSpan data )
 	{
 		case ImageType::UncompressedTrueColor:
 		{
-			image_data_.reset( new uint32_t[ pixel_count ] );
+			image_data_ = std::make_unique< uint32_t[] >( pixel_count );
 
 			for( size_t i = 0; i < pixel_count; ++i )
-				image_data_[ i ] = ReadTrueColor();
+				image_data_[ i ] = ReadTrueColor( data.Ptr() );
 
 		} break;
 
 		case ImageType::RunLengthEncodedTrueColor:
 		{
-			image_data_.reset( new uint32_t[ pixel_count ] );
+			image_data_ = std::make_unique< uint32_t[] >( pixel_count );
 
 			for( size_t pixels_read = 0; pixels_read < pixel_count; )
-				pixels_read += ReadNextRLEPacket( &image_data_[ pixels_read ] );
+				pixels_read += ReadNextRLEPacket( data.Ptr(), &image_data_[ pixels_read ] );
 
 		} break;
 
@@ -135,22 +136,21 @@ TGAParser::TGAParser( ByteSpan data )
 
 	width_  = header.image_specification.width;
 	height_ = header.image_specification.height;
-	good_   = true;
 }
 
-uint32_t TGAParser::ReadTrueColor( void )
+uint32_t TARGAFile::ReadTrueColor( const void* src )
 {
 	uint32_t argb = 0xFF000000;
-	ReadBytes( &argb, bytes_per_pixel_ );
+	ReadBytes( src, &argb, bytes_per_pixel_ );
 
 	const uint32_t abgr = ( ( argb & 0xFF00FF00 ) | ( ( argb & 0x00FF0000 ) >> 16 ) | ( ( argb & 0x000000FF ) << 16 ) );
 	return abgr;
 }
 
-size_t TGAParser::ReadNextRLEPacket( uint32_t* dst )
+size_t TARGAFile::ReadNextRLEPacket( const void* src, uint32_t* dst )
 {
 	uint8_t repetition_count_and_packet_type = 0;
-	ReadBytes( &repetition_count_and_packet_type, 1 );
+	ReadBytes( src, &repetition_count_and_packet_type, 1 );
 
 	const PacketType packet_type      = static_cast< PacketType >( ( repetition_count_and_packet_type & 0x80 ) >> 7 );
 	const uint8_t    repetition_count = ( ( repetition_count_and_packet_type & 0x7f ) + 1 );
@@ -160,13 +160,13 @@ size_t TGAParser::ReadNextRLEPacket( uint32_t* dst )
 		case PacketType::Raw:
 		{
 			for( size_t i = 0; i < repetition_count; ++i )
-				dst[ i ] = ReadTrueColor();
+				dst[ i ] = ReadTrueColor( src );
 
 		} break;
 
 		case PacketType::RunLength:
 		{
-			const uint32_t pixel_value = ReadTrueColor();
+			const uint32_t pixel_value = ReadTrueColor( src );
 
 			for( size_t i = 0; i < repetition_count; ++i )
 				dst[ i ] = pixel_value;

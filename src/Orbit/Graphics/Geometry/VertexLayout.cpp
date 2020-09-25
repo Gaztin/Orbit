@@ -30,12 +30,14 @@ static size_t DataCountOf( VertexComponent component )
 	{
 		default: { assert( false ); return 0; }
 
-		case VertexComponent::Position: return 4;
-		case VertexComponent::Normal:   return 3;
-		case VertexComponent::Color:    return 4;
-		case VertexComponent::TexCoord: return 2;
-		case VertexComponent::JointIDs: return 4;
-		case VertexComponent::Weights:  return 4;
+		case VertexComponent::Position:     return 4;
+		case VertexComponent::Binormal:     return 3;
+		case VertexComponent::Tangent:      return 3;
+		case VertexComponent::Normal:       return 3;
+		case VertexComponent::Color:        return 4;
+		case VertexComponent::TexCoord:     return 2;
+		case VertexComponent::BlendIndices: return 4;
+		case VertexComponent::BlendWeights: return 4;
 	}
 }
 
@@ -46,13 +48,15 @@ static PrimitiveDataType DataTypeOf( VertexComponent component )
 		default: { assert( false ); return static_cast< PrimitiveDataType >( ~0 ); }
 
 		case Orbit::VertexComponent::Position:
+		case Orbit::VertexComponent::Binormal:
+		case Orbit::VertexComponent::Tangent:
 		case Orbit::VertexComponent::Normal:
 		case Orbit::VertexComponent::Color:
 		case Orbit::VertexComponent::TexCoord:
-		case Orbit::VertexComponent::Weights:
+		case Orbit::VertexComponent::BlendWeights:
 			return PrimitiveDataType::Float;
 
-		case Orbit::VertexComponent::JointIDs:
+		case Orbit::VertexComponent::BlendIndices:
 			return PrimitiveDataType::Int;
 	}
 }
@@ -82,7 +86,7 @@ bool VertexComponentIterator::operator!=( const VertexComponentIterator& other )
 	/* Trying to compare iterator from another layout */
 	assert( layout == other.layout );
 
-	return ( indexed_component.index != other.indexed_component.index );
+	return ( indexed_component.layout_index != other.indexed_component.layout_index );
 }
 
 IndexedVertexComponent VertexComponentIterator::operator*( void ) const
@@ -92,10 +96,19 @@ IndexedVertexComponent VertexComponentIterator::operator*( void ) const
 
 VertexComponentIterator& VertexComponentIterator::operator++( void )
 {
-	++indexed_component.index;
+	++indexed_component.layout_index;
 
-	if( indexed_component.index < layout->components_.size() )
-		indexed_component.type = layout->components_[ indexed_component.index ];
+	if( indexed_component.layout_index < layout->components_.size() )
+	{
+		indexed_component.type = layout->components_[ indexed_component.layout_index ];
+
+		// Find out the semantic index
+		for( size_t i = 0; i < indexed_component.layout_index; ++i )
+		{
+			if( layout->components_[ i ] == indexed_component.type )
+				++indexed_component.semantic_index;
+		}
+	}
 
 	return *this;
 }
@@ -160,7 +173,7 @@ VertexComponentIterator VertexLayout::begin( void ) const
 {
 	if( !components_.empty() )
 	{
-		IndexedVertexComponent indexed_component{ components_.front(), 0 };
+		IndexedVertexComponent indexed_component{ components_.front(), 0, 0 };
 
 		return { this, indexed_component };
 	}
@@ -170,7 +183,7 @@ VertexComponentIterator VertexLayout::begin( void ) const
 
 VertexComponentIterator VertexLayout::end( void ) const
 {
-	IndexedVertexComponent indexed_component{ std::numeric_limits< VertexComponent >::max(), components_.size() };
+	IndexedVertexComponent indexed_component{ std::numeric_limits< VertexComponent >::max(), components_.size(), 0 };
 
 	return { this, indexed_component };
 }

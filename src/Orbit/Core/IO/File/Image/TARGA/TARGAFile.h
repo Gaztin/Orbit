@@ -16,44 +16,39 @@
  */
 
 #pragma once
-#include "Orbit/Core/Utility/Span.h"
-#include "Orbit/Graphics/Animation/Joint.h"
-#include "Orbit/Graphics/Buffer/IndexBuffer.h"
-#include "Orbit/Graphics/Buffer/VertexBuffer.h"
-#include "Orbit/Graphics/Geometry/Mesh.h"
-#include "Orbit/Graphics/Geometry/VertexLayout.h"
-#include "Orbit/Graphics/Renderer/RenderCommand.h"
+#include "Orbit/Core/IO/File/BinaryFile.h"
+
+#include <cstdint>
+#include <memory>
+#include <vector>
 
 ORB_NAMESPACE_BEGIN
 
-class ORB_API_GRAPHICS Model
+class ORB_API_CORE TARGAFile : public BinaryFile
 {
-	ORB_DISABLE_COPY( Model );
+public:
+
+	explicit TARGAFile( ByteSpan data );
 
 public:
 
-	explicit Model( ByteSpan data, const VertexLayout& layout );
-
-public:
-
-	bool         HasJoints   ( void ) const { return root_joint_ != nullptr; }
-	const Joint& GetRootJoint( void ) const { return *root_joint_; }
-
-public:
-
-	auto begin( void ) const { return meshes_.begin(); }
-	auto end  ( void ) const { return meshes_.end(); }
+	const uint32_t* ImageData ( void ) const { return image_data_.get(); }
+	uint16_t        Width     ( void ) const { return width_; }
+	uint16_t        Height    ( void ) const { return height_; }
 
 private:
 
-	bool ParseCollada( ByteSpan data, const VertexLayout& layout );
-	bool ParseOBJ    ( ByteSpan data, const VertexLayout& layout );
+	uint32_t ReadTrueColor     ( const void* src );
+	size_t   ReadNextRLEPacket ( const void* src, uint32_t* dst );
 
 private:
 
-	std::vector< Mesh > meshes_;
+	std::unique_ptr< uint32_t[] > image_data_;
 
-	std::unique_ptr< Joint > root_joint_;
+	size_t bytes_per_pixel_;
+
+	uint16_t width_;
+	uint16_t height_;
 
 };
 

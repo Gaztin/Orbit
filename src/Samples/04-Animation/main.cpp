@@ -24,7 +24,8 @@
 #include <Orbit/Core/Time/Clock.h>
 #include <Orbit/Graphics/Animation/Animation.h>
 #include <Orbit/Graphics/Context/RenderContext.h>
-#include <Orbit/Graphics/Geometry/Model.h>
+#include <Orbit/Graphics/Geometry/Mesh.h>
+#include <Orbit/Graphics/ModelFormats/COLLADAFile.h>
 #include <Orbit/Graphics/Renderer/DefaultRenderer.h>
 #include <Orbit/Graphics/Shader/Shader.h>
 
@@ -33,9 +34,9 @@ class SampleApp final : public Orbit::Application< SampleApp >
 public:
 
 	SampleApp( void )
-		: shader_   ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
-		, model_    ( Orbit::Asset( "models/mannequin.dae" ), shader_source_.GetVertexLayout() )
-		, animation_( Orbit::Asset( "animations/jump.dae" ) )
+		: shader_    ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
+		, model_data_( Orbit::COLLADAFile( Orbit::Asset( "models/mannequin.dae" ), shader_source_.GetVertexLayout() ).GetModelData() )
+		, animation_ ( Orbit::COLLADAFile( Orbit::Asset( "animations/jump.dae" ), shader_source_.GetVertexLayout() ).GetAnimationData().keyframes )
 	{
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
 		model_matrix_.Translate( Orbit::Vector3( 0.0f, -2.0f, 0.0f ) );
@@ -51,7 +52,7 @@ public:
 	void UpdateJointTransformsRecursive( const Orbit::Joint& joint, const Orbit::Matrix4& parent_pose )
 	{
 		const float          life_time      = Orbit::Clock::GetLife();
-		const float          animation_time = std::fmod( life_time, animation_.GetDuration() );
+		const float          animation_time = std::fmod( life_time, static_cast< float >( animation_.GetDuration() ) );
 		const Orbit::Matrix4 local_pose     = animation_.JointPoseAtTime( joint.name, animation_time );
 		const Orbit::Matrix4 pose           = ( parent_pose * local_pose );
 
@@ -73,19 +74,18 @@ public:
 		camera_.Update( delta_time );
 
 		// Update joint transforms
-		if( model_.HasJoints() )
-			UpdateJointTransformsRecursive( model_.GetRootJoint(), Orbit::Matrix4() );
+		UpdateJointTransformsRecursive( model_data_.root_joint, Orbit::Matrix4() );
 
 		// Update uniforms
 		shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
 		shader_.SetVertexUniform( shader_source_.u_joint_transforms, joint_transforms_ );
 
 		// Push meshes to render queue
-		for( const Orbit::Mesh& mesh : model_ )
+		for( auto& mesh : model_data_.meshes )
 		{
 			Orbit::RenderCommand command;
-			command.vertex_buffer = mesh.GetVertexBuffer();
-			command.index_buffer  = mesh.GetIndexBuffer();
+			command.vertex_buffer = mesh->GetVertexBuffer();
+			command.index_buffer  = mesh->GetIndexBuffer();
 			command.shader        = shader_;
 			Orbit::DefaultRenderer::GetInstance().PushCommand( std::move( command ) );
 		}
@@ -103,13 +103,13 @@ private:
 
 private:
 
-	Orbit::RenderContext render_context_;
-	AnimationShader      shader_source_;
-	Orbit::Shader        shader_;
-	Orbit::Model         model_;
-	Orbit::Animation     animation_;
-	Orbit::Matrix4       model_matrix_;
-	Camera               camera_;
-	JointTransformArray  joint_transforms_;
+	Orbit::RenderContext          render_context_;
+	AnimationShader               shader_source_;
+	Orbit::Shader                 shader_;
+	Orbit::COLLADAFile::ModelData model_data_;
+	Orbit::Animation              animation_;
+	Orbit::Matrix4                model_matrix_;
+	Camera                        camera_;
+	JointTransformArray           joint_transforms_;
 
 };

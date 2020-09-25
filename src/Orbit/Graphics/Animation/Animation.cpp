@@ -17,7 +17,7 @@
 
 #include "Animation.h"
 
-#include "Orbit/Core/IO/Parser/XML/XMLParser.h"
+#include "Orbit/Core/IO/File/Markup/XML/XMLFile.h"
 #include "Orbit/Core/IO/Log.h"
 #include "Orbit/Math/Matrix/Matrix4.h"
 
@@ -27,29 +27,29 @@
 
 ORB_NAMESPACE_BEGIN
 
-static bool SortKeyFrames( const KeyFrame& a, const KeyFrame& b )
+Animation::Animation( JointKeyFrameMap keyframes )
+	: keyframes_( std::move( keyframes ) )
 {
-	return ( a.time < b.time );
-}
-
-Animation::Animation( ByteSpan data )
-	: duration_{ 0.0 }
-{
-	if( !ParseCollada( data ) )
+	// Figure out duration by finding the last keyframe
+	for( auto& it : keyframes_ )
 	{
-		LogErrorString( "Failed to load animation. Unrecognized format." );
+		for( const KeyFrame& keyframe : it.second )
+		{
+			if( keyframe.time > duration_ )
+				duration_ = keyframe.time;
+		}
 	}
 }
 
 Matrix4 Animation::JointPoseAtTime( std::string_view joint, float time ) const
 {
-	if( auto it = joint_key_frames_.find( std::string( joint ) ); it != joint_key_frames_.end() )
+	if( auto it = keyframes_.find( std::string( joint ) ); it != keyframes_.end() )
 	{
 		for( const KeyFrame& kf : it->second )
 		{
 			if( kf.time >= time )
 			{
-				/* TODO: Interpolate poses */
+				// TODO: Interpolate poses
 				return kf.transform;
 			}
 		}
@@ -59,110 +59,6 @@ Matrix4 Animation::JointPoseAtTime( std::string_view joint, float time ) const
 	}
 
 	return Matrix4();
-}
-
-bool Animation::ParseCollada( ByteSpan data )
-{
-	XMLParser parser( data );
-
-	const XMLElement& collada            = parser.GetRootElement()[ "COLLADA" ];
-	const XMLElement& library_animations = collada[ "library_animations" ];
-
-	for( const XMLElement& animation : library_animations )
-	{
-		if( animation.name != "animation" )
-			continue;
-
-		const XMLElement& sampler = animation[ "sampler" ];
-
-		std::string input_source_id;
-		{
-			std::istringstream ss( std::string( sampler.ChildWithAttribute( "input", "semantic", "INPUT" ).Attribute( "source" ) ) );
-			ss.ignore( 1 );
-			ss >> input_source_id;
-		}
-
-		std::string output_source_id;
-		{
-			std::istringstream ss( std::string( sampler.ChildWithAttribute( "input", "semantic", "OUTPUT" ).Attribute( "source" ) ) );
-			ss.ignore( 1 );
-			ss >> output_source_id;
-		}
-
-		std::string interpolation_source_id;
-		{
-			std::istringstream ss( std::string( sampler.ChildWithAttribute( "input", "semantic", "INTERPOLATION" ).Attribute( "source" ) ) );
-			ss.ignore( 1 );
-			ss >> interpolation_source_id;
-		}
-
-		std::string target_joint;
-		{
-			std::istringstream ss( std::string( animation[ "channel" ].Attribute( "target" ) ) );
-			ss >> target_joint;
-			target_joint.erase( target_joint.rfind( "/" ) );
-		}
-
-		std::vector< KeyFrame > key_frames;
-		for( const XMLElement& source : animation )
-		{
-			if( source.name != "source" )
-				continue;
-
-			if( key_frames.empty() )
-			{
-				size_t count = 0;
-				{
-					std::istringstream ss( std::string( source[ "technique_common" ][ "accessor" ].Attribute( "count" ) ) );
-					ss >> count;
-				}
-
-				key_frames.resize( count );
-			}
-
-			const std::string source_id( source.Attribute( "id" ) );
-
-			if( source_id == input_source_id )
-			{
-				std::istringstream ss( source[ "float_array" ].content );
-
-				for( KeyFrame& kf : key_frames )
-					ss >> kf.time;
-			}
-			else if( source_id == output_source_id )
-			{
-				std::istringstream ss( source[ "float_array" ].content );
-
-				for( KeyFrame& kf : key_frames )
-				{
-					for( size_t e = 0; e < 16; ++e )
-						ss >> kf.transform[ e ];
-				}
-			}
-			else if( source_id == interpolation_source_id )
-			{
-				std::istringstream ss( source[ "Name_array" ].content );
-
-				/* One of: LINEAR, BEZIER, CARDINAL, HERMITE, BSPLINE and STEP */
-				for( KeyFrame& kf : key_frames )
-					ss >> kf.interpolation_type;
-			}
-		}
-
-		std::sort( key_frames.begin(), key_frames.end(), SortKeyFrames );
-
-		if( !key_frames.empty() )
-		{
-			const KeyFrame& last_frame = key_frames.back();
-
-			if( last_frame.time > duration_ )
-				duration_ = last_frame.time;
-		}
-
-		joint_key_frames_.try_emplace( std::move( target_joint ), std::move( key_frames ) );
-	}
-
-	return true;
 }
 
 ORB_NAMESPACE_END

@@ -56,8 +56,10 @@ namespace Private
 		ComPtr< ID3D11InputLayout >  input_layout;
 		ComPtr< ID3D11SamplerState > sampler_state;
 
-		std::vector< ComPtr< ID3D11Buffer > > vertex_constant_buffers;
-		std::vector< ComPtr< ID3D11Buffer > > pixel_constant_buffers;
+		std::vector< ComPtr< ID3D11Buffer > > vertex_constant_cpu_buffers;
+		std::vector< ComPtr< ID3D11Buffer > > vertex_constant_gpu_buffers;
+		std::vector< ComPtr< ID3D11Buffer > > pixel_constant_cpu_buffers;
+		std::vector< ComPtr< ID3D11Buffer > > pixel_constant_gpu_buffers;
 	};
 
 #endif // ORB_HAS_D3D11
