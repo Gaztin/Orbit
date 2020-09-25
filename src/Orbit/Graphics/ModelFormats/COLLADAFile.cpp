@@ -53,21 +53,21 @@ void COLLADAFile::Asset( void )
 
 void COLLADAFile::LibraryEffects( void )
 {
-	for( const XMLElement& elm_geometry : root_element_[ "COLLADA" ][ "library_effects" ] )
+	for( const XMLElement& elm_effect : root_element_[ "COLLADA" ][ "library_effects" ] )
 	{
 	}
 }
 
 void COLLADAFile::LibraryImages( void )
 {
-	for( const XMLElement& elm_geometry : root_element_[ "COLLADA" ][ "library_images" ] )
+	for( const XMLElement& elm_image : root_element_[ "COLLADA" ][ "library_images" ] )
 	{
 	}
 }
 
 void COLLADAFile::LibraryMaterials( void )
 {
-	for( const XMLElement& elm_geometry : root_element_[ "COLLADA" ][ "library_materials" ] )
+	for( const XMLElement& elm_material : root_element_[ "COLLADA" ][ "library_materials" ] )
 	{
 	}
 }
@@ -243,7 +243,7 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 		{
 			Vertex vertex;
 
-			for( int input_offset = 0; input_offset < num_inputs; ++input_offset )
+			for( uint32_t input_offset = 0; input_offset < num_inputs; ++input_offset )
 			{
 				const size_t           space                        = content_p.find_first_of( ' ' );
 				const uint32_t         index                        = FromString< uint32_t >( content_p.substr( 0, space ) );
@@ -273,16 +273,112 @@ void COLLADAFile::LibraryGeometries( const VertexLayout& vertex_layout )
 	}
 }
 
+void COLLADAFile::LibraryControllers( void )
+{
+	for( const XMLElement& elm_controller : root_element_[ "COLLADA" ][ "library_controllers" ] )
+	{
+	}
+}
+
 void COLLADAFile::LibraryAnimations( void )
 {
-	for( const XMLElement& animation : root_element_[ "COLLADA" ][ "library_animations" ] )
+	for( const XMLElement& elm_animation : root_element_[ "COLLADA" ][ "library_animations" ] )
 	{
+		const std::string_view         id     = elm_animation.FindAttribute( "id" );
+		const std::string_view         name   = elm_animation.FindAttribute( "name" );
+		const std::string              target = std::string( name ) + "/matrix";
+		std::map< uint32_t, KeyFrame > key_frames;
+
+		if( const XMLElement* elm_channel = elm_animation.FindChildWithAttribute( "channel", { "target", target } ) )
+		{
+			const std::string_view matrix_id   = SourceID( *elm_channel );
+			const XMLElement&      elm_sampler = *elm_animation.FindChildWithAttribute( "sampler", { "id", matrix_id } );
+
+			// INPUT
+			if( const XMLElement* elm_input = elm_sampler.FindChildWithAttribute( "input", { "semantic", "INPUT" } ) )
+			{
+				const std::string_view input_id        = SourceID( *elm_input );
+				const XMLElement&      elm_source      = *elm_animation.FindChildWithAttribute( "source", { "id", input_id } );
+				const XMLElement&      elm_accessor    = elm_source[ "technique_common" ][ "accessor" ];
+				const std::string_view input_array_id  = SourceID( elm_accessor );
+				const XMLElement&      elm_float_array = *elm_source.FindChildWithAttribute( "float_array", { "id", input_array_id } );
+				const uint32_t         count           = FromString< uint32_t >( elm_accessor.FindAttribute( "count" ) );
+				std::string_view       content         = elm_float_array.content;
+
+				for( uint32_t i = 0; i < count; ++i )
+				{
+					const size_t space = content.find_first_of( ' ' );
+					const double time  = FromString< double >( content.substr( 0, space ) );
+
+					// Give time to key frame
+					key_frames[ i ].time = time;
+
+					// Chip away on content string until it is empty
+					content.remove_prefix( space + 1 );
+				}
+			}
+
+			// OUTPUT
+			if( const XMLElement* elm_input = elm_sampler.FindChildWithAttribute( "input", { "semantic", "OUTPUT" } ) )
+			{
+				const std::string_view input_id        = SourceID( *elm_input );
+				const XMLElement&      elm_source      = *elm_animation.FindChildWithAttribute( "source", { "id", input_id } );
+				const XMLElement&      elm_accessor    = elm_source[ "technique_common" ][ "accessor" ];
+				const std::string_view input_array_id  = SourceID( elm_accessor );
+				const XMLElement&      elm_float_array = *elm_source.FindChildWithAttribute( "float_array", { "id", input_array_id } );
+				const uint32_t         count           = FromString< uint32_t >( elm_accessor.FindAttribute( "count" ) );
+				const uint32_t         stride          = FromString< uint32_t >( elm_accessor.FindAttribute( "stride" ) );
+				std::string_view       content         = elm_float_array.content;
+
+				for( uint32_t i = 0; i < count; ++i )
+				{
+					for( uint32_t j = 0; j < stride; ++j )
+					{
+						const size_t space   = content.find_first_of( ' ' );
+						const float  element = FromString< float >( content.substr( 0, space ) );
+
+						// Apply element to transform
+						key_frames[ i ].transform[ j ] = element;
+
+						// Chip away on content string until it is empty
+						content.remove_prefix( space + 1 );
+					}
+
+					// Correct transform
+					key_frames[ i ].transform *= correction_matrix_;
+				}
+			}
+
+			// INTERPOLATION
+			if( const XMLElement* elm_input = elm_sampler.FindChildWithAttribute( "input", { "semantic", "INTERPOLATION" } ) )
+			{
+				const std::string_view input_id        = SourceID( *elm_input );
+				const XMLElement&      elm_source      = *elm_animation.FindChildWithAttribute( "source", { "id", input_id } );
+				const XMLElement&      elm_accessor    = elm_source[ "technique_common" ][ "accessor" ];
+				const std::string_view input_array_id  = SourceID( elm_accessor );
+				const XMLElement&      elm_name_array  = *elm_source.FindChildWithAttribute( "Name_array", { "id", input_array_id } );
+				const uint32_t         count           = FromString< uint32_t >( elm_accessor.FindAttribute( "count" ) );
+				std::string_view       content         = elm_name_array.content;
+
+				for( uint32_t i = 0; i < count; ++i )
+				{
+					const size_t           space              = content.find_first_of( ' ' );
+					const std::string_view interpolation_type = content.substr( 0, space );
+
+					// Set interpolation type of key frame
+					key_frames[ i ].interpolation_type = interpolation_type;
+
+					// Chip away on content string until it is empty
+					content.remove_prefix( space + 1 );
+				}
+			}
+		}
 	}
 }
 
 void COLLADAFile::LibraryVisualScenes( void )
 {
-	for( const XMLElement& visual_scene : root_element_[ "COLLADA" ][ "library_visual_scenes" ] )
+	for( const XMLElement& elm_visual_scene : root_element_[ "COLLADA" ][ "library_visual_scenes" ] )
 	{
 	}
 }

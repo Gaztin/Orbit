@@ -62,6 +62,7 @@ private:
 	void LibraryImages       ( void );
 	void LibraryMaterials    ( void );
 	void LibraryGeometries   ( const VertexLayout& vertex_layout );
+	void LibraryControllers  ( void );
 	void LibraryAnimations   ( void );
 	void LibraryVisualScenes ( void );
 
