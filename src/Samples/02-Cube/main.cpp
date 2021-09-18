@@ -30,18 +30,89 @@
 #include <Orbit/Graphics/Shader/Shader.h>
 #include <Orbit/Graphics/Texture/Texture.h>
 
+static const std::string shader_source = R"(
+cbuffer VertexUniforms
+{
+	float4x4 view_projection;
+	float4x4 model;
+};
+
+cbuffer PixelUniforms
+{
+	float4x4 view_projection2;
+	float4x4 model2;
+};
+
+struct VertexData
+{
+	float4 Position : POSITION;
+	float3 Normal   : NORMAL;
+};
+
+struct PixelData
+{
+	float4 Position : SV_POSITION;
+	float4 WPos     : POSITION0;
+	float3 Normal   : NORMAL;
+};
+
+PixelData VSMain( VertexData input )
+{
+	PixelData data;
+	data.Position = mul( mul( input.Position, model ), view_projection );
+	data.WPos     = input.Position;
+	data.Normal   = input.Normal;
+	return data;
+}
+
+float4 PSMain( PixelData input ) : SV_TARGET0
+{
+	input.WPos.xyz /= input.WPos.w;
+
+	float4 CenterOnScreen = mul( mul( float4( 0.0, 0.0, 0.0, 1.0 ), model2 ), view_projection2 );
+	CenterOnScreen.xyz   /= CenterOnScreen.w;
+
+	float4 Unit           = mul( mul( float4( 1.0, 1.0, 0.0, 1.0 ), model2 ), view_projection2 );
+	Unit.xyz             /= Unit.w;
+	float  UnitLength     = length( Unit.xy );
+
+	float4 PixelOnScreen  = mul( mul( input.WPos, model2 ), view_projection2 );
+	PixelOnScreen.xyz    /= PixelOnScreen.w;
+
+	float2 Diff           = ( PixelOnScreen.xy - CenterOnScreen.xy ) / Unit.xy;
+	float  Dist           = length( Diff );
+
+	clip( 0.5 - Dist );
+
+	float3 SyntheticNormal = normalize( input.WPos.xyz - float3( 0.0, 0.0, 0.0 ) );
+	float3 LightDir        = normalize( float3( 0.4, -0.8, -0.2 ) );
+	float  Dot             = dot( SyntheticNormal, -LightDir );
+
+	return float4( Dot.xxx, 1.0 );
+}
+)";
+
+static Orbit::VertexLayout vl
+{
+	Orbit::VertexComponent::Position,
+	Orbit::VertexComponent::Normal,
+};
+
 class SampleApp final : public Orbit::Application< SampleApp >
 {
 public:
 
 	SampleApp( void )
-		: shader_ ( shader_source_.Generate(), shader_source_.GetVertexLayout() )
-		, mesh_   ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), shader_source_.GetVertexLayout() ) )
+		: shader_ ( shader_source, vl )
+		, mesh_   ( Orbit::MeshFactory::GetInstance().CreateMeshFromShape( Orbit::CubeShape( 1.0f ), vl ) )
 		, texture_( Orbit::Asset( "textures/checkerboard.tga" ) )
 	{
 		render_context_.SetClearColor( 0.0f, 0.0f, 0.5f );
-		camera_.position.y = 2.000f;
-		camera_.rotation.x = 0.125f * Orbit::Pi;
+		camera_.position.x = 2.000f;
+		camera_.position.z = 2.000f;
+		camera_.position.y = 1.500f;
+		camera_.rotation.x = 0.175f * Orbit::Pi;
+		camera_.rotation.y = 0.750f * Orbit::Pi;
 	}
 
 public:
@@ -51,7 +122,7 @@ public:
 		const float delta_time = Orbit::Clock::GetDelta();
 
 		// Rotate cube
-		model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
+//		model_matrix_.Rotate( Orbit::Vector3( 0.0f, 0.5f * Orbit::Pi * delta_time, 0.0f ) );
 
 		// Update window and clear context
 		render_context_.Clear( Orbit::BufferMask::Color | Orbit::BufferMask::Depth );
@@ -60,10 +131,12 @@ public:
 		camera_.Update( delta_time );
 
 		// Update uniforms
-		const Orbit::Matrix4 model = mesh_.transform_ * model_matrix_;
-		shader_.SetVertexUniform( shader_source_.u_view_projection, camera_.GetViewProjection() );
-		shader_.SetVertexUniform( shader_source_.u_model,           model );
-		shader_.SetVertexUniform( shader_source_.u_model_inverse,   model.Inverted() );
+		const auto model = mesh_.transform_ * model_matrix_;
+		const auto vp    = camera_.GetViewProjection();
+		shader_.SetVertexUniform( "view_projection",  &vp,    sizeof( Orbit::Matrix4 ) );
+		shader_.SetVertexUniform( "model",            &model, sizeof( Orbit::Matrix4 ) );
+		shader_.SetPixelUniform(  "view_projection2", &vp,    sizeof( Orbit::Matrix4 ) );
+		shader_.SetPixelUniform(  "model2",           &model, sizeof( Orbit::Matrix4 ) );
 
 		// Push cube mesh to render queue
 		Orbit::RenderCommand command;
@@ -83,7 +156,6 @@ public:
 private:
 
 	Orbit::RenderContext  render_context_;
-	CubeShader            shader_source_;
 	Orbit::Shader         shader_;
 	Orbit::Mesh           mesh_;
 	Orbit::Texture        texture_;
